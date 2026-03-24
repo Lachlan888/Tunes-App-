@@ -1,4 +1,6 @@
-import { getTomorrow, isDueToday } from "@/lib/review"
+import ActiveLearningSection from "@/components/ActiveLearningSection"
+import CreateTuneForm from "@/components/CreateTuneForm"
+import { getTomorrow } from "@/lib/review"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
@@ -147,7 +149,6 @@ export default async function HomePage() {
     }
 
     const piece_id = Number(formData.get("piece_id"))
-
     const nextReviewDue = getTomorrow()
 
     const { data: existingUserPiece, error: fetchError } = await supabase
@@ -245,40 +246,7 @@ export default async function HomePage() {
         </button>
       </form>
 
-      <section className="mb-10">
-        <h2 className="text-2xl font-semibold mb-4">Create New Tune</h2>
-
-        <form action={createTune}>
-          <input
-            name="title"
-            placeholder="Tune title"
-            className="border p-2 w-full mb-2"
-            required
-          />
-
-          <input
-            name="key"
-            placeholder="Key"
-            className="border p-2 w-full mb-2"
-          />
-
-          <input
-            name="style"
-            placeholder="Style"
-            className="border p-2 w-full mb-2"
-          />
-
-          <input
-            name="time_signature"
-            placeholder="Time signature"
-            className="border p-2 w-full mb-2"
-          />
-
-          <button className="bg-black text-white px-4 py-2">
-            Create Tune
-          </button>
-        </form>
-      </section>
+      <CreateTuneForm createTune={createTune} />
 
       <section className="mb-10">
         <h2 className="text-2xl font-semibold mb-4">Add Tune to Learning List</h2>
@@ -380,31 +348,7 @@ export default async function HomePage() {
         )}
       </section>
 
-      <section className="mb-10">
-        <h2 className="text-2xl font-semibold mb-4">Active Learning</h2>
-
-        {!userPieces || userPieces.length === 0 ? (
-          <p className="text-gray-600">No tunes in active learning yet.</p>
-        ) : (
-          <ul className="list-disc pl-6">
-            {userPieces.map((userPiece: UserPiece) => {
-              const piece = pieces?.find((piece: Piece) => piece.id === userPiece.piece_id)
-
-              if (!piece) return null
-
-              return (
-                <li key={userPiece.id}>
-                  {piece.title}
-                  {piece.key ? `, key ${piece.key}` : ""}
-                  {piece.style ? `, ${piece.style}` : ""}
-                  {piece.time_signature ? `, ${piece.time_signature}` : ""}
-                  {userPiece.status ? `, status: ${userPiece.status}` : ""}
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </section>
+      <ActiveLearningSection userPieces={userPieces} pieces={pieces} />
 
       <section>
         <h2 className="text-2xl font-semibold mb-4">All Tunes</h2>
