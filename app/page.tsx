@@ -1,8 +1,9 @@
-import { supabase } from '@/lib/supabase'
+import { createClient } from "@/lib/supabase/server"
+import { redirect } from "next/navigation"
 
 type Piece = {
   id: number
-  title: string | null
+  title: string
   key: string | null
   style: string | null
   time_signature: string | null
@@ -18,12 +19,47 @@ type LearningList = {
   id: number
   name: string
   description: string | null
-  learning_list_items: LearningListItem[] | null
+  learning_list_items: LearningListItem[]
 }
 
-export default async function Home() {
-  const { data: learningListsData, error: learningListsError } = await supabase
-    .from('learning_lists')
+export default async function HomePage() {
+  async function createList(formData: FormData) {
+    "use server"
+
+    const supabase = await createClient()
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      redirect("/login")
+    }
+
+    const name = formData.get("name") as string
+    const description = formData.get("description") as string
+
+    await supabase.from("learning_lists").insert({
+      name,
+      description,
+      user_id: user.id,
+    })
+
+    redirect("/")
+  }
+
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const { data: learningLists } = await supabase
+    .from("learning_lists")
     .select(`
       id,
       name,
@@ -40,89 +76,90 @@ export default async function Home() {
         )
       )
     `)
-    .order('id', { ascending: true })
+    .eq("user_id", user.id)
 
-  const { data: piecesData, error: piecesError } = await supabase
-    .from('pieces')
-    .select(`
-      id,
-      title,
-      key,
-      style,
-      time_signature
-    `)
-    .order('title', { ascending: true })
-
-  if (learningListsError) {
-    return <pre>{JSON.stringify(learningListsError, null, 2)}</pre>
-  }
-
-  if (piecesError) {
-    return <pre>{JSON.stringify(piecesError, null, 2)}</pre>
-  }
-
-  const lists = (learningListsData ?? []) as unknown as LearningList[]
-  const pieces = (piecesData ?? []) as Piece[]
+  const { data: pieces } = await supabase
+    .from("pieces")
+    .select("id, title, key, style, time_signature")
+    .order("title")
 
   return (
-    <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>Tunes App</h1>
+    <main className="p-8">
+      <h1 className="text-3xl font-bold mb-2">Tunes App</h1>
+      <p className="text-gray-600 mb-6">Logged in as {user.email}</p>
 
-      <section style={{ marginBottom: '3rem' }}>
-        <h2>Learning Lists</h2>
+      <form action={createList} className="mb-10">
+        <h2 className="text-2xl font-semibold mb-4">Create Learning List</h2>
 
-        {lists.length === 0 ? (
-          <p>No learning lists found.</p>
+        <input
+          name="name"
+          placeholder="List name"
+          className="border p-2 w-full mb-2"
+          required
+        />
+
+        <input
+          name="description"
+          placeholder="Description"
+          className="border p-2 w-full mb-2"
+        />
+
+        <button className="bg-black text-white px-4 py-2">
+          Create
+        </button>
+      </form>
+
+      <section className="mb-10">
+        <h2 className="text-2xl font-semibold mb-4">Learning Lists</h2>
+
+        {!learningLists || learningLists.length === 0 ? (
+          <p className="text-gray-600">
+            No learning lists found for this user yet.
+          </p>
         ) : (
-          lists.map((list) => (
-            <section key={list.id} style={{ marginBottom: '2rem' }}>
-              <h3>{list.name}</h3>
-              {list.description && <p>{list.description}</p>}
-
-              {!list.learning_list_items || list.learning_list_items.length === 0 ? (
-                <p>No tunes in this list yet.</p>
-              ) : (
-                <ul>
-                  {[...list.learning_list_items]
-                    .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-                    .map((item) => {
-                      const piece = Array.isArray(item.pieces)
-                        ? item.pieces[0]
-                        : item.pieces
-
-                      return (
-                        <li key={item.id}>
-                          {piece?.title ?? 'Untitled piece'}
-                          {piece?.key ? `, key ${piece.key}` : ''}
-                          {piece?.style ? `, ${piece.style}` : ''}
-                          {piece?.time_signature ? `, ${piece.time_signature}` : ''}
-                        </li>
-                      )
-                    })}
-                </ul>
+          learningLists.map((list: LearningList) => (
+            <div key={list.id} className="mb-6">
+              <h3 className="text-xl font-medium">{list.name}</h3>
+              {list.description && (
+                <p className="text-gray-600 mb-2">{list.description}</p>
               )}
-            </section>
+
+              <ul className="list-disc pl-6">
+                {list.learning_list_items?.map((item: LearningListItem) => {
+                  const piece = Array.isArray(item.pieces)
+                    ? item.pieces[0]
+                    : item.pieces
+
+                  if (!piece) return null
+
+                  return (
+                    <li key={item.id}>
+                      {piece.title}
+                      {piece.key ? `, key ${piece.key}` : ""}
+                      {piece.style ? `, ${piece.style}` : ""}
+                      {piece.time_signature ? `, ${piece.time_signature}` : ""}
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
           ))
         )}
       </section>
 
       <section>
-        <h2>All Tunes</h2>
+        <h2 className="text-2xl font-semibold mb-4">All Tunes</h2>
 
-        {pieces.length === 0 ? (
-          <p>No tunes found.</p>
-        ) : (
-          <ul>
-            {pieces.map((piece) => (
-              <li key={piece.id}>
-                {piece.title ?? 'Untitled piece'}
-                {piece.key ? `, key ${piece.key}` : ''}
-                {piece.style ? `, ${piece.style}` : ''}
-                {piece.time_signature ? `, ${piece.time_signature}` : ''}
-              </li>
-            ))}
-          </ul>
-        )}
+        <ul className="list-disc pl-6">
+          {pieces?.map((piece: Piece) => (
+            <li key={piece.id}>
+              {piece.title}
+              {piece.key ? `, key ${piece.key}` : ""}
+              {piece.style ? `, ${piece.style}` : ""}
+              {piece.time_signature ? `, ${piece.time_signature}` : ""}
+            </li>
+          ))}
+        </ul>
       </section>
     </main>
   )
