@@ -6,5 +6,13 @@ export function getTomorrow(): Date {
 
 export function isDueToday(nextReviewDue: string | null): boolean {
   if (!nextReviewDue) return false
-  return new Date(nextReviewDue) <= new Date()
+
+  const today = new Date()
+  const dueDate = new Date(nextReviewDue)
+
+  // Normalise both to midnight (ignore time of day)
+  today.setHours(0, 0, 0, 0)
+  dueDate.setHours(0, 0, 0, 0)
+
+  return dueDate <= today
 }

@@ -1,6 +1,7 @@
 import ActiveLearningSection from "@/components/ActiveLearningSection"
 import CreateTuneForm from "@/components/CreateTuneForm"
-import { getTomorrow } from "@/lib/review"
+import DueTodaySection from "@/components/DueTodaySection"
+import { getTomorrow, isDueToday } from "@/lib/review"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
@@ -29,6 +30,7 @@ type UserPiece = {
   id: number
   piece_id: number
   status: string
+  next_review_due: string | null
 }
 
 export default async function HomePage() {
@@ -217,8 +219,13 @@ export default async function HomePage() {
 
   const { data: userPieces } = await supabase
     .from("user_pieces")
-    .select("id, piece_id, status")
+    .select("id, piece_id, status, next_review_due")
     .eq("user_id", user.id)
+
+  const dueToday =
+    userPieces?.filter((userPiece: UserPiece) =>
+      isDueToday(userPiece.next_review_due)
+    ) ?? []
 
   return (
     <main className="p-8">
@@ -347,6 +354,8 @@ export default async function HomePage() {
           })
         )}
       </section>
+
+      <DueTodaySection dueToday={dueToday} pieces={pieces} />
 
       <ActiveLearningSection userPieces={userPieces} pieces={pieces} />
 
