@@ -1,18 +1,33 @@
-export function getTomorrow(): Date {
-  const tomorrow = new Date()
+const APP_TIME_ZONE = "Australia/Melbourne"
+
+function getDateStringInAppTimeZone(date: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date)
+}
+
+function normaliseToDateOnly(dateValue: string): string {
+  return dateValue.slice(0, 10)
+}
+
+export function getTomorrow(): string {
+  const now = new Date()
+  const todayInAppTimeZone = getDateStringInAppTimeZone(now)
+
+  const tomorrow = new Date(`${todayInAppTimeZone}T00:00:00`)
   tomorrow.setDate(tomorrow.getDate() + 1)
-  return tomorrow
+
+  return getDateStringInAppTimeZone(tomorrow)
 }
 
 export function isDueToday(nextReviewDue: string | null): boolean {
   if (!nextReviewDue) return false
 
-  const today = new Date()
-  const dueDate = new Date(nextReviewDue)
+  const dueDate = normaliseToDateOnly(nextReviewDue)
+  const todayInAppTimeZone = getDateStringInAppTimeZone(new Date())
 
-  // Normalise both to midnight (ignore time of day)
-  today.setHours(0, 0, 0, 0)
-  dueDate.setHours(0, 0, 0, 0)
-
-  return dueDate <= today
+  return dueDate <= todayInAppTimeZone
 }
