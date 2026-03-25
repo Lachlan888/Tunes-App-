@@ -1,5 +1,6 @@
 import Link from "next/link"
 import LibraryList from "@/components/LibraryList"
+import { startLearning } from "@/lib/actions/homepage"
 import { loadLibraryData } from "@/lib/loaders/library"
 
 type Piece = {
@@ -8,6 +9,14 @@ type Piece = {
   key: string | null
   style: string | null
   time_signature: string | null
+}
+
+type UserPiece = {
+  id: number
+  piece_id: number
+  status: string
+  next_review_due: string | null
+  stage: number
 }
 
 type LibraryPageProps = {
@@ -21,7 +30,7 @@ type LibraryPageProps = {
 export default async function LibraryPage({
   searchParams,
 }: LibraryPageProps) {
-  const { user, pieces } = await loadLibraryData()
+  const { user, pieces, userPieces } = await loadLibraryData()
   const resolvedSearchParams = await searchParams
   const selectedKey = resolvedSearchParams?.key ?? ""
   const selectedStyle = resolvedSearchParams?.style ?? ""
@@ -137,7 +146,11 @@ export default async function LibraryPage({
         </div>
       </form>
 
-      <LibraryList pieces={filteredPieces} />
+      <LibraryList
+        pieces={filteredPieces}
+        userPieces={userPieces}
+        startLearning={startLearning}
+      />
     </main>
   )
 }

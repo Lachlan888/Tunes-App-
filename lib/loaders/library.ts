@@ -17,8 +17,14 @@ export async function loadLibraryData() {
     .select("id, title, key, style, time_signature")
     .order("title")
 
+  const { data: userPieces } = await supabase
+    .from("user_pieces")
+    .select("id, piece_id, status, next_review_due, stage")
+    .eq("user_id", user.id)
+
   return {
     user,
     pieces,
+    userPieces,
   }
 }

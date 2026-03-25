@@ -113,6 +113,7 @@ export async function startLearning(formData: FormData) {
   }
 
   const piece_id = Number(formData.get("piece_id"))
+  const redirectTo = String(formData.get("redirect_to") || "/")
   const nextReviewDue = getTomorrow()
 
   const { data: existingUserPiece, error: fetchError } = await supabase
@@ -127,7 +128,7 @@ export async function startLearning(formData: FormData) {
   }
 
   if (existingUserPiece) {
-    redirect("/")
+    redirect(redirectTo)
   }
 
   const { error } = await supabase.from("user_pieces").insert({
@@ -142,5 +143,5 @@ export async function startLearning(formData: FormData) {
     throw new Error(error.message)
   }
 
-  redirect("/")
+  redirect(redirectTo)
 }
