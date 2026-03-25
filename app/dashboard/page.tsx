@@ -7,7 +7,36 @@ type Profile = {
   display_name: string | null
 }
 
-export default async function DashboardPage() {
+type DashboardPageProps = {
+  searchParams?: Promise<{
+    error?: string
+    saved?: string
+    username?: string
+    display_name?: string
+  }>
+}
+
+function getErrorMessage(error?: string) {
+  if (error === "username_taken") {
+    return "That username is already taken."
+  }
+
+  if (error === "invalid_username") {
+    return "Username must be 3–30 characters and use only letters, numbers, and underscores."
+  }
+
+  if (error === "save_failed") {
+    return "Profile could not be saved. Please try again."
+  }
+
+  return null
+}
+
+export default async function DashboardPage({
+  searchParams,
+}: DashboardPageProps) {
+  const params = searchParams ? await searchParams : undefined
+
   const supabase = await createClient()
 
   const {
@@ -25,6 +54,13 @@ export default async function DashboardPage() {
     .single()
 
   const typedProfile = profile as Profile | null
+  const errorMessage = getErrorMessage(params?.error)
+
+  const usernameValue =
+    params?.username ?? typedProfile?.username ?? ""
+
+  const displayNameValue =
+    params?.display_name ?? typedProfile?.display_name ?? ""
 
   return (
     <main className="p-8">
@@ -35,6 +71,18 @@ export default async function DashboardPage() {
       <section className="mt-6 rounded border p-4">
         <h2 className="text-xl font-semibold">Profile</h2>
 
+        {params?.saved === "1" && (
+          <p className="mt-4 rounded border border-green-300 bg-green-50 p-3 text-green-700">
+            Profile saved.
+          </p>
+        )}
+
+        {errorMessage && (
+          <p className="mt-4 rounded border border-red-300 bg-red-50 p-3 text-red-700">
+            {errorMessage}
+          </p>
+        )}
+
         <form action={updateProfile} className="mt-4 space-y-4">
           <div>
             <label htmlFor="username" className="mb-1 block text-sm font-medium">
@@ -43,7 +91,7 @@ export default async function DashboardPage() {
             <input
               id="username"
               name="username"
-              defaultValue={typedProfile?.username ?? ""}
+              defaultValue={usernameValue}
               className="w-full rounded border p-2"
               required
             />
@@ -62,7 +110,7 @@ export default async function DashboardPage() {
             <input
               id="display_name"
               name="display_name"
-              defaultValue={typedProfile?.display_name ?? ""}
+              defaultValue={displayNameValue}
               className="w-full rounded border p-2"
             />
           </div>
