@@ -69,3 +69,7 @@ export function getNextStageForShaky(currentStage: number | null | undefined) {
   const safeCurrentStage = currentStage && currentStage > 0 ? currentStage : 1
   return safeCurrentStage
 }
+
+export function getNextStageForFailed(currentStage: number | null | undefined) {
+  return 1
+}

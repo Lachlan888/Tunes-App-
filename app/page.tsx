@@ -9,7 +9,7 @@ import {
   createTune,
   startLearning,
 } from "@/lib/actions/homepage"
-import { markShaky, markSolid } from "@/lib/actions/reviews"
+import { markFailed, markShaky, markSolid } from "@/lib/actions/reviews"
 import { loadHomepageData } from "@/lib/loaders/homepage"
 
 type Piece = {
@@ -65,6 +65,7 @@ export default async function HomePage() {
       <DueTodaySection
         dueToday={dueToday}
         pieces={pieces}
+        markFailed={markFailed}
         markSolid={markSolid}
         markShaky={markShaky}
       />

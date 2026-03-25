@@ -16,6 +16,7 @@ type UserPiece = {
 type DueTodaySectionProps = {
   dueToday: UserPiece[] | null | undefined
   pieces: Piece[] | null | undefined
+  markFailed: (formData: FormData) => Promise<void>
   markSolid: (formData: FormData) => Promise<void>
   markShaky: (formData: FormData) => Promise<void>
 }
@@ -23,6 +24,7 @@ type DueTodaySectionProps = {
 export default function DueTodaySection({
   dueToday,
   pieces,
+  markFailed,
   markSolid,
   markShaky,
 }: DueTodaySectionProps) {
@@ -54,12 +56,19 @@ export default function DueTodaySection({
                 </span>
 
                 <div className="flex gap-2">
-                  <button
-                    type="button"
-                    className="rounded border px-2 py-1 text-sm"
-                  >
-                    Failed
-                  </button>
+                  <form action={markFailed}>
+                    <input
+                      type="hidden"
+                      name="userPieceId"
+                      value={userPiece.id}
+                    />
+                    <button
+                      type="submit"
+                      className="rounded border px-2 py-1 text-sm"
+                    >
+                      Failed
+                    </button>
+                  </form>
 
                   <form action={markShaky}>
                     <input
