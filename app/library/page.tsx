@@ -1,6 +1,6 @@
 import Link from "next/link"
 import LibraryList from "@/components/LibraryList"
-import { startLearning } from "@/lib/actions/homepage"
+import { startLearning } from "@/lib/actions/user-pieces"
 import { loadLibraryData } from "@/lib/loaders/library"
 
 type Piece = {
