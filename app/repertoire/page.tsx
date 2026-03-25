@@ -1,22 +1,18 @@
-import ActiveLearningSection from "@/components/ActiveLearningSection"
 import AddToLearningListSection from "@/components/AddToLearningListSection"
 import CreateTuneForm from "@/components/CreateTuneForm"
-import LearningListsSection from "@/components/LearningListsSection"
 import {
   addToLearningList,
   createList,
   createTune,
-  startLearning,
 } from "@/lib/actions/homepage"
 import { loadHomepageData } from "@/lib/loaders/homepage"
 
-export default async function HomePage() {
-  const { user, learningLists, pieces, userPieces } =
-    await loadHomepageData()
+export default async function RepertoirePage() {
+  const { user, learningLists, pieces } = await loadHomepageData()
 
   return (
     <main className="p-8">
-      <h1 className="mb-2 text-3xl font-bold">Tunes App</h1>
+      <h1 className="mb-2 text-3xl font-bold">Repertoire</h1>
       <p className="mb-6 text-gray-600">Logged in as {user.email}</p>
 
       <form action={createList} className="mb-10">
@@ -45,14 +41,6 @@ export default async function HomePage() {
         learningLists={learningLists}
         addToLearningList={addToLearningList}
       />
-
-      <LearningListsSection
-        learningLists={learningLists}
-        userPieces={userPieces}
-        startLearning={startLearning}
-      />
-
-      <ActiveLearningSection userPieces={userPieces} pieces={pieces} />
     </main>
   )
 }

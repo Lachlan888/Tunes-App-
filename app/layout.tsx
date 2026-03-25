@@ -9,10 +9,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <nav className="p-4 border-b flex gap-4">
+        <nav className="flex gap-4 border-b p-4">
           <Link href="/">Home</Link>
           <Link href="/dashboard">Dashboard</Link>
           <Link href="/library">Library</Link>
+          <Link href="/repertoire">Repertoire</Link>
           <Link href="/learning-lists">Learning Lists</Link>
           <Link href="/review">Review</Link>
           <Link href="/login">Login</Link>

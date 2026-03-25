@@ -62,7 +62,7 @@ export async function markSolid(formData: FormData) {
     throw new Error(reviewEventError.message)
   }
 
-  redirect("/")
+  redirect("/review")
 }
 
 export async function markShaky(formData: FormData) {
@@ -118,7 +118,7 @@ export async function markShaky(formData: FormData) {
     throw new Error(reviewEventError.message)
   }
 
-  redirect("/")
+  redirect("/review")
 }
 
 export async function markFailed(formData: FormData) {
@@ -174,5 +174,5 @@ export async function markFailed(formData: FormData) {
     throw new Error(reviewEventError.message)
   }
 
-  redirect("/")
+  redirect("/review")
 }
