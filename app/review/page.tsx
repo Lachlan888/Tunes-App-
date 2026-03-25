@@ -3,24 +3,31 @@ import { markFailed, markShaky, markSolid } from "@/lib/actions/reviews"
 import { getToday, isDueToday } from "@/lib/review"
 import { redirect } from "next/navigation"
 
+type Piece = {
+  id: number
+  title: string
+  key: string | null
+  style: string | null
+  time_signature: string | null
+}
+
 type DuePiece = {
   id: number
   piece_id: number
   status: string
   next_review_due: string | null
   stage: number
-  pieces: {
-    id: number
-    title: string
-    key: string | null
-    style: string | null
-    time_signature: string | null
-  } | null
+  pieces: Piece[] | Piece | null
 }
 
 function getDateOnly(dateValue: string | null) {
   if (!dateValue) return null
   return dateValue.slice(0, 10)
+}
+
+function getPiece(pieces: Piece[] | Piece | null): Piece | null {
+  if (!pieces) return null
+  return Array.isArray(pieces) ? pieces[0] ?? null : pieces
 }
 
 export default async function ReviewPage() {
@@ -90,6 +97,7 @@ export default async function ReviewPage() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
         {duePieces.map((userPiece) => {
+          const piece = getPiece(userPiece.pieces)
           const dueDateOnly = getDateOnly(userPiece.next_review_due)
           const dueStatus =
             dueDateOnly && dueDateOnly < today ? "Overdue" : "Due today"
@@ -98,7 +106,7 @@ export default async function ReviewPage() {
             <div key={userPiece.id} className="rounded-lg border p-6">
               <div className="flex items-start justify-between gap-4">
                 <h2 className="text-2xl font-semibold">
-                  {userPiece.pieces?.title ?? "Untitled piece"}
+                  {piece?.title ?? "Untitled piece"}
                 </h2>
 
                 <span
@@ -113,9 +121,8 @@ export default async function ReviewPage() {
               </div>
 
               <p className="mt-2 text-sm text-gray-600">
-                Key: {userPiece.pieces?.key ?? "Unknown"} | Style:{" "}
-                {userPiece.pieces?.style ?? "Unknown"} | Time:{" "}
-                {userPiece.pieces?.time_signature ?? "Unknown"}
+                Key: {piece?.key ?? "Unknown"} | Style: {piece?.style ?? "Unknown"} | Time:{" "}
+                {piece?.time_signature ?? "Unknown"}
               </p>
 
               <p className="mt-2 text-sm text-gray-600">
