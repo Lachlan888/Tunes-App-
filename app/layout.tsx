@@ -15,6 +15,7 @@ export default function RootLayout({
           <Link href="/library">Library</Link>
           <Link href="/repertoire">Repertoire</Link>
           <Link href="/learning-lists">Learning Lists</Link>
+          <Link href="/public-lists">Public Lists</Link>
           <Link href="/review">Review</Link>
           <Link href="/login">Login</Link>
         </nav>

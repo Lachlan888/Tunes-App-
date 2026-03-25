@@ -6,8 +6,8 @@ import {
   addToLearningList,
   createList,
   createTune,
-  startLearning,
 } from "@/lib/actions/homepage"
+import { startLearning } from "@/lib/actions/user-pieces"
 import { loadHomepageData } from "@/lib/loaders/homepage"
 
 export default async function HomePage() {
