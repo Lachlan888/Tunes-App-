@@ -12,7 +12,7 @@ export default async function RepertoirePage() {
 
   return (
     <main className="p-8">
-      <h1 className="mb-2 text-3xl font-bold">Repertoire</h1>
+      <h1 className="mb-2 text-3xl font-bold">Manage Library</h1>
       <p className="mb-6 text-gray-600">Logged in as {user.email}</p>
 
       <form action={createList} className="mb-10">
