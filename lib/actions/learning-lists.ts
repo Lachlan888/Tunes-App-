@@ -33,7 +33,7 @@ export async function toggleLearningListVisibility(formData: FormData) {
     .single()
 
   if (existingListError || !existingList) {
-    throw new Error("Learning list not found")
+    throw new Error("List not found")
   }
 
   if (nextVisibility === "public" && existingList.is_imported) {

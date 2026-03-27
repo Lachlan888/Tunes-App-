@@ -1,4 +1,4 @@
-import AddToLearningListSection from "@/components/AddToLearningListSection"
+import AddToListSection from "@/components/AddToListSection"
 import CreateTuneForm from "@/components/CreateTuneForm"
 import {
   addToLearningList,
@@ -16,7 +16,7 @@ export default async function RepertoirePage() {
       <p className="mb-6 text-gray-600">Logged in as {user.email}</p>
 
       <form action={createList} className="mb-10">
-        <h2 className="mb-4 text-2xl font-semibold">Create Learning List</h2>
+        <h2 className="mb-4 text-2xl font-semibold">Create List</h2>
 
         <input
           name="name"
@@ -36,7 +36,7 @@ export default async function RepertoirePage() {
 
       <CreateTuneForm createTune={createTune} />
 
-      <AddToLearningListSection
+      <AddToListSection
         pieces={pieces}
         learningLists={learningLists}
         addToLearningList={addToLearningList}

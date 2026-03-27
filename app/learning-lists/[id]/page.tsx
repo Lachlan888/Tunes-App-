@@ -108,7 +108,7 @@ export default async function LearningListDetailPage({
       return (
         <main className="p-6 max-w-4xl mx-auto">
           <h1 className="text-2xl font-bold mb-4">{typedList.name}</h1>
-          <p>Could not load active learning state.</p>
+          <p>Could not load practice state.</p>
           <p className="text-sm text-red-600 mt-2">{userPiecesError.message}</p>
         </main>
       )
@@ -143,7 +143,7 @@ export default async function LearningListDetailPage({
 
             if (!piece) return null
 
-            const isAlreadyLearning = activePieceIds.has(piece.id)
+            const isAlreadyInPractice = activePieceIds.has(piece.id)
 
             return (
               <div
@@ -160,9 +160,9 @@ export default async function LearningListDetailPage({
                     </p>
                   </div>
 
-                  {isAlreadyLearning ? (
+                  {isAlreadyInPractice ? (
                     <span className="text-sm text-gray-500">
-                      Already Learning
+                      Already in practice
                     </span>
                   ) : (
                     <form action={startLearning}>
@@ -176,7 +176,7 @@ export default async function LearningListDetailPage({
                         type="submit"
                         className="rounded border px-3 py-1 text-sm"
                       >
-                        Start Learning
+                        Start Practice
                       </button>
                     </form>
                   )}

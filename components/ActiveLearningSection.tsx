@@ -43,7 +43,7 @@ export default function ActiveLearningSection({
                 {piece.key ? `, key ${piece.key}` : ""}
                 {piece.style ? `, ${piece.style}` : ""}
                 {piece.time_signature ? `, ${piece.time_signature}` : ""}
-                {`, review stage: ${userPiece.stage}`}
+                {`, stage: ${userPiece.stage}`}
               </li>
             )
           })}

@@ -13,17 +13,17 @@ type LearningList = {
   learning_list_items: unknown[]
 }
 
-type AddToLearningListSectionProps = {
+type AddToListSectionProps = {
   pieces: Piece[] | null
   learningLists: LearningList[] | null
   addToLearningList: (formData: FormData) => Promise<void>
 }
 
-export default function AddToLearningListSection({
+export default function AddToListSection({
   pieces,
   learningLists,
   addToLearningList,
-}: AddToLearningListSectionProps) {
+}: AddToListSectionProps) {
   return (
     <section className="mb-10">
       <h2 className="mb-4 text-2xl font-semibold">Add Tune to List</h2>

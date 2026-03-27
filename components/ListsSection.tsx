@@ -78,7 +78,7 @@ export default function LearningListsSection({
 
                       if (!piece) return null
 
-                      const alreadyStarted = userPieces?.some(
+                      const isAlreadyInPractice = userPieces?.some(
                         (userPiece: UserPiece) => userPiece.piece_id === piece.id
                       )
 
@@ -101,11 +101,11 @@ export default function LearningListsSection({
 
                           {practiceStage !== null && (
                             <p className="mt-2 text-sm text-gray-600">
-                              Review stage: {practiceStage}
+                              Stage: {practiceStage}
                             </p>
                           )}
 
-                          {alreadyStarted ? (
+                          {isAlreadyInPractice ? (
                             <p className="mt-2 text-sm text-gray-600">
                               Already in practice
                             </p>

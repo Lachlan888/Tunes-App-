@@ -32,7 +32,7 @@ export default function LibraryList({
   return (
     <ul className="space-y-3">
       {pieces.map((piece: Piece) => {
-        const alreadyStarted = (userPieces ?? []).some(
+        const isAlreadyInPractice = (userPieces ?? []).some(
           (userPiece) => userPiece.piece_id === piece.id
         )
 
@@ -46,14 +46,14 @@ export default function LibraryList({
             </div>
 
             <div className="mt-2">
-              {alreadyStarted ? (
-                <p className="text-sm text-gray-600">Already in active learning</p>
+              {isAlreadyInPractice ? (
+                <p className="text-sm text-gray-600">Already in practice</p>
               ) : (
                 <form action={startLearning}>
                   <input type="hidden" name="piece_id" value={piece.id} />
                   <input type="hidden" name="redirect_to" value="/library" />
                   <button className="bg-black px-3 py-1 text-sm text-white">
-                    Start Learning
+                    Start Practice
                   </button>
                 </form>
               )}

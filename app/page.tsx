@@ -1,7 +1,7 @@
 import ActiveLearningSection from "@/components/ActiveLearningSection"
-import AddToLearningListSection from "@/components/AddToLearningListSection"
+import AddToListSection from "@/components/AddToListSection"
 import CreateTuneForm from "@/components/CreateTuneForm"
-import LearningListsSection from "@/components/LearningListsSection"
+import ListsSection from "@/components/ListsSection"
 import {
   addToLearningList,
   createList,
@@ -44,13 +44,13 @@ export default async function HomePage() {
 
       <CreateTuneForm createTune={createTune} />
 
-      <AddToLearningListSection
+      <AddToListSection
         pieces={pieces}
         learningLists={learningLists}
         addToLearningList={addToLearningList}
       />
 
-      <LearningListsSection
+      <ListsSection
         learningLists={learningLists}
         userPieces={userPieces}
         practiceStageByPieceId={practiceStageByPieceId}
