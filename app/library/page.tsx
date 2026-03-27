@@ -53,6 +53,12 @@ type LibraryPageProps = {
     create_tune?: string
     bulk_upload?: string
     row?: string
+    created_pieces?: string
+    reused_pieces?: string
+    added_known?: string
+    already_known?: string
+    added_to_list?: string
+    already_in_list?: string
   }>
 }
 
@@ -76,6 +82,15 @@ export default async function LibraryPage({
   const createTuneStatus = resolvedSearchParams?.create_tune ?? ""
   const bulkUploadStatus = resolvedSearchParams?.bulk_upload ?? ""
   const bulkUploadRow = resolvedSearchParams?.row ?? ""
+
+  const createdPiecesCount = Number(resolvedSearchParams?.created_pieces ?? "0")
+  const reusedPiecesCount = Number(resolvedSearchParams?.reused_pieces ?? "0")
+  const addedKnownCount = Number(resolvedSearchParams?.added_known ?? "0")
+  const alreadyKnownCount = Number(resolvedSearchParams?.already_known ?? "0")
+  const addedToListCount = Number(resolvedSearchParams?.added_to_list ?? "0")
+  const alreadyInListCount = Number(
+    resolvedSearchParams?.already_in_list ?? "0"
+  )
 
   const redirectParams = new URLSearchParams()
 
@@ -190,7 +205,32 @@ export default async function LibraryPage({
 
       {bulkUploadStatus === "validated" && (
         <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
-          CSV validated successfully. All rows have the right column count and a title.
+          CSV validated successfully. All rows have the right column count and a
+          title.
+        </div>
+      )}
+
+      {bulkUploadStatus === "imported" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          <p className="font-medium">Bulk import completed.</p>
+          <p className="mt-1">
+            Created pieces: {createdPiecesCount}. Reused existing pieces:{" "}
+            {reusedPiecesCount}.
+          </p>
+          <p>
+            Added to known tunes: {addedKnownCount}. Already known:{" "}
+            {alreadyKnownCount}.
+          </p>
+          <p>
+            Added to Uploaded Tunes list: {addedToListCount}. Already in list:{" "}
+            {alreadyInListCount}.
+          </p>
+        </div>
+      )}
+
+      {bulkUploadStatus === "nothing_to_import" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          No tunes were available to import.
         </div>
       )}
 
@@ -215,6 +255,12 @@ export default async function LibraryPage({
       {bulkUploadStatus === "invalid_type" && (
         <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
           That file does not look like a CSV.
+        </div>
+      )}
+
+      {bulkUploadStatus === "invalid_csv" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          The CSV could not be parsed. Check for broken quotes or malformed rows.
         </div>
       )}
 
