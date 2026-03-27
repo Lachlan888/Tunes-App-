@@ -1,5 +1,6 @@
 import Link from "next/link"
 import LibraryList from "@/components/LibraryList"
+import { addToLearningList } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadLibraryData } from "@/lib/loaders/library"
 
@@ -19,22 +20,60 @@ type UserPiece = {
   stage: number
 }
 
+type LearningList = {
+  id: number
+  name: string
+  description: string | null
+}
+
+type LearningListItem = {
+  piece_id: number
+  learning_list_id: number
+  learning_lists: {
+    id: number
+    name: string
+    user_id: string
+  }
+}
+
 type LibraryPageProps = {
   searchParams?: Promise<{
     key?: string
     style?: string
     time_signature?: string
+    list_add?: string
   }>
 }
 
 export default async function LibraryPage({
   searchParams,
 }: LibraryPageProps) {
-  const { user, pieces, userPieces } = await loadLibraryData()
+  const { user, pieces, userPieces, learningLists, learningListItems } =
+    await loadLibraryData()
+
   const resolvedSearchParams = await searchParams
   const selectedKey = resolvedSearchParams?.key ?? ""
   const selectedStyle = resolvedSearchParams?.style ?? ""
   const selectedTimeSignature = resolvedSearchParams?.time_signature ?? ""
+  const listAddStatus = resolvedSearchParams?.list_add ?? ""
+
+  const redirectParams = new URLSearchParams()
+
+  if (selectedKey) {
+    redirectParams.set("key", selectedKey)
+  }
+
+  if (selectedStyle) {
+    redirectParams.set("style", selectedStyle)
+  }
+
+  if (selectedTimeSignature) {
+    redirectParams.set("time_signature", selectedTimeSignature)
+  }
+
+  const redirectTo = redirectParams.toString()
+    ? `/library?${redirectParams.toString()}`
+    : "/library"
 
   const availableKeys = Array.from(
     new Set(
@@ -79,6 +118,18 @@ export default async function LibraryPage({
     <main className="p-8">
       <h1 className="mb-2 text-3xl font-bold">Tunes</h1>
       <p className="mb-6 text-gray-600">Logged in as {user.email}</p>
+
+      {listAddStatus === "success" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          Tune added to list.
+        </div>
+      )}
+
+      {listAddStatus === "duplicate" && (
+        <div className="mb-6 rounded border border-gray-400 bg-gray-50 p-3 text-sm text-gray-800">
+          That tune is already in this list.
+        </div>
+      )}
 
       <form method="GET" className="mb-6">
         <label htmlFor="key" className="mb-2 block text-sm font-medium">
@@ -149,7 +200,11 @@ export default async function LibraryPage({
       <LibraryList
         pieces={filteredPieces}
         userPieces={userPieces}
+        learningLists={learningLists}
+        learningListItems={learningListItems as LearningListItem[] | null}
         startLearning={startLearning}
+        addToLearningList={addToLearningList}
+        redirectTo={redirectTo}
       />
     </main>
   )

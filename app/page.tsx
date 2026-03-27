@@ -2,11 +2,8 @@ import ActiveLearningSection from "@/components/ActiveLearningSection"
 import AddToListSection from "@/components/AddToListSection"
 import CreateTuneForm from "@/components/CreateTuneForm"
 import ListsSection from "@/components/ListsSection"
-import {
-  addToLearningList,
-  createList,
-  createTune,
-} from "@/lib/actions/homepage"
+import { addToLearningList, createList } from "@/lib/actions/lists"
+import { createTune } from "@/lib/actions/pieces"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadHomepageData } from "@/lib/loaders/homepage"
 

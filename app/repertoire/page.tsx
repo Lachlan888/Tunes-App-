@@ -1,10 +1,7 @@
 import AddToListSection from "@/components/AddToListSection"
 import CreateTuneForm from "@/components/CreateTuneForm"
-import {
-  addToLearningList,
-  createList,
-  createTune,
-} from "@/lib/actions/homepage"
+import { addToLearningList, createList } from "@/lib/actions/lists"
+import { createTune } from "@/lib/actions/pieces"
 import { loadHomepageData } from "@/lib/loaders/homepage"
 
 export default async function RepertoirePage() {

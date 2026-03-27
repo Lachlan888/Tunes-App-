@@ -22,9 +22,22 @@ export async function loadLibraryData() {
     .select("id, piece_id, status, next_review_due, stage")
     .eq("user_id", user.id)
 
+  const { data: learningLists } = await supabase
+    .from("learning_lists")
+    .select("id, name, description")
+    .eq("user_id", user.id)
+    .order("name")
+
+  const { data: learningListItems } = await supabase
+    .from("learning_list_items")
+    .select("piece_id, learning_list_id, learning_lists!inner(id, name, user_id)")
+    .eq("learning_lists.user_id", user.id)
+
   return {
     user,
     pieces,
     userPieces,
+    learningLists,
+    learningListItems,
   }
 }
