@@ -1,5 +1,6 @@
 import Link from "next/link"
 import CreateListModal from "@/components/CreateListModal"
+import UnlistedKnownTunesModal from "@/components/UnlistedKnownTunesModal"
 import UnlistedPracticeTunesModal from "@/components/UnlistedPracticeTunesModal"
 import { createClient } from "@/lib/supabase/server"
 import { toggleLearningListVisibility } from "@/lib/actions/learning-lists"
@@ -18,6 +19,21 @@ type UserPieceWithPiece = {
   id: number
   piece_id: number
   stage: number
+  pieces:
+    | {
+        id: number
+        title: string
+      }
+    | {
+        id: number
+        title: string
+      }[]
+    | null
+}
+
+type UserKnownPieceWithPiece = {
+  id: number
+  piece_id: number
   pieces:
     | {
         id: number
@@ -84,6 +100,18 @@ export default async function LearningListsPage({
     `)
     .eq("user_id", user.id)
 
+  const { data: userKnownPieces } = await supabase
+    .from("user_known_pieces")
+    .select(`
+      id,
+      piece_id,
+      pieces (
+        id,
+        title
+      )
+    `)
+    .eq("user_id", user.id)
+
   const { data: learningListItems } = await supabase
     .from("learning_list_items")
     .select("piece_id, learning_lists!inner(user_id)")
@@ -91,6 +119,8 @@ export default async function LearningListsPage({
 
   const typedLearningLists = (learningLists ?? []) as LearningList[]
   const typedUserPieces = (userPieces ?? []) as UserPieceWithPiece[]
+  const typedUserKnownPieces =
+    (userKnownPieces ?? []) as UserKnownPieceWithPiece[]
   const typedLearningListItems = (learningListItems ?? []) as LearningListItem[]
 
   const listedPieceIds = new Set(
@@ -99,6 +129,10 @@ export default async function LearningListsPage({
 
   const unlistedPracticeTunes = typedUserPieces.filter(
     (userPiece) => !listedPieceIds.has(userPiece.piece_id)
+  )
+
+  const unlistedKnownTunes = typedUserKnownPieces.filter(
+    (userKnownPiece) => !listedPieceIds.has(userKnownPiece.piece_id)
   )
 
   return (
@@ -201,6 +235,13 @@ export default async function LearningListsPage({
 
       <UnlistedPracticeTunesModal
         unlistedPracticeTunes={unlistedPracticeTunes}
+        learningLists={typedLearningLists}
+        addToLearningList={addToLearningList}
+        redirectTo="/learning-lists"
+      />
+
+      <UnlistedKnownTunesModal
+        unlistedKnownTunes={unlistedKnownTunes}
         learningLists={typedLearningLists}
         addToLearningList={addToLearningList}
         redirectTo="/learning-lists"
