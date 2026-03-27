@@ -39,14 +39,15 @@ export default function BulkImportKnownTunesModal() {
 
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
-                Upload a CSV of tunes you already know. This will add them as
-                known tunes without starting practice or scheduling reviews.
+                Upload a CSV of tunes you already know. We’ll add them to your
+                known tunes and place them in your Uploaded Tunes list.
               </p>
 
               <div className="rounded border bg-gray-50 p-3 text-sm">
-                <p className="font-medium">Template columns</p>
+                <p className="font-medium">CSV template</p>
                 <p className="mt-1 text-gray-700">
-                  title, key, style, time_signature, reference_url
+                  Use these columns in this exact order: title, key, style,
+                  time_signature, reference_url
                 </p>
               </div>
 
@@ -56,7 +57,7 @@ export default function BulkImportKnownTunesModal() {
                   download
                   className="rounded bg-black px-4 py-2 text-sm text-white"
                 >
-                  Download CSV Template
+                  Download Template
                 </a>
               </div>
 
@@ -64,7 +65,9 @@ export default function BulkImportKnownTunesModal() {
                 <input type="hidden" name="redirect_to" value="/library" />
 
                 <div>
-                  <p className="mb-2 text-sm font-medium">Choose CSV file</p>
+                  <p className="mb-2 text-sm font-medium">
+                    Choose completed CSV
+                  </p>
 
                   <input
                     ref={fileInputRef}
@@ -85,7 +88,7 @@ export default function BulkImportKnownTunesModal() {
                     onClick={() => fileInputRef.current?.click()}
                     className="rounded bg-black px-4 py-2 text-sm text-white"
                   >
-                    Choose CSV File
+                    Select CSV File
                   </button>
                 </div>
 
@@ -100,13 +103,14 @@ export default function BulkImportKnownTunesModal() {
                   className="rounded border px-4 py-2 text-sm"
                   disabled={!selectedFileName}
                 >
-                  Upload CSV
+                  Import Known Tunes
                 </button>
               </form>
 
               <p className="text-sm text-gray-500">
-                This step only checks that the file is present and looks like a
-                CSV.
+                We’ll check the file format, match existing tunes where
+                possible, create missing tunes, add them to your known tunes,
+                and place them in Uploaded Tunes.
               </p>
             </div>
           </div>
