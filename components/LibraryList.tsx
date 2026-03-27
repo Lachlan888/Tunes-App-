@@ -2,35 +2,9 @@
 
 import { useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
+import TuneCard from "@/components/TuneCard"
 import { markAsKnown } from "@/lib/actions/known-pieces"
-
-type Piece = {
-  id: number
-  title: string
-  key: string | null
-  style: string | null
-  time_signature: string | null
-  reference_url: string | null
-}
-
-type UserPiece = {
-  id: number
-  piece_id: number
-  status: string
-  next_review_due: string | null
-  stage: number
-}
-
-type UserKnownPiece = {
-  id: number
-  piece_id: number
-}
-
-type LearningList = {
-  id: number
-  name: string
-  description: string | null
-}
+import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
 
 type LearningListItem = {
   piece_id: number
@@ -91,34 +65,15 @@ export default function LibraryList({
           )
 
           return (
-            <li key={piece.id} className="rounded border p-3">
-              <div>
-                {piece.title}
-                {piece.key ? `, key ${piece.key}` : ""}
-                {piece.style ? `, ${piece.style}` : ""}
-                {piece.time_signature ? `, ${piece.time_signature}` : ""}
-              </div>
-
-              {piece.reference_url && (
-                <p className="mt-1 text-sm">
-                  <a
-                    href={piece.reference_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="underline"
-                  >
-                    Reference
-                  </a>
-                </p>
-              )}
-
-              {listNames.length > 0 && (
-                <p className="mt-1 text-sm text-gray-600">
-                  In: {listNames.join(", ")}
-                </p>
-              )}
-
-              <div className="mt-2 flex items-center gap-2">
+            <li key={piece.id}>
+              <TuneCard
+                title={piece.title}
+                keyValue={piece.key}
+                style={piece.style}
+                timeSignature={piece.time_signature}
+                referenceUrl={piece.reference_url}
+                listNames={listNames}
+              >
                 {isAlreadyInPractice ? (
                   <p className="text-sm text-gray-600">Already in practice</p>
                 ) : (
@@ -153,7 +108,7 @@ export default function LibraryList({
                 >
                   Add to List
                 </button>
-              </div>
+              </TuneCard>
             </li>
           )
         })}

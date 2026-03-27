@@ -1,6 +1,9 @@
 import { notFound, redirect } from "next/navigation"
+import TuneCard from "@/components/TuneCard"
 import { createClient } from "@/lib/supabase/server"
+import { markAsKnown } from "@/lib/actions/known-pieces"
 import { startLearning } from "@/lib/actions/user-pieces"
+import type { Piece } from "@/lib/types"
 
 type LearningListRow = {
   id: number
@@ -11,18 +14,10 @@ type LearningListRow = {
   is_imported: boolean
 }
 
-type PieceRow = {
-  id: number
-  title: string
-  key: string | null
-  style: string | null
-  time_signature: string | null
-}
-
 type LearningListItemRow = {
   id: number
   position: number | null
-  pieces: PieceRow | PieceRow[] | null
+  pieces: Piece | Piece[] | null
 }
 
 export default async function LearningListDetailPage({
@@ -70,7 +65,8 @@ export default async function LearningListDetailPage({
         title,
         key,
         style,
-        time_signature
+        time_signature,
+        reference_url
       )
     `)
     .eq("learning_list_id", listId)
@@ -79,9 +75,9 @@ export default async function LearningListDetailPage({
   if (itemsError) {
     return (
       <main className="p-6 max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">{typedList.name}</h1>
+        <h1 className="mb-4 text-2xl font-bold">{typedList.name}</h1>
         <p>Could not load list items.</p>
-        <p className="text-sm text-red-600 mt-2">{itemsError.message}</p>
+        <p className="mt-2 text-sm text-red-600">{itemsError.message}</p>
       </main>
     )
   }
@@ -96,6 +92,7 @@ export default async function LearningListDetailPage({
     .filter((id): id is number => id !== null)
 
   let activePieceIds = new Set<number>()
+  let knownPieceIds = new Set<number>()
 
   if (pieceIds.length > 0) {
     const { data: userPieces, error: userPiecesError } = await supabase
@@ -107,19 +104,39 @@ export default async function LearningListDetailPage({
     if (userPiecesError) {
       return (
         <main className="p-6 max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold mb-4">{typedList.name}</h1>
+          <h1 className="mb-4 text-2xl font-bold">{typedList.name}</h1>
           <p>Could not load practice state.</p>
-          <p className="text-sm text-red-600 mt-2">{userPiecesError.message}</p>
+          <p className="mt-2 text-sm text-red-600">{userPiecesError.message}</p>
         </main>
       )
     }
 
     activePieceIds = new Set((userPieces ?? []).map((row) => row.piece_id))
+
+    const { data: userKnownPieces, error: userKnownPiecesError } = await supabase
+      .from("user_known_pieces")
+      .select("piece_id")
+      .eq("user_id", user.id)
+      .in("piece_id", pieceIds)
+
+    if (userKnownPiecesError) {
+      return (
+        <main className="p-6 max-w-4xl mx-auto">
+          <h1 className="mb-4 text-2xl font-bold">{typedList.name}</h1>
+          <p>Could not load known state.</p>
+          <p className="mt-2 text-sm text-red-600">
+            {userKnownPiecesError.message}
+          </p>
+        </main>
+      )
+    }
+
+    knownPieceIds = new Set((userKnownPieces ?? []).map((row) => row.piece_id))
   }
 
   return (
-    <main className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-2">{typedList.name}</h1>
+    <main className="mx-auto max-w-4xl p-6">
+      <h1 className="mb-2 text-2xl font-bold">{typedList.name}</h1>
 
       <div className="mb-4 flex gap-3 text-sm text-gray-600">
         <span>{typedList.visibility === "public" ? "Public" : "Private"}</span>
@@ -127,10 +144,10 @@ export default async function LearningListDetailPage({
       </div>
 
       {typedList.description && (
-        <p className="text-sm mb-6">{typedList.description}</p>
+        <p className="mb-6 text-sm">{typedList.description}</p>
       )}
 
-      <h2 className="text-lg font-semibold mb-3">Tunes</h2>
+      <h2 className="mb-3 text-lg font-semibold">Tunes</h2>
 
       {typedItems.length === 0 ? (
         <p>This list has no tunes yet.</p>
@@ -144,26 +161,20 @@ export default async function LearningListDetailPage({
             if (!piece) return null
 
             const isAlreadyInPractice = activePieceIds.has(piece.id)
+            const isKnown = knownPieceIds.has(piece.id)
 
             return (
-              <div
-                key={item.id}
-                className="border rounded-lg p-4 bg-white shadow-sm"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <h3 className="font-medium">{piece.title}</h3>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {piece.key ?? "Unknown key"} •{" "}
-                      {piece.time_signature ?? "Unknown time"} •{" "}
-                      {piece.style ?? "Unknown style"}
-                    </p>
-                  </div>
-
+              <div key={item.id}>
+                <TuneCard
+                  title={piece.title}
+                  keyValue={piece.key}
+                  style={piece.style}
+                  timeSignature={piece.time_signature}
+                  referenceUrl={piece.reference_url}
+                  listNames={[]}
+                >
                   {isAlreadyInPractice ? (
-                    <span className="text-sm text-gray-500">
-                      Already in practice
-                    </span>
+                    <p className="text-sm text-gray-600">Already in practice</p>
                   ) : (
                     <form action={startLearning}>
                       <input type="hidden" name="piece_id" value={piece.id} />
@@ -172,15 +183,24 @@ export default async function LearningListDetailPage({
                         name="redirect_to"
                         value={`/learning-lists/${typedList.id}`}
                       />
-                      <button
-                        type="submit"
-                        className="rounded border px-3 py-1 text-sm"
-                      >
+                      <button className="bg-black px-3 py-1 text-sm text-white">
                         Start Practice
                       </button>
                     </form>
                   )}
-                </div>
+
+                  {!isAlreadyInPractice &&
+                    (isKnown ? (
+                      <p className="text-sm text-gray-600">Known</p>
+                    ) : (
+                      <form action={markAsKnown}>
+                        <input type="hidden" name="piece_id" value={piece.id} />
+                        <button className="border px-3 py-1 text-sm">
+                          Mark as known
+                        </button>
+                      </form>
+                    ))}
+                </TuneCard>
               </div>
             )
           })}

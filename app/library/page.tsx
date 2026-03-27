@@ -5,34 +5,7 @@ import LibraryList from "@/components/LibraryList"
 import { addToLearningList } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadLibraryData } from "@/lib/loaders/library"
-
-type Piece = {
-  id: number
-  title: string
-  key: string | null
-  style: string | null
-  time_signature: string | null
-  reference_url: string | null
-}
-
-type UserPiece = {
-  id: number
-  piece_id: number
-  status: string
-  next_review_due: string | null
-  stage: number
-}
-
-type UserKnownPiece = {
-  id: number
-  piece_id: number
-}
-
-type LearningList = {
-  id: number
-  name: string
-  description: string | null
-}
+import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
 
 type LearningListItem = {
   piece_id: number

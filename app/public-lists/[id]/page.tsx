@@ -1,5 +1,9 @@
 import { notFound, redirect } from "next/navigation"
+import TuneCard from "@/components/TuneCard"
 import { createClient } from "@/lib/supabase/server"
+import { markAsKnown } from "@/lib/actions/known-pieces"
+import { startLearning } from "@/lib/actions/user-pieces"
+import type { Piece } from "@/lib/types"
 
 type LearningListRow = {
   id: number
@@ -14,18 +18,10 @@ type ProfileRow = {
   username: string | null
 }
 
-type PieceRow = {
-  id: number
-  title: string
-  key: string | null
-  style: string | null
-  time_signature: string | null
-}
-
 type LearningListItemRow = {
   id: number
   position: number | null
-  pieces: PieceRow | PieceRow[] | null
+  pieces: Piece | Piece[] | null
 }
 
 async function importPublicList(formData: FormData) {
@@ -117,6 +113,10 @@ export default async function PublicListDetailPage({
 
   const supabase = await createClient()
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   const { data: list, error: listError } = await supabase
     .from("learning_lists")
     .select("id, user_id, name, description, visibility")
@@ -148,7 +148,8 @@ export default async function PublicListDetailPage({
         title,
         key,
         style,
-        time_signature
+        time_signature,
+        reference_url
       )
     `)
     .eq("learning_list_id", listId)
@@ -165,6 +166,56 @@ export default async function PublicListDetailPage({
   }
 
   const typedItems = (items ?? []) as LearningListItemRow[]
+
+  const pieceIds = typedItems
+    .map((item) => {
+      const piece = Array.isArray(item.pieces) ? item.pieces[0] : item.pieces
+      return piece?.id ?? null
+    })
+    .filter((id): id is number => id !== null)
+
+  let activePieceIds = new Set<number>()
+  let knownPieceIds = new Set<number>()
+
+  if (user && pieceIds.length > 0) {
+    const { data: userPieces, error: userPiecesError } = await supabase
+      .from("user_pieces")
+      .select("piece_id")
+      .eq("user_id", user.id)
+      .in("piece_id", pieceIds)
+
+    if (userPiecesError) {
+      return (
+        <main className="p-6 max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold mb-4">{typedList.name}</h1>
+          <p>Could not load practice state.</p>
+          <p className="text-sm text-red-600 mt-2">{userPiecesError.message}</p>
+        </main>
+      )
+    }
+
+    activePieceIds = new Set((userPieces ?? []).map((row) => row.piece_id))
+
+    const { data: userKnownPieces, error: userKnownPiecesError } = await supabase
+      .from("user_known_pieces")
+      .select("piece_id")
+      .eq("user_id", user.id)
+      .in("piece_id", pieceIds)
+
+    if (userKnownPiecesError) {
+      return (
+        <main className="p-6 max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold mb-4">{typedList.name}</h1>
+          <p>Could not load known state.</p>
+          <p className="text-sm text-red-600 mt-2">
+            {userKnownPiecesError.message}
+          </p>
+        </main>
+      )
+    }
+
+    knownPieceIds = new Set((userKnownPieces ?? []).map((row) => row.piece_id))
+  }
 
   return (
     <main className="p-6 max-w-4xl mx-auto">
@@ -184,7 +235,7 @@ export default async function PublicListDetailPage({
           type="submit"
           className="rounded border px-4 py-2 text-sm font-medium"
         >
-          Import this list
+          Import to my lists
         </button>
       </form>
 
@@ -201,17 +252,67 @@ export default async function PublicListDetailPage({
 
             if (!piece) return null
 
+            const isAlreadyInPractice = user
+              ? activePieceIds.has(piece.id)
+              : false
+            const isKnown = user ? knownPieceIds.has(piece.id) : false
+
             return (
-              <div
-                key={item.id}
-                className="border rounded-lg p-4 bg-white shadow-sm"
-              >
-                <h3 className="font-medium">{piece.title}</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  {piece.key ?? "Unknown key"} •{" "}
-                  {piece.time_signature ?? "Unknown time"} •{" "}
-                  {piece.style ?? "Unknown style"}
-                </p>
+              <div key={item.id}>
+                <TuneCard
+                  title={piece.title}
+                  keyValue={piece.key}
+                  style={piece.style}
+                  timeSignature={piece.time_signature}
+                  referenceUrl={piece.reference_url}
+                  listNames={[]}
+                >
+                  {!user ? (
+                    <p className="text-sm text-gray-600">
+                      Log in to practise or mark known
+                    </p>
+                  ) : (
+                    <>
+                      {isAlreadyInPractice ? (
+                        <p className="text-sm text-gray-600">
+                          Already in practice
+                        </p>
+                      ) : (
+                        <form action={startLearning}>
+                          <input
+                            type="hidden"
+                            name="piece_id"
+                            value={piece.id}
+                          />
+                          <input
+                            type="hidden"
+                            name="redirect_to"
+                            value={`/public-lists/${typedList.id}`}
+                          />
+                          <button className="bg-black px-3 py-1 text-sm text-white">
+                            Start Practice
+                          </button>
+                        </form>
+                      )}
+
+                      {!isAlreadyInPractice &&
+                        (isKnown ? (
+                          <p className="text-sm text-gray-600">Known</p>
+                        ) : (
+                          <form action={markAsKnown}>
+                            <input
+                              type="hidden"
+                              name="piece_id"
+                              value={piece.id}
+                            />
+                            <button className="border px-3 py-1 text-sm">
+                              Mark as known
+                            </button>
+                          </form>
+                        ))}
+                    </>
+                  )}
+                </TuneCard>
               </div>
             )
           })}

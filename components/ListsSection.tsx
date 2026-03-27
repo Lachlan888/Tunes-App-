@@ -1,10 +1,5 @@
-type Piece = {
-  id: number
-  title: string
-  key: string | null
-  style: string | null
-  time_signature: string | null
-}
+import TuneCard from "@/components/TuneCard"
+import type { Piece, UserPiece } from "@/lib/types"
 
 type LearningListItem = {
   id: number
@@ -19,15 +14,7 @@ type LearningList = {
   learning_list_items: LearningListItem[]
 }
 
-type UserPiece = {
-  id: number
-  piece_id: number
-  status: string
-  next_review_due: string | null
-  stage: number
-}
-
-type LearningListsSectionProps = {
+type ListsSectionProps = {
   learningLists: LearningList[] | null
   userPieces: UserPiece[] | null
   practiceStageByPieceId: Map<number, number>
@@ -39,12 +26,12 @@ function getPiece(pieces: Piece | Piece[] | null): Piece | null {
   return Array.isArray(pieces) ? pieces[0] ?? null : pieces
 }
 
-export default function LearningListsSection({
+export default function ListsSection({
   learningLists,
   userPieces,
   practiceStageByPieceId,
   startLearning,
-}: LearningListsSectionProps) {
+}: ListsSectionProps) {
   return (
     <section className="mb-10">
       <h2 className="mb-4 text-2xl font-semibold">Lists</h2>
@@ -54,12 +41,14 @@ export default function LearningListsSection({
       ) : (
         <div className="space-y-6">
           {learningLists.map((list: LearningList) => {
-            const sortedItems = [...(list.learning_list_items || [])].sort((a, b) => {
-              if (a.position == null && b.position == null) return 0
-              if (a.position == null) return 1
-              if (b.position == null) return -1
-              return a.position - b.position
-            })
+            const sortedItems = [...(list.learning_list_items || [])].sort(
+              (a, b) => {
+                if (a.position == null && b.position == null) return 0
+                if (a.position == null) return 1
+                if (b.position == null) return -1
+                return a.position - b.position
+              }
+            )
 
             return (
               <div key={list.id} className="rounded-lg border p-4">
@@ -86,37 +75,34 @@ export default function LearningListsSection({
                         practiceStageByPieceId.get(piece.id) ?? null
 
                       return (
-                        <div key={item.id} className="rounded border p-3">
-                          <div className="font-medium">{piece.title}</div>
+                        <div key={item.id}>
+                          <TuneCard
+                            title={piece.title}
+                            keyValue={piece.key}
+                            style={piece.style}
+                            timeSignature={piece.time_signature}
+                            referenceUrl={piece.reference_url}
+                            listNames={[]}
+                          >
+                            {practiceStage !== null && (
+                              <p className="text-sm text-gray-600">
+                                Stage: {practiceStage}
+                              </p>
+                            )}
 
-                          <div className="text-sm text-gray-600">
-                            {piece.key ? `Key: ${piece.key}` : "Key: Unknown"}
-                            {" · "}
-                            {piece.style ? `Style: ${piece.style}` : "Style: Unknown"}
-                            {" · "}
-                            {piece.time_signature
-                              ? `Time: ${piece.time_signature}`
-                              : "Time: Unknown"}
-                          </div>
-
-                          {practiceStage !== null && (
-                            <p className="mt-2 text-sm text-gray-600">
-                              Stage: {practiceStage}
-                            </p>
-                          )}
-
-                          {isAlreadyInPractice ? (
-                            <p className="mt-2 text-sm text-gray-600">
-                              Already in practice
-                            </p>
-                          ) : (
-                            <form action={startLearning} className="mt-2">
-                              <input type="hidden" name="piece_id" value={piece.id} />
-                              <button className="bg-black px-3 py-1 text-sm text-white">
-                                Start Practice
-                              </button>
-                            </form>
-                          )}
+                            {isAlreadyInPractice ? (
+                              <p className="text-sm text-gray-600">
+                                Already in practice
+                              </p>
+                            ) : (
+                              <form action={startLearning}>
+                                <input type="hidden" name="piece_id" value={piece.id} />
+                                <button className="bg-black px-3 py-1 text-sm text-white">
+                                  Start Practice
+                                </button>
+                              </form>
+                            )}
+                          </TuneCard>
                         </div>
                       )
                     })}
