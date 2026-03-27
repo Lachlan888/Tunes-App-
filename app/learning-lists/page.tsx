@@ -18,10 +18,16 @@ type UserPieceWithPiece = {
   id: number
   piece_id: number
   stage: number
-  pieces: {
-    id: number
-    title: string
-  } | null
+  pieces:
+    | {
+        id: number
+        title: string
+      }
+    | {
+        id: number
+        title: string
+      }[]
+    | null
 }
 
 type LearningListItem = {

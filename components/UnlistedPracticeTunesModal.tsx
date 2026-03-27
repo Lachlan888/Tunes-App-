@@ -3,14 +3,28 @@
 import { useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
 
+type Piece = {
+  id: number
+  title: string
+  key: string | null
+  style: string | null
+  time_signature: string | null
+}
+
 type UnlistedPracticeTune = {
   id: number
   piece_id: number
   stage: number
-  pieces: {
-    id: number
-    title: string
-  } | null
+  pieces:
+    | {
+        id: number
+        title: string
+      }
+    | {
+        id: number
+        title: string
+      }[]
+    | null
 }
 
 type LearningList = {
@@ -33,10 +47,7 @@ export default function UnlistedPracticeTunesModal({
   redirectTo,
 }: UnlistedPracticeTunesModalProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedPiece, setSelectedPiece] = useState<{
-    id: number
-    title: string
-  } | null>(null)
+  const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
   const [selectedListId, setSelectedListId] = useState("")
 
   if (unlistedPracticeTunes.length === 0) {
@@ -80,34 +91,43 @@ export default function UnlistedPracticeTunesModal({
             </div>
 
             <ul className="space-y-3">
-              {unlistedPracticeTunes.map((userPiece) => (
-                <li key={userPiece.id} className="rounded border p-3">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="font-medium">
-                        {userPiece.pieces?.title ?? "Untitled tune"}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Stage {userPiece.stage}
-                      </p>
-                    </div>
+              {unlistedPracticeTunes.map((userPiece) => {
+                const piece = Array.isArray(userPiece.pieces)
+                  ? userPiece.pieces[0] ?? null
+                  : userPiece.pieces
 
-                    <button
-                      type="button"
-                      className="rounded border px-3 py-1 text-sm"
-                      onClick={() => {
-                        setSelectedPiece({
-                          id: userPiece.piece_id,
-                          title: userPiece.pieces?.title ?? "Untitled tune",
-                        })
-                        setSelectedListId("")
-                      }}
-                    >
-                      Add to List
-                    </button>
-                  </div>
-                </li>
-              ))}
+                return (
+                  <li key={userPiece.id} className="rounded border p-3">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="font-medium">
+                          {piece?.title ?? "Untitled tune"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Stage {userPiece.stage}
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="rounded border px-3 py-1 text-sm"
+                        onClick={() => {
+                          setSelectedPiece({
+                            id: userPiece.piece_id,
+                            title: piece?.title ?? "Untitled tune",
+                            key: null,
+                            style: null,
+                            time_signature: null,
+                          })
+                          setSelectedListId("")
+                        }}
+                      >
+                        Add to List
+                      </button>
+                    </div>
+                  </li>
+                )
+              })}
             </ul>
           </div>
         </div>
