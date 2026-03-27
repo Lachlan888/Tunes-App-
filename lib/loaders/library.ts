@@ -1,6 +1,11 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
+type UserKnownPiece = {
+  id: number
+  piece_id: number
+}
+
 export async function loadLibraryData() {
   const supabase = await createClient()
 
@@ -22,6 +27,11 @@ export async function loadLibraryData() {
     .select("id, piece_id, status, next_review_due, stage")
     .eq("user_id", user.id)
 
+  const { data: userKnownPieces } = await supabase
+    .from("user_known_pieces")
+    .select("id, piece_id")
+    .eq("user_id", user.id)
+
   const { data: learningLists } = await supabase
     .from("learning_lists")
     .select("id, name, description")
@@ -37,6 +47,7 @@ export async function loadLibraryData() {
     user,
     pieces,
     userPieces,
+    userKnownPieces: (userKnownPieces ?? []) as UserKnownPiece[],
     learningLists,
     learningListItems,
   }

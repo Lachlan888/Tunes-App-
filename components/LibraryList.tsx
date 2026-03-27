@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
+import { markAsKnown } from "@/lib/actions/known-pieces"
 
 type Piece = {
   id: number
@@ -18,6 +19,11 @@ type UserPiece = {
   status: string
   next_review_due: string | null
   stage: number
+}
+
+type UserKnownPiece = {
+  id: number
+  piece_id: number
 }
 
 type LearningList = {
@@ -39,6 +45,7 @@ type LearningListItem = {
 type LibraryListProps = {
   pieces: Piece[] | null
   userPieces: UserPiece[] | null
+  userKnownPieces: UserKnownPiece[] | null
   learningLists: LearningList[] | null
   learningListItems: LearningListItem[] | null
   startLearning: (formData: FormData) => Promise<void>
@@ -49,6 +56,7 @@ type LibraryListProps = {
 export default function LibraryList({
   pieces,
   userPieces,
+  userKnownPieces,
   learningLists,
   learningListItems,
   startLearning,
@@ -68,6 +76,10 @@ export default function LibraryList({
         {pieces.map((piece: Piece) => {
           const isAlreadyInPractice = (userPieces ?? []).some(
             (userPiece) => userPiece.piece_id === piece.id
+          )
+
+          const isKnown = (userKnownPieces ?? []).some(
+            (userKnownPiece) => userKnownPiece.piece_id === piece.id
           )
 
           const listItemsForPiece = (learningListItems ?? []).filter(
@@ -118,6 +130,18 @@ export default function LibraryList({
                     </button>
                   </form>
                 )}
+
+                {!isAlreadyInPractice &&
+                  (isKnown ? (
+                    <p className="text-sm text-gray-600">Known</p>
+                  ) : (
+                    <form action={markAsKnown}>
+                      <input type="hidden" name="piece_id" value={piece.id} />
+                      <button className="border px-3 py-1 text-sm">
+                        Mark as known
+                      </button>
+                    </form>
+                  ))}
 
                 <button
                   type="button"

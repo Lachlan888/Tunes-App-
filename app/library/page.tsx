@@ -22,6 +22,11 @@ type UserPiece = {
   stage: number
 }
 
+type UserKnownPiece = {
+  id: number
+  piece_id: number
+}
+
 type LearningList = {
   id: number
   name: string
@@ -51,8 +56,14 @@ type LibraryPageProps = {
 export default async function LibraryPage({
   searchParams,
 }: LibraryPageProps) {
-  const { user, pieces, userPieces, learningLists, learningListItems } =
-    await loadLibraryData()
+  const {
+    user,
+    pieces,
+    userPieces,
+    userKnownPieces,
+    learningLists,
+    learningListItems,
+  } = await loadLibraryData()
 
   const resolvedSearchParams = await searchParams
   const selectedKey = resolvedSearchParams?.key ?? ""
@@ -226,6 +237,7 @@ export default async function LibraryPage({
       <LibraryList
         pieces={filteredPieces}
         userPieces={userPieces}
+        userKnownPieces={userKnownPieces as UserKnownPiece[]}
         learningLists={learningLists}
         learningListItems={learningListItems as LearningListItem[] | null}
         startLearning={startLearning}
