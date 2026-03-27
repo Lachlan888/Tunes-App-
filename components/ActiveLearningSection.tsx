@@ -10,6 +10,7 @@ type UserPiece = {
   id: number
   piece_id: number
   status: string
+  stage: number
 }
 
 type ActiveLearningSectionProps = {
@@ -23,14 +24,16 @@ export default function ActiveLearningSection({
 }: ActiveLearningSectionProps) {
   return (
     <section className="mb-10">
-      <h2 className="text-2xl font-semibold mb-4">Active Learning</h2>
+      <h2 className="mb-4 text-2xl font-semibold">In Practice</h2>
 
       {!userPieces || userPieces.length === 0 ? (
-        <p className="text-gray-600">No tunes in active learning yet.</p>
+        <p className="text-gray-600">No tunes in practice yet.</p>
       ) : (
         <ul className="list-disc pl-6">
           {userPieces.map((userPiece: UserPiece) => {
-            const piece = pieces?.find((piece: Piece) => piece.id === userPiece.piece_id)
+            const piece = pieces?.find(
+              (piece: Piece) => piece.id === userPiece.piece_id
+            )
 
             if (!piece) return null
 
@@ -40,7 +43,7 @@ export default function ActiveLearningSection({
                 {piece.key ? `, key ${piece.key}` : ""}
                 {piece.style ? `, ${piece.style}` : ""}
                 {piece.time_signature ? `, ${piece.time_signature}` : ""}
-                {userPiece.status ? `, status: ${userPiece.status}` : ""}
+                {`, review stage: ${userPiece.stage}`}
               </li>
             )
           })}

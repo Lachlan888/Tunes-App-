@@ -26,7 +26,7 @@ export default function AddToLearningListSection({
 }: AddToLearningListSectionProps) {
   return (
     <section className="mb-10">
-      <h2 className="mb-4 text-2xl font-semibold">Add Tune to Learning List</h2>
+      <h2 className="mb-4 text-2xl font-semibold">Add Tune to List</h2>
 
       <form action={addToLearningList}>
         <select
@@ -47,7 +47,7 @@ export default function AddToLearningListSection({
           className="mb-2 w-full border p-2"
           required
         >
-          <option value="">Select a learning list</option>
+          <option value="">Select a list</option>
           {learningLists?.map((list: LearningList) => (
             <option key={list.id} value={list.id}>
               {list.name}

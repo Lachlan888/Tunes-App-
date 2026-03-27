@@ -30,6 +30,7 @@ type UserPiece = {
 type LearningListsSectionProps = {
   learningLists: LearningList[] | null
   userPieces: UserPiece[] | null
+  practiceStageByPieceId: Map<number, number>
   startLearning: (formData: FormData) => Promise<void>
 }
 
@@ -41,6 +42,7 @@ function getPiece(pieces: Piece | Piece[] | null): Piece | null {
 export default function LearningListsSection({
   learningLists,
   userPieces,
+  practiceStageByPieceId,
   startLearning,
 }: LearningListsSectionProps) {
   return (
@@ -80,6 +82,9 @@ export default function LearningListsSection({
                         (userPiece: UserPiece) => userPiece.piece_id === piece.id
                       )
 
+                      const practiceStage =
+                        practiceStageByPieceId.get(piece.id) ?? null
+
                       return (
                         <div key={item.id} className="rounded border p-3">
                           <div className="font-medium">{piece.title}</div>
@@ -94,15 +99,21 @@ export default function LearningListsSection({
                               : "Time: Unknown"}
                           </div>
 
+                          {practiceStage !== null && (
+                            <p className="mt-2 text-sm text-gray-600">
+                              Review stage: {practiceStage}
+                            </p>
+                          )}
+
                           {alreadyStarted ? (
                             <p className="mt-2 text-sm text-gray-600">
-                              Already in active learning
+                              Already in practice
                             </p>
                           ) : (
                             <form action={startLearning} className="mt-2">
                               <input type="hidden" name="piece_id" value={piece.id} />
                               <button className="bg-black px-3 py-1 text-sm text-white">
-                                Start Learning
+                                Start Practice
                               </button>
                             </form>
                           )}

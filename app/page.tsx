@@ -14,13 +14,17 @@ export default async function HomePage() {
   const { user, learningLists, pieces, userPieces } =
     await loadHomepageData()
 
+  const practiceStageByPieceId = new Map(
+    (userPieces ?? []).map((userPiece) => [userPiece.piece_id, userPiece.stage])
+  )
+
   return (
     <main className="p-8">
       <h1 className="mb-2 text-3xl font-bold">Tunes App</h1>
       <p className="mb-6 text-gray-600">Logged in as {user.email}</p>
 
       <form action={createList} className="mb-10">
-        <h2 className="mb-4 text-2xl font-semibold">Create Learning List</h2>
+        <h2 className="mb-4 text-2xl font-semibold">Create List</h2>
 
         <input
           name="name"
@@ -49,6 +53,7 @@ export default async function HomePage() {
       <LearningListsSection
         learningLists={learningLists}
         userPieces={userPieces}
+        practiceStageByPieceId={practiceStageByPieceId}
         startLearning={startLearning}
       />
 
