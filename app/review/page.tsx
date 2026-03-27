@@ -65,7 +65,7 @@ export default async function ReviewPage() {
   if (error) {
     return (
       <main className="p-8">
-        <h1 className="text-3xl font-bold">Review</h1>
+        <h1 className="text-3xl font-bold">Practice</h1>
         <p className="mt-4 text-red-600">Could not load due tunes.</p>
       </main>
     )
@@ -79,7 +79,7 @@ export default async function ReviewPage() {
   if (duePieces.length === 0) {
     return (
       <main className="p-8">
-        <h1 className="text-3xl font-bold">Review</h1>
+        <h1 className="text-3xl font-bold">Practice</h1>
         <p className="mt-4 text-gray-600">No tunes due today.</p>
       </main>
     )
@@ -89,7 +89,7 @@ export default async function ReviewPage() {
 
   return (
     <main className="p-8">
-      <h1 className="text-3xl font-bold">Review</h1>
+      <h1 className="text-3xl font-bold">Practice</h1>
 
       <p className="mt-4 text-sm text-gray-600">
         {duePieces.length} tune{duePieces.length === 1 ? "" : "s"} due

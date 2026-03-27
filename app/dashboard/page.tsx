@@ -56,20 +56,19 @@ export default async function DashboardPage({
   const typedProfile = profile as Profile | null
   const errorMessage = getErrorMessage(params?.error)
 
-  const usernameValue =
-    params?.username ?? typedProfile?.username ?? ""
+  const usernameValue = params?.username ?? typedProfile?.username ?? ""
 
   const displayNameValue =
     params?.display_name ?? typedProfile?.display_name ?? ""
 
   return (
     <main className="p-8">
-      <h1 className="text-3xl font-bold">Dashboard</h1>
+      <h1 className="text-3xl font-bold">Profile</h1>
 
       <p className="mt-4 text-gray-600">You are logged in as {user.email}</p>
 
       <section className="mt-6 rounded border p-4">
-        <h2 className="text-xl font-semibold">Profile</h2>
+        <h2 className="text-xl font-semibold">Profile details</h2>
 
         {params?.saved === "1" && (
           <p className="mt-4 rounded border border-green-300 bg-green-50 p-3 text-green-700">

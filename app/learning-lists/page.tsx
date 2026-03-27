@@ -31,8 +31,8 @@ export default async function LearningListsPage() {
   if (error) {
     return (
       <main className="p-8">
-        <h1 className="text-3xl font-bold">Learning Lists</h1>
-        <p className="mt-4 text-red-600">Failed to load learning lists.</p>
+        <h1 className="text-3xl font-bold">Lists</h1>
+        <p className="mt-4 text-red-600">Failed to load lists.</p>
       </main>
     )
   }
@@ -41,10 +41,10 @@ export default async function LearningListsPage() {
 
   return (
     <main className="p-8">
-      <h1 className="mb-6 text-3xl font-bold">Learning Lists</h1>
+      <h1 className="mb-6 text-3xl font-bold">Lists</h1>
 
       {typedLearningLists.length === 0 ? (
-        <p className="text-gray-600">No learning lists yet.</p>
+        <p className="text-gray-600">No lists yet.</p>
       ) : (
         <div className="space-y-4">
           {typedLearningLists.map((list) => (

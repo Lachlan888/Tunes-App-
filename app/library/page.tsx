@@ -77,7 +77,7 @@ export default async function LibraryPage({
 
   return (
     <main className="p-8">
-      <h1 className="mb-2 text-3xl font-bold">Library</h1>
+      <h1 className="mb-2 text-3xl font-bold">Tunes</h1>
       <p className="mb-6 text-gray-600">Logged in as {user.email}</p>
 
       <form method="GET" className="mb-6">

@@ -13,7 +13,7 @@ type ProfileRow = {
   username: string | null
 }
 
-type PublicList = {
+type SharedList = {
   id: number
   name: string
   description: string | null
@@ -31,10 +31,10 @@ export default async function PublicListsPage() {
 
   if (listsError) {
     return (
-      <main className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Public Lists</h1>
-        <p>Could not load public lists.</p>
-        <p className="text-sm text-red-600 mt-2">{listsError.message}</p>
+      <main className="mx-auto max-w-4xl p-6">
+        <h1 className="mb-4 text-2xl font-bold">Shared</h1>
+        <p>Could not load shared lists.</p>
+        <p className="mt-2 text-sm text-red-600">{listsError.message}</p>
       </main>
     )
   }
@@ -53,10 +53,10 @@ export default async function PublicListsPage() {
 
     if (profilesError) {
       return (
-        <main className="p-6">
-          <h1 className="text-2xl font-bold mb-4">Public Lists</h1>
-          <p>Could not load public lists.</p>
-          <p className="text-sm text-red-600 mt-2">{profilesError.message}</p>
+        <main className="mx-auto max-w-4xl p-6">
+          <h1 className="mb-4 text-2xl font-bold">Shared</h1>
+          <p>Could not load shared lists.</p>
+          <p className="mt-2 text-sm text-red-600">{profilesError.message}</p>
         </main>
       )
     }
@@ -70,7 +70,7 @@ export default async function PublicListsPage() {
     )
   }
 
-  const publicLists: PublicList[] = lists.map((list) => ({
+  const sharedLists: SharedList[] = lists.map((list) => ({
     id: list.id,
     name: list.name,
     description: list.description,
@@ -78,24 +78,24 @@ export default async function PublicListsPage() {
   }))
 
   return (
-    <main className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-2">Public Lists</h1>
-      <p className="text-sm text-gray-600 mb-6">
+    <main className="mx-auto max-w-4xl p-6">
+      <h1 className="mb-2 text-2xl font-bold">Shared</h1>
+      <p className="mb-6 text-sm text-gray-600">
         Browse shared tune lists from other users.
       </p>
 
-      {publicLists.length === 0 ? (
-        <p>No public lists yet.</p>
+      {sharedLists.length === 0 ? (
+        <p>No shared lists yet.</p>
       ) : (
         <div className="space-y-4">
-          {publicLists.map((list) => (
+          {sharedLists.map((list) => (
             <div
               key={list.id}
-              className="border rounded-lg p-4 bg-white shadow-sm"
+              className="rounded-lg border bg-white p-4 shadow-sm"
             >
               <h2 className="text-lg font-semibold">{list.name}</h2>
 
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="mt-1 text-sm text-gray-600">
                 By {list.ownerUsername ?? "Unknown user"}
               </p>
 
