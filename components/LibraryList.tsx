@@ -9,6 +9,7 @@ type Piece = {
   key: string | null
   style: string | null
   time_signature: string | null
+  reference_url: string | null
 }
 
 type UserPiece = {
@@ -85,6 +86,19 @@ export default function LibraryList({
                 {piece.style ? `, ${piece.style}` : ""}
                 {piece.time_signature ? `, ${piece.time_signature}` : ""}
               </div>
+
+              {piece.reference_url && (
+                <p className="mt-1 text-sm">
+                  <a
+                    href={piece.reference_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline"
+                  >
+                    Reference
+                  </a>
+                </p>
+              )}
 
               {listNames.length > 0 && (
                 <p className="mt-1 text-sm text-gray-600">

@@ -14,7 +14,7 @@ export async function loadLibraryData() {
 
   const { data: pieces } = await supabase
     .from("pieces")
-    .select("id, title, key, style, time_signature")
+    .select("id, title, key, style, time_signature, reference_url")
     .order("title")
 
   const { data: userPieces } = await supabase

@@ -3,6 +3,12 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
+function appendQueryParam(url: string, key: string, value: string) {
+  return url.includes("?")
+    ? `${url}&${key}=${encodeURIComponent(value)}`
+    : `${url}?${key}=${encodeURIComponent(value)}`
+}
+
 export async function createList(formData: FormData) {
   const supabase = await createClient()
 
@@ -14,16 +20,25 @@ export async function createList(formData: FormData) {
     redirect("/login")
   }
 
-  const name = formData.get("name") as string
-  const description = formData.get("description") as string
+  const name = String(formData.get("name") ?? "").trim()
+  const description = String(formData.get("description") ?? "").trim()
+  const redirectTo = String(formData.get("redirect_to") ?? "/learning-lists")
 
-  await supabase.from("learning_lists").insert({
+  if (!name) {
+    redirect(appendQueryParam(redirectTo, "create_list", "missing_name"))
+  }
+
+  const { error } = await supabase.from("learning_lists").insert({
     name,
-    description,
+    description: description || null,
     user_id: user.id,
   })
 
-  redirect("/")
+  if (error) {
+    redirect(appendQueryParam(redirectTo, "create_list", "error"))
+  }
+
+  redirect(appendQueryParam(redirectTo, "create_list", "success"))
 }
 
 function buildRedirectUrl(basePath: string, status: "success" | "duplicate") {

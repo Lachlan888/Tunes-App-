@@ -1,4 +1,5 @@
 import Link from "next/link"
+import CreateTuneModal from "@/components/CreateTuneModal"
 import LibraryList from "@/components/LibraryList"
 import { addToLearningList } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
@@ -10,6 +11,7 @@ type Piece = {
   key: string | null
   style: string | null
   time_signature: string | null
+  reference_url: string | null
 }
 
 type UserPiece = {
@@ -42,6 +44,7 @@ type LibraryPageProps = {
     style?: string
     time_signature?: string
     list_add?: string
+    create_tune?: string
   }>
 }
 
@@ -56,6 +59,7 @@ export default async function LibraryPage({
   const selectedStyle = resolvedSearchParams?.style ?? ""
   const selectedTimeSignature = resolvedSearchParams?.time_signature ?? ""
   const listAddStatus = resolvedSearchParams?.list_add ?? ""
+  const createTuneStatus = resolvedSearchParams?.create_tune ?? ""
 
   const redirectParams = new URLSearchParams()
 
@@ -95,7 +99,9 @@ export default async function LibraryPage({
     new Set(
       (pieces ?? [])
         .map((piece) => piece.time_signature)
-        .filter((timeSignature): timeSignature is string => Boolean(timeSignature))
+        .filter(
+          (timeSignature): timeSignature is string => Boolean(timeSignature)
+        )
     )
   ).sort()
 
@@ -117,7 +123,27 @@ export default async function LibraryPage({
   return (
     <main className="p-8">
       <h1 className="mb-2 text-3xl font-bold">Tunes</h1>
-      <p className="mb-6 text-gray-600">Logged in as {user.email}</p>
+      <p className="mb-4 text-gray-600">Logged in as {user.email}</p>
+
+      <CreateTuneModal />
+
+      {createTuneStatus === "success" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          Tune created.
+        </div>
+      )}
+
+      {createTuneStatus === "missing_title" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Please enter a tune title.
+        </div>
+      )}
+
+      {createTuneStatus === "error" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          Could not create tune.
+        </div>
+      )}
 
       {listAddStatus === "success" && (
         <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
