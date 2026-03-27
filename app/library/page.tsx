@@ -1,4 +1,5 @@
 import Link from "next/link"
+import BulkImportKnownTunesModal from "@/components/BulkImportKnownTunesModal"
 import CreateTuneModal from "@/components/CreateTuneModal"
 import LibraryList from "@/components/LibraryList"
 import { addToLearningList } from "@/lib/actions/lists"
@@ -50,6 +51,8 @@ type LibraryPageProps = {
     time_signature?: string
     list_add?: string
     create_tune?: string
+    bulk_upload?: string
+    row?: string
   }>
 }
 
@@ -71,6 +74,8 @@ export default async function LibraryPage({
   const selectedTimeSignature = resolvedSearchParams?.time_signature ?? ""
   const listAddStatus = resolvedSearchParams?.list_add ?? ""
   const createTuneStatus = resolvedSearchParams?.create_tune ?? ""
+  const bulkUploadStatus = resolvedSearchParams?.bulk_upload ?? ""
+  const bulkUploadRow = resolvedSearchParams?.row ?? ""
 
   const redirectParams = new URLSearchParams()
 
@@ -136,7 +141,10 @@ export default async function LibraryPage({
       <h1 className="mb-2 text-3xl font-bold">Tunes</h1>
       <p className="mb-4 text-gray-600">Logged in as {user.email}</p>
 
-      <CreateTuneModal />
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <CreateTuneModal />
+        <BulkImportKnownTunesModal />
+      </div>
 
       {createTuneStatus === "success" && (
         <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
@@ -165,6 +173,67 @@ export default async function LibraryPage({
       {listAddStatus === "duplicate" && (
         <div className="mb-6 rounded border border-gray-400 bg-gray-50 p-3 text-sm text-gray-800">
           That tune is already in this list.
+        </div>
+      )}
+
+      {bulkUploadStatus === "received" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          CSV received. Next step is parsing and validation.
+        </div>
+      )}
+
+      {bulkUploadStatus === "parsed" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          CSV parsed successfully. Header row is valid and data rows were found.
+        </div>
+      )}
+
+      {bulkUploadStatus === "validated" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          CSV validated successfully. All rows have the right column count and a title.
+        </div>
+      )}
+
+      {bulkUploadStatus === "missing_file" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Please choose a CSV file.
+        </div>
+      )}
+
+      {bulkUploadStatus === "empty_file" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          The selected CSV file is empty.
+        </div>
+      )}
+
+      {bulkUploadStatus === "empty_rows" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          The CSV has a valid header row but no tune rows underneath it.
+        </div>
+      )}
+
+      {bulkUploadStatus === "invalid_type" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          That file does not look like a CSV.
+        </div>
+      )}
+
+      {bulkUploadStatus === "invalid_headers" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          CSV headers are invalid. Use the template and keep this exact column
+          order: title, key, style, time_signature, reference_url
+        </div>
+      )}
+
+      {bulkUploadStatus === "invalid_row_shape" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          CSV row {bulkUploadRow || "?"} does not have exactly 5 columns.
+        </div>
+      )}
+
+      {bulkUploadStatus === "missing_title_row" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          CSV row {bulkUploadRow || "?"} is missing a title.
         </div>
       )}
 
@@ -236,9 +305,9 @@ export default async function LibraryPage({
 
       <LibraryList
         pieces={filteredPieces}
-        userPieces={userPieces}
+        userPieces={userPieces as UserPiece[] | null}
         userKnownPieces={userKnownPieces as UserKnownPiece[]}
-        learningLists={learningLists}
+        learningLists={learningLists as LearningList[] | null}
         learningListItems={learningListItems as LearningListItem[] | null}
         startLearning={startLearning}
         addToLearningList={addToLearningList}
