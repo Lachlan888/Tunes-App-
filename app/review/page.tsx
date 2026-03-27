@@ -9,6 +9,7 @@ type Piece = {
   key: string | null
   style: string | null
   time_signature: string | null
+  reference_url: string | null
 }
 
 type DuePiece = {
@@ -54,7 +55,8 @@ export default async function ReviewPage() {
         title,
         key,
         style,
-        time_signature
+        time_signature,
+        reference_url
       )
     `)
     .eq("user_id", user.id)
@@ -125,6 +127,19 @@ export default async function ReviewPage() {
                 {piece?.time_signature ?? "Unknown"}
               </p>
 
+              {piece?.reference_url && (
+                <p className="mt-2">
+                  <a
+                    href={piece.reference_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm underline"
+                  >
+                    Reference
+                  </a>
+                </p>
+              )}
+
               <p className="mt-2 text-sm text-gray-600">
                 Due:{" "}
                 {userPiece.next_review_due
@@ -142,7 +157,7 @@ export default async function ReviewPage() {
                     type="submit"
                     className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
                   >
-                    Failed
+                    Rough
                   </button>
                 </form>
 
