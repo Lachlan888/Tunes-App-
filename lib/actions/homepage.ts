@@ -17,11 +17,15 @@ export async function createList(formData: FormData) {
   const name = formData.get("name") as string
   const description = formData.get("description") as string
 
-  await supabase.from("learning_lists").insert({
+  const { error } = await supabase.from("learning_lists").insert({
     name,
-    description,
+    description: description || null,
     user_id: user.id,
   })
+
+  if (error) {
+    throw new Error(error.message)
+  }
 
   redirect("/")
 }

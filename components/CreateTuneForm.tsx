@@ -34,6 +34,8 @@ export default function CreateTuneForm({
         name="time_signature"
         placeholder="Time signature"
         className="mb-2 w-full border p-2"
+        pattern="^\d+/\d+$"
+        title="Use format like 4/4 or 6/8"
       />
 
       <input

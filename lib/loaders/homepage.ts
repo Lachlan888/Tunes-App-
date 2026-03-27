@@ -31,6 +31,10 @@ type UserPiece = {
   stage: number
 }
 
+type UserKnownPiece = {
+  piece_id: number
+}
+
 export async function loadHomepageData() {
   const supabase = await createClient()
 
@@ -72,6 +76,15 @@ export async function loadHomepageData() {
     .select("id, piece_id, status, next_review_due, stage")
     .eq("user_id", user.id)
 
+  const { data: userKnownPieces, error: userKnownPiecesError } = await supabase
+    .from("user_known_pieces")
+    .select("piece_id")
+    .eq("user_id", user.id)
+
+  if (userKnownPiecesError) {
+    throw new Error(userKnownPiecesError.message)
+  }
+
   const dueToday =
     userPieces?.filter((userPiece: UserPiece) =>
       isDueToday(userPiece.next_review_due)
@@ -82,6 +95,7 @@ export async function loadHomepageData() {
     learningLists,
     pieces,
     userPieces,
+    userKnownPieces: (userKnownPieces ?? []) as UserKnownPiece[],
     dueToday,
   }
 }
