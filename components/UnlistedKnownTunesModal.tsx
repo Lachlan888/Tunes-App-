@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
 
 type Piece = {
@@ -49,6 +49,22 @@ export default function UnlistedKnownTunesModal({
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
   const [selectedListId, setSelectedListId] = useState("")
 
+  useEffect(() => {
+    if (!isOpen) return
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener("keydown", handleEscape)
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape)
+    }
+  }, [isOpen])
+
   if (unlistedKnownTunes.length === 0) {
     return null
   }
@@ -76,55 +92,63 @@ export default function UnlistedKnownTunesModal({
       </section>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-lg">
-            <div className="mb-4 flex items-center justify-between gap-4">
-              <h2 className="text-2xl font-semibold">Known, not in a list</h2>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="text-sm underline"
-              >
-                Close
-              </button>
-            </div>
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4"
+          onClick={() => setIsOpen(false)}
+        >
+          <div className="flex min-h-full items-start justify-center py-8">
+            <div
+              className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-lg max-h-[85vh] overflow-y-auto"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <h2 className="text-2xl font-semibold">Known, not in a list</h2>
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded border px-3 py-1 text-sm"
+                >
+                  Close
+                </button>
+              </div>
 
-            <ul className="space-y-3">
-              {unlistedKnownTunes.map((userKnownPiece) => {
-                const piece = Array.isArray(userKnownPiece.pieces)
-                  ? userKnownPiece.pieces[0] ?? null
-                  : userKnownPiece.pieces
+              <ul className="space-y-3">
+                {unlistedKnownTunes.map((userKnownPiece) => {
+                  const piece = Array.isArray(userKnownPiece.pieces)
+                    ? userKnownPiece.pieces[0] ?? null
+                    : userKnownPiece.pieces
 
-                return (
-                  <li key={userKnownPiece.id} className="rounded border p-3">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <p className="font-medium">
-                          {piece?.title ?? "Untitled tune"}
-                        </p>
+                  return (
+                    <li key={userKnownPiece.id} className="rounded border p-3">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <p className="font-medium">
+                            {piece?.title ?? "Untitled tune"}
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="rounded border px-3 py-1 text-sm"
+                          onClick={() => {
+                            setSelectedPiece({
+                              id: userKnownPiece.piece_id,
+                              title: piece?.title ?? "Untitled tune",
+                              key: null,
+                              style: null,
+                              time_signature: null,
+                            })
+                            setSelectedListId("")
+                          }}
+                        >
+                          Add to List
+                        </button>
                       </div>
-
-                      <button
-                        type="button"
-                        className="rounded border px-3 py-1 text-sm"
-                        onClick={() => {
-                          setSelectedPiece({
-                            id: userKnownPiece.piece_id,
-                            title: piece?.title ?? "Untitled tune",
-                            key: null,
-                            style: null,
-                            time_signature: null,
-                          })
-                          setSelectedListId("")
-                        }}
-                      >
-                        Add to List
-                      </button>
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
           </div>
         </div>
       )}

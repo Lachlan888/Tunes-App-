@@ -1,11 +1,27 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import CreateTuneForm from "@/components/CreateTuneForm"
 import { createTune } from "@/lib/actions/pieces"
 
 export default function CreateTuneModal() {
   const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener("keydown", handleEscape)
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape)
+    }
+  }, [isOpen])
 
   return (
     <section className="mb-6">
@@ -18,20 +34,28 @@ export default function CreateTuneModal() {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-xl rounded-lg bg-white p-6 shadow-lg">
-            <div className="mb-4 flex items-center justify-between gap-4">
-              <h2 className="text-2xl font-semibold">Create Tune</h2>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="text-sm underline"
-              >
-                Close
-              </button>
-            </div>
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4"
+          onClick={() => setIsOpen(false)}
+        >
+          <div className="flex min-h-full items-start justify-center py-8">
+            <div
+              className="w-full max-w-xl rounded-lg bg-white p-6 shadow-lg"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <h2 className="text-2xl font-semibold">Create Tune</h2>
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded border px-3 py-1 text-sm"
+                >
+                  Close
+                </button>
+              </div>
 
-            <CreateTuneForm createTune={createTune} redirectTo="/library" />
+              <CreateTuneForm createTune={createTune} redirectTo="/library" />
+            </div>
           </div>
         </div>
       )}

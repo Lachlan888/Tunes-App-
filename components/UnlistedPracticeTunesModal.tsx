@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
 
 type Piece = {
@@ -50,6 +50,22 @@ export default function UnlistedPracticeTunesModal({
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
   const [selectedListId, setSelectedListId] = useState("")
 
+  useEffect(() => {
+    if (!isOpen) return
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener("keydown", handleEscape)
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape)
+    }
+  }, [isOpen])
+
   if (unlistedPracticeTunes.length === 0) {
     return null
   }
@@ -77,58 +93,66 @@ export default function UnlistedPracticeTunesModal({
       </section>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-lg">
-            <div className="mb-4 flex items-center justify-between gap-4">
-              <h2 className="text-2xl font-semibold">In practice, not in a list</h2>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="text-sm underline"
-              >
-                Close
-              </button>
-            </div>
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4"
+          onClick={() => setIsOpen(false)}
+        >
+          <div className="flex min-h-full items-start justify-center py-8">
+            <div
+              className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-lg max-h-[85vh] overflow-y-auto"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <h2 className="text-2xl font-semibold">In practice, not in a list</h2>
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded border px-3 py-1 text-sm"
+                >
+                  Close
+                </button>
+              </div>
 
-            <ul className="space-y-3">
-              {unlistedPracticeTunes.map((userPiece) => {
-                const piece = Array.isArray(userPiece.pieces)
-                  ? userPiece.pieces[0] ?? null
-                  : userPiece.pieces
+              <ul className="space-y-3">
+                {unlistedPracticeTunes.map((userPiece) => {
+                  const piece = Array.isArray(userPiece.pieces)
+                    ? userPiece.pieces[0] ?? null
+                    : userPiece.pieces
 
-                return (
-                  <li key={userPiece.id} className="rounded border p-3">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <p className="font-medium">
-                          {piece?.title ?? "Untitled tune"}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Stage {userPiece.stage}
-                        </p>
+                  return (
+                    <li key={userPiece.id} className="rounded border p-3">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <p className="font-medium">
+                            {piece?.title ?? "Untitled tune"}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Stage {userPiece.stage}
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="rounded border px-3 py-1 text-sm"
+                          onClick={() => {
+                            setSelectedPiece({
+                              id: userPiece.piece_id,
+                              title: piece?.title ?? "Untitled tune",
+                              key: null,
+                              style: null,
+                              time_signature: null,
+                            })
+                            setSelectedListId("")
+                          }}
+                        >
+                          Add to List
+                        </button>
                       </div>
-
-                      <button
-                        type="button"
-                        className="rounded border px-3 py-1 text-sm"
-                        onClick={() => {
-                          setSelectedPiece({
-                            id: userPiece.piece_id,
-                            title: piece?.title ?? "Untitled tune",
-                            key: null,
-                            style: null,
-                            time_signature: null,
-                          })
-                          setSelectedListId("")
-                        }}
-                      >
-                        Add to List
-                      </button>
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
           </div>
         </div>
       )}
