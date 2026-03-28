@@ -149,6 +149,12 @@ export default async function LibraryPage({
         </div>
       )}
 
+      {createTuneStatus === "invalid_key" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          Invalid key. Format is 'D', 'Dm' or 'D modal' for modal tunes.
+        </div>
+      )}
+
       {createTuneStatus === "error" && (
         <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
           Could not create tune.

@@ -1,5 +1,6 @@
 "use server"
 
+import { normaliseKey } from "@/lib/music/keys"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
@@ -13,7 +14,8 @@ export async function createTune(formData: FormData) {
   const supabase = await createClient()
 
   const title = String(formData.get("title") ?? "").trim()
-  const key = String(formData.get("key") ?? "").trim()
+  const rawKey = String(formData.get("key") ?? "").trim()
+  const key = rawKey ? normaliseKey(rawKey) : null
   const style = String(formData.get("style") ?? "").trim()
   const timeSignature = String(formData.get("time_signature") ?? "").trim()
   const referenceUrl = String(formData.get("reference_url") ?? "").trim()
@@ -23,9 +25,13 @@ export async function createTune(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "create_tune", "missing_title"))
   }
 
+  if (rawKey && !key) {
+    redirect(appendQueryParam(redirectTo, "create_tune", "invalid_key"))
+  }
+
   const { error } = await supabase.from("pieces").insert({
     title,
-    key: key || null,
+    key,
     style: style || null,
     time_signature: timeSignature || null,
     reference_url: referenceUrl || null,
