@@ -3,6 +3,7 @@ import BulkImportKnownTunesModal from "@/components/BulkImportKnownTunesModal"
 import CreateTuneModal from "@/components/CreateTuneModal"
 import LibraryList from "@/components/LibraryList"
 import { addToLearningList } from "@/lib/actions/lists"
+import { removeTuneFromMyApp } from "@/lib/actions/pieces"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadLibraryData } from "@/lib/loaders/library"
 import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
@@ -32,6 +33,7 @@ type LibraryPageProps = {
     already_known?: string
     added_to_list?: string
     already_in_list?: string
+    remove_tune?: string
   }>
 }
 
@@ -55,6 +57,7 @@ export default async function LibraryPage({
   const createTuneStatus = resolvedSearchParams?.create_tune ?? ""
   const bulkUploadStatus = resolvedSearchParams?.bulk_upload ?? ""
   const bulkUploadRow = resolvedSearchParams?.row ?? ""
+  const removeTuneStatus = resolvedSearchParams?.remove_tune ?? ""
 
   const createdPiecesCount = Number(resolvedSearchParams?.created_pieces ?? "0")
   const reusedPiecesCount = Number(resolvedSearchParams?.reused_pieces ?? "0")
@@ -161,6 +164,24 @@ export default async function LibraryPage({
       {listAddStatus === "duplicate" && (
         <div className="mb-6 rounded border border-gray-400 bg-gray-50 p-3 text-sm text-gray-800">
           That tune is already in this list.
+        </div>
+      )}
+
+      {removeTuneStatus === "success" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          Tune removed from your app.
+        </div>
+      )}
+
+      {removeTuneStatus === "missing_piece" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Could not tell which tune to remove.
+        </div>
+      )}
+
+      {removeTuneStatus === "error" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          Could not remove tune.
         </div>
       )}
 
@@ -330,6 +351,7 @@ export default async function LibraryPage({
         learningListItems={learningListItems as LearningListItem[] | null}
         startLearning={startLearning}
         addToLearningList={addToLearningList}
+        removeTuneFromMyApp={removeTuneFromMyApp}
         redirectTo={redirectTo}
       />
     </main>

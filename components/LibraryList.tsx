@@ -24,6 +24,7 @@ type LibraryListProps = {
   learningListItems: LearningListItem[] | null
   startLearning: (formData: FormData) => Promise<void>
   addToLearningList: (formData: FormData) => Promise<void>
+  removeTuneFromMyApp: (formData: FormData) => Promise<void>
   redirectTo: string
 }
 
@@ -35,6 +36,7 @@ export default function LibraryList({
   learningListItems,
   startLearning,
   addToLearningList,
+  removeTuneFromMyApp,
   redirectTo,
 }: LibraryListProps) {
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
@@ -108,6 +110,25 @@ export default function LibraryList({
                 >
                   Add to List
                 </button>
+
+                <form
+                  action={removeTuneFromMyApp}
+                  onSubmit={(event) => {
+                    const confirmed = window.confirm(
+                      "Remove this tune from your practice, known tunes, and all your lists?"
+                    )
+
+                    if (!confirmed) {
+                      event.preventDefault()
+                    }
+                  }}
+                >
+                  <input type="hidden" name="piece_id" value={piece.id} />
+                  <input type="hidden" name="redirect_to" value={redirectTo} />
+                  <button className="border px-3 py-1 text-sm">
+                    Remove Tune
+                  </button>
+                </form>
               </TuneCard>
             </li>
           )

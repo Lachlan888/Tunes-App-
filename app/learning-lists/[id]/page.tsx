@@ -1,7 +1,9 @@
 import { notFound, redirect } from "next/navigation"
+import RemoveTuneButton from "@/components/RemoveTuneButton"
 import TuneCard from "@/components/TuneCard"
 import { createClient } from "@/lib/supabase/server"
 import { markAsKnown } from "@/lib/actions/known-pieces"
+import { removeTuneFromMyApp } from "@/lib/actions/pieces"
 import { startLearning } from "@/lib/actions/user-pieces"
 import type { Piece } from "@/lib/types"
 
@@ -20,17 +22,26 @@ type LearningListItemRow = {
   pieces: Piece | Piece[] | null
 }
 
+type LearningListDetailPageProps = {
+  params: Promise<{ id: string }>
+  searchParams?: Promise<{
+    remove_tune?: string
+  }>
+}
+
 export default async function LearningListDetailPage({
   params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+  searchParams,
+}: LearningListDetailPageProps) {
   const { id } = await params
   const listId = Number(id)
 
   if (Number.isNaN(listId)) {
     notFound()
   }
+
+  const resolvedSearchParams = await searchParams
+  const removeTuneStatus = resolvedSearchParams?.remove_tune ?? ""
 
   const supabase = await createClient()
 
@@ -54,6 +65,7 @@ export default async function LearningListDetailPage({
   }
 
   const typedList = list as LearningListRow
+  const redirectTo = `/learning-lists/${typedList.id}`
 
   const { data: items, error: itemsError } = await supabase
     .from("learning_list_items")
@@ -147,6 +159,24 @@ export default async function LearningListDetailPage({
         <p className="mb-6 text-sm">{typedList.description}</p>
       )}
 
+      {removeTuneStatus === "success" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          Tune removed from your app.
+        </div>
+      )}
+
+      {removeTuneStatus === "missing_piece" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Could not tell which tune to remove.
+        </div>
+      )}
+
+      {removeTuneStatus === "error" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          Could not remove tune.
+        </div>
+      )}
+
       <h2 className="mb-3 text-lg font-semibold">Tunes</h2>
 
       {typedItems.length === 0 ? (
@@ -181,7 +211,7 @@ export default async function LearningListDetailPage({
                       <input
                         type="hidden"
                         name="redirect_to"
-                        value={`/learning-lists/${typedList.id}`}
+                        value={redirectTo}
                       />
                       <button className="bg-black px-3 py-1 text-sm text-white">
                         Start Practice
@@ -200,6 +230,12 @@ export default async function LearningListDetailPage({
                         </button>
                       </form>
                     ))}
+
+                  <RemoveTuneButton
+                    pieceId={piece.id}
+                    redirectTo={redirectTo}
+                    removeTuneFromMyApp={removeTuneFromMyApp}
+                  />
                 </TuneCard>
               </div>
             )
