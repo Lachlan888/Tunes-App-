@@ -36,10 +36,14 @@ export default function AddToListModal({
   onClose,
 }: AddToListModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
       <form
         action={addToLearningList}
         className="w-full max-w-md rounded bg-white p-6 shadow-lg"
+        onClick={(event) => event.stopPropagation()}
       >
         <h2 className="mb-2 text-xl font-semibold">Add to List</h2>
         <p className="mb-4 text-sm text-gray-600">{selectedPiece.title}</p>

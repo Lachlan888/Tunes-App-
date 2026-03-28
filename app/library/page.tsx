@@ -151,7 +151,7 @@ export default async function LibraryPage({
 
       {createTuneStatus === "invalid_key" && (
         <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
-          Invalid key. Format is 'D', 'Dm' or 'D modal' for modal tunes.
+          Invalid key. Format is "D", "Dm" or "D modal" for modal tunes.
         </div>
       )}
 
@@ -348,6 +348,8 @@ export default async function LibraryPage({
           )}
         </div>
       </form>
+
+      <h2 className="mb-4 text-2xl font-semibold">All tunes</h2>
 
       <LibraryList
         pieces={filteredPieces}

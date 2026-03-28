@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
 import TuneCard from "@/components/TuneCard"
 import { markAsKnown } from "@/lib/actions/known-pieces"
@@ -41,15 +41,88 @@ export default function LibraryList({
 }: LibraryListProps) {
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
   const [selectedListId, setSelectedListId] = useState<string>("")
+  const [visibleCount, setVisibleCount] = useState<number | "all">(20)
 
-  if (!pieces || pieces.length === 0) {
+  const allPieces = pieces ?? []
+
+  const visiblePieces = useMemo(() => {
+    if (visibleCount === "all") {
+      return allPieces
+    }
+
+    return allPieces.slice(0, visibleCount)
+  }, [allPieces, visibleCount])
+
+  const totalCount = allPieces.length
+  const shownCount =
+    visibleCount === "all" ? totalCount : Math.min(visibleCount, totalCount)
+
+  if (totalCount === 0) {
     return <p className="text-gray-600">No tunes match this filter.</p>
   }
 
   return (
     <>
-      <ul className="space-y-3">
-        {pieces.map((piece: Piece) => {
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-gray-600">
+          Showing {shownCount} of {totalCount}
+        </p>
+
+        {totalCount > 20 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setVisibleCount(20)}
+              className={`rounded border px-3 py-1 text-sm ${
+                visibleCount === 20
+                  ? "bg-black text-white"
+                  : "bg-white text-black"
+              }`}
+            >
+              20
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setVisibleCount(50)}
+              className={`rounded border px-3 py-1 text-sm ${
+                visibleCount === 50
+                  ? "bg-black text-white"
+                  : "bg-white text-black"
+              }`}
+            >
+              50
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setVisibleCount(100)}
+              className={`rounded border px-3 py-1 text-sm ${
+                visibleCount === 100
+                  ? "bg-black text-white"
+                  : "bg-white text-black"
+              }`}
+            >
+              100
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setVisibleCount("all")}
+              className={`rounded border px-3 py-1 text-sm ${
+                visibleCount === "all"
+                  ? "bg-black text-white"
+                  : "bg-white text-black"
+              }`}
+            >
+              All
+            </button>
+          </div>
+        )}
+      </div>
+
+      <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {visiblePieces.map((piece: Piece) => {
           const isAlreadyInPractice = (userPieces ?? []).some(
             (userPiece) => userPiece.piece_id === piece.id
           )
@@ -94,6 +167,11 @@ export default function LibraryList({
                   ) : (
                     <form action={markAsKnown}>
                       <input type="hidden" name="piece_id" value={piece.id} />
+                      <input
+                        type="hidden"
+                        name="redirect_to"
+                        value={redirectTo}
+                      />
                       <button className="border px-3 py-1 text-sm">
                         Mark as known
                       </button>
@@ -115,7 +193,7 @@ export default function LibraryList({
                   action={removeTuneFromMyApp}
                   onSubmit={(event) => {
                     const confirmed = window.confirm(
-                      "Remove this tune from your practice, known tunes, and all your lists?"
+                      `Remove "${piece.title}" from your practice, known tunes, and all your lists?`
                     )
 
                     if (!confirmed) {
