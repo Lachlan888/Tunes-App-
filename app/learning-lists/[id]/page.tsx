@@ -1,9 +1,15 @@
 import { notFound, redirect } from "next/navigation"
+import EditListModal from "@/components/EditListModal"
 import RemoveTuneButton from "@/components/RemoveTuneButton"
 import TuneCard from "@/components/TuneCard"
-import { createClient } from "@/lib/supabase/server"
+import {
+  deleteList,
+  removeTuneFromList,
+  updateList,
+} from "@/lib/actions/lists"
 import { markAsKnown } from "@/lib/actions/known-pieces"
 import { removeTuneFromMyApp } from "@/lib/actions/pieces"
+import { createClient } from "@/lib/supabase/server"
 import { startLearning } from "@/lib/actions/user-pieces"
 import type { Piece } from "@/lib/types"
 
@@ -26,6 +32,7 @@ type LearningListDetailPageProps = {
   params: Promise<{ id: string }>
   searchParams?: Promise<{
     remove_tune?: string
+    edit_list?: string
   }>
 }
 
@@ -42,6 +49,7 @@ export default async function LearningListDetailPage({
 
   const resolvedSearchParams = await searchParams
   const removeTuneStatus = resolvedSearchParams?.remove_tune ?? ""
+  const editListStatus = resolvedSearchParams?.edit_list ?? ""
 
   const supabase = await createClient()
 
@@ -96,12 +104,11 @@ export default async function LearningListDetailPage({
 
   const typedItems = (items ?? []) as LearningListItemRow[]
 
-  const pieceIds = typedItems
-    .map((item) => {
-      const piece = Array.isArray(item.pieces) ? item.pieces[0] : item.pieces
-      return piece?.id ?? null
-    })
-    .filter((id): id is number => id !== null)
+  const tunes = typedItems
+    .map((item) => (Array.isArray(item.pieces) ? item.pieces[0] : item.pieces))
+    .filter((piece): piece is Piece => Boolean(piece))
+
+  const pieceIds = tunes.map((piece) => piece.id)
 
   let activePieceIds = new Set<number>()
   let knownPieceIds = new Set<number>()
@@ -148,7 +155,21 @@ export default async function LearningListDetailPage({
 
   return (
     <main className="mx-auto max-w-4xl p-6">
-      <h1 className="mb-2 text-2xl font-bold">{typedList.name}</h1>
+      <div className="mb-2 flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold">{typedList.name}</h1>
+
+        <EditListModal
+          listId={typedList.id}
+          name={typedList.name}
+          description={typedList.description}
+          visibility={typedList.visibility}
+          redirectTo={redirectTo}
+          tunes={tunes}
+          updateList={updateList}
+          removeTuneFromList={removeTuneFromList}
+          deleteList={deleteList}
+        />
+      </div>
 
       <div className="mb-4 flex gap-3 text-sm text-gray-600">
         <span>{typedList.visibility === "public" ? "Public" : "Private"}</span>
@@ -174,6 +195,60 @@ export default async function LearningListDetailPage({
       {removeTuneStatus === "error" && (
         <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
           Could not remove tune.
+        </div>
+      )}
+
+      {editListStatus === "success" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          List updated.
+        </div>
+      )}
+
+      {editListStatus === "removed_tune" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          Tune removed from this list.
+        </div>
+      )}
+
+      {editListStatus === "deleted" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          List deleted.
+        </div>
+      )}
+
+      {editListStatus === "missing_list" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Could not tell which list to edit.
+        </div>
+      )}
+
+      {editListStatus === "missing_name" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Please enter a list name.
+        </div>
+      )}
+
+      {editListStatus === "missing_item" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Could not tell which tune to remove from the list.
+        </div>
+      )}
+
+      {editListStatus === "invalid_visibility" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Invalid list visibility.
+        </div>
+      )}
+
+      {editListStatus === "not_found" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          List not found or you do not own it.
+        </div>
+      )}
+
+      {editListStatus === "error" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          Could not update list.
         </div>
       )}
 

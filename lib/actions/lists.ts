@@ -109,3 +109,154 @@ export async function addToLearningList(formData: FormData) {
 
   redirect(buildRedirectUrl(redirectTo, "success"))
 }
+
+export async function updateList(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const listId = Number(formData.get("learning_list_id"))
+  const name = String(formData.get("name") ?? "").trim()
+  const description = String(formData.get("description") ?? "").trim()
+  const visibility = String(formData.get("visibility") ?? "").trim()
+  const redirectTo = String(formData.get("redirect_to") ?? "/learning-lists")
+
+  if (!listId) {
+    redirect(appendQueryParam(redirectTo, "edit_list", "missing_list"))
+  }
+
+  if (!name) {
+    redirect(appendQueryParam(redirectTo, "edit_list", "missing_name"))
+  }
+
+  if (visibility !== "private" && visibility !== "public") {
+    redirect(appendQueryParam(redirectTo, "edit_list", "invalid_visibility"))
+  }
+
+  const { data: ownedList, error: ownedListError } = await supabase
+    .from("learning_lists")
+    .select("id")
+    .eq("id", listId)
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (ownedListError || !ownedList) {
+    redirect(appendQueryParam(redirectTo, "edit_list", "not_found"))
+  }
+
+  const { error: updateError } = await supabase
+    .from("learning_lists")
+    .update({
+      name,
+      description: description || null,
+      visibility,
+    })
+    .eq("id", listId)
+    .eq("user_id", user.id)
+
+  if (updateError) {
+    redirect(appendQueryParam(redirectTo, "edit_list", "error"))
+  }
+
+  redirect(appendQueryParam(redirectTo, "edit_list", "success"))
+}
+
+export async function removeTuneFromList(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const listId = Number(formData.get("learning_list_id"))
+  const pieceId = Number(formData.get("piece_id"))
+  const redirectTo = String(formData.get("redirect_to") ?? "/learning-lists")
+
+  if (!listId || !pieceId) {
+    redirect(appendQueryParam(redirectTo, "edit_list", "missing_item"))
+  }
+
+  const { data: ownedList, error: ownedListError } = await supabase
+    .from("learning_lists")
+    .select("id")
+    .eq("id", listId)
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (ownedListError || !ownedList) {
+    redirect(appendQueryParam(redirectTo, "edit_list", "not_found"))
+  }
+
+  const { error: deleteError } = await supabase
+    .from("learning_list_items")
+    .delete()
+    .eq("learning_list_id", listId)
+    .eq("piece_id", pieceId)
+
+  if (deleteError) {
+    redirect(appendQueryParam(redirectTo, "edit_list", "error"))
+  }
+
+  redirect(appendQueryParam(redirectTo, "edit_list", "removed_tune"))
+}
+
+export async function deleteList(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const listId = Number(formData.get("learning_list_id"))
+  const redirectTo = String(formData.get("redirect_to") ?? "/learning-lists")
+
+  if (!listId) {
+    redirect(appendQueryParam(redirectTo, "edit_list", "missing_list"))
+  }
+
+  const { data: ownedList, error: ownedListError } = await supabase
+    .from("learning_lists")
+    .select("id")
+    .eq("id", listId)
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (ownedListError || !ownedList) {
+    redirect(appendQueryParam(redirectTo, "edit_list", "not_found"))
+  }
+
+  const { error: itemsDeleteError } = await supabase
+    .from("learning_list_items")
+    .delete()
+    .eq("learning_list_id", listId)
+
+  if (itemsDeleteError) {
+    redirect(appendQueryParam(redirectTo, "edit_list", "error"))
+  }
+
+  const { error: listDeleteError } = await supabase
+    .from("learning_lists")
+    .delete()
+    .eq("id", listId)
+    .eq("user_id", user.id)
+
+  if (listDeleteError) {
+    redirect(appendQueryParam(redirectTo, "edit_list", "error"))
+  }
+
+  redirect(appendQueryParam(redirectTo, "edit_list", "deleted"))
+}
