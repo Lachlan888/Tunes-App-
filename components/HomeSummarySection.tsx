@@ -10,6 +10,11 @@ type UserPiece = {
   next_review_due: string | null
 }
 
+type UserKnownPiece = {
+  id: number
+  piece_id: number
+}
+
 type LearningList = {
   id: number
   name: string
@@ -18,6 +23,7 @@ type LearningList = {
 type HomeSummarySectionProps = {
   pieces: Piece[] | null
   userPieces: UserPiece[] | null
+  userKnownPieces: UserKnownPiece[] | null
   learningLists: LearningList[] | null
   dueToday: UserPiece[] | null
 }
@@ -25,11 +31,13 @@ type HomeSummarySectionProps = {
 export default function HomeSummarySection({
   pieces,
   userPieces,
+  userKnownPieces,
   learningLists,
   dueToday,
 }: HomeSummarySectionProps) {
   const totalLists = learningLists?.length ?? 0
   const totalInPractice = userPieces?.length ?? 0
+  const totalKnown = userKnownPieces?.length ?? 0
   const dueTodayItems = dueToday ?? []
   const dueTodayCount = dueTodayItems.length
 
@@ -55,7 +63,7 @@ export default function HomeSummarySection({
       <section>
         <h2 className="mb-4 text-2xl font-semibold">Overview</h2>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
           <div className="rounded-lg border p-4">
             <p className="text-sm text-gray-600">Due today</p>
             <p className="mt-1 text-3xl font-bold">{dueTodayCount}</p>
@@ -69,6 +77,14 @@ export default function HomeSummarySection({
             <p className="mt-1 text-3xl font-bold">{totalInPractice}</p>
             <a href="/review" className="mt-3 inline-block text-sm underline">
               Open Practice
+            </a>
+          </div>
+
+          <div className="rounded-lg border p-4">
+            <p className="text-sm text-gray-600">Known tunes</p>
+            <p className="mt-1 text-3xl font-bold">{totalKnown}</p>
+            <a href="/library" className="mt-3 inline-block text-sm underline">
+              Open Tunes
             </a>
           </div>
 

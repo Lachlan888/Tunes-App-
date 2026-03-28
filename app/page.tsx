@@ -2,7 +2,7 @@ import HomeSummarySection from "@/components/HomeSummarySection"
 import { loadHomepageData } from "@/lib/loaders/homepage"
 
 export default async function HomePage() {
-  const { user, pieces, userPieces, learningLists, dueToday } =
+  const { user, pieces, userPieces, userKnownPieces, learningLists, dueToday } =
     await loadHomepageData()
 
   return (
@@ -13,6 +13,7 @@ export default async function HomePage() {
       <HomeSummarySection
         pieces={pieces}
         userPieces={userPieces}
+        userKnownPieces={userKnownPieces}
         learningLists={learningLists}
         dueToday={dueToday}
       />

@@ -31,6 +31,14 @@ function getPiece(pieces: Piece[] | Piece | null): Piece | null {
   return Array.isArray(pieces) ? pieces[0] ?? null : pieces
 }
 
+function formatDueDate(dateValue: string | null) {
+  if (!dateValue) return "No due date"
+
+  return new Date(dateValue).toLocaleDateString("en-AU", {
+    timeZone: "Australia/Melbourne",
+  })
+}
+
 export default async function ReviewPage() {
   const supabase = await createClient()
 
@@ -78,113 +86,176 @@ export default async function ReviewPage() {
     isDueToday(userPiece.next_review_due)
   )
 
-  if (duePieces.length === 0) {
-    return (
-      <main className="p-8">
-        <h1 className="text-3xl font-bold">Practice</h1>
-        <p className="mt-4 text-gray-600">No tunes due today.</p>
-      </main>
-    )
-  }
-
   const today = getToday()
 
   return (
     <main className="p-8">
       <h1 className="text-3xl font-bold">Practice</h1>
 
-      <p className="mt-4 text-sm text-gray-600">
-        {duePieces.length} tune{duePieces.length === 1 ? "" : "s"} due
-      </p>
+      {duePieces.length === 0 ? (
+        <p className="mt-4 text-gray-600">No tunes due today.</p>
+      ) : (
+        <>
+          <p className="mt-4 text-sm text-gray-600">
+            {duePieces.length} tune{duePieces.length === 1 ? "" : "s"} due
+          </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-        {duePieces.map((userPiece) => {
-          const piece = getPiece(userPiece.pieces)
-          const dueDateOnly = getDateOnly(userPiece.next_review_due)
-          const dueStatus =
-            dueDateOnly && dueDateOnly < today ? "Overdue" : "Due today"
+          <div className="mt-6 grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+            {duePieces.map((userPiece) => {
+              const piece = getPiece(userPiece.pieces)
+              const dueDateOnly = getDateOnly(userPiece.next_review_due)
+              const dueStatus =
+                dueDateOnly && dueDateOnly < today ? "Overdue" : "Due today"
 
-          return (
-            <div key={userPiece.id} className="rounded-lg border p-6">
-              <div className="flex items-start justify-between gap-4">
-                <h2 className="text-2xl font-semibold">
-                  {piece?.title ?? "Untitled piece"}
-                </h2>
+              return (
+                <div key={userPiece.id} className="rounded-lg border p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <h2 className="text-2xl font-semibold">
+                      {piece?.title ?? "Untitled piece"}
+                    </h2>
 
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${
-                    dueStatus === "Overdue"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-blue-100 text-blue-700"
-                  }`}
-                >
-                  {dueStatus}
-                </span>
-              </div>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        dueStatus === "Overdue"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-blue-100 text-blue-700"
+                      }`}
+                    >
+                      {dueStatus}
+                    </span>
+                  </div>
 
-              <p className="mt-2 text-sm text-gray-600">
-                Key: {piece?.key ?? "Unknown"} | Style: {piece?.style ?? "Unknown"} | Time:{" "}
-                {piece?.time_signature ?? "Unknown"}
-              </p>
+                  <p className="mt-2 text-sm text-gray-600">
+                    Key: {piece?.key ?? "Unknown"} | Style:{" "}
+                    {piece?.style ?? "Unknown"} | Time:{" "}
+                    {piece?.time_signature ?? "Unknown"}
+                  </p>
 
-              {piece?.reference_url && (
-                <p className="mt-2">
-                  <a
-                    href={piece.reference_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-sm underline"
-                  >
-                    Reference
-                  </a>
-                </p>
-              )}
+                  {piece?.reference_url && (
+                    <p className="mt-2">
+                      <a
+                        href={piece.reference_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm underline"
+                      >
+                        Reference
+                      </a>
+                    </p>
+                  )}
 
-              <p className="mt-2 text-sm text-gray-600">
-                Due:{" "}
-                {userPiece.next_review_due
-                  ? new Date(userPiece.next_review_due).toLocaleDateString("en-AU", {
-                      timeZone: "Australia/Melbourne",
-                    })
-                  : "No due date"}{" "}
-                | Stage: {userPiece.stage}
-              </p>
+                  <p className="mt-2 text-sm text-gray-600">
+                    Due: {formatDueDate(userPiece.next_review_due)} | Stage:{" "}
+                    {userPiece.stage}
+                  </p>
 
-              <div className="mt-6 flex flex-wrap gap-3">
-                <form action={markFailed}>
-                  <input type="hidden" name="userPieceId" value={userPiece.id} />
-                  <button
-                    type="submit"
-                    className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-                  >
-                    Rough
-                  </button>
-                </form>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <form action={markFailed}>
+                      <input
+                        type="hidden"
+                        name="userPieceId"
+                        value={userPiece.id}
+                      />
+                      <button
+                        type="submit"
+                        className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                      >
+                        Rough
+                      </button>
+                    </form>
 
-                <form action={markShaky}>
-                  <input type="hidden" name="userPieceId" value={userPiece.id} />
-                  <button
-                    type="submit"
-                    className="rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-600"
-                  >
-                    Shaky
-                  </button>
-                </form>
+                    <form action={markShaky}>
+                      <input
+                        type="hidden"
+                        name="userPieceId"
+                        value={userPiece.id}
+                      />
+                      <button
+                        type="submit"
+                        className="rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-600"
+                      >
+                        Shaky
+                      </button>
+                    </form>
 
-                <form action={markSolid}>
-                  <input type="hidden" name="userPieceId" value={userPiece.id} />
-                  <button
-                    type="submit"
-                    className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-                  >
-                    Solid
-                  </button>
-                </form>
-              </div>
-            </div>
-          )
-        })}
-      </div>
+                    <form action={markSolid}>
+                      <input
+                        type="hidden"
+                        name="userPieceId"
+                        value={userPiece.id}
+                      />
+                      <button
+                        type="submit"
+                        className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                      >
+                        Solid
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      <section className="mt-10 rounded-lg border p-4">
+        <details>
+          <summary className="cursor-pointer text-lg font-semibold">
+            Active practice tunes ({typedLearningPieces.length})
+          </summary>
+
+          <p className="mt-2 text-sm text-gray-600">
+            Full list of tunes currently in your practice system.
+          </p>
+
+          {typedLearningPieces.length === 0 ? (
+            <p className="mt-4 text-sm text-gray-600">
+              No tunes in practice yet.
+            </p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {typedLearningPieces.map((userPiece) => {
+                const piece = getPiece(userPiece.pieces)
+                const dueDateOnly = getDateOnly(userPiece.next_review_due)
+                const dueStatus =
+                  dueDateOnly && dueDateOnly < today ? "Overdue" : "Scheduled"
+
+                return (
+                  <li key={userPiece.id} className="rounded border p-3">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="font-medium">
+                          {piece?.title ?? "Untitled piece"}
+                        </p>
+                        <p className="mt-1 text-sm text-gray-600">
+                          Key: {piece?.key ?? "Unknown"} | Style:{" "}
+                          {piece?.style ?? "Unknown"} | Time:{" "}
+                          {piece?.time_signature ?? "Unknown"}
+                        </p>
+                        <p className="mt-1 text-sm text-gray-600">
+                          Due: {formatDueDate(userPiece.next_review_due)} |
+                          {" "}Stage: {userPiece.stage}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${
+                          dueStatus === "Overdue"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {dueStatus}
+                      </span>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </details>
+      </section>
     </main>
   )
 }
