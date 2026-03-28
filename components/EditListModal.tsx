@@ -41,8 +41,14 @@ export default function EditListModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded bg-white p-6 shadow-lg">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={() => setIsOpen(false)}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded bg-white p-6 shadow-lg"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold">Edit List</h2>
           <button
@@ -136,7 +142,11 @@ export default function EditListModal({
                         value={listId}
                       />
                       <input type="hidden" name="piece_id" value={tune.id} />
-                      <input type="hidden" name="redirect_to" value={redirectTo} />
+                      <input
+                        type="hidden"
+                        name="redirect_to"
+                        value={redirectTo}
+                      />
                       <button className="border px-3 py-1 text-sm">
                         Remove from List
                       </button>
