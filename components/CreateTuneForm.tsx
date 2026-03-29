@@ -1,10 +1,18 @@
+type StyleOption = {
+  id: number
+  slug: string
+  label: string
+}
+
 type CreateTuneFormProps = {
   createTune: (formData: FormData) => void | Promise<void>
+  styleOptions: StyleOption[]
   redirectTo?: string
 }
 
 export default function CreateTuneForm({
   createTune,
+  styleOptions,
   redirectTo = "/library",
 }: CreateTuneFormProps) {
   return (
@@ -24,11 +32,22 @@ export default function CreateTuneForm({
         className="mb-2 w-full border p-2"
       />
 
-      <input
-        name="style"
-        placeholder="Style"
-        className="mb-2 w-full border p-2"
-      />
+      <fieldset className="mb-4 border p-3">
+        <legend className="px-1 font-medium">Styles</legend>
+
+        <div className="grid gap-2 sm:grid-cols-2">
+          {styleOptions.map((style) => (
+            <label key={style.id} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="style_ids"
+                value={style.id}
+              />
+              <span>{style.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <input
         name="time_signature"

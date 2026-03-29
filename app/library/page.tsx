@@ -6,6 +6,7 @@ import { addToLearningList } from "@/lib/actions/lists"
 import { removeTuneFromMyApp } from "@/lib/actions/pieces"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadLibraryData } from "@/lib/loaders/library"
+import { createClient } from "@/lib/supabase/server"
 import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
 
 type LearningListItem = {
@@ -16,6 +17,12 @@ type LearningListItem = {
     name: string
     user_id: string
   }
+}
+
+type StyleOption = {
+  id: number
+  slug: string
+  label: string
 }
 
 type LibraryPageProps = {
@@ -86,6 +93,16 @@ export default async function LibraryPage({
     ? `/library?${redirectParams.toString()}`
     : "/library"
 
+  const supabase = await createClient()
+
+  const { data: styleRows, error: stylesError } = await supabase
+    .from("styles")
+    .select("id, slug, label")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true })
+
+  const styleOptions: StyleOption[] = stylesError ? [] : styleRows ?? []
+
   const availableKeys = Array.from(
     new Set(
       (pieces ?? [])
@@ -133,7 +150,7 @@ export default async function LibraryPage({
       <p className="mb-4 text-gray-600">Logged in as {user.email}</p>
 
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <CreateTuneModal />
+        <CreateTuneModal styleOptions={styleOptions} />
         <BulkImportKnownTunesModal />
       </div>
 

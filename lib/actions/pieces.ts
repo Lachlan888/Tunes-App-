@@ -16,10 +16,14 @@ export async function createTune(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim()
   const rawKey = String(formData.get("key") ?? "").trim()
   const key = rawKey ? normaliseKey(rawKey) : null
-  const style = String(formData.get("style") ?? "").trim()
   const timeSignature = String(formData.get("time_signature") ?? "").trim()
   const referenceUrl = String(formData.get("reference_url") ?? "").trim()
   const redirectTo = String(formData.get("redirect_to") ?? "/library")
+
+  const rawStyleIds = formData.getAll("style_ids")
+  const styleIds = rawStyleIds
+    .map((value) => Number(value))
+    .filter((value) => Number.isInteger(value) && value > 0)
 
   if (!title) {
     redirect(appendQueryParam(redirectTo, "create_tune", "missing_title"))
@@ -29,16 +33,65 @@ export async function createTune(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "create_tune", "invalid_key"))
   }
 
-  const { error } = await supabase.from("pieces").insert({
-    title,
-    key,
-    style: style || null,
-    time_signature: timeSignature || null,
-    reference_url: referenceUrl || null,
-  })
+  let styleLabelString: string | null = null
 
-  if (error) {
+  if (styleIds.length > 0) {
+    const { data: validStyles, error: stylesError } = await supabase
+      .from("styles")
+      .select("id, label")
+      .in("id", styleIds)
+      .eq("is_active", true)
+
+    if (stylesError) {
+      redirect(appendQueryParam(redirectTo, "create_tune", "error"))
+    }
+
+    const validStyleIds = new Set((validStyles ?? []).map((style) => style.id))
+    const hasInvalidStyleId = styleIds.some((id) => !validStyleIds.has(id))
+
+    if (hasInvalidStyleId) {
+      redirect(appendQueryParam(redirectTo, "create_tune", "error"))
+    }
+
+    const styleLabelsInSelectedOrder = styleIds
+      .map((id) => validStyles?.find((style) => style.id === id)?.label ?? null)
+      .filter((label): label is string => Boolean(label))
+
+    styleLabelString =
+      styleLabelsInSelectedOrder.length > 0
+        ? styleLabelsInSelectedOrder.join(", ")
+        : null
+  }
+
+  const { data: insertedPiece, error: insertPieceError } = await supabase
+    .from("pieces")
+    .insert({
+      title,
+      key,
+      style: styleLabelString,
+      time_signature: timeSignature || null,
+      reference_url: referenceUrl || null,
+    })
+    .select("id")
+    .single()
+
+  if (insertPieceError || !insertedPiece) {
     redirect(appendQueryParam(redirectTo, "create_tune", "error"))
+  }
+
+  if (styleIds.length > 0) {
+    const pieceStyleRows = styleIds.map((styleId) => ({
+      piece_id: insertedPiece.id,
+      style_id: styleId,
+    }))
+
+    const { error: pieceStylesError } = await supabase
+      .from("piece_styles")
+      .insert(pieceStyleRows)
+
+    if (pieceStylesError) {
+      redirect(appendQueryParam(redirectTo, "create_tune", "error"))
+    }
   }
 
   redirect(appendQueryParam(redirectTo, "create_tune", "success"))

@@ -4,7 +4,19 @@ import { useEffect, useState } from "react"
 import CreateTuneForm from "@/components/CreateTuneForm"
 import { createTune } from "@/lib/actions/pieces"
 
-export default function CreateTuneModal() {
+type StyleOption = {
+  id: number
+  slug: string
+  label: string
+}
+
+type CreateTuneModalProps = {
+  styleOptions: StyleOption[]
+}
+
+export default function CreateTuneModal({
+  styleOptions,
+}: CreateTuneModalProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
@@ -54,7 +66,11 @@ export default function CreateTuneModal() {
                 </button>
               </div>
 
-              <CreateTuneForm createTune={createTune} redirectTo="/library" />
+              <CreateTuneForm
+                createTune={createTune}
+                styleOptions={styleOptions}
+                redirectTo="/library"
+              />
             </div>
           </div>
         </div>
