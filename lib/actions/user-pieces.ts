@@ -19,22 +19,36 @@ export async function startLearning(formData: FormData) {
   const redirectTo = String(formData.get("redirect_to") || "/")
   const nextReviewDue = getTomorrow()
 
-  const { data: existingUserPiece, error: fetchError } = await supabase
+  if (!piece_id || Number.isNaN(piece_id)) {
+    redirect(redirectTo)
+  }
+
+  const { data: existingUserPiece, error: fetchUserPieceError } = await supabase
     .from("user_pieces")
     .select("id")
     .eq("user_id", user.id)
     .eq("piece_id", piece_id)
     .maybeSingle()
 
-  if (fetchError) {
-    throw new Error(fetchError.message)
+  if (fetchUserPieceError) {
+    throw new Error(fetchUserPieceError.message)
   }
 
   if (existingUserPiece) {
     redirect(redirectTo)
   }
 
-  const { error } = await supabase.from("user_pieces").insert({
+  const { error: deleteKnownError } = await supabase
+    .from("user_known_pieces")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("piece_id", piece_id)
+
+  if (deleteKnownError) {
+    throw new Error(deleteKnownError.message)
+  }
+
+  const { error: insertUserPieceError } = await supabase.from("user_pieces").insert({
     user_id: user.id,
     piece_id,
     status: "learning",
@@ -42,8 +56,8 @@ export async function startLearning(formData: FormData) {
     next_review_due: nextReviewDue,
   })
 
-  if (error) {
-    throw new Error(error.message)
+  if (insertUserPieceError) {
+    throw new Error(insertUserPieceError.message)
   }
 
   redirect(redirectTo)
