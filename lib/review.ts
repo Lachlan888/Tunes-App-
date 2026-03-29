@@ -71,5 +71,6 @@ export function getNextStageForShaky(currentStage: number | null | undefined) {
 }
 
 export function getNextStageForFailed(currentStage: number | null | undefined) {
-  return 1
+  const safeCurrentStage = currentStage && currentStage > 0 ? currentStage : 1
+  return Math.max(safeCurrentStage - 2, 1)
 }
