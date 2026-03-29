@@ -166,6 +166,12 @@ export default async function LibraryPage({
         </div>
       )}
 
+      {createTuneStatus === "duplicate" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          A tune with that title already exists; either add that tune or give this one a new title. For example, if Black Mountain Rag already exists in D you can make it in A by titling it Black Mountain Rag in A.
+        </div>
+      )}
+
       {createTuneStatus === "invalid_key" && (
         <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
           Invalid key. Format is "D", "Dm" or "D modal" for modal tunes.

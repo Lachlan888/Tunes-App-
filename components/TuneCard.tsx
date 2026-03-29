@@ -21,6 +21,9 @@ export default function TuneCard({
   listNames = [],
   children,
 }: TuneCardProps) {
+  const visibleListNames = listNames.slice(0, 3)
+  const remainingListCount = Math.max(listNames.length - visibleListNames.length, 0)
+
   return (
     <div className="rounded border p-3">
       <div>
@@ -45,7 +48,8 @@ export default function TuneCard({
 
       {listNames.length > 0 && (
         <p className="mt-1 text-sm text-gray-600">
-          In: {listNames.join(", ")}
+          In: {visibleListNames.join(", ")}
+          {remainingListCount > 0 ? ` +${remainingListCount} more` : ""}
         </p>
       )}
 

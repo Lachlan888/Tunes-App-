@@ -10,6 +10,38 @@ type CreateTuneFormProps = {
   redirectTo?: string
 }
 
+const KEY_OPTIONS = [
+  "",
+  "A",
+  "Am",
+  "A modal",
+  "Bb",
+  "Bbm",
+  "B",
+  "Bm",
+  "C",
+  "Cm",
+  "C modal",
+  "D",
+  "Dm",
+  "D modal",
+  "Eb",
+  "Ebm",
+  "E",
+  "Em",
+  "E modal",
+  "F",
+  "Fm",
+  "F modal",
+  "F#",
+  "F#m",
+  "G",
+  "Gm",
+  "G modal",
+  "Ab",
+  "Abm",
+]
+
 export default function CreateTuneForm({
   createTune,
   styleOptions,
@@ -26,11 +58,22 @@ export default function CreateTuneForm({
         required
       />
 
-      <input
+      <label htmlFor="key" className="mb-2 block text-sm font-medium">
+        Key
+      </label>
+      <select
+        id="key"
         name="key"
-        placeholder="Key"
-        className="mb-2 w-full border p-2"
-      />
+        defaultValue=""
+        className="mb-4 w-full border p-2"
+      >
+        <option value="">No key</option>
+        {KEY_OPTIONS.filter((key) => key !== "").map((key) => (
+          <option key={key} value={key}>
+            {key}
+          </option>
+        ))}
+      </select>
 
       <fieldset className="mb-4 border p-3">
         <legend className="px-1 font-medium">Styles</legend>
@@ -38,11 +81,7 @@ export default function CreateTuneForm({
         <div className="grid gap-2 sm:grid-cols-2">
           {styleOptions.map((style) => (
             <label key={style.id} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="style_ids"
-                value={style.id}
-              />
+              <input type="checkbox" name="style_ids" value={style.id} />
               <span>{style.label}</span>
             </label>
           ))}

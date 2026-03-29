@@ -10,6 +10,14 @@ function appendQueryParam(url: string, key: string, value: string) {
     : `${url}?${key}=${encodeURIComponent(value)}`
 }
 
+function normaliseForDuplicateMatch(value: string | null) {
+  return (value ?? "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]/g, "")
+    .trim()
+}
+
 export async function createTune(formData: FormData) {
   const supabase = await createClient()
 
@@ -31,6 +39,25 @@ export async function createTune(formData: FormData) {
 
   if (rawKey && !key) {
     redirect(appendQueryParam(redirectTo, "create_tune", "invalid_key"))
+  }
+
+  const normalisedTitle = normaliseForDuplicateMatch(title)
+
+  const { data: existingPieces, error: existingPiecesError } = await supabase
+    .from("pieces")
+    .select("id, title")
+    .order("id")
+
+  if (existingPiecesError) {
+    redirect(appendQueryParam(redirectTo, "create_tune", "error"))
+  }
+
+  const duplicatePiece = (existingPieces ?? []).find(
+    (piece) => normaliseForDuplicateMatch(piece.title) === normalisedTitle
+  )
+
+  if (duplicatePiece) {
+    redirect(appendQueryParam(redirectTo, "create_tune", "duplicate"))
   }
 
   let styleLabelString: string | null = null
