@@ -3,9 +3,26 @@ import CreateTuneForm from "@/components/CreateTuneForm"
 import { addToLearningList, createList } from "@/lib/actions/lists"
 import { createTune } from "@/lib/actions/pieces"
 import { loadHomepageData } from "@/lib/loaders/homepage"
+import { createClient } from "@/lib/supabase/server"
+
+type StyleOption = {
+  id: number
+  slug: string
+  label: string
+}
 
 export default async function RepertoirePage() {
   const { user, learningLists, pieces } = await loadHomepageData()
+
+  const supabase = await createClient()
+
+  const { data: styleRows, error: stylesError } = await supabase
+    .from("styles")
+    .select("id, slug, label")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true })
+
+  const styleOptions: StyleOption[] = stylesError ? [] : styleRows ?? []
 
   return (
     <main className="p-8">
@@ -31,7 +48,7 @@ export default async function RepertoirePage() {
         <button className="bg-black px-4 py-2 text-white">Create</button>
       </form>
 
-      <CreateTuneForm createTune={createTune} />
+      <CreateTuneForm createTune={createTune} styleOptions={styleOptions} />
 
       <AddToListSection
         pieces={pieces}

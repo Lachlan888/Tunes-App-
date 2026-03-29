@@ -32,6 +32,7 @@ type UserPiece = {
 }
 
 type UserKnownPiece = {
+  id: number
   piece_id: number
 }
 
@@ -78,7 +79,7 @@ export async function loadHomepageData() {
 
   const { data: userKnownPieces, error: userKnownPiecesError } = await supabase
     .from("user_known_pieces")
-    .select("piece_id")
+    .select("id, piece_id")
     .eq("user_id", user.id)
 
   if (userKnownPiecesError) {
