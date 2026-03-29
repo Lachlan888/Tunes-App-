@@ -271,6 +271,7 @@ export default async function LearningListDetailPage({
             return (
               <div key={item.id}>
                 <TuneCard
+                  id={piece.id}
                   title={piece.title}
                   keyValue={piece.key}
                   style={piece.style}

@@ -142,6 +142,7 @@ export default function LibraryList({
           return (
             <li key={piece.id}>
               <TuneCard
+                id={piece.id}
                 title={piece.title}
                 keyValue={piece.key}
                 style={piece.style}

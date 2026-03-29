@@ -1,5 +1,6 @@
 import Link from "next/link"
 import CreateListModal from "@/components/CreateListModal"
+import MyTunesModal from "@/components/MyTunesModal"
 import UnlistedKnownTunesModal from "@/components/UnlistedKnownTunesModal"
 import UnlistedPracticeTunesModal from "@/components/UnlistedPracticeTunesModal"
 import { createClient } from "@/lib/supabase/server"
@@ -50,10 +51,36 @@ type LearningListItem = {
   piece_id: number
 }
 
+type MyTuneRow = {
+  piece_id: number
+  title: string
+  inPractice: boolean
+  known: boolean
+}
+
 type LearningListsPageProps = {
   searchParams?: Promise<{
     create_list?: string
   }>
+}
+
+function extractPieceTitle(
+  piece:
+    | {
+        id: number
+        title: string
+      }
+    | {
+        id: number
+        title: string
+      }[]
+    | null
+) {
+  if (!piece) return null
+  if (Array.isArray(piece)) {
+    return piece[0]?.title ?? null
+  }
+  return piece.title
 }
 
 export default async function LearningListsPage({
@@ -135,6 +162,40 @@ export default async function LearningListsPage({
     (userKnownPiece) => !listedPieceIds.has(userKnownPiece.piece_id)
   )
 
+  const myTunesMap = new Map<number, MyTuneRow>()
+
+  for (const userPiece of typedUserPieces) {
+    const title = extractPieceTitle(userPiece.pieces)
+    if (!title) continue
+
+    const existing = myTunesMap.get(userPiece.piece_id)
+
+    myTunesMap.set(userPiece.piece_id, {
+      piece_id: userPiece.piece_id,
+      title,
+      inPractice: true,
+      known: existing?.known ?? false,
+    })
+  }
+
+  for (const userKnownPiece of typedUserKnownPieces) {
+    const title = extractPieceTitle(userKnownPiece.pieces)
+    if (!title) continue
+
+    const existing = myTunesMap.get(userKnownPiece.piece_id)
+
+    myTunesMap.set(userKnownPiece.piece_id, {
+      piece_id: userKnownPiece.piece_id,
+      title,
+      inPractice: existing?.inPractice ?? false,
+      known: true,
+    })
+  }
+
+  const myTunes = Array.from(myTunesMap.values()).sort((a, b) =>
+    a.title.localeCompare(b.title)
+  )
+
   return (
     <main className="p-8">
       <h1 className="mb-2 text-3xl font-bold">Lists</h1>
@@ -159,6 +220,27 @@ export default async function LearningListsPage({
           Could not create list.
         </div>
       )}
+
+      <section className="mb-6 rounded border p-4">
+        <div>
+          <h2 className="text-xl font-semibold">My Tunes</h2>
+          <p className="mt-2 text-gray-600">Known and active learning tunes</p>
+
+          <div className="mt-3">
+            <span className="text-sm text-gray-500">
+              {myTunes.length} tune{myTunes.length === 1 ? "" : "s"}
+            </span>
+          </div>
+        </div>
+
+        {myTunes.length === 0 ? (
+          <p className="mt-4 text-sm text-gray-600">No tunes yet.</p>
+        ) : (
+          <div className="mt-4">
+            <MyTunesModal myTunes={myTunes} />
+          </div>
+        )}
+      </section>
 
       {typedLearningLists.length === 0 ? (
         <p className="text-gray-600">No lists yet.</p>

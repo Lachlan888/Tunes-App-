@@ -236,6 +236,7 @@ export default async function ComparePage({
               {filteredPieces.map((piece) => (
                 <TuneCard
                   key={piece.id}
+                  id={piece.id}
                   title={piece.title}
                   keyValue={piece.key}
                   style={piece.style}

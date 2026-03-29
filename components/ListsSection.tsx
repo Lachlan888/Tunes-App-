@@ -77,6 +77,7 @@ export default function ListsSection({
                       return (
                         <div key={item.id}>
                           <TuneCard
+                            id={piece.id}
                             title={piece.title}
                             keyValue={piece.key}
                             style={piece.style}
@@ -116,4 +117,3 @@ export default function ListsSection({
     </section>
   )
 }
-

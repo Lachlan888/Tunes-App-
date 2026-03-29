@@ -1,8 +1,10 @@
 "use client"
 
+import Link from "next/link"
 import type { Piece } from "@/lib/types"
 
 type TuneCardProps = {
+  id: Piece["id"]
   title: Piece["title"]
   keyValue: Piece["key"]
   style: Piece["style"]
@@ -13,6 +15,7 @@ type TuneCardProps = {
 }
 
 export default function TuneCard({
+  id,
   title,
   keyValue,
   style,
@@ -27,7 +30,9 @@ export default function TuneCard({
   return (
     <div className="rounded border p-3">
       <div>
-        {title}
+        <Link href={`/library/${id}`} className="underline">
+          {title}
+        </Link>
         {keyValue ? `, key ${keyValue}` : ""}
         {style ? `, ${style}` : ""}
         {timeSignature ? `, ${timeSignature}` : ""}
