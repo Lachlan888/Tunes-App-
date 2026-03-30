@@ -1,11 +1,16 @@
-import Link from "next/link"
 import TuneCard from "@/components/TuneCard"
+import PieceSearchFilters from "@/components/PieceSearchFilters"
+import {
+  getPieceFilterOptions,
+  pieceMatchesFilters,
+} from "@/lib/search-filters"
 import { loadCompareData } from "@/lib/loaders/compare"
 import type { Piece } from "@/lib/types"
 
 type ComparePageProps = {
   searchParams?: Promise<{
     user?: string
+    q?: string
     key?: string
     style?: string
     time_signature?: string
@@ -18,6 +23,7 @@ export default async function ComparePage({
   const resolvedSearchParams = await searchParams
 
   const searchValue = resolvedSearchParams?.user ?? ""
+  const titleQuery = resolvedSearchParams?.q ?? ""
   const selectedKey = resolvedSearchParams?.key ?? ""
   const selectedStyle = resolvedSearchParams?.style ?? ""
   const selectedTimeSignature = resolvedSearchParams?.time_signature ?? ""
@@ -29,63 +35,37 @@ export default async function ComparePage({
     error,
   } = await loadCompareData(searchValue)
 
-  const availableKeys = Array.from(
-    new Set(
-      mutualPieces
-        .map((piece) => piece.key)
-        .filter((key): key is string => Boolean(key))
-    )
-  ).sort()
+  const {
+    keys: availableKeys,
+    styles: availableStyles,
+    timeSignatures: availableTimeSignatures,
+  } = getPieceFilterOptions(mutualPieces)
 
-  const availableStyles = Array.from(
-    new Set(
-      mutualPieces
-        .map((piece) => piece.style)
-        .filter((style): style is string => Boolean(style))
-    )
-  ).sort()
-
-  const availableTimeSignatures = Array.from(
-    new Set(
-      mutualPieces
-        .map((piece) => piece.time_signature)
-        .filter(
-          (timeSignature): timeSignature is string => Boolean(timeSignature)
-        )
-    )
-  ).sort()
-
-  const filteredPieces = mutualPieces.filter((piece: Piece) => {
-    const matchesKey = selectedKey === "" || piece.key === selectedKey
-    const matchesStyle = selectedStyle === "" || piece.style === selectedStyle
-    const matchesTimeSignature =
-      selectedTimeSignature === "" ||
-      piece.time_signature === selectedTimeSignature
-
-    return matchesKey && matchesStyle && matchesTimeSignature
-  })
+  const filteredPieces = mutualPieces.filter((piece: Piece) =>
+    pieceMatchesFilters(piece, {
+      q: titleQuery,
+      keys: selectedKey ? [selectedKey] : [],
+      styles: selectedStyle ? [selectedStyle] : [],
+      timeSignatures: selectedTimeSignature ? [selectedTimeSignature] : [],
+    })
+  )
 
   const hasActiveFilters =
+    titleQuery !== "" ||
     selectedKey !== "" ||
     selectedStyle !== "" ||
     selectedTimeSignature !== ""
-
-  const clearFiltersHref = searchValue
-    ? `/compare?user=${encodeURIComponent(searchValue)}`
-    : "/compare"
 
   return (
     <main className="p-8">
       <h1 className="mb-2 text-3xl font-bold">Compare Tunes</h1>
       <p className="mb-6 text-gray-600">
-        Find tunes you have in common with another user by username or display name.
+        Find tunes you have in common with another user by username or display
+        name.
       </p>
 
       <form method="GET" className="mb-8 rounded border p-4">
-        <label
-          htmlFor="user"
-          className="mb-2 block text-sm font-medium"
-        >
+        <label htmlFor="user" className="mb-2 block text-sm font-medium">
           Username or display name
         </label>
 
@@ -126,9 +106,7 @@ export default async function ComparePage({
           <p className="font-medium">
             More than one user matched that display name.
           </p>
-          <p className="mt-1">
-            Try using a username instead.
-          </p>
+          <p className="mt-1">Try using a username instead.</p>
 
           {matchingProfiles.length > 0 && (
             <ul className="mt-3 list-disc pl-5">
@@ -159,75 +137,20 @@ export default async function ComparePage({
             </p>
           </div>
 
-          <form method="GET" className="mb-6">
-            <input type="hidden" name="user" value={searchValue} />
-
-            <label htmlFor="key" className="mb-2 block text-sm font-medium">
-              Filter by key
-            </label>
-            <select
-              id="key"
-              name="key"
-              defaultValue={selectedKey}
-              className="mb-4 w-full border p-2"
-            >
-              <option value="">All keys</option>
-              {availableKeys.map((key) => (
-                <option key={key} value={key}>
-                  {key}
-                </option>
-              ))}
-            </select>
-
-            <label htmlFor="style" className="mb-2 block text-sm font-medium">
-              Filter by style
-            </label>
-            <select
-              id="style"
-              name="style"
-              defaultValue={selectedStyle}
-              className="mb-4 w-full border p-2"
-            >
-              <option value="">All styles</option>
-              {availableStyles.map((style) => (
-                <option key={style} value={style}>
-                  {style}
-                </option>
-              ))}
-            </select>
-
-            <label
-              htmlFor="time_signature"
-              className="mb-2 block text-sm font-medium"
-            >
-              Filter by time signature
-            </label>
-            <select
-              id="time_signature"
-              name="time_signature"
-              defaultValue={selectedTimeSignature}
-              className="mb-4 w-full border p-2"
-            >
-              <option value="">All time signatures</option>
-              {availableTimeSignatures.map((timeSignature) => (
-                <option key={timeSignature} value={timeSignature}>
-                  {timeSignature}
-                </option>
-              ))}
-            </select>
-
-            <div className="flex items-center gap-4">
-              <button className="bg-black px-4 py-2 text-white">
-                Apply Filter
-              </button>
-
-              {hasActiveFilters && (
-                <Link href={clearFiltersHref} className="text-sm underline">
-                  Clear filters
-                </Link>
-              )}
-            </div>
-          </form>
+          <PieceSearchFilters
+            basePath="/compare"
+            searchLabel="Search by title"
+            searchPlaceholder="Search mutual tunes"
+            searchValue={titleQuery}
+            selectedKey={selectedKey}
+            selectedStyle={selectedStyle}
+            selectedTimeSignature={selectedTimeSignature}
+            availableKeys={availableKeys}
+            availableStyles={availableStyles}
+            availableTimeSignatures={availableTimeSignatures}
+            hasActiveFilters={hasActiveFilters}
+            preservedParams={{ user: searchValue }}
+          />
 
           {filteredPieces.length === 0 ? (
             <p>No mutual tunes match this filter.</p>

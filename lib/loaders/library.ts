@@ -17,31 +17,67 @@ export async function loadLibraryData() {
     redirect("/login")
   }
 
-  const { data: pieces } = await supabase
+  const { data: pieces, error: piecesError } = await supabase
     .from("pieces")
-    .select("id, title, key, style, time_signature, reference_url")
+    .select(`
+      id,
+      title,
+      key,
+      style,
+      time_signature,
+      reference_url,
+      piece_styles (
+        style_id,
+        styles (
+          id,
+          slug,
+          label
+        )
+      )
+    `)
     .order("title")
 
-  const { data: userPieces } = await supabase
+  if (piecesError) {
+    throw new Error(piecesError.message)
+  }
+
+  const { data: userPieces, error: userPiecesError } = await supabase
     .from("user_pieces")
     .select("id, piece_id, status, next_review_due, stage")
     .eq("user_id", user.id)
 
-  const { data: userKnownPieces } = await supabase
+  if (userPiecesError) {
+    throw new Error(userPiecesError.message)
+  }
+
+  const { data: userKnownPieces, error: userKnownPiecesError } = await supabase
     .from("user_known_pieces")
     .select("id, piece_id")
     .eq("user_id", user.id)
 
-  const { data: learningLists } = await supabase
+  if (userKnownPiecesError) {
+    throw new Error(userKnownPiecesError.message)
+  }
+
+  const { data: learningLists, error: learningListsError } = await supabase
     .from("learning_lists")
     .select("id, name, description")
     .eq("user_id", user.id)
     .order("name")
 
-  const { data: learningListItems } = await supabase
-    .from("learning_list_items")
-    .select("piece_id, learning_list_id, learning_lists!inner(id, name, user_id)")
-    .eq("learning_lists.user_id", user.id)
+  if (learningListsError) {
+    throw new Error(learningListsError.message)
+  }
+
+  const { data: learningListItems, error: learningListItemsError } =
+    await supabase
+      .from("learning_list_items")
+      .select("piece_id, learning_list_id, learning_lists!inner(id, name, user_id)")
+      .eq("learning_lists.user_id", user.id)
+
+  if (learningListItemsError) {
+    throw new Error(learningListItemsError.message)
+  }
 
   return {
     user,

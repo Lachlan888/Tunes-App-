@@ -1,3 +1,19 @@
+export type PieceStyleTag = {
+  style_id: number
+  styles:
+    | {
+        id: number
+        slug: string
+        label: string
+      }
+    | {
+        id: number
+        slug: string
+        label: string
+      }[]
+    | null
+}
+
 export type Piece = {
   id: number
   title: string
@@ -5,6 +21,7 @@ export type Piece = {
   style: string | null
   time_signature: string | null
   reference_url?: string | null
+  piece_styles?: PieceStyleTag[] | null
 }
 
 export type UserPiece = {
