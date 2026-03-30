@@ -9,12 +9,17 @@ import type { Piece } from "@/lib/types"
 
 type ComparePageProps = {
   searchParams?: Promise<{
-    user?: string
-    q?: string
-    key?: string
-    style?: string
-    time_signature?: string
+    user?: string | string[]
+    q?: string | string[]
+    key?: string | string[]
+    style?: string | string[]
+    time_signature?: string | string[]
   }>
+}
+
+function toArray(value: string | string[] | undefined) {
+  if (!value) return []
+  return Array.isArray(value) ? value.filter(Boolean) : [value]
 }
 
 export default async function ComparePage({
@@ -22,11 +27,17 @@ export default async function ComparePage({
 }: ComparePageProps) {
   const resolvedSearchParams = await searchParams
 
-  const searchValue = resolvedSearchParams?.user ?? ""
-  const titleQuery = resolvedSearchParams?.q ?? ""
-  const selectedKey = resolvedSearchParams?.key ?? ""
-  const selectedStyle = resolvedSearchParams?.style ?? ""
-  const selectedTimeSignature = resolvedSearchParams?.time_signature ?? ""
+  const searchValue = Array.isArray(resolvedSearchParams?.user)
+    ? resolvedSearchParams?.user[0] ?? ""
+    : resolvedSearchParams?.user ?? ""
+
+  const titleQuery = Array.isArray(resolvedSearchParams?.q)
+    ? resolvedSearchParams?.q[0] ?? ""
+    : resolvedSearchParams?.q ?? ""
+
+  const selectedKeys = toArray(resolvedSearchParams?.key)
+  const selectedStyles = toArray(resolvedSearchParams?.style)
+  const selectedTimeSignatures = toArray(resolvedSearchParams?.time_signature)
 
   const {
     matchedProfile,
@@ -44,17 +55,17 @@ export default async function ComparePage({
   const filteredPieces = mutualPieces.filter((piece: Piece) =>
     pieceMatchesFilters(piece, {
       q: titleQuery,
-      keys: selectedKey ? [selectedKey] : [],
-      styles: selectedStyle ? [selectedStyle] : [],
-      timeSignatures: selectedTimeSignature ? [selectedTimeSignature] : [],
+      keys: selectedKeys,
+      styles: selectedStyles,
+      timeSignatures: selectedTimeSignatures,
     })
   )
 
   const hasActiveFilters =
     titleQuery !== "" ||
-    selectedKey !== "" ||
-    selectedStyle !== "" ||
-    selectedTimeSignature !== ""
+    selectedKeys.length > 0 ||
+    selectedStyles.length > 0 ||
+    selectedTimeSignatures.length > 0
 
   return (
     <main className="p-8">
@@ -142,9 +153,9 @@ export default async function ComparePage({
             searchLabel="Search by title"
             searchPlaceholder="Search mutual tunes"
             searchValue={titleQuery}
-            selectedKey={selectedKey}
-            selectedStyle={selectedStyle}
-            selectedTimeSignature={selectedTimeSignature}
+            selectedKeys={selectedKeys}
+            selectedStyles={selectedStyles}
+            selectedTimeSignatures={selectedTimeSignatures}
             availableKeys={availableKeys}
             availableStyles={availableStyles}
             availableTimeSignatures={availableTimeSignatures}
@@ -163,6 +174,7 @@ export default async function ComparePage({
                   title={piece.title}
                   keyValue={piece.key}
                   style={piece.style}
+                  pieceStyles={piece.piece_styles}
                   timeSignature={piece.time_signature}
                   referenceUrl={piece.reference_url}
                   listNames={[]}

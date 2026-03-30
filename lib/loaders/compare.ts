@@ -180,7 +180,22 @@ export async function loadCompareData(
 
   const { data: mutualPiecesRows, error: mutualPiecesError } = await supabase
     .from("pieces")
-    .select("id, title, key, style, time_signature, reference_url")
+    .select(`
+      id,
+      title,
+      key,
+      style,
+      time_signature,
+      reference_url,
+      piece_styles (
+        style_id,
+        styles (
+          id,
+          slug,
+          label
+        )
+      )
+    `)
     .in("id", mutualPieceIds)
     .order("title", { ascending: true })
 

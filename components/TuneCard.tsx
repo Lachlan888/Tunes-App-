@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { getStyleLabelsFromPiece } from "@/lib/search-filters"
 import type { Piece } from "@/lib/types"
 
 type TuneCardProps = {
@@ -10,6 +11,7 @@ type TuneCardProps = {
   style: Piece["style"]
   timeSignature: Piece["time_signature"]
   referenceUrl?: Piece["reference_url"]
+  pieceStyles?: Piece["piece_styles"]
   listNames?: string[]
   children?: React.ReactNode
 }
@@ -21,11 +23,24 @@ export default function TuneCard({
   style,
   timeSignature,
   referenceUrl,
+  pieceStyles,
   listNames = [],
   children,
 }: TuneCardProps) {
   const visibleListNames = listNames.slice(0, 3)
   const remainingListCount = Math.max(listNames.length - visibleListNames.length, 0)
+
+  const styleLabels = getStyleLabelsFromPiece({
+    id,
+    title,
+    key: keyValue,
+    style,
+    time_signature: timeSignature,
+    reference_url: referenceUrl,
+    piece_styles: pieceStyles ?? null,
+  })
+
+  const styleText = styleLabels.length > 0 ? styleLabels.join(", ") : null
 
   return (
     <div className="rounded border p-3">
@@ -34,7 +49,7 @@ export default function TuneCard({
           {title}
         </Link>
         {keyValue ? `, key ${keyValue}` : ""}
-        {style ? `, ${style}` : ""}
+        {styleText ? `, ${styleText}` : ""}
         {timeSignature ? `, ${timeSignature}` : ""}
       </div>
 
