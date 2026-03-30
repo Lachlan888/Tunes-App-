@@ -17,6 +17,16 @@ type Piece = {
   reference_url: string | null
 }
 
+type UserPieceMetadata = {
+  notes: string | null
+}
+
+type PieceSheetMusicLink = {
+  id: number
+  url: string
+  label: string | null
+}
+
 export default async function PiecePage({ params }: PiecePageProps) {
   const { id } = await params
   const pieceId = Number(id)
@@ -59,9 +69,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
     return (
       <main className="p-8">
         <h1 className="mb-4 text-3xl font-bold">Tune not found</h1>
-        <p className="text-gray-600">
-          No tune exists at id {pieceId}.
-        </p>
+        <p className="text-gray-600">No tune exists at id {pieceId}.</p>
         <div className="mt-4">
           <Link href="/library" className="underline">
             Back to Tunes
@@ -71,7 +79,24 @@ export default async function PiecePage({ params }: PiecePageProps) {
     )
   }
 
+  const { data: userPieceMetadata } = await supabase
+    .from("user_piece_metadata")
+    .select("notes")
+    .eq("user_id", user.id)
+    .eq("piece_id", pieceId)
+    .maybeSingle()
+
+  const { data: sheetMusicLinks } = await supabase
+    .from("piece_sheet_music_links")
+    .select("id, url, label")
+    .eq("piece_id", pieceId)
+    .order("created_at", { ascending: true })
+
   const typedPiece = piece as Piece
+  const typedUserPieceMetadata =
+    (userPieceMetadata as UserPieceMetadata | null) ?? null
+  const typedSheetMusicLinks =
+    (sheetMusicLinks as PieceSheetMusicLink[] | null) ?? []
 
   return (
     <main className="p-8">
@@ -103,6 +128,35 @@ export default async function PiecePage({ params }: PiecePageProps) {
           )}
         </p>
       </div>
+
+      <section className="mt-8">
+        <h2 className="mb-2 text-xl font-semibold">My notes</h2>
+        <p className="text-gray-700">
+          {typedUserPieceMetadata?.notes || "No notes yet."}
+        </p>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-2 text-xl font-semibold">Sheet music / tab</h2>
+        {typedSheetMusicLinks.length > 0 ? (
+          <ul className="space-y-2">
+            {typedSheetMusicLinks.map((link) => (
+              <li key={link.id}>
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline"
+                >
+                  {link.label || link.url}
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-700">No sheet music links yet.</p>
+        )}
+      </section>
     </main>
   )
 }
