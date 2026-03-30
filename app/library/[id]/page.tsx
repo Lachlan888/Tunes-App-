@@ -1,6 +1,11 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import {
+  addPieceSheetMusicLink,
+  upsertUserPieceNotes,
+} from "@/lib/actions/piece-metadata"
+import PieceCommentsSection from "@/components/PieceCommentsSection"
 
 type PiecePageProps = {
   params: Promise<{
@@ -25,6 +30,19 @@ type PieceSheetMusicLink = {
   id: number
   url: string
   label: string | null
+}
+
+type PieceCommentRow = {
+  id: number
+  body: string
+  created_at: string
+  user_id: string
+}
+
+type ProfileRow = {
+  id: string
+  username: string | null
+  display_name: string | null
 }
 
 export default async function PiecePage({ params }: PiecePageProps) {
@@ -92,11 +110,41 @@ export default async function PiecePage({ params }: PiecePageProps) {
     .eq("piece_id", pieceId)
     .order("created_at", { ascending: true })
 
+  const { data: pieceComments } = await supabase
+    .from("piece_comments")
+    .select("id, body, created_at, user_id")
+    .eq("piece_id", pieceId)
+    .order("created_at", { ascending: false })
+
   const typedPiece = piece as Piece
   const typedUserPieceMetadata =
     (userPieceMetadata as UserPieceMetadata | null) ?? null
   const typedSheetMusicLinks =
     (sheetMusicLinks as PieceSheetMusicLink[] | null) ?? []
+  const typedPieceComments =
+    (pieceComments as PieceCommentRow[] | null) ?? []
+
+  const commentUserIds = Array.from(
+    new Set(typedPieceComments.map((comment) => comment.user_id))
+  )
+
+  let profileNameMap: Record<string, string> = {}
+
+  if (commentUserIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, username, display_name")
+      .in("id", commentUserIds)
+
+    const typedProfiles = (profiles as ProfileRow[] | null) ?? []
+
+    profileNameMap = Object.fromEntries(
+      typedProfiles.map((profile) => [
+        profile.id,
+        profile.display_name || profile.username || "Unknown user",
+      ])
+    )
+  }
 
   return (
     <main className="p-8">
@@ -131,24 +179,64 @@ export default async function PiecePage({ params }: PiecePageProps) {
 
       <section className="mt-8">
         <h2 className="mb-2 text-xl font-semibold">My notes</h2>
-        <p className="text-gray-700">
-          {typedUserPieceMetadata?.notes || "No notes yet."}
-        </p>
+
+        <form action={upsertUserPieceNotes} className="max-w-xl">
+          <input type="hidden" name="piece_id" value={pieceId} />
+          <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
+
+          <textarea
+            name="notes"
+            defaultValue={typedUserPieceMetadata?.notes || ""}
+            rows={8}
+            placeholder="Add your private notes for this tune"
+            className="mb-3 w-full border p-3"
+          />
+
+          <button type="submit" className="border px-4 py-2">
+            Save notes
+          </button>
+        </form>
       </section>
 
       <section className="mt-8">
         <h2 className="mb-2 text-xl font-semibold">Sheet music / tab</h2>
+
+        <form action={addPieceSheetMusicLink} className="mb-6 max-w-xl space-y-3">
+          <input type="hidden" name="piece_id" value={pieceId} />
+          <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
+
+          <input
+            name="label"
+            placeholder="Label, eg Mandolin tab"
+            className="w-full border p-2"
+            required
+          />
+
+          <input
+            name="url"
+            type="url"
+            placeholder="https://..."
+            className="w-full border p-2"
+            required
+          />
+
+          <button type="submit" className="border px-4 py-2">
+            Add sheet music link
+          </button>
+        </form>
+
         {typedSheetMusicLinks.length > 0 ? (
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {typedSheetMusicLinks.map((link) => (
-              <li key={link.id}>
+              <li key={link.id} className="border p-3">
+                <p className="mb-1 text-sm text-gray-600">{link.label}</p>
                 <a
                   href={link.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="underline"
+                  className="break-all underline"
                 >
-                  {link.label || link.url}
+                  {link.url}
                 </a>
               </li>
             ))}
@@ -157,6 +245,12 @@ export default async function PiecePage({ params }: PiecePageProps) {
           <p className="text-gray-700">No sheet music links yet.</p>
         )}
       </section>
+
+      <PieceCommentsSection
+        pieceId={pieceId}
+        comments={typedPieceComments}
+        profileNameMap={profileNameMap}
+      />
     </main>
   )
 }
