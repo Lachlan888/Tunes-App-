@@ -1,3 +1,4 @@
+import { loadRecentFriendActivity } from "@/lib/loaders/friends"
 import { isDueToday } from "@/lib/review"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
@@ -14,6 +15,13 @@ type LearningList = {
   name: string
   description: string | null
   learning_list_items: LearningListItem[]
+}
+
+type ConnectionRow = {
+  id: number
+  status: "pending" | "accepted"
+  requester_id: string
+  addressee_id: string
 }
 
 export async function loadHomepageData() {
@@ -102,6 +110,27 @@ export async function loadHomepageData() {
     throw new Error(userKnownPiecesError.message)
   }
 
+  const { data: connectionRows, error: connectionError } = await supabase
+    .from("connections")
+    .select("id, status, requester_id, addressee_id")
+    .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
+
+  if (connectionError) {
+    throw new Error(connectionError.message)
+  }
+
+  const acceptedFriendIds = ((connectionRows ?? []) as ConnectionRow[])
+    .filter((row) => row.status === "accepted")
+    .map((row) =>
+      row.requester_id === user.id ? row.addressee_id : row.requester_id
+    )
+
+  const recentFriendActivity = await loadRecentFriendActivity(
+    supabase,
+    acceptedFriendIds,
+    5
+  )
+
   const typedUserPieces = (userPieces ?? []) as UserPiece[]
 
   const dueToday = typedUserPieces.filter((userPiece) =>
@@ -115,5 +144,6 @@ export async function loadHomepageData() {
     userPieces: typedUserPieces,
     userKnownPieces: (userKnownPieces ?? []) as UserKnownPiece[],
     dueToday,
+    recentFriendActivity,
   }
 }

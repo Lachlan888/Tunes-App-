@@ -113,6 +113,150 @@ function scoreProfileMatch(profile: ProfileSearchRow, query: string) {
   return 0
 }
 
+export async function loadRecentFriendActivity(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  acceptedFriendIds: string[],
+  limit = 25
+): Promise<FriendActivityItem[]> {
+  if (acceptedFriendIds.length === 0) {
+    return []
+  }
+
+  const { data: activityRows, error: activityError } = await supabase
+    .from("user_activity_events")
+    .select(
+      "id, user_id, event_type, piece_id, learning_list_id, comment_id, created_at"
+    )
+    .in("user_id", acceptedFriendIds)
+    .order("created_at", { ascending: false })
+    .limit(limit)
+
+  if (activityError) {
+    throw new Error(activityError.message)
+  }
+
+  const typedActivityRows = (activityRows ?? []) as ActivityEventRow[]
+
+  const activityUserIds = Array.from(
+    new Set(typedActivityRows.map((row) => row.user_id))
+  )
+
+  const pieceIds = Array.from(
+    new Set(
+      typedActivityRows
+        .map((row) => row.piece_id)
+        .filter((value): value is number => value !== null)
+    )
+  )
+
+  const learningListIds = Array.from(
+    new Set(
+      typedActivityRows
+        .map((row) => row.learning_list_id)
+        .filter((value): value is number => value !== null)
+    )
+  )
+
+  let activityProfilesById = new Map<string, ProfileSearchRow>()
+  let piecesById = new Map<number, PieceRow>()
+  let learningListsById = new Map<number, LearningListRow>()
+
+  if (activityUserIds.length > 0) {
+    const { data: activityProfiles, error: activityProfilesError } =
+      await supabase
+        .from("profiles")
+        .select("id, username, display_name")
+        .in("id", activityUserIds)
+
+    if (activityProfilesError) {
+      throw new Error(activityProfilesError.message)
+    }
+
+    activityProfilesById = new Map(
+      ((activityProfiles ?? []) as ProfileSearchRow[]).map((profile) => [
+        profile.id,
+        profile,
+      ])
+    )
+  }
+
+  if (pieceIds.length > 0) {
+    const { data: pieces, error: piecesError } = await supabase
+      .from("pieces")
+      .select("id, title")
+      .in("id", pieceIds)
+
+    if (piecesError) {
+      throw new Error(piecesError.message)
+    }
+
+    piecesById = new Map(
+      ((pieces ?? []) as PieceRow[]).map((piece) => [piece.id, piece])
+    )
+  }
+
+  if (learningListIds.length > 0) {
+    const { data: learningLists, error: learningListsError } = await supabase
+      .from("learning_lists")
+      .select("id, name, visibility")
+      .in("id", learningListIds)
+      .eq("visibility", "public")
+
+    if (learningListsError) {
+      throw new Error(learningListsError.message)
+    }
+
+    learningListsById = new Map(
+      ((learningLists ?? []) as LearningListRow[]).map((list) => [list.id, list])
+    )
+  }
+
+  return typedActivityRows
+    .map((row) => {
+      const actor = activityProfilesById.get(row.user_id) ?? null
+      const piece =
+        row.piece_id != null ? piecesById.get(row.piece_id) ?? null : null
+      const learningList =
+        row.learning_list_id != null
+          ? learningListsById.get(row.learning_list_id) ?? null
+          : null
+
+      if (
+        (row.event_type === "public_list_created" ||
+          row.event_type === "public_list_updated") &&
+        !learningList
+      ) {
+        return null
+      }
+
+      return {
+        id: row.id,
+        created_at: row.created_at,
+        event_type: row.event_type,
+        actor: actor
+          ? {
+              id: actor.id,
+              username: actor.username,
+              display_name: actor.display_name,
+            }
+          : null,
+        piece: piece
+          ? {
+              id: piece.id,
+              title: piece.title,
+            }
+          : null,
+        learning_list: learningList
+          ? {
+              id: learningList.id,
+              name: learningList.name,
+            }
+          : null,
+      }
+    })
+    .filter((row): row is FriendActivityItem => row !== null)
+}
+
 export async function loadFriendsPageData(searchQuery?: string) {
   const supabase = await createClient()
 
@@ -232,143 +376,11 @@ export async function loadFriendsPageData(searchQuery?: string) {
 
   const acceptedFriendIds = acceptedFriends.map((friend) => friend.user_id)
 
-  let recentFriendActivity: FriendActivityItem[] = []
-
-  if (acceptedFriendIds.length > 0) {
-    const { data: activityRows, error: activityError } = await supabase
-      .from("user_activity_events")
-      .select(
-        "id, user_id, event_type, piece_id, learning_list_id, comment_id, created_at"
-      )
-      .in("user_id", acceptedFriendIds)
-      .order("created_at", { ascending: false })
-      .limit(25)
-
-    if (activityError) {
-      throw new Error(activityError.message)
-    }
-
-    const typedActivityRows = (activityRows ?? []) as ActivityEventRow[]
-
-    const activityUserIds = Array.from(
-      new Set(typedActivityRows.map((row) => row.user_id))
-    )
-
-    const pieceIds = Array.from(
-      new Set(
-        typedActivityRows
-          .map((row) => row.piece_id)
-          .filter((value): value is number => value !== null)
-      )
-    )
-
-    const learningListIds = Array.from(
-      new Set(
-        typedActivityRows
-          .map((row) => row.learning_list_id)
-          .filter((value): value is number => value !== null)
-      )
-    )
-
-    let activityProfilesById = new Map<string, ProfileSearchRow>()
-    let piecesById = new Map<number, PieceRow>()
-    let learningListsById = new Map<number, LearningListRow>()
-
-    if (activityUserIds.length > 0) {
-      const { data: activityProfiles, error: activityProfilesError } =
-        await supabase
-          .from("profiles")
-          .select("id, username, display_name")
-          .in("id", activityUserIds)
-
-      if (activityProfilesError) {
-        throw new Error(activityProfilesError.message)
-      }
-
-      activityProfilesById = new Map(
-        ((activityProfiles ?? []) as ProfileSearchRow[]).map((profile) => [
-          profile.id,
-          profile,
-        ])
-      )
-    }
-
-    if (pieceIds.length > 0) {
-      const { data: pieces, error: piecesError } = await supabase
-        .from("pieces")
-        .select("id, title")
-        .in("id", pieceIds)
-
-      if (piecesError) {
-        throw new Error(piecesError.message)
-      }
-
-      piecesById = new Map(
-        ((pieces ?? []) as PieceRow[]).map((piece) => [piece.id, piece])
-      )
-    }
-
-    if (learningListIds.length > 0) {
-      const { data: learningLists, error: learningListsError } = await supabase
-        .from("learning_lists")
-        .select("id, name, visibility")
-        .in("id", learningListIds)
-        .eq("visibility", "public")
-
-      if (learningListsError) {
-        throw new Error(learningListsError.message)
-      }
-
-      learningListsById = new Map(
-        ((learningLists ?? []) as LearningListRow[]).map((list) => [list.id, list])
-      )
-    }
-
-    recentFriendActivity = typedActivityRows
-      .map((row) => {
-        const actor = activityProfilesById.get(row.user_id) ?? null
-        const piece =
-          row.piece_id != null ? piecesById.get(row.piece_id) ?? null : null
-        const learningList =
-          row.learning_list_id != null
-            ? learningListsById.get(row.learning_list_id) ?? null
-            : null
-
-        if (
-          (row.event_type === "public_list_created" ||
-            row.event_type === "public_list_updated") &&
-          !learningList
-        ) {
-          return null
-        }
-
-        return {
-          id: row.id,
-          created_at: row.created_at,
-          event_type: row.event_type,
-          actor: actor
-            ? {
-                id: actor.id,
-                username: actor.username,
-                display_name: actor.display_name,
-              }
-            : null,
-          piece: piece
-            ? {
-                id: piece.id,
-                title: piece.title,
-              }
-            : null,
-          learning_list: learningList
-            ? {
-                id: learningList.id,
-                name: learningList.name,
-              }
-            : null,
-        }
-      })
-      .filter((row): row is FriendActivityItem => row !== null)
-  }
+  const recentFriendActivity = await loadRecentFriendActivity(
+    supabase,
+    acceptedFriendIds,
+    25
+  )
 
   return {
     user,

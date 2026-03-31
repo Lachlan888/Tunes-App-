@@ -1,3 +1,6 @@
+import HomeFriendsActivityBox from "@/components/HomeFriendsActivityBox"
+import type { FriendActivityItem } from "@/lib/friend-activity"
+
 type Piece = {
   id: number
   title?: string | null
@@ -26,6 +29,7 @@ type HomeSummarySectionProps = {
   userKnownPieces: UserKnownPiece[] | null
   learningLists: LearningList[] | null
   dueToday: UserPiece[] | null
+  recentFriendActivity: FriendActivityItem[]
 }
 
 export default function HomeSummarySection({
@@ -34,6 +38,7 @@ export default function HomeSummarySection({
   userKnownPieces,
   learningLists,
   dueToday,
+  recentFriendActivity,
 }: HomeSummarySectionProps) {
   const totalLists = learningLists?.length ?? 0
   const totalInPractice = userPieces?.length ?? 0
@@ -155,25 +160,29 @@ export default function HomeSummarySection({
         </div>
       </section>
 
-      <section className="rounded-lg border p-4">
-        <div className="mb-3 flex items-center justify-between gap-4">
-          <h3 className="text-lg font-semibold">Your lists</h3>
-          <a href="/learning-lists" className="text-sm underline">
-            View all
-          </a>
-        </div>
+      <section className="grid gap-4 md:grid-cols-2">
+        <section className="rounded-lg border p-4">
+          <div className="mb-3 flex items-center justify-between gap-4">
+            <h3 className="text-lg font-semibold">Your lists</h3>
+            <a href="/learning-lists" className="text-sm underline">
+              View all
+            </a>
+          </div>
 
-        {listPreview.length === 0 ? (
-          <p className="text-sm text-gray-600">No lists yet.</p>
-        ) : (
-          <ul className="space-y-2">
-            {listPreview.map((learningList) => (
-              <li key={learningList.id} className="rounded border p-3">
-                <p className="font-medium">{learningList.name}</p>
-              </li>
-            ))}
-          </ul>
-        )}
+          {listPreview.length === 0 ? (
+            <p className="text-sm text-gray-600">No lists yet.</p>
+          ) : (
+            <ul className="space-y-2">
+              {listPreview.map((learningList) => (
+                <li key={learningList.id} className="rounded border p-3">
+                  <p className="font-medium">{learningList.name}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <HomeFriendsActivityBox items={recentFriendActivity} />
       </section>
     </section>
   )

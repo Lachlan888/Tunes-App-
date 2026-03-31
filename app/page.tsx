@@ -2,8 +2,15 @@ import HomeSummarySection from "@/components/HomeSummarySection"
 import { loadHomepageData } from "@/lib/loaders/homepage"
 
 export default async function HomePage() {
-  const { user, pieces, userPieces, userKnownPieces, learningLists, dueToday } =
-    await loadHomepageData()
+  const {
+    user,
+    pieces,
+    userPieces,
+    userKnownPieces,
+    learningLists,
+    dueToday,
+    recentFriendActivity,
+  } = await loadHomepageData()
 
   return (
     <main className="p-8">
@@ -16,6 +23,7 @@ export default async function HomePage() {
         userKnownPieces={userKnownPieces}
         learningLists={learningLists}
         dueToday={dueToday}
+        recentFriendActivity={recentFriendActivity}
       />
     </main>
   )
