@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { markFailed, markShaky, markSolid } from "@/lib/actions/reviews"
 import { getToday, isDueToday } from "@/lib/review"
@@ -111,7 +112,16 @@ export default async function ReviewPage() {
                 <div key={userPiece.id} className="rounded-lg border p-6">
                   <div className="flex items-start justify-between gap-4">
                     <h2 className="text-2xl font-semibold">
-                      {piece?.title ?? "Untitled piece"}
+                      {piece ? (
+                        <Link
+                          href={`/library/${piece.id}`}
+                          className="hover:underline"
+                        >
+                          {piece.title}
+                        </Link>
+                      ) : (
+                        "Untitled piece"
+                      )}
                     </h2>
 
                     <span
@@ -226,7 +236,16 @@ export default async function ReviewPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="font-medium">
-                          {piece?.title ?? "Untitled piece"}
+                          {piece ? (
+                            <Link
+                              href={`/library/${piece.id}`}
+                              className="hover:underline"
+                            >
+                              {piece.title}
+                            </Link>
+                          ) : (
+                            "Untitled piece"
+                          )}
                         </p>
                         <p className="mt-1 text-sm text-gray-600">
                           Key: {piece?.key ?? "Unknown"} | Style:{" "}
