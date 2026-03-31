@@ -14,6 +14,7 @@ export default function RootLayout({
           <Link href="/review">Practice</Link>
           <Link href="/library">Tunes</Link>
           <Link href="/learning-lists">Lists</Link>
+          <Link href="/friends">Friends</Link>
           <Link href="/compare">Compare</Link>
           <Link href="/public-lists">Shared</Link>
           <Link href="/dashboard">Profile</Link>

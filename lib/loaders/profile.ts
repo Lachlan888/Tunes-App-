@@ -69,7 +69,7 @@ export async function loadOwnProfileData(): Promise<OwnProfileData> {
       `
     )
     .eq("id", user.id)
-    .single()
+    .maybeSingle()
 
   if (profileError) {
     throw new Error(profileError.message)

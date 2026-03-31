@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { recordMarkedKnownEvent } from "@/lib/activity-events"
 
 export async function markAsKnown(formData: FormData) {
   const pieceId = Number(formData.get("piece_id"))
@@ -16,29 +17,45 @@ export async function markAsKnown(formData: FormData) {
 
   if (!user) return
 
-  const { data: existingPractice } = await supabase
+  const { data: existingPractice, error: existingPracticeError } = await supabase
     .from("user_pieces")
     .select("id")
     .eq("user_id", user.id)
     .eq("piece_id", pieceId)
     .maybeSingle()
 
+  if (existingPracticeError) {
+    throw new Error(existingPracticeError.message)
+  }
+
   if (existingPractice) {
     return
   }
 
-  const { data: existingKnown } = await supabase
+  const { data: existingKnown, error: existingKnownError } = await supabase
     .from("user_known_pieces")
     .select("id")
     .eq("user_id", user.id)
     .eq("piece_id", pieceId)
     .maybeSingle()
 
+  if (existingKnownError) {
+    throw new Error(existingKnownError.message)
+  }
+
   if (!existingKnown) {
-    await supabase.from("user_known_pieces").insert({
-      user_id: user.id,
-      piece_id: pieceId,
-    })
+    const { error: insertKnownError } = await supabase
+      .from("user_known_pieces")
+      .insert({
+        user_id: user.id,
+        piece_id: pieceId,
+      })
+
+    if (insertKnownError) {
+      throw new Error(insertKnownError.message)
+    }
+
+    await recordMarkedKnownEvent(user.id, pieceId)
   }
 
   revalidatePath("/library")

@@ -2,6 +2,7 @@
 
 import { getTomorrow } from "@/lib/review"
 import { createClient } from "@/lib/supabase/server"
+import { recordStartedPracticeEvent } from "@/lib/activity-events"
 import { redirect } from "next/navigation"
 
 export async function startLearning(formData: FormData) {
@@ -48,17 +49,21 @@ export async function startLearning(formData: FormData) {
     throw new Error(deleteKnownError.message)
   }
 
-  const { error: insertUserPieceError } = await supabase.from("user_pieces").insert({
-    user_id: user.id,
-    piece_id,
-    status: "learning",
-    stage: 1,
-    next_review_due: nextReviewDue,
-  })
+  const { error: insertUserPieceError } = await supabase
+    .from("user_pieces")
+    .insert({
+      user_id: user.id,
+      piece_id,
+      status: "learning",
+      stage: 1,
+      next_review_due: nextReviewDue,
+    })
 
   if (insertUserPieceError) {
     throw new Error(insertUserPieceError.message)
   }
+
+  await recordStartedPracticeEvent(user.id, piece_id)
 
   redirect(redirectTo)
 }

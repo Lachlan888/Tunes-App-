@@ -1,6 +1,10 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import {
+  recordPublicListCreatedEvent,
+  recordPublicListUpdatedEvent,
+} from "@/lib/activity-events"
 import { redirect } from "next/navigation"
 
 function appendQueryParam(url: string, key: string, value: string) {
@@ -23,19 +27,33 @@ export async function createList(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim()
   const description = String(formData.get("description") ?? "").trim()
   const redirectTo = String(formData.get("redirect_to") ?? "/learning-lists")
+  const visibility = String(formData.get("visibility") ?? "private").trim()
 
   if (!name) {
     redirect(appendQueryParam(redirectTo, "create_list", "missing_name"))
   }
 
-  const { error } = await supabase.from("learning_lists").insert({
-    name,
-    description: description || null,
-    user_id: user.id,
-  })
+  if (visibility !== "private" && visibility !== "public") {
+    redirect(appendQueryParam(redirectTo, "create_list", "invalid_visibility"))
+  }
+
+  const { data: createdList, error } = await supabase
+    .from("learning_lists")
+    .insert({
+      name,
+      description: description || null,
+      visibility,
+      user_id: user.id,
+    })
+    .select("id, visibility")
+    .single()
 
   if (error) {
     redirect(appendQueryParam(redirectTo, "create_list", "error"))
+  }
+
+  if (createdList.visibility === "public") {
+    await recordPublicListCreatedEvent(user.id, createdList.id)
   }
 
   redirect(appendQueryParam(redirectTo, "create_list", "success"))
@@ -141,7 +159,7 @@ export async function updateList(formData: FormData) {
 
   const { data: ownedList, error: ownedListError } = await supabase
     .from("learning_lists")
-    .select("id")
+    .select("id, visibility, name, description")
     .eq("id", listId)
     .eq("user_id", user.id)
     .maybeSingle()
@@ -149,6 +167,12 @@ export async function updateList(formData: FormData) {
   if (ownedListError || !ownedList) {
     redirect(appendQueryParam(redirectTo, "edit_list", "not_found"))
   }
+
+  const wasPublic = ownedList.visibility === "public"
+  const isMeaningfulChange =
+    ownedList.name !== name ||
+    (ownedList.description ?? "") !== (description || "") ||
+    ownedList.visibility !== visibility
 
   const { error: updateError } = await supabase
     .from("learning_lists")
@@ -162,6 +186,14 @@ export async function updateList(formData: FormData) {
 
   if (updateError) {
     redirect(appendQueryParam(redirectTo, "edit_list", "error"))
+  }
+
+  if (visibility === "public") {
+    if (!wasPublic) {
+      await recordPublicListCreatedEvent(user.id, listId)
+    } else if (isMeaningfulChange) {
+      await recordPublicListUpdatedEvent(user.id, listId)
+    }
   }
 
   redirect(appendQueryParam(redirectTo, "edit_list", "success"))
