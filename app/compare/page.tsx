@@ -47,6 +47,7 @@ export default async function ComparePage({
   const {
     matchedProfile,
     matchingProfiles,
+    searchMatches,
     mutualPieces,
     compareSuggestions,
     isAcceptedFriend,
@@ -82,8 +83,7 @@ export default async function ComparePage({
     <main className="p-8">
       <h1 className="mb-2 text-3xl font-bold">Compare Tunes</h1>
       <p className="mb-6 text-gray-600">
-        Find tunes you have in common with another user by username or display
-        name.
+        Search for another user, then compare the tunes you have in common.
       </p>
 
       <form method="GET" className="mb-8 rounded border p-4">
@@ -97,10 +97,10 @@ export default async function ComparePage({
             name="user"
             defaultValue={searchValue}
             className="w-full rounded border p-2"
-            placeholder="Enter username or display name"
+            placeholder="Search by username or display name"
           />
           <button className="rounded bg-black px-4 py-2 text-white">
-            Compare
+            Search
           </button>
         </div>
       </form>
@@ -186,24 +186,123 @@ export default async function ComparePage({
       )}
 
       {error === "multiple_matches" && (
-        <div className="mb-6 rounded border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-800">
-          <p className="font-medium">
-            More than one user matched that display name.
+        <section className="mb-8 rounded border p-4">
+          <h2 className="text-xl font-semibold">Choose a user</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            More than one user matched “{searchValue}”.
           </p>
-          <p className="mt-1">Try using a username instead.</p>
 
-          {matchingProfiles.length > 0 && (
-            <ul className="mt-3 list-disc pl-5">
-              {matchingProfiles.map((profile) => (
-                <li key={profile.id}>
-                  {profile.display_name || "Unnamed"}{" "}
-                  <span className="text-gray-600">(@{profile.username})</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+          <div className="mt-4 space-y-3">
+            {matchingProfiles.map((profile) => (
+              <div
+                key={profile.id}
+                className="flex items-center justify-between rounded border p-3"
+              >
+                <div>
+                  <p className="font-medium">
+                    {profile.display_name || profile.username || "Unnamed user"}
+                  </p>
+                  {profile.username && (
+                    <p className="text-sm text-gray-600">@{profile.username}</p>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  {profile.username ? (
+                    <Link
+                      href={`/compare?user=${encodeURIComponent(profile.username)}`}
+                      className="rounded bg-black px-3 py-2 text-sm text-white"
+                    >
+                      Compare
+                    </Link>
+                  ) : (
+                    <span className="text-sm text-gray-500">
+                      No username available
+                    </span>
+                  )}
+
+                  <form action={sendFriendRequest}>
+                    <input
+                      type="hidden"
+                      name="addressee_id"
+                      value={profile.id}
+                    />
+                    <input
+                      type="hidden"
+                      name="redirect_to"
+                      value={redirectTo}
+                    />
+                    <button className="rounded border px-3 py-2 text-sm">
+                      Send request
+                    </button>
+                  </form>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
+
+      {error === null &&
+        !matchedProfile &&
+        searchMatches.length > 0 &&
+        !isAcceptedFriend && (
+          <section className="mb-8 rounded border p-4">
+            <h2 className="text-xl font-semibold">Choose a user</h2>
+            <p className="mt-1 text-sm text-gray-600">
+              Select the person you want to compare with.
+            </p>
+
+            <div className="mt-4 space-y-3">
+              {searchMatches.map((profile) => (
+                <div
+                  key={profile.id}
+                  className="flex items-center justify-between rounded border p-3"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {profile.display_name || profile.username || "Unnamed user"}
+                    </p>
+                    {profile.username && (
+                      <p className="text-sm text-gray-600">@{profile.username}</p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2">
+                    {profile.username ? (
+                      <Link
+                        href={`/compare?user=${encodeURIComponent(profile.username)}`}
+                        className="rounded bg-black px-3 py-2 text-sm text-white"
+                      >
+                        Compare
+                      </Link>
+                    ) : (
+                      <span className="text-sm text-gray-500">
+                        No username available
+                      </span>
+                    )}
+
+                    <form action={sendFriendRequest}>
+                      <input
+                        type="hidden"
+                        name="addressee_id"
+                        value={profile.id}
+                      />
+                      <input
+                        type="hidden"
+                        name="redirect_to"
+                        value={redirectTo}
+                      />
+                      <button className="rounded border px-3 py-2 text-sm">
+                        Send request
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
       {matchedProfile && error === null && !isAcceptedFriend && (
         <section className="mb-8 rounded border p-4">

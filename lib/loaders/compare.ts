@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import {
+  searchProfilesForSelection,
+  type ProfileSearchRow,
+  type RankedProfileMatch,
+  normaliseSearchText,
+} from "@/lib/profile-search"
 import type { Piece } from "@/lib/types"
-
-type ProfileRow = {
-  id: string
-  username: string
-  display_name: string | null
-}
 
 type PieceIdRow = {
   piece_id: number
@@ -35,8 +35,9 @@ type CompareError =
 type CompareLoaderResult = {
   currentUserId: string
   searchValue: string
-  matchedProfile: ProfileRow | null
-  matchingProfiles: ProfileRow[]
+  matchedProfile: ProfileSearchRow | null
+  matchingProfiles: ProfileSearchRow[]
+  searchMatches: RankedProfileMatch[]
   mutualPieces: Piece[]
   compareSuggestions: CompareSuggestion[]
   isAcceptedFriend: boolean
@@ -125,6 +126,39 @@ async function getIsAcceptedFriend(
   return Boolean(connectionRow)
 }
 
+function pickExactUsernameMatch(
+  searchMatches: RankedProfileMatch[],
+  searchValue: string
+) {
+  const trimmedValue = searchValue.trim()
+  if (!trimmedValue) return null
+
+  return (
+    searchMatches.find((profile) => profile.username === trimmedValue) ?? null
+  )
+}
+
+function pickSingleStrongMatch(
+  searchMatches: RankedProfileMatch[],
+  searchValue: string
+) {
+  if (searchMatches.length === 0) return null
+
+  const normalisedQuery = normaliseSearchText(searchValue)
+  const exactMatches = searchMatches.filter((profile) => {
+    return (
+      normaliseSearchText(profile.username) === normalisedQuery ||
+      normaliseSearchText(profile.display_name) === normalisedQuery
+    )
+  })
+
+  if (exactMatches.length === 1) {
+    return exactMatches[0]
+  }
+
+  return null
+}
+
 export async function loadCompareData(
   rawSearchValue: string
 ): Promise<CompareLoaderResult> {
@@ -147,6 +181,7 @@ export async function loadCompareData(
       searchValue: "",
       matchedProfile: null,
       matchingProfiles: [],
+      searchMatches: [],
       mutualPieces: [],
       compareSuggestions,
       isAcceptedFriend: false,
@@ -154,61 +189,43 @@ export async function loadCompareData(
     }
   }
 
-  const { data: usernameMatch, error: usernameMatchError } = await supabase
-    .from("profiles")
-    .select("id, username, display_name")
-    .eq("username", searchValue)
-    .eq("show_compare_discoverability", true)
-    .maybeSingle()
+  const searchMatches = await searchProfilesForSelection({
+    query: searchValue,
+    currentUserId: user.id,
+    limit: 10,
+    requireCompareDiscoverability: true,
+  })
 
-  if (usernameMatchError) {
-    throw new Error(usernameMatchError.message)
+  if (searchMatches.length === 0) {
+    return {
+      currentUserId: user.id,
+      searchValue,
+      matchedProfile: null,
+      matchingProfiles: [],
+      searchMatches: [],
+      mutualPieces: [],
+      compareSuggestions,
+      isAcceptedFriend: false,
+      error: "user_not_found",
+    }
   }
 
-  let matchedProfile = (usernameMatch ?? null) as ProfileRow | null
-  let matchingProfiles: ProfileRow[] = []
+  const exactUsernameMatch = pickExactUsernameMatch(searchMatches, searchValue)
+  const singleStrongMatch = pickSingleStrongMatch(searchMatches, searchValue)
+  const matchedProfile = exactUsernameMatch ?? singleStrongMatch ?? null
 
   if (!matchedProfile) {
-    const { data: displayNameMatches, error: displayNameMatchesError } =
-      await supabase
-        .from("profiles")
-        .select("id, username, display_name")
-        .eq("display_name", searchValue)
-        .eq("show_compare_discoverability", true)
-
-    if (displayNameMatchesError) {
-      throw new Error(displayNameMatchesError.message)
+    return {
+      currentUserId: user.id,
+      searchValue,
+      matchedProfile: null,
+      matchingProfiles: searchMatches,
+      searchMatches,
+      mutualPieces: [],
+      compareSuggestions,
+      isAcceptedFriend: false,
+      error: "multiple_matches",
     }
-
-    matchingProfiles = (displayNameMatches ?? []) as ProfileRow[]
-
-    if (matchingProfiles.length === 0) {
-      return {
-        currentUserId: user.id,
-        searchValue,
-        matchedProfile: null,
-        matchingProfiles: [],
-        mutualPieces: [],
-        compareSuggestions,
-        isAcceptedFriend: false,
-        error: "user_not_found",
-      }
-    }
-
-    if (matchingProfiles.length > 1) {
-      return {
-        currentUserId: user.id,
-        searchValue,
-        matchedProfile: null,
-        matchingProfiles,
-        mutualPieces: [],
-        compareSuggestions,
-        isAcceptedFriend: false,
-        error: "multiple_matches",
-      }
-    }
-
-    matchedProfile = matchingProfiles[0]
   }
 
   if (matchedProfile.id === user.id) {
@@ -217,6 +234,7 @@ export async function loadCompareData(
       searchValue,
       matchedProfile,
       matchingProfiles: [],
+      searchMatches,
       mutualPieces: [],
       compareSuggestions,
       isAcceptedFriend: false,
@@ -287,6 +305,7 @@ export async function loadCompareData(
       searchValue,
       matchedProfile,
       matchingProfiles: [],
+      searchMatches,
       mutualPieces: [],
       compareSuggestions,
       isAcceptedFriend,
@@ -324,6 +343,7 @@ export async function loadCompareData(
     searchValue,
     matchedProfile,
     matchingProfiles: [],
+    searchMatches,
     mutualPieces: (mutualPiecesRows ?? []) as Piece[],
     compareSuggestions,
     isAcceptedFriend,

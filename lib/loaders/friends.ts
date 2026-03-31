@@ -1,11 +1,9 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-
-type ProfileSearchRow = {
-  id: string
-  username: string | null
-  display_name: string | null
-}
+import {
+  searchProfilesForSelection,
+  type ProfileSearchRow,
+} from "@/lib/profile-search"
 
 type ConnectionRow = {
   id: number
@@ -89,28 +87,6 @@ export type FriendActivityItem = {
     id: number
     name: string
   } | null
-}
-
-function normaliseSearchText(value: string | null | undefined) {
-  if (!value) return ""
-  return value.toLowerCase().replace(/[^a-z0-9]/g, "")
-}
-
-function scoreProfileMatch(profile: ProfileSearchRow, query: string) {
-  const normalisedQuery = normaliseSearchText(query)
-  if (!normalisedQuery) return 0
-
-  const username = normaliseSearchText(profile.username)
-  const displayName = normaliseSearchText(profile.display_name)
-
-  if (username === normalisedQuery) return 400
-  if (displayName === normalisedQuery) return 350
-  if (username.startsWith(normalisedQuery)) return 250
-  if (displayName.startsWith(normalisedQuery)) return 220
-  if (username.includes(normalisedQuery)) return 150
-  if (displayName.includes(normalisedQuery)) return 120
-
-  return 0
 }
 
 export async function loadRecentFriendActivity(
@@ -342,36 +318,13 @@ export async function loadFriendsPageData(searchQuery?: string) {
   let searchMatches: FriendSearchMatch[] = []
 
   if (trimmedQuery) {
-    const { data: profiles, error: profilesError } = await supabase
-      .from("profiles")
-      .select("id, username, display_name")
-      .neq("id", user.id)
-      .limit(200)
-
-    if (profilesError) {
-      throw new Error(profilesError.message)
-    }
-
-    const connectedOrPendingIds = new Set(connectedUserIds)
-    const typedProfiles = (profiles ?? []) as ProfileSearchRow[]
-
-    searchMatches = typedProfiles
-      .filter((profile) => !connectedOrPendingIds.has(profile.id))
-      .map((profile) => ({
-        ...profile,
-        match_score: scoreProfileMatch(profile, trimmedQuery),
-      }))
-      .filter((profile) => profile.match_score > 0)
-      .sort((a, b) => {
-        if (b.match_score !== a.match_score) {
-          return b.match_score - a.match_score
-        }
-
-        const aName = a.display_name ?? a.username ?? ""
-        const bName = b.display_name ?? b.username ?? ""
-        return aName.localeCompare(bName)
-      })
-      .slice(0, 10)
+    searchMatches = await searchProfilesForSelection({
+      query: trimmedQuery,
+      currentUserId: user.id,
+      excludeIds: connectedUserIds,
+      limit: 10,
+      requireCompareDiscoverability: false,
+    })
   }
 
   const acceptedFriendIds = acceptedFriends.map((friend) => friend.user_id)
