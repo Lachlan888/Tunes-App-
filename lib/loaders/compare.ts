@@ -58,6 +58,7 @@ export async function loadCompareData(
     .from("profiles")
     .select("id, username, display_name")
     .eq("username", searchValue)
+    .eq("show_compare_discoverability", true)
     .maybeSingle()
 
   if (usernameMatchError) {
@@ -73,6 +74,7 @@ export async function loadCompareData(
         .from("profiles")
         .select("id, username, display_name")
         .eq("display_name", searchValue)
+        .eq("show_compare_discoverability", true)
 
     if (displayNameMatchesError) {
       throw new Error(displayNameMatchesError.message)

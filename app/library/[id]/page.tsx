@@ -45,6 +45,11 @@ type ProfileRow = {
   display_name: string | null
 }
 
+type CommentAuthor = {
+  displayName: string
+  username: string | null
+}
+
 export default async function PiecePage({ params }: PiecePageProps) {
   const { id } = await params
   const pieceId = Number(id)
@@ -128,7 +133,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
     new Set(typedPieceComments.map((comment) => comment.user_id))
   )
 
-  let profileNameMap: Record<string, string> = {}
+  let profileMap: Record<string, CommentAuthor> = {}
 
   if (commentUserIds.length > 0) {
     const { data: profiles } = await supabase
@@ -138,10 +143,13 @@ export default async function PiecePage({ params }: PiecePageProps) {
 
     const typedProfiles = (profiles as ProfileRow[] | null) ?? []
 
-    profileNameMap = Object.fromEntries(
+    profileMap = Object.fromEntries(
       typedProfiles.map((profile) => [
         profile.id,
-        profile.display_name || profile.username || "Unknown user",
+        {
+          displayName: profile.display_name || profile.username || "Unknown user",
+          username: profile.username,
+        },
       ])
     )
   }
@@ -249,7 +257,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
       <PieceCommentsSection
         pieceId={pieceId}
         comments={typedPieceComments}
-        profileNameMap={profileNameMap}
+        profileMap={profileMap}
       />
     </main>
   )

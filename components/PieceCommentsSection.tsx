@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { addPieceComment } from "@/lib/actions/piece-comments"
 
 type PieceComment = {
@@ -7,16 +8,21 @@ type PieceComment = {
   user_id: string
 }
 
+type CommentAuthor = {
+  displayName: string
+  username: string | null
+}
+
 type PieceCommentsSectionProps = {
   pieceId: number
   comments: PieceComment[]
-  profileNameMap: Record<string, string>
+  profileMap: Record<string, CommentAuthor>
 }
 
 export default function PieceCommentsSection({
   pieceId,
   comments,
-  profileNameMap,
+  profileMap,
 }: PieceCommentsSectionProps) {
   return (
     <section className="mt-12">
@@ -42,11 +48,26 @@ export default function PieceCommentsSection({
       {comments.length > 0 ? (
         <ul className="space-y-4">
           {comments.map((comment) => {
-            const authorName = profileNameMap[comment.user_id] || "Unknown user"
+            const author = profileMap[comment.user_id] ?? {
+              displayName: "Unknown user",
+              username: null,
+            }
 
             return (
               <li key={comment.id} className="border p-3">
-                <p className="mb-2 text-sm text-gray-600">{authorName}</p>
+                <p className="mb-2 text-sm text-gray-600">
+                  {author.username ? (
+                    <Link
+                      href={`/users/${author.username}`}
+                      className="underline hover:no-underline"
+                    >
+                      {author.displayName}
+                    </Link>
+                  ) : (
+                    author.displayName
+                  )}
+                </p>
+
                 <p className="whitespace-pre-wrap text-gray-800">
                   {comment.body}
                 </p>
