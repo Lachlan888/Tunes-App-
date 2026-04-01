@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
+import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
 import { markAsKnown } from "@/lib/actions/known-pieces"
 import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
@@ -156,9 +157,11 @@ export default function LibraryList({
                   <form action={startLearning}>
                     <input type="hidden" name="piece_id" value={piece.id} />
                     <input type="hidden" name="redirect_to" value={redirectTo} />
-                    <button className="bg-black px-3 py-1 text-sm text-white">
-                      Start Practice
-                    </button>
+                    <SubmitButton
+                      label="Start Practice"
+                      pendingLabel="Starting..."
+                      className="bg-black px-3 py-1 text-sm text-white"
+                    />
                   </form>
                 )}
 
@@ -173,9 +176,11 @@ export default function LibraryList({
                         name="redirect_to"
                         value={redirectTo}
                       />
-                      <button className="border px-3 py-1 text-sm">
-                        Mark as known
-                      </button>
+                      <SubmitButton
+                        label="Mark as known"
+                        pendingLabel="Saving..."
+                        className="border px-3 py-1 text-sm"
+                      />
                     </form>
                   ))}
 
@@ -204,9 +209,11 @@ export default function LibraryList({
                 >
                   <input type="hidden" name="piece_id" value={piece.id} />
                   <input type="hidden" name="redirect_to" value={redirectTo} />
-                  <button className="border px-3 py-1 text-sm">
-                    Remove Tune
-                  </button>
+                  <SubmitButton
+                    label="Remove Tune"
+                    pendingLabel="Removing..."
+                    className="border px-3 py-1 text-sm"
+                  />
                 </form>
               </TuneCard>
             </li>

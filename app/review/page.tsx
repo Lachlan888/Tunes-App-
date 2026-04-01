@@ -1,8 +1,9 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
+import SubmitButton from "@/components/SubmitButton"
 import { createClient } from "@/lib/supabase/server"
 import { markFailed, markShaky, markSolid } from "@/lib/actions/reviews"
 import { getToday, isDueToday } from "@/lib/review"
-import { redirect } from "next/navigation"
 
 type Piece = {
   id: number
@@ -166,12 +167,11 @@ export default async function ReviewPage() {
                         name="userPieceId"
                         value={userPiece.id}
                       />
-                      <button
-                        type="submit"
+                      <SubmitButton
+                        label="Rough"
+                        pendingLabel="Saving..."
                         className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-                      >
-                        Rough
-                      </button>
+                      />
                     </form>
 
                     <form action={markShaky}>
@@ -180,12 +180,11 @@ export default async function ReviewPage() {
                         name="userPieceId"
                         value={userPiece.id}
                       />
-                      <button
-                        type="submit"
+                      <SubmitButton
+                        label="Shaky"
+                        pendingLabel="Saving..."
                         className="rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-600"
-                      >
-                        Shaky
-                      </button>
+                      />
                     </form>
 
                     <form action={markSolid}>
@@ -194,12 +193,11 @@ export default async function ReviewPage() {
                         name="userPieceId"
                         value={userPiece.id}
                       />
-                      <button
-                        type="submit"
+                      <SubmitButton
+                        label="Solid"
+                        pendingLabel="Saving..."
                         className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-                      >
-                        Solid
-                      </button>
+                      />
                     </form>
                   </div>
                 </div>
@@ -253,8 +251,8 @@ export default async function ReviewPage() {
                           {piece?.time_signature ?? "Unknown"}
                         </p>
                         <p className="mt-1 text-sm text-gray-600">
-                          Due: {formatDueDate(userPiece.next_review_due)} |
-                          {" "}Stage: {userPiece.stage}
+                          Due: {formatDueDate(userPiece.next_review_due)} |{" "}
+                          Stage: {userPiece.stage}
                         </p>
                       </div>
 

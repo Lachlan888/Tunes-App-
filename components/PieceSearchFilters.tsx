@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import type { FormEvent } from "react"
+import { useTransition, type FormEvent } from "react"
 
 type PieceSearchFiltersProps = {
   basePath: string
@@ -52,6 +52,7 @@ export default function PieceSearchFilters({
 }: PieceSearchFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [isPending, startTransition] = useTransition()
 
   const safeSelectedKeys =
     selectedKeys && selectedKeys.length > 0
@@ -67,6 +68,14 @@ export default function PieceSearchFilters({
     selectedTimeSignatures && selectedTimeSignatures.length > 0
       ? selectedTimeSignatures
       : toSafeArray(selectedTimeSignature)
+
+  function navigateWithParams(params: URLSearchParams) {
+    const href = params.toString() ? `${basePath}?${params.toString()}` : basePath
+
+    startTransition(() => {
+      router.push(href)
+    })
+  }
 
   function buildParamsFromCurrentSearch() {
     const params = new URLSearchParams()
@@ -127,7 +136,7 @@ export default function PieceSearchFilters({
       params.append(groupName, nextValue)
     }
 
-    router.push(params.toString() ? `${basePath}?${params.toString()}` : basePath)
+    navigateWithParams(params)
   }
 
   function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
@@ -162,29 +171,57 @@ export default function PieceSearchFilters({
       if (value) params.append("time_signature", value)
     }
 
-    router.push(params.toString() ? `${basePath}?${params.toString()}` : basePath)
+    navigateWithParams(params)
   }
 
   const clearFiltersHref = buildClearFiltersHref()
 
   return (
-    <form onSubmit={handleSearchSubmit} className="mb-6">
+    <form
+      onSubmit={handleSearchSubmit}
+      className={`mb-6 transition-opacity ${
+        isPending ? "opacity-80" : "opacity-100"
+      }`}
+    >
       {Object.entries(preservedParams).map(([key, value]) => (
         <input key={key} type="hidden" name={key} value={value} />
       ))}
 
-      <label htmlFor="q" className="mb-2 block text-sm font-medium">
-        {searchLabel}
-      </label>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <label htmlFor="q" className="block text-sm font-medium">
+          {searchLabel}
+        </label>
+
+        {isPending && (
+          <span className="text-sm text-gray-600">Updating filters...</span>
+        )}
+      </div>
+
       <input
         id="q"
         name="q"
         defaultValue={searchValue}
         placeholder={searchPlaceholder}
-        className="mb-4 w-full border p-2"
+        className="mb-3 w-full border p-2"
+        aria-busy={isPending}
       />
 
-      <fieldset className="mb-4 border p-3">
+      <div className="mb-6 flex items-center gap-4">
+        <button
+          className="bg-black px-4 py-2 text-white disabled:opacity-60"
+          disabled={isPending}
+        >
+          {isPending ? "Updating..." : "Search"}
+        </button>
+
+        {hasActiveFilters && (
+          <Link href={clearFiltersHref} className="text-sm underline">
+            Clear filters
+          </Link>
+        )}
+      </div>
+
+      <fieldset className="mb-4 border p-3" disabled={isPending}>
         <legend className="px-1 font-medium">Filter by key</legend>
         <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
           {availableKeys.map((key) => (
@@ -204,7 +241,7 @@ export default function PieceSearchFilters({
         </div>
       </fieldset>
 
-      <fieldset className="mb-4 border p-3">
+      <fieldset className="mb-4 border p-3" disabled={isPending}>
         <legend className="px-1 font-medium">Filter by style</legend>
         <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
           {availableStyles.map((style) => (
@@ -224,7 +261,7 @@ export default function PieceSearchFilters({
         </div>
       </fieldset>
 
-      <fieldset className="mb-4 border p-3">
+      <fieldset className="mb-4 border p-3" disabled={isPending}>
         <legend className="px-1 font-medium">Filter by time signature</legend>
         <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
           {availableTimeSignatures.map((timeSignature) => (
@@ -247,16 +284,6 @@ export default function PieceSearchFilters({
           ))}
         </div>
       </fieldset>
-
-      <div className="flex items-center gap-4">
-        <button className="bg-black px-4 py-2 text-white">Search</button>
-
-        {hasActiveFilters && (
-          <Link href={clearFiltersHref} className="text-sm underline">
-            Clear filters
-          </Link>
-        )}
-      </div>
     </form>
   )
 }

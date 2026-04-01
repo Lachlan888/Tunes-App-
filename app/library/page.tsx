@@ -10,14 +10,7 @@ import {
   getPieceFilterOptions,
   pieceMatchesFilters,
 } from "@/lib/search-filters"
-import { createClient } from "@/lib/supabase/server"
 import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
-
-type StyleOption = {
-  id: number
-  slug: string
-  label: string
-}
 
 type LibraryPageProps = {
   searchParams?: Promise<{
@@ -25,6 +18,7 @@ type LibraryPageProps = {
     key?: string | string[]
     style?: string | string[]
     time_signature?: string | string[]
+    visible?: string | string[]
     list_add?: string
     create_tune?: string
     bulk_upload?: string
@@ -44,18 +38,55 @@ function toArray(value: string | string[] | undefined) {
   return Array.isArray(value) ? value.filter(Boolean) : [value]
 }
 
+function parseVisibleCount(
+  value: string | string[] | undefined
+): number | "all" {
+  const singleValue = Array.isArray(value) ? value[0] ?? "20" : value ?? "20"
+
+  if (singleValue === "all") return "all"
+  if (singleValue === "50") return 50
+  if (singleValue === "100") return 100
+
+  return 20
+}
+
+function buildLibraryHref(options: {
+  searchQuery: string
+  selectedKeys: string[]
+  selectedStyles: string[]
+  selectedTimeSignatures: string[]
+  visibleCount: number | "all"
+}) {
+  const params = new URLSearchParams()
+
+  if (options.searchQuery) {
+    params.set("q", options.searchQuery)
+  }
+
+  for (const key of options.selectedKeys) {
+    params.append("key", key)
+  }
+
+  for (const style of options.selectedStyles) {
+    params.append("style", style)
+  }
+
+  for (const timeSignature of options.selectedTimeSignatures) {
+    params.append("time_signature", timeSignature)
+  }
+
+  if (options.visibleCount === "all") {
+    params.set("visible", "all")
+  } else {
+    params.set("visible", String(options.visibleCount))
+  }
+
+  return params.toString() ? `/library?${params.toString()}` : "/library"
+}
+
 export default async function LibraryPage({
   searchParams,
 }: LibraryPageProps) {
-  const {
-    user,
-    pieces,
-    userPieces,
-    userKnownPieces,
-    learningLists,
-    learningListItems,
-  } = await loadLibraryData()
-
   const resolvedSearchParams = await searchParams
   const searchQuery = Array.isArray(resolvedSearchParams?.q)
     ? resolvedSearchParams?.q[0] ?? ""
@@ -64,6 +95,23 @@ export default async function LibraryPage({
   const selectedKeys = toArray(resolvedSearchParams?.key)
   const selectedStyles = toArray(resolvedSearchParams?.style)
   const selectedTimeSignatures = toArray(resolvedSearchParams?.time_signature)
+  const visibleCount = parseVisibleCount(resolvedSearchParams?.visible)
+
+  const {
+    user,
+    pieces,
+    filterOptionPieces,
+    userPieces,
+    userKnownPieces,
+    learningLists,
+    learningListItems,
+    styleOptions,
+  } = await loadLibraryData({
+    searchQuery,
+    selectedKeys,
+    selectedTimeSignatures,
+    visibleCount,
+  })
 
   const listAddStatus = resolvedSearchParams?.list_add ?? ""
   const createTuneStatus = resolvedSearchParams?.create_tune ?? ""
@@ -98,34 +146,31 @@ export default async function LibraryPage({
     redirectParams.append("time_signature", timeSignature)
   }
 
+  if (visibleCount === "all") {
+    redirectParams.set("visible", "all")
+  } else {
+    redirectParams.set("visible", String(visibleCount))
+  }
+
   const redirectTo = redirectParams.toString()
     ? `/library?${redirectParams.toString()}`
     : "/library"
 
-  const supabase = await createClient()
-
-  const { data: styleRows, error: stylesError } = await supabase
-    .from("styles")
-    .select("id, slug, label")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true })
-
-  const styleOptions: StyleOption[] = stylesError ? [] : styleRows ?? []
-
-  const allPieces = (pieces ?? []) as Piece[]
+  const loaderPieces = (pieces ?? []) as Piece[]
+  const optionPieces = (filterOptionPieces ?? []) as Piece[]
 
   const {
     keys: availableKeys,
     styles: availableStyles,
     timeSignatures: availableTimeSignatures,
-  } = getPieceFilterOptions(allPieces)
+  } = getPieceFilterOptions(optionPieces)
 
-  const filteredPieces = allPieces.filter((piece) =>
+  const filteredPieces = loaderPieces.filter((piece) =>
     pieceMatchesFilters(piece, {
-      q: searchQuery,
-      keys: selectedKeys,
+      q: "",
+      keys: [],
       styles: selectedStyles,
-      timeSignatures: selectedTimeSignatures,
+      timeSignatures: [],
     })
   )
 
@@ -313,9 +358,44 @@ export default async function LibraryPage({
         availableStyles={availableStyles}
         availableTimeSignatures={availableTimeSignatures}
         hasActiveFilters={hasActiveFilters}
+        preservedParams={{
+          visible: visibleCount === "all" ? "all" : String(visibleCount),
+        }}
       />
 
       <h2 className="mb-4 text-2xl font-semibold">All tunes</h2>
+
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-gray-600">
+          Showing {filteredPieces.length} tune
+          {filteredPieces.length === 1 ? "" : "s"}
+        </p>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {([20, 50, 100, "all"] as const).map((countOption) => {
+            const isActive = visibleCount === countOption
+            const href = buildLibraryHref({
+              searchQuery,
+              selectedKeys,
+              selectedStyles,
+              selectedTimeSignatures,
+              visibleCount: countOption,
+            })
+
+            return (
+              <a
+                key={String(countOption)}
+                href={href}
+                className={`rounded border px-3 py-1 text-sm ${
+                  isActive ? "bg-black text-white" : "bg-white text-black"
+                }`}
+              >
+                {countOption === "all" ? "All" : countOption}
+              </a>
+            )
+          })}
+        </div>
+      </div>
 
       <LibraryList
         pieces={filteredPieces}
