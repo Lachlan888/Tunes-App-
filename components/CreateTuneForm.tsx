@@ -1,3 +1,5 @@
+import SubmitButton from "@/components/SubmitButton"
+
 type StyleOption = {
   id: number
   slug: string
@@ -8,6 +10,7 @@ type CreateTuneFormProps = {
   createTune: (formData: FormData) => void | Promise<void>
   styleOptions: StyleOption[]
   redirectTo?: string
+  onSubmitStart?: () => void
 }
 
 const KEY_OPTIONS = [
@@ -46,9 +49,15 @@ export default function CreateTuneForm({
   createTune,
   styleOptions,
   redirectTo = "/library",
+  onSubmitStart,
 }: CreateTuneFormProps) {
   return (
-    <form action={createTune}>
+    <form
+      action={async (formData: FormData) => {
+        onSubmitStart?.()
+        await createTune(formData)
+      }}
+    >
       <input type="hidden" name="redirect_to" value={redirectTo} />
 
       <input
@@ -102,7 +111,11 @@ export default function CreateTuneForm({
         className="mb-4 w-full border p-2"
       />
 
-      <button className="bg-black px-4 py-2 text-white">Create</button>
+      <SubmitButton
+        label="Create"
+        pendingLabel="Creating..."
+        className="bg-black px-4 py-2 text-white"
+      />
     </form>
   )
 }

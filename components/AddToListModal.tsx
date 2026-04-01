@@ -1,5 +1,8 @@
 "use client"
 
+import { useState } from "react"
+import SubmitButton from "@/components/SubmitButton"
+
 type Piece = {
   id: number
   title: string
@@ -35,13 +38,22 @@ export default function AddToListModal({
   onChangeSelectedListId,
   onClose,
 }: AddToListModalProps) {
+  const [isClosingDisabled, setIsClosingDisabled] = useState(false)
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onClose}
+      onClick={() => {
+        if (!isClosingDisabled) {
+          onClose()
+        }
+      }}
     >
       <form
-        action={addToLearningList}
+        action={async (formData: FormData) => {
+          setIsClosingDisabled(true)
+          await addToLearningList(formData)
+        }}
         className="w-full max-w-md rounded bg-white p-6 shadow-lg"
         onClick={(event) => event.stopPropagation()}
       >
@@ -64,6 +76,7 @@ export default function AddToListModal({
           value={selectedListId}
           onChange={(event) => onChangeSelectedListId(event.target.value)}
           className="mb-4 w-full border p-2"
+          disabled={isClosingDisabled}
         >
           <option value="">Select a list</option>
           {(learningLists ?? []).map((learningList) => {
@@ -92,19 +105,18 @@ export default function AddToListModal({
         <div className="flex gap-2">
           <button
             type="button"
-            className="border px-4 py-2 text-sm"
+            className="border px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
             onClick={onClose}
+            disabled={isClosingDisabled}
           >
             Cancel
           </button>
 
-          <button
-            type="submit"
+          <SubmitButton
+            label="Add"
+            pendingLabel="Adding..."
             className="bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
-            disabled={!selectedListId}
-          >
-            Add
-          </button>
+          />
         </div>
       </form>
     </div>

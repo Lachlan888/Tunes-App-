@@ -1,14 +1,23 @@
+import SubmitButton from "@/components/SubmitButton"
+
 type CreateListFormProps = {
   createList: (formData: FormData) => void | Promise<void>
   redirectTo?: string
+  onSubmitStart?: () => void
 }
 
 export default function CreateListForm({
   createList,
   redirectTo = "/learning-lists",
+  onSubmitStart,
 }: CreateListFormProps) {
   return (
-    <form action={createList}>
+    <form
+      action={async (formData: FormData) => {
+        onSubmitStart?.()
+        await createList(formData)
+      }}
+    >
       <input type="hidden" name="redirect_to" value={redirectTo} />
 
       <input
@@ -24,7 +33,11 @@ export default function CreateListForm({
         className="mb-4 w-full border p-2"
       />
 
-      <button className="bg-black px-4 py-2 text-white">Create</button>
+      <SubmitButton
+        label="Create"
+        pendingLabel="Creating..."
+        className="bg-black px-4 py-2 text-white"
+      />
     </form>
   )
 }

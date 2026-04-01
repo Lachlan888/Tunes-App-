@@ -6,9 +6,10 @@ import { createList } from "@/lib/actions/lists"
 
 export default function CreateListModal() {
   const [isOpen, setIsOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || isSubmitting) return
 
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -21,7 +22,7 @@ export default function CreateListModal() {
     return () => {
       document.removeEventListener("keydown", handleEscape)
     }
-  }, [isOpen])
+  }, [isOpen, isSubmitting])
 
   return (
     <section className="mb-6">
@@ -36,7 +37,11 @@ export default function CreateListModal() {
       {isOpen && (
         <div
           className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4"
-          onClick={() => setIsOpen(false)}
+          onClick={() => {
+            if (!isSubmitting) {
+              setIsOpen(false)
+            }
+          }}
         >
           <div className="flex min-h-full items-start justify-center py-8">
             <div
@@ -48,7 +53,8 @@ export default function CreateListModal() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="rounded border px-3 py-1 text-sm"
+                  disabled={isSubmitting}
+                  className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Close
                 </button>
@@ -57,6 +63,7 @@ export default function CreateListModal() {
               <CreateListForm
                 createList={createList}
                 redirectTo="/learning-lists"
+                onSubmitStart={() => setIsSubmitting(true)}
               />
             </div>
           </div>

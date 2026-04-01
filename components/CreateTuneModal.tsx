@@ -18,9 +18,10 @@ export default function CreateTuneModal({
   styleOptions,
 }: CreateTuneModalProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || isSubmitting) return
 
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -33,7 +34,7 @@ export default function CreateTuneModal({
     return () => {
       document.removeEventListener("keydown", handleEscape)
     }
-  }, [isOpen])
+  }, [isOpen, isSubmitting])
 
   return (
     <section className="mb-6">
@@ -48,7 +49,11 @@ export default function CreateTuneModal({
       {isOpen && (
         <div
           className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4"
-          onClick={() => setIsOpen(false)}
+          onClick={() => {
+            if (!isSubmitting) {
+              setIsOpen(false)
+            }
+          }}
         >
           <div className="flex min-h-full items-start justify-center py-8">
             <div
@@ -60,7 +65,8 @@ export default function CreateTuneModal({
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="rounded border px-3 py-1 text-sm"
+                  disabled={isSubmitting}
+                  className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Close
                 </button>
@@ -70,6 +76,7 @@ export default function CreateTuneModal({
                 createTune={createTune}
                 styleOptions={styleOptions}
                 redirectTo="/library"
+                onSubmitStart={() => setIsSubmitting(true)}
               />
             </div>
           </div>
