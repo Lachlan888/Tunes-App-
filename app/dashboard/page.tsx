@@ -1,3 +1,4 @@
+import SubmitButton from "@/components/SubmitButton"
 import { updateProfile } from "@/lib/actions/profile"
 import {
   addUserInstrument,
@@ -217,9 +218,11 @@ export default async function DashboardPage({
             </div>
           </div>
 
-          <button type="submit" className="rounded bg-black px-4 py-2 text-white">
-            Save profile
-          </button>
+          <SubmitButton
+            label="Save profile"
+            pendingLabel="Saving..."
+            className="rounded bg-black px-4 py-2 text-white"
+          />
         </form>
       </section>
 
@@ -233,12 +236,11 @@ export default async function DashboardPage({
             placeholder="Add an instrument"
             className="flex-1 rounded border p-2"
           />
-          <button
-            type="submit"
+          <SubmitButton
+            label="Add"
+            pendingLabel="Adding..."
             className="rounded bg-black px-4 py-2 text-white"
-          >
-            Add
-          </button>
+          />
         </form>
 
         {instruments.length > 0 ? (
@@ -257,12 +259,11 @@ export default async function DashboardPage({
                     value={instrument.id}
                   />
                   <input type="hidden" name="redirect_to" value="/dashboard" />
-                  <button
-                    type="submit"
+                  <SubmitButton
+                    label="Remove"
+                    pendingLabel="Removing..."
                     className="rounded border px-3 py-1 text-sm"
-                  >
-                    Remove
-                  </button>
+                  />
                 </form>
               </li>
             ))}

@@ -1,5 +1,7 @@
+import FriendSearchForm from "@/components/FriendSearchForm"
 import FriendsListSection from "@/components/FriendsListSection"
 import RecentFriendActivitySection from "@/components/RecentFriendActivitySection"
+import SubmitButton from "@/components/SubmitButton"
 import { acceptFriendRequest, sendFriendRequest } from "@/lib/actions/friends"
 import { loadFriendsPageData } from "@/lib/loaders/friends"
 
@@ -101,17 +103,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
       <section className="mb-10 rounded border p-4">
         <h2 className="mb-4 text-xl font-semibold">Search users</h2>
 
-        <form method="GET" className="mb-4 flex gap-3">
-          <input
-            name="q"
-            defaultValue={searchQuery}
-            placeholder="Search by name or username"
-            className="w-full rounded border p-2"
-          />
-          <button className="rounded bg-black px-4 py-2 text-white">
-            Search
-          </button>
-        </form>
+        <FriendSearchForm initialQuery={searchQuery} />
 
         {searchQuery && searchMatches.length === 0 && (
           <p className="text-sm text-gray-600">No matching users found.</p>
@@ -140,9 +132,11 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
                     name="redirect_to"
                     value={`/friends?q=${encodeURIComponent(searchQuery)}`}
                   />
-                  <button className="rounded border px-3 py-2 text-sm">
-                    Send request
-                  </button>
+                  <SubmitButton
+                    label="Send request"
+                    pendingLabel="Sending..."
+                    className="rounded border px-3 py-2 text-sm"
+                  />
                 </form>
               </div>
             ))}
@@ -178,9 +172,11 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
                     value={request.connection_id}
                   />
                   <input type="hidden" name="redirect_to" value="/friends" />
-                  <button className="rounded border px-3 py-2 text-sm">
-                    Accept
-                  </button>
+                  <SubmitButton
+                    label="Accept"
+                    pendingLabel="Accepting..."
+                    className="rounded border px-3 py-2 text-sm"
+                  />
                 </form>
               </div>
             ))}
