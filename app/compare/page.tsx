@@ -1,4 +1,6 @@
-import Link from "next/link"
+import CompareSearchForm from "@/components/CompareSearchForm"
+import PendingLinkButton from "@/components/PendingLinkButton"
+import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
 import PieceSearchFilters from "@/components/PieceSearchFilters"
 import { sendFriendRequest } from "@/lib/actions/friends"
@@ -86,24 +88,7 @@ export default async function ComparePage({
         Search for another user, then compare the tunes you have in common.
       </p>
 
-      <form method="GET" className="mb-8 rounded border p-4">
-        <label htmlFor="user" className="mb-2 block text-sm font-medium">
-          Username or display name
-        </label>
-
-        <div className="flex gap-3">
-          <input
-            id="user"
-            name="user"
-            defaultValue={searchValue}
-            className="w-full rounded border p-2"
-            placeholder="Search by username or display name"
-          />
-          <button className="rounded bg-black px-4 py-2 text-white">
-            Search
-          </button>
-        </div>
-      </form>
+      <CompareSearchForm initialQuery={searchValue} />
 
       {friendRequestStatus === "sent" && (
         <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
@@ -154,12 +139,12 @@ export default async function ComparePage({
                 <p className="mt-1 text-sm text-gray-600">@{friend.username}</p>
 
                 <div className="mt-3">
-                  <Link
+                  <PendingLinkButton
                     href={`/compare?user=${encodeURIComponent(friend.username)}`}
-                    className="inline-block rounded bg-black px-4 py-2 text-sm text-white"
-                  >
-                    Compare
-                  </Link>
+                    label="Compare"
+                    pendingLabel="Loading..."
+                    className="rounded bg-black px-4 py-2 text-sm text-white"
+                  />
                 </div>
               </div>
             ))}
@@ -209,12 +194,12 @@ export default async function ComparePage({
 
                 <div className="flex gap-2">
                   {profile.username ? (
-                    <Link
+                    <PendingLinkButton
                       href={`/compare?user=${encodeURIComponent(profile.username)}`}
+                      label="Compare"
+                      pendingLabel="Loading..."
                       className="rounded bg-black px-3 py-2 text-sm text-white"
-                    >
-                      Compare
-                    </Link>
+                    />
                   ) : (
                     <span className="text-sm text-gray-500">
                       No username available
@@ -232,9 +217,11 @@ export default async function ComparePage({
                       name="redirect_to"
                       value={redirectTo}
                     />
-                    <button className="rounded border px-3 py-2 text-sm">
-                      Send request
-                    </button>
+                    <SubmitButton
+                      label="Send request"
+                      pendingLabel="Sending..."
+                      className="rounded border px-3 py-2 text-sm"
+                    />
                   </form>
                 </div>
               </div>
@@ -270,12 +257,12 @@ export default async function ComparePage({
 
                   <div className="flex gap-2">
                     {profile.username ? (
-                      <Link
+                      <PendingLinkButton
                         href={`/compare?user=${encodeURIComponent(profile.username)}`}
+                        label="Compare"
+                        pendingLabel="Loading..."
                         className="rounded bg-black px-3 py-2 text-sm text-white"
-                      >
-                        Compare
-                      </Link>
+                      />
                     ) : (
                       <span className="text-sm text-gray-500">
                         No username available
@@ -293,9 +280,11 @@ export default async function ComparePage({
                         name="redirect_to"
                         value={redirectTo}
                       />
-                      <button className="rounded border px-3 py-2 text-sm">
-                        Send request
-                      </button>
+                      <SubmitButton
+                        label="Send request"
+                        pendingLabel="Sending..."
+                        className="rounded border px-3 py-2 text-sm"
+                      />
                     </form>
                   </div>
                 </div>
@@ -325,9 +314,11 @@ export default async function ComparePage({
                 value={matchedProfile.id}
               />
               <input type="hidden" name="redirect_to" value={redirectTo} />
-              <button className="rounded border px-3 py-2 text-sm">
-                Send request
-              </button>
+              <SubmitButton
+                label="Send request"
+                pendingLabel="Sending..."
+                className="rounded border px-3 py-2 text-sm"
+              />
             </form>
           </div>
 
