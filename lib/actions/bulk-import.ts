@@ -1,5 +1,6 @@
 "use server"
 
+import { normaliseTuneTitle } from "@/lib/normalise"
 import { createClient } from "@/lib/supabase/server"
 import { parse } from "csv-parse/sync"
 import { redirect } from "next/navigation"
@@ -35,11 +36,7 @@ type ExistingPiece = {
 }
 
 function normaliseForDuplicateMatch(value: string | null) {
-  return (value ?? "")
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[^a-z0-9]/g, "")
-    .trim()
+  return normaliseTuneTitle(value)
 }
 
 function buildPieceMatchKey(title: string, key: string | null) {

@@ -41,6 +41,7 @@ type CompareLoaderResult = {
   mutualPieces: Piece[]
   compareSuggestions: CompareSuggestion[]
   isAcceptedFriend: boolean
+  canCompare: boolean
   error: CompareError
 }
 
@@ -185,6 +186,7 @@ export async function loadCompareData(
       mutualPieces: [],
       compareSuggestions,
       isAcceptedFriend: false,
+      canCompare: false,
       error: "missing_search",
     }
   }
@@ -206,6 +208,7 @@ export async function loadCompareData(
       mutualPieces: [],
       compareSuggestions,
       isAcceptedFriend: false,
+      canCompare: false,
       error: "user_not_found",
     }
   }
@@ -224,6 +227,7 @@ export async function loadCompareData(
       mutualPieces: [],
       compareSuggestions,
       isAcceptedFriend: false,
+      canCompare: false,
       error: "multiple_matches",
     }
   }
@@ -238,6 +242,7 @@ export async function loadCompareData(
       mutualPieces: [],
       compareSuggestions,
       isAcceptedFriend: false,
+      canCompare: false,
       error: "self_compare",
     }
   }
@@ -247,6 +252,24 @@ export async function loadCompareData(
     user.id,
     matchedProfile.id
   )
+
+  const canCompare =
+    !matchedProfile.compare_requires_friend || isAcceptedFriend
+
+  if (!canCompare) {
+    return {
+      currentUserId: user.id,
+      searchValue,
+      matchedProfile,
+      matchingProfiles: [],
+      searchMatches,
+      mutualPieces: [],
+      compareSuggestions,
+      isAcceptedFriend,
+      canCompare,
+      error: null,
+    }
+  }
 
   const { data: currentPracticeRows, error: currentPracticeError } =
     await supabase
@@ -309,6 +332,7 @@ export async function loadCompareData(
       mutualPieces: [],
       compareSuggestions,
       isAcceptedFriend,
+      canCompare,
       error: null,
     }
   }
@@ -347,6 +371,7 @@ export async function loadCompareData(
     mutualPieces: (mutualPiecesRows ?? []) as Piece[],
     compareSuggestions,
     isAcceptedFriend,
+    canCompare,
     error: null,
   }
 }

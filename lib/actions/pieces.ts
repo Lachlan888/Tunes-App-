@@ -1,5 +1,6 @@
 "use server"
 
+import { normaliseTuneTitle } from "@/lib/normalise"
 import { normaliseKey } from "@/lib/music/keys"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
@@ -11,11 +12,7 @@ function appendQueryParam(url: string, key: string, value: string) {
 }
 
 function normaliseForDuplicateMatch(value: string | null) {
-  return (value ?? "")
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[^a-z0-9]/g, "")
-    .trim()
+  return normaliseTuneTitle(value)
 }
 
 export async function createTune(formData: FormData) {

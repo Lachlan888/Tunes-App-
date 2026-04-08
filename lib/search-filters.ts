@@ -1,3 +1,4 @@
+import { normaliseTuneTitle } from "@/lib/normalise"
 import type { Piece } from "@/lib/types"
 
 export type PieceSearchFilters = {
@@ -14,11 +15,7 @@ export type PieceFilterOptions = {
 }
 
 export function normaliseForSearch(value: string | null | undefined) {
-  return (value ?? "")
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[^a-z0-9]/g, "")
-    .trim()
+  return normaliseTuneTitle(value)
 }
 
 export function getStyleLabelsFromPiece(piece: Piece): string[] {
@@ -92,10 +89,5 @@ export function pieceMatchesFilters(piece: Piece, filters: PieceSearchFilters) {
     (piece.time_signature !== null &&
       filters.timeSignatures.includes(piece.time_signature))
 
-  return (
-    matchesSearch &&
-    matchesKey &&
-    matchesStyle &&
-    matchesTimeSignature
-  )
+  return matchesSearch && matchesKey && matchesStyle && matchesTimeSignature
 }

@@ -16,6 +16,7 @@ export type OwnProfileData = {
     show_repertoire_summary: boolean
     show_comment_activity: boolean
     show_compare_discoverability: boolean
+    compare_requires_friend: boolean
   } | null
   instruments: {
     id: number
@@ -34,6 +35,7 @@ type ProfileRow = {
   show_repertoire_summary: boolean
   show_comment_activity: boolean
   show_compare_discoverability: boolean
+  compare_requires_friend: boolean
 }
 
 type InstrumentRow = {
@@ -65,7 +67,8 @@ export async function loadOwnProfileData(): Promise<OwnProfileData> {
         show_public_lists_on_profile,
         show_repertoire_summary,
         show_comment_activity,
-        show_compare_discoverability
+        show_compare_discoverability,
+        compare_requires_friend
       `
     )
     .eq("id", user.id)

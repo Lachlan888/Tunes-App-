@@ -215,6 +215,15 @@ export default async function DashboardPage({
                 />
                 <span>Allow profile to be discoverable for compare</span>
               </label>
+
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="compare_requires_friend"
+                  defaultChecked={profile?.compare_requires_friend ?? false}
+                />
+                <span>Require friendship before others can compare with me</span>
+              </label>
             </div>
           </div>
 

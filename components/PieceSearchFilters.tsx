@@ -2,7 +2,14 @@
 
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useTransition, type FormEvent } from "react"
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+  type FormEvent,
+} from "react"
 
 type PieceSearchFiltersProps = {
   basePath: string
@@ -30,6 +37,16 @@ function toSafeArray(value: string[] | string | undefined) {
   return Array.isArray(value) ? value : [value]
 }
 
+function formatFilterLabel(group: "key" | "style" | "time_signature") {
+  if (group === "key") return "Key"
+  if (group === "style") return "Style"
+  return "Time signature"
+}
+
+function buildChipId(group: "key" | "style" | "time_signature", value: string) {
+  return `${group}:${value}`
+}
+
 export default function PieceSearchFilters({
   basePath,
   searchLabel,
@@ -53,6 +70,9 @@ export default function PieceSearchFilters({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
+  const [isPanelOpen, setIsPanelOpen] = useState(false)
+  const [query, setQuery] = useState(searchValue)
+  const panelRef = useRef<HTMLDivElement | null>(null)
 
   const safeSelectedKeys =
     selectedKeys && selectedKeys.length > 0
@@ -68,6 +88,35 @@ export default function PieceSearchFilters({
     selectedTimeSignatures && selectedTimeSignatures.length > 0
       ? selectedTimeSignatures
       : toSafeArray(selectedTimeSignature)
+
+  useEffect(() => {
+    setQuery(searchValue)
+  }, [searchValue])
+
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      if (!isPanelOpen) return
+      if (!panelRef.current) return
+
+      if (!panelRef.current.contains(event.target as Node)) {
+        setIsPanelOpen(false)
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsPanelOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown)
+    document.addEventListener("keydown", handleEscape)
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown)
+      document.removeEventListener("keydown", handleEscape)
+    }
+  }, [isPanelOpen])
 
   function navigateWithParams(params: URLSearchParams) {
     const href = params.toString() ? `${basePath}?${params.toString()}` : basePath
@@ -142,7 +191,6 @@ export default function PieceSearchFilters({
   function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    const formData = new FormData(event.currentTarget)
     const params = new URLSearchParams()
 
     for (const [key, value] of Object.entries(preservedParams)) {
@@ -151,139 +199,291 @@ export default function PieceSearchFilters({
       }
     }
 
-    const q = String(formData.get("q") ?? "").trim()
-    if (q) {
-      params.set("q", q)
+    const trimmedQuery = query.trim()
+    if (trimmedQuery) {
+      params.set("q", trimmedQuery)
     }
 
-    for (const key of formData.getAll("key")) {
-      const value = String(key).trim()
-      if (value) params.append("key", value)
+    for (const key of safeSelectedKeys) {
+      params.append("key", key)
     }
 
-    for (const style of formData.getAll("style")) {
-      const value = String(style).trim()
-      if (value) params.append("style", value)
+    for (const style of safeSelectedStyles) {
+      params.append("style", style)
     }
 
-    for (const timeSignature of formData.getAll("time_signature")) {
-      const value = String(timeSignature).trim()
-      if (value) params.append("time_signature", value)
+    for (const timeSignature of safeSelectedTimeSignatures) {
+      params.append("time_signature", timeSignature)
     }
 
     navigateWithParams(params)
   }
 
+  function handleRemoveSingleFilter(
+    groupName: "key" | "style" | "time_signature",
+    value: string
+  ) {
+    const params = buildParamsFromCurrentSearch()
+    const existingValues = params.getAll(groupName).filter(Boolean)
+
+    params.delete(groupName)
+
+    for (const existingValue of existingValues) {
+      if (existingValue !== value) {
+        params.append(groupName, existingValue)
+      }
+    }
+
+    navigateWithParams(params)
+  }
+
+  function handleClearAll() {
+    const params = new URLSearchParams()
+
+    for (const [key, value] of Object.entries(preservedParams)) {
+      if (value) {
+        params.set(key, value)
+      }
+    }
+
+    navigateWithParams(params)
+    setIsPanelOpen(false)
+  }
+
   const clearFiltersHref = buildClearFiltersHref()
 
+  const activeFilterCount =
+    safeSelectedKeys.length +
+    safeSelectedStyles.length +
+    safeSelectedTimeSignatures.length
+
+  const activeChips = useMemo(
+    () => [
+      ...safeSelectedKeys.map((value) => ({
+        id: buildChipId("key", value),
+        group: "key" as const,
+        groupLabel: formatFilterLabel("key"),
+        value,
+      })),
+      ...safeSelectedStyles.map((value) => ({
+        id: buildChipId("style", value),
+        group: "style" as const,
+        groupLabel: formatFilterLabel("style"),
+        value,
+      })),
+      ...safeSelectedTimeSignatures.map((value) => ({
+        id: buildChipId("time_signature", value),
+        group: "time_signature" as const,
+        groupLabel: formatFilterLabel("time_signature"),
+        value,
+      })),
+    ],
+    [safeSelectedKeys, safeSelectedStyles, safeSelectedTimeSignatures]
+  )
+
   return (
-    <form
-      onSubmit={handleSearchSubmit}
-      className={`mb-6 transition-opacity ${
+    <div
+      ref={panelRef}
+      className={`relative mb-6 transition-opacity ${
         isPending ? "opacity-80" : "opacity-100"
       }`}
     >
-      {Object.entries(preservedParams).map(([key, value]) => (
-        <input key={key} type="hidden" name={key} value={value} />
-      ))}
+      <form onSubmit={handleSearchSubmit} className="rounded-xl border bg-white p-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end">
+          <div className="min-w-0 flex-1">
+            <label htmlFor="q" className="mb-2 block text-sm font-medium">
+              {searchLabel}
+            </label>
+            <input
+              id="q"
+              name="q"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={searchPlaceholder}
+              className="w-full rounded-lg border px-3 py-2"
+              aria-busy={isPending}
+            />
+          </div>
 
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <label htmlFor="q" className="block text-sm font-medium">
-          {searchLabel}
-        </label>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="submit"
+              className="rounded-lg bg-black px-4 py-2 text-white disabled:opacity-60"
+              disabled={isPending}
+            >
+              {isPending ? "Searching..." : "Search"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsPanelOpen((current) => !current)}
+              className="rounded-lg border px-4 py-2 text-sm disabled:opacity-60"
+              disabled={isPending}
+              aria-expanded={isPanelOpen}
+              aria-controls="piece-filter-panel"
+            >
+              {isPending
+                ? "Updating..."
+                : activeFilterCount > 0
+                ? `Filters (${activeFilterCount})`
+                : "Filters"}
+            </button>
+
+            {hasActiveFilters && (
+              <Link href={clearFiltersHref} className="text-sm underline">
+                Clear filters
+              </Link>
+            )}
+          </div>
+        </div>
 
         {isPending && (
-          <span className="text-sm text-gray-600">Updating filters...</span>
+          <p className="mt-3 text-sm text-gray-600">Updating filters...</p>
         )}
-      </div>
 
-      <input
-        id="q"
-        name="q"
-        defaultValue={searchValue}
-        placeholder={searchPlaceholder}
-        className="mb-3 w-full border p-2"
-        aria-busy={isPending}
-      />
+        {activeChips.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {activeChips.map((chip) => (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => handleRemoveSingleFilter(chip.group, chip.value)}
+                className="rounded-full border px-3 py-1 text-sm"
+                disabled={isPending}
+              >
+                {chip.groupLabel}: {chip.value} ×
+              </button>
+            ))}
+          </div>
+        )}
+      </form>
 
-      <div className="mb-6 flex items-center gap-4">
-        <button
-          className="bg-black px-4 py-2 text-white disabled:opacity-60"
-          disabled={isPending}
+      {isPanelOpen && (
+        <div
+          id="piece-filter-panel"
+          className="absolute left-0 right-0 z-20 mt-2 rounded-2xl border bg-white p-4 shadow-lg"
         >
-          {isPending ? "Updating..." : "Search"}
-        </button>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base font-semibold">Filter tunes</h3>
+              <p className="text-sm text-gray-600">
+                Select as many filters as you like.
+              </p>
+            </div>
 
-        {hasActiveFilters && (
-          <Link href={clearFiltersHref} className="text-sm underline">
-            Clear filters
-          </Link>
-        )}
-      </div>
+            <div className="flex items-center gap-2">
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={handleClearAll}
+                  className="rounded-lg border px-3 py-2 text-sm"
+                  disabled={isPending}
+                >
+                  Clear all
+                </button>
+              )}
 
-      <fieldset className="mb-4 border p-3" disabled={isPending}>
-        <legend className="px-1 font-medium">Filter by key</legend>
-        <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
-          {availableKeys.map((key) => (
-            <label key={key} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="key"
-                value={key}
-                checked={safeSelectedKeys.includes(key)}
-                onChange={(event) =>
-                  handleMultiCheckboxChange("key", key, event.target.checked)
-                }
-              />
-              <span>{key}</span>
-            </label>
-          ))}
+              <button
+                type="button"
+                onClick={() => setIsPanelOpen(false)}
+                className="rounded-lg border px-3 py-2 text-sm"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <fieldset className="min-w-0 rounded-xl border p-3" disabled={isPending}>
+              <legend className="px-1 text-sm font-medium">
+                Key ({safeSelectedKeys.length})
+              </legend>
+              <div className="mt-2 max-h-64 space-y-2 overflow-y-auto pr-1">
+                {availableKeys.length === 0 ? (
+                  <p className="text-sm text-gray-500">No keys available.</p>
+                ) : (
+                  availableKeys.map((key) => (
+                    <label key={key} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        name="key"
+                        value={key}
+                        checked={safeSelectedKeys.includes(key)}
+                        onChange={(event) =>
+                          handleMultiCheckboxChange("key", key, event.target.checked)
+                        }
+                      />
+                      <span>{key}</span>
+                    </label>
+                  ))
+                )}
+              </div>
+            </fieldset>
+
+            <fieldset className="min-w-0 rounded-xl border p-3" disabled={isPending}>
+              <legend className="px-1 text-sm font-medium">
+                Style ({safeSelectedStyles.length})
+              </legend>
+              <div className="mt-2 max-h-64 space-y-2 overflow-y-auto pr-1">
+                {availableStyles.length === 0 ? (
+                  <p className="text-sm text-gray-500">No styles available.</p>
+                ) : (
+                  availableStyles.map((style) => (
+                    <label key={style} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        name="style"
+                        value={style}
+                        checked={safeSelectedStyles.includes(style)}
+                        onChange={(event) =>
+                          handleMultiCheckboxChange(
+                            "style",
+                            style,
+                            event.target.checked
+                          )
+                        }
+                      />
+                      <span>{style}</span>
+                    </label>
+                  ))
+                )}
+              </div>
+            </fieldset>
+
+            <fieldset className="min-w-0 rounded-xl border p-3" disabled={isPending}>
+              <legend className="px-1 text-sm font-medium">
+                Time signature ({safeSelectedTimeSignatures.length})
+              </legend>
+              <div className="mt-2 max-h-64 space-y-2 overflow-y-auto pr-1">
+                {availableTimeSignatures.length === 0 ? (
+                  <p className="text-sm text-gray-500">
+                    No time signatures available.
+                  </p>
+                ) : (
+                  availableTimeSignatures.map((timeSignature) => (
+                    <label key={timeSignature} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        name="time_signature"
+                        value={timeSignature}
+                        checked={safeSelectedTimeSignatures.includes(timeSignature)}
+                        onChange={(event) =>
+                          handleMultiCheckboxChange(
+                            "time_signature",
+                            timeSignature,
+                            event.target.checked
+                          )
+                        }
+                      />
+                      <span>{timeSignature}</span>
+                    </label>
+                  ))
+                )}
+              </div>
+            </fieldset>
+          </div>
         </div>
-      </fieldset>
-
-      <fieldset className="mb-4 border p-3" disabled={isPending}>
-        <legend className="px-1 font-medium">Filter by style</legend>
-        <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
-          {availableStyles.map((style) => (
-            <label key={style} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="style"
-                value={style}
-                checked={safeSelectedStyles.includes(style)}
-                onChange={(event) =>
-                  handleMultiCheckboxChange("style", style, event.target.checked)
-                }
-              />
-              <span>{style}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-
-      <fieldset className="mb-4 border p-3" disabled={isPending}>
-        <legend className="px-1 font-medium">Filter by time signature</legend>
-        <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
-          {availableTimeSignatures.map((timeSignature) => (
-            <label key={timeSignature} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="time_signature"
-                value={timeSignature}
-                checked={safeSelectedTimeSignatures.includes(timeSignature)}
-                onChange={(event) =>
-                  handleMultiCheckboxChange(
-                    "time_signature",
-                    timeSignature,
-                    event.target.checked
-                  )
-                }
-              />
-              <span>{timeSignature}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-    </form>
+      )}
+    </div>
   )
 }

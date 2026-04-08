@@ -53,6 +53,7 @@ export default async function ComparePage({
     mutualPieces,
     compareSuggestions,
     isAcceptedFriend,
+    canCompare,
     error,
   } = await loadCompareData(searchValue)
 
@@ -230,70 +231,67 @@ export default async function ComparePage({
         </section>
       )}
 
-      {error === null &&
-        !matchedProfile &&
-        searchMatches.length > 0 &&
-        !isAcceptedFriend && (
-          <section className="mb-8 rounded border p-4">
-            <h2 className="text-xl font-semibold">Choose a user</h2>
-            <p className="mt-1 text-sm text-gray-600">
-              Select the person you want to compare with.
-            </p>
+      {error === null && !matchedProfile && searchMatches.length > 0 && (
+        <section className="mb-8 rounded border p-4">
+          <h2 className="text-xl font-semibold">Choose a user</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            Select the person you want to compare with.
+          </p>
 
-            <div className="mt-4 space-y-3">
-              {searchMatches.map((profile) => (
-                <div
-                  key={profile.id}
-                  className="flex items-center justify-between rounded border p-3"
-                >
-                  <div>
-                    <p className="font-medium">
-                      {profile.display_name || profile.username || "Unnamed user"}
-                    </p>
-                    {profile.username && (
-                      <p className="text-sm text-gray-600">@{profile.username}</p>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2">
-                    {profile.username ? (
-                      <PendingLinkButton
-                        href={`/compare?user=${encodeURIComponent(profile.username)}`}
-                        label="Compare"
-                        pendingLabel="Loading..."
-                        className="rounded bg-black px-3 py-2 text-sm text-white"
-                      />
-                    ) : (
-                      <span className="text-sm text-gray-500">
-                        No username available
-                      </span>
-                    )}
-
-                    <form action={sendFriendRequest}>
-                      <input
-                        type="hidden"
-                        name="addressee_id"
-                        value={profile.id}
-                      />
-                      <input
-                        type="hidden"
-                        name="redirect_to"
-                        value={redirectTo}
-                      />
-                      <SubmitButton
-                        label="Send request"
-                        pendingLabel="Sending..."
-                        className="rounded border px-3 py-2 text-sm"
-                      />
-                    </form>
-                  </div>
+          <div className="mt-4 space-y-3">
+            {searchMatches.map((profile) => (
+              <div
+                key={profile.id}
+                className="flex items-center justify-between rounded border p-3"
+              >
+                <div>
+                  <p className="font-medium">
+                    {profile.display_name || profile.username || "Unnamed user"}
+                  </p>
+                  {profile.username && (
+                    <p className="text-sm text-gray-600">@{profile.username}</p>
+                  )}
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
 
-      {matchedProfile && error === null && !isAcceptedFriend && (
+                <div className="flex gap-2">
+                  {profile.username ? (
+                    <PendingLinkButton
+                      href={`/compare?user=${encodeURIComponent(profile.username)}`}
+                      label="Compare"
+                      pendingLabel="Loading..."
+                      className="rounded bg-black px-3 py-2 text-sm text-white"
+                    />
+                  ) : (
+                    <span className="text-sm text-gray-500">
+                      No username available
+                    </span>
+                  )}
+
+                  <form action={sendFriendRequest}>
+                    <input
+                      type="hidden"
+                      name="addressee_id"
+                      value={profile.id}
+                    />
+                    <input
+                      type="hidden"
+                      name="redirect_to"
+                      value={redirectTo}
+                    />
+                    <SubmitButton
+                      label="Send request"
+                      pendingLabel="Sending..."
+                      className="rounded border px-3 py-2 text-sm"
+                    />
+                  </form>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {matchedProfile && error === null && !canCompare && (
         <section className="mb-8 rounded border p-4">
           <h2 className="text-xl font-semibold">User found</h2>
 
@@ -307,28 +305,30 @@ export default async function ComparePage({
               </p>
             </div>
 
-            <form action={sendFriendRequest}>
-              <input
-                type="hidden"
-                name="addressee_id"
-                value={matchedProfile.id}
-              />
-              <input type="hidden" name="redirect_to" value={redirectTo} />
-              <SubmitButton
-                label="Send request"
-                pendingLabel="Sending..."
-                className="rounded border px-3 py-2 text-sm"
-              />
-            </form>
+            {!isAcceptedFriend && (
+              <form action={sendFriendRequest}>
+                <input
+                  type="hidden"
+                  name="addressee_id"
+                  value={matchedProfile.id}
+                />
+                <input type="hidden" name="redirect_to" value={redirectTo} />
+                <SubmitButton
+                  label="Send request"
+                  pendingLabel="Sending..."
+                  className="rounded border px-3 py-2 text-sm"
+                />
+              </form>
+            )}
           </div>
 
           <p className="mt-3 text-sm text-gray-600">
-            You need to be friends before using compare with this user.
+            This user requires friendship before others can compare with them.
           </p>
         </section>
       )}
 
-      {matchedProfile && error === null && isAcceptedFriend && (
+      {matchedProfile && error === null && canCompare && (
         <>
           <div className="mb-6 rounded border p-4">
             <h2 className="text-xl font-semibold">
@@ -338,6 +338,12 @@ export default async function ComparePage({
             <p className="mt-1 text-sm text-gray-600">
               Username: @{matchedProfile.username}
             </p>
+            {!isAcceptedFriend && (
+              <p className="mt-2 text-sm text-gray-600">
+                Compare is public for this user, so you do not need to be
+                friends to view overlap.
+              </p>
+            )}
             <p className="mt-2 text-sm text-gray-700">
               {mutualPieces.length} mutual tune
               {mutualPieces.length === 1 ? "" : "s"} found.

@@ -31,6 +31,9 @@ export async function updateProfile(formData: FormData) {
   const show_compare_discoverability = asBoolean(
     formData.get("show_compare_discoverability")
   )
+  const compare_requires_friend = asBoolean(
+    formData.get("compare_requires_friend")
+  )
 
   const encodedUsername = encodeURIComponent(username)
   const encodedDisplayName = encodeURIComponent(displayNameRaw)
@@ -63,6 +66,7 @@ export async function updateProfile(formData: FormData) {
       show_repertoire_summary,
       show_comment_activity,
       show_compare_discoverability,
+      compare_requires_friend,
       updated_at: new Date().toISOString(),
     })
     .eq("id", user.id)
@@ -80,5 +84,6 @@ export async function updateProfile(formData: FormData) {
   }
 
   revalidatePath("/dashboard")
+  revalidatePath("/compare")
   redirect("/dashboard?saved=1")
 }
