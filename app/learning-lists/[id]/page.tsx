@@ -1,64 +1,55 @@
-import Link from "next/link"
-import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
+import EditListModal from "@/components/EditListModal"
+import RemoveTuneButton from "@/components/RemoveTuneButton"
+import TuneCard from "@/components/TuneCard"
 import {
-  addPieceSheetMusicLink,
-  upsertUserPieceNotes,
-} from "@/lib/actions/piece-metadata"
-import { addToLearningList } from "@/lib/actions/lists"
+  deleteList,
+  removeTuneFromList,
+  updateList,
+} from "@/lib/actions/lists"
+import { markAsKnown } from "@/lib/actions/known-pieces"
+import { removeTuneFromMyApp } from "@/lib/actions/pieces"
+import { createClient } from "@/lib/supabase/server"
 import { startLearning } from "@/lib/actions/user-pieces"
-import PieceCommentsSection from "@/components/PieceCommentsSection"
-import SubmitButton from "@/components/SubmitButton"
-import TuneCanonicalDetailsCard from "@/components/TuneCanonicalDetailsCard"
-import TuneDetailActions from "@/components/TuneDetailActions"
-import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
+import type { Piece } from "@/lib/types"
 
-type PiecePageProps = {
-  params: Promise<{
-    id: string
-  }>
-}
-
-type UserPieceMetadata = {
-  notes: string | null
-}
-
-type PieceSheetMusicLink = {
+type LearningListRow = {
   id: number
-  url: string
-  label: string | null
-}
-
-type PieceCommentRow = {
-  id: number
-  body: string
-  created_at: string
   user_id: string
-}
-
-type ProfileRow = {
-  id: string
-  username: string | null
-  display_name: string | null
-}
-
-type CommentAuthor = {
-  displayName: string
-  username: string | null
+  name: string
+  description: string | null
+  visibility: "private" | "public"
+  is_imported: boolean
 }
 
 type LearningListItemRow = {
-  learning_list_id: number
-  piece_id: number
+  id: number
+  position: number | null
+  pieces: Piece | Piece[] | null
 }
 
-export default async function PiecePage({ params }: PiecePageProps) {
-  const { id } = await params
-  const pieceId = Number(id)
+type LearningListDetailPageProps = {
+  params: Promise<{ id: string }>
+  searchParams?: Promise<{
+    remove_tune?: string
+    edit_list?: string
+  }>
+}
 
-  if (!Number.isInteger(pieceId) || pieceId <= 0) {
-    redirect("/library")
+export default async function LearningListDetailPage({
+  params,
+  searchParams,
+}: LearningListDetailPageProps) {
+  const { id } = await params
+  const listId = Number(id)
+
+  if (Number.isNaN(listId)) {
+    notFound()
   }
+
+  const resolvedSearchParams = await searchParams
+  const removeTuneStatus = resolvedSearchParams?.remove_tune ?? ""
+  const editListStatus = resolvedSearchParams?.edit_list ?? ""
 
   const supabase = await createClient()
 
@@ -70,282 +61,262 @@ export default async function PiecePage({ params }: PiecePageProps) {
     redirect("/login")
   }
 
-  const { data: piece, error } = await supabase
-    .from("pieces")
-    .select("id, title, key, style, time_signature, reference_url")
-    .eq("id", pieceId)
-    .maybeSingle()
-
-  if (error) {
-    return (
-      <main className="p-8">
-        <h1 className="mb-4 text-3xl font-bold">Tune</h1>
-        <p className="text-red-600">Could not load tune.</p>
-        <div className="mt-4">
-          <Link href="/library" className="underline">
-            Back to Tunes
-          </Link>
-        </div>
-      </main>
-    )
-  }
-
-  if (!piece) {
-    return (
-      <main className="p-8">
-        <h1 className="mb-4 text-3xl font-bold">Tune not found</h1>
-        <p className="text-gray-600">No tune exists at id {pieceId}.</p>
-        <div className="mt-4">
-          <Link href="/library" className="underline">
-            Back to Tunes
-          </Link>
-        </div>
-      </main>
-    )
-  }
-
-  const { data: ownedLists } = await supabase
+  const { data: list, error: listError } = await supabase
     .from("learning_lists")
-    .select("id")
+    .select("id, user_id, name, description, visibility, is_imported")
+    .eq("id", listId)
     .eq("user_id", user.id)
+    .single()
 
-  const ownedListIds = (ownedLists ?? []).map((list) => list.id)
+  if (listError || !list) {
+    notFound()
+  }
 
-  const [
-    userPieceMetadataResult,
-    sheetMusicLinksResult,
-    pieceCommentsResult,
-    userPieceResult,
-    userKnownPieceResult,
-    learningListsResult,
-    learningListItemsResult,
-  ] = await Promise.all([
-    supabase
-      .from("user_piece_metadata")
-      .select("notes")
-      .eq("user_id", user.id)
-      .eq("piece_id", pieceId)
-      .maybeSingle(),
-    supabase
-      .from("piece_sheet_music_links")
-      .select("id, url, label")
-      .eq("piece_id", pieceId)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("piece_comments")
-      .select("id, body, created_at, user_id")
-      .eq("piece_id", pieceId)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("user_pieces")
-      .select("id, piece_id, status, next_review_due, stage")
-      .eq("user_id", user.id)
-      .eq("piece_id", pieceId)
-      .maybeSingle(),
-    supabase
-      .from("user_known_pieces")
-      .select("id, piece_id")
-      .eq("user_id", user.id)
-      .eq("piece_id", pieceId)
-      .maybeSingle(),
-    supabase
-      .from("learning_lists")
-      .select("id, name, description")
-      .eq("user_id", user.id)
-      .order("name", { ascending: true }),
-    ownedListIds.length > 0
-      ? supabase
-          .from("learning_list_items")
-          .select("learning_list_id, piece_id")
-          .eq("piece_id", pieceId)
-          .in("learning_list_id", ownedListIds)
-      : Promise.resolve({ data: [], error: null }),
-  ])
+  const typedList = list as LearningListRow
+  const redirectTo = `/learning-lists/${typedList.id}`
 
-  const typedPiece = piece as Piece
-  const typedUserPieceMetadata =
-    (userPieceMetadataResult.data as UserPieceMetadata | null) ?? null
-  const typedSheetMusicLinks =
-    (sheetMusicLinksResult.data as PieceSheetMusicLink[] | null) ?? []
-  const typedPieceComments =
-    (pieceCommentsResult.data as PieceCommentRow[] | null) ?? []
-  const typedUserPiece = (userPieceResult.data as UserPiece | null) ?? null
-  const typedUserKnownPiece =
-    (userKnownPieceResult.data as UserKnownPiece | null) ?? null
-  const typedLearningLists =
-    (learningListsResult.data as LearningList[] | null) ?? []
-  const typedLearningListItems =
-    (learningListItemsResult.data as LearningListItemRow[] | null) ?? []
+  const { data: items, error: itemsError } = await supabase
+    .from("learning_list_items")
+    .select(`
+      id,
+      position,
+      pieces (
+        id,
+        title,
+        key,
+        style,
+        time_signature,
+        reference_url
+      )
+    `)
+    .eq("learning_list_id", listId)
+    .order("position", { ascending: true })
 
-  const commentUserIds = Array.from(
-    new Set(typedPieceComments.map((comment) => comment.user_id))
-  )
-
-  let profileMap: Record<string, CommentAuthor> = {}
-
-  if (commentUserIds.length > 0) {
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, username, display_name")
-      .in("id", commentUserIds)
-
-    const typedProfiles = (profiles as ProfileRow[] | null) ?? []
-
-    profileMap = Object.fromEntries(
-      typedProfiles.map((profile) => [
-        profile.id,
-        {
-          displayName: profile.display_name || profile.username || "Unknown user",
-          username: profile.username,
-        },
-      ])
+  if (itemsError) {
+    return (
+      <main className="p-6 max-w-4xl mx-auto">
+        <h1 className="mb-4 text-2xl font-bold">{typedList.name}</h1>
+        <p>Could not load list items.</p>
+        <p className="mt-2 text-sm text-red-600">{itemsError.message}</p>
+      </main>
     )
+  }
+
+  const typedItems = (items ?? []) as LearningListItemRow[]
+
+  const tunes = typedItems
+    .map((item) => (Array.isArray(item.pieces) ? item.pieces[0] : item.pieces))
+    .filter((piece): piece is Piece => Boolean(piece))
+
+  const pieceIds = tunes.map((piece) => piece.id)
+
+  let activePieceIds = new Set<number>()
+  let knownPieceIds = new Set<number>()
+
+  if (pieceIds.length > 0) {
+    const { data: userPieces, error: userPiecesError } = await supabase
+      .from("user_pieces")
+      .select("piece_id")
+      .eq("user_id", user.id)
+      .in("piece_id", pieceIds)
+
+    if (userPiecesError) {
+      return (
+        <main className="p-6 max-w-4xl mx-auto">
+          <h1 className="mb-4 text-2xl font-bold">{typedList.name}</h1>
+          <p>Could not load practice state.</p>
+          <p className="mt-2 text-sm text-red-600">{userPiecesError.message}</p>
+        </main>
+      )
+    }
+
+    activePieceIds = new Set((userPieces ?? []).map((row) => row.piece_id))
+
+    const { data: userKnownPieces, error: userKnownPiecesError } = await supabase
+      .from("user_known_pieces")
+      .select("piece_id")
+      .eq("user_id", user.id)
+      .in("piece_id", pieceIds)
+
+    if (userKnownPiecesError) {
+      return (
+        <main className="p-6 max-w-4xl mx-auto">
+          <h1 className="mb-4 text-2xl font-bold">{typedList.name}</h1>
+          <p>Could not load known state.</p>
+          <p className="mt-2 text-sm text-red-600">
+            {userKnownPiecesError.message}
+          </p>
+        </main>
+      )
+    }
+
+    knownPieceIds = new Set((userKnownPieces ?? []).map((row) => row.piece_id))
   }
 
   return (
-    <main className="p-8">
-      <div className="mb-6">
-        <Link href="/library" className="text-sm underline">
-          Back to Tunes
-        </Link>
+    <main className="mx-auto max-w-4xl p-6">
+      <div className="mb-2 flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold">{typedList.name}</h1>
+
+        <EditListModal
+          listId={typedList.id}
+          name={typedList.name}
+          description={typedList.description}
+          visibility={typedList.visibility}
+          redirectTo={redirectTo}
+          tunes={tunes}
+          updateList={updateList}
+          removeTuneFromList={removeTuneFromList}
+          deleteList={deleteList}
+        />
       </div>
 
-      <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1.05fr_1fr]">
-        <div className="space-y-6">
-          <section className="rounded border p-5">
-            <h1 className="mb-5 text-4xl font-bold tracking-tight">
-              {typedPiece.title}
-            </h1>
-
-            <div className="space-y-3 text-sm text-gray-700">
-              <p>
-                <span className="font-medium text-gray-900">Key:</span>{" "}
-                {typedPiece.key || "—"}
-              </p>
-              <p>
-                <span className="font-medium text-gray-900">Style:</span>{" "}
-                {typedPiece.style || "—"}
-              </p>
-              <p>
-                <span className="font-medium text-gray-900">Time signature:</span>{" "}
-                {typedPiece.time_signature || "—"}
-              </p>
-              <p>
-                <span className="font-medium text-gray-900">Reference:</span>{" "}
-                {typedPiece.reference_url ? (
-                  <a
-                    href={typedPiece.reference_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="underline"
-                  >
-                    Open reference
-                  </a>
-                ) : (
-                  "—"
-                )}
-              </p>
-            </div>
-          </section>
-
-          <TuneDetailActions
-            piece={typedPiece}
-            userPiece={typedUserPiece}
-            userKnownPiece={typedUserKnownPiece}
-            learningLists={typedLearningLists}
-            learningListItems={typedLearningListItems}
-            redirectTo={`/library/${pieceId}`}
-            startLearning={startLearning}
-            addToLearningList={addToLearningList}
-          />
-
-          <TuneCanonicalDetailsCard
-            piece={typedPiece}
-            redirectTo={`/library/${pieceId}`}
-          />
-        </div>
-
-        <div className="space-y-6">
-          <section className="rounded border p-5">
-            <h2 className="mb-3 text-2xl font-semibold">My notes</h2>
-
-            <form action={upsertUserPieceNotes} className="space-y-3">
-              <input type="hidden" name="piece_id" value={pieceId} />
-              <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
-
-              <textarea
-                name="notes"
-                defaultValue={typedUserPieceMetadata?.notes || ""}
-                rows={7}
-                placeholder="Add your private notes for this tune"
-                className="w-full rounded border p-3"
-              />
-
-              <SubmitButton
-                label="Save notes"
-                pendingLabel="Saving..."
-                className="border px-4 py-2 text-sm"
-              />
-            </form>
-          </section>
-
-          <section className="rounded border p-5">
-            <h2 className="mb-3 text-2xl font-semibold">Sheet music / tab</h2>
-
-            <form action={addPieceSheetMusicLink} className="mb-6 space-y-3">
-              <input type="hidden" name="piece_id" value={pieceId} />
-              <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
-
-              <input
-                name="label"
-                placeholder="Label, eg Mandolin tab"
-                className="w-full rounded border p-2"
-                required
-              />
-
-              <input
-                name="url"
-                type="url"
-                placeholder="https://..."
-                className="w-full rounded border p-2"
-                required
-              />
-
-              <SubmitButton
-                label="Add sheet music link"
-                pendingLabel="Adding..."
-                className="border px-4 py-2 text-sm"
-              />
-            </form>
-
-            {typedSheetMusicLinks.length > 0 ? (
-              <ul className="space-y-3">
-                {typedSheetMusicLinks.map((link) => (
-                  <li key={link.id} className="rounded border p-3">
-                    <p className="mb-1 text-sm text-gray-600">{link.label}</p>
-                    <a
-                      href={link.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="break-all underline"
-                    >
-                      {link.url}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-gray-700">No sheet music links yet.</p>
-            )}
-          </section>
-        </div>
+      <div className="mb-4 flex gap-3 text-sm text-gray-600">
+        <span>{typedList.visibility === "public" ? "Public" : "Private"}</span>
+        {typedList.is_imported && <span>Imported</span>}
       </div>
 
-      <PieceCommentsSection
-        pieceId={pieceId}
-        comments={typedPieceComments}
-        profileMap={profileMap}
-      />
+      {typedList.description && (
+        <p className="mb-6 text-sm">{typedList.description}</p>
+      )}
+
+      {removeTuneStatus === "success" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          Tune removed from your app.
+        </div>
+      )}
+
+      {removeTuneStatus === "missing_piece" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Could not tell which tune to remove.
+        </div>
+      )}
+
+      {removeTuneStatus === "error" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          Could not remove tune.
+        </div>
+      )}
+
+      {editListStatus === "success" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          List updated.
+        </div>
+      )}
+
+      {editListStatus === "removed_tune" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          Tune removed from this list.
+        </div>
+      )}
+
+      {editListStatus === "deleted" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          List deleted.
+        </div>
+      )}
+
+      {editListStatus === "missing_list" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Could not tell which list to edit.
+        </div>
+      )}
+
+      {editListStatus === "missing_name" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Please enter a list name.
+        </div>
+      )}
+
+      {editListStatus === "missing_item" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Could not tell which tune to remove from the list.
+        </div>
+      )}
+
+      {editListStatus === "invalid_visibility" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Invalid list visibility.
+        </div>
+      )}
+
+      {editListStatus === "not_found" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          List not found or you do not own it.
+        </div>
+      )}
+
+      {editListStatus === "error" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          Could not update list.
+        </div>
+      )}
+
+      <h2 className="mb-3 text-lg font-semibold">Tunes</h2>
+
+      {typedItems.length === 0 ? (
+        <p>This list has no tunes yet.</p>
+      ) : (
+        <div className="space-y-3">
+          {typedItems.map((item) => {
+            const piece = Array.isArray(item.pieces)
+              ? item.pieces[0]
+              : item.pieces
+
+            if (!piece) return null
+
+            const isAlreadyInPractice = activePieceIds.has(piece.id)
+            const isKnown = knownPieceIds.has(piece.id)
+
+            return (
+              <div key={item.id}>
+                <TuneCard
+                  title={piece.title}
+                  keyValue={piece.key}
+                  style={piece.style}
+                  timeSignature={piece.time_signature}
+                  referenceUrl={piece.reference_url}
+                  listNames={[]}
+                >
+                  {isAlreadyInPractice ? (
+                    <p className="text-sm text-gray-600">Already in practice</p>
+                  ) : (
+                    <form action={startLearning}>
+                      <input type="hidden" name="piece_id" value={piece.id} />
+                      <input
+                        type="hidden"
+                        name="redirect_to"
+                        value={redirectTo}
+                      />
+                      <button className="bg-black px-3 py-1 text-sm text-white">
+                        Start Practice
+                      </button>
+                    </form>
+                  )}
+
+                  {!isAlreadyInPractice &&
+                    (isKnown ? (
+                      <p className="text-sm text-gray-600">Known</p>
+                    ) : (
+                      <form action={markAsKnown}>
+                        <input type="hidden" name="piece_id" value={piece.id} />
+                        <button className="border px-3 py-1 text-sm">
+                          Mark as known
+                        </button>
+                      </form>
+                    ))}
+
+                  <RemoveTuneButton
+                    pieceId={piece.id}
+                    redirectTo={redirectTo}
+                    removeTuneFromMyApp={removeTuneFromMyApp}
+                  />
+                </TuneCard>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </main>
   )
 }
