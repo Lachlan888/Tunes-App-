@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation"
 import EditListModal from "@/components/EditListModal"
 import RemoveTuneButton from "@/components/RemoveTuneButton"
+import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
 import {
   deleteList,
@@ -8,7 +9,6 @@ import {
   updateList,
 } from "@/lib/actions/lists"
 import { markAsKnown } from "@/lib/actions/known-pieces"
-import { removeTuneFromMyApp } from "@/lib/actions/pieces"
 import { createClient } from "@/lib/supabase/server"
 import { startLearning } from "@/lib/actions/user-pieces"
 import type { Piece } from "@/lib/types"
@@ -94,7 +94,7 @@ export default async function LearningListDetailPage({
 
   if (itemsError) {
     return (
-      <main className="p-6 max-w-4xl mx-auto">
+      <main className="mx-auto max-w-4xl p-6">
         <h1 className="mb-4 text-2xl font-bold">{typedList.name}</h1>
         <p>Could not load list items.</p>
         <p className="mt-2 text-sm text-red-600">{itemsError.message}</p>
@@ -122,7 +122,7 @@ export default async function LearningListDetailPage({
 
     if (userPiecesError) {
       return (
-        <main className="p-6 max-w-4xl mx-auto">
+        <main className="mx-auto max-w-4xl p-6">
           <h1 className="mb-4 text-2xl font-bold">{typedList.name}</h1>
           <p>Could not load practice state.</p>
           <p className="mt-2 text-sm text-red-600">{userPiecesError.message}</p>
@@ -140,7 +140,7 @@ export default async function LearningListDetailPage({
 
     if (userKnownPiecesError) {
       return (
-        <main className="p-6 max-w-4xl mx-auto">
+        <main className="mx-auto max-w-4xl p-6">
           <h1 className="mb-4 text-2xl font-bold">{typedList.name}</h1>
           <p>Could not load known state.</p>
           <p className="mt-2 text-sm text-red-600">
@@ -271,6 +271,7 @@ export default async function LearningListDetailPage({
             return (
               <div key={item.id}>
                 <TuneCard
+                  id={piece.id}
                   title={piece.title}
                   keyValue={piece.key}
                   style={piece.style}
@@ -288,9 +289,11 @@ export default async function LearningListDetailPage({
                         name="redirect_to"
                         value={redirectTo}
                       />
-                      <button className="bg-black px-3 py-1 text-sm text-white">
-                        Start Practice
-                      </button>
+                      <SubmitButton
+                        label="Start Practice"
+                        pendingLabel="Starting..."
+                        className="bg-black px-3 py-1 text-sm text-white"
+                      />
                     </form>
                   )}
 
@@ -300,16 +303,22 @@ export default async function LearningListDetailPage({
                     ) : (
                       <form action={markAsKnown}>
                         <input type="hidden" name="piece_id" value={piece.id} />
-                        <button className="border px-3 py-1 text-sm">
-                          Mark as known
-                        </button>
+                        <input
+                          type="hidden"
+                          name="redirect_to"
+                          value={redirectTo}
+                        />
+                        <SubmitButton
+                          label="Mark as known"
+                          pendingLabel="Saving..."
+                          className="border px-3 py-1 text-sm"
+                        />
                       </form>
                     ))}
 
                   <RemoveTuneButton
                     pieceId={piece.id}
                     redirectTo={redirectTo}
-                    removeTuneFromMyApp={removeTuneFromMyApp}
                   />
                 </TuneCard>
               </div>

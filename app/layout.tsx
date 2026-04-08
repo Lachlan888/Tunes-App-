@@ -16,6 +16,7 @@ export default function RootLayout({
           <PendingNavLink href="/learning-lists" label="Lists" />
           <PendingNavLink href="/friends" label="Friends" />
           <PendingNavLink href="/compare" label="Compare" />
+          <PendingNavLink href="/trends" label="Trends" />
           <PendingNavLink href="/public-lists" label="Shared" />
           <PendingNavLink href="/dashboard" label="Profile" />
           <PendingNavLink href="/login" label="Login" />
