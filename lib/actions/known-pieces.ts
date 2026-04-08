@@ -1,13 +1,16 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { recordMarkedKnownEvent } from "@/lib/activity-events"
 
 export async function markAsKnown(formData: FormData) {
   const pieceId = Number(formData.get("piece_id"))
+  const redirectTo = String(formData.get("redirect_to") ?? "/library")
 
-  if (!pieceId) return
+  if (!pieceId) {
+    redirect(redirectTo)
+  }
 
   const supabase = await createClient()
 
@@ -15,7 +18,9 @@ export async function markAsKnown(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) return
+  if (!user) {
+    redirect("/login")
+  }
 
   const { data: existingPractice, error: existingPracticeError } = await supabase
     .from("user_pieces")
@@ -29,7 +34,15 @@ export async function markAsKnown(formData: FormData) {
   }
 
   if (existingPractice) {
-    return
+    const { error: deletePracticeError } = await supabase
+      .from("user_pieces")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("piece_id", pieceId)
+
+    if (deletePracticeError) {
+      throw new Error(deletePracticeError.message)
+    }
   }
 
   const { data: existingKnown, error: existingKnownError } = await supabase
@@ -58,5 +71,5 @@ export async function markAsKnown(formData: FormData) {
     await recordMarkedKnownEvent(user.id, pieceId)
   }
 
-  revalidatePath("/library")
+  redirect(redirectTo)
 }

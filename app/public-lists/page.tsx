@@ -1,4 +1,4 @@
-import Link from "next/link"
+import PendingLinkButton from "@/components/PendingLinkButton"
 import { createClient } from "@/lib/supabase/server"
 
 type LearningListRow = {
@@ -104,12 +104,12 @@ export default async function PublicListsPage() {
               )}
 
               <div className="mt-4">
-                <Link
+                <PendingLinkButton
                   href={`/public-lists/${list.id}`}
+                  label="View list"
+                  pendingLabel="Loading..."
                   className="text-sm underline"
-                >
-                  View list
-                </Link>
+                />
               </div>
             </div>
           ))}

@@ -5,21 +5,18 @@ import {
   addPieceSheetMusicLink,
   upsertUserPieceNotes,
 } from "@/lib/actions/piece-metadata"
+import { addToLearningList } from "@/lib/actions/lists"
+import { startLearning } from "@/lib/actions/user-pieces"
 import PieceCommentsSection from "@/components/PieceCommentsSection"
+import SubmitButton from "@/components/SubmitButton"
+import TuneCanonicalDetailsCard from "@/components/TuneCanonicalDetailsCard"
+import TuneDetailActions from "@/components/TuneDetailActions"
+import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
 
 type PiecePageProps = {
   params: Promise<{
     id: string
   }>
-}
-
-type Piece = {
-  id: number
-  title: string
-  key: string | null
-  style: string | null
-  time_signature: string | null
-  reference_url: string | null
 }
 
 type UserPieceMetadata = {
@@ -48,6 +45,11 @@ type ProfileRow = {
 type CommentAuthor = {
   displayName: string
   username: string | null
+}
+
+type LearningListItemRow = {
+  learning_list_id: number
+  piece_id: number
 }
 
 export default async function PiecePage({ params }: PiecePageProps) {
@@ -102,32 +104,78 @@ export default async function PiecePage({ params }: PiecePageProps) {
     )
   }
 
-  const { data: userPieceMetadata } = await supabase
-    .from("user_piece_metadata")
-    .select("notes")
+  const { data: ownedLists } = await supabase
+    .from("learning_lists")
+    .select("id")
     .eq("user_id", user.id)
-    .eq("piece_id", pieceId)
-    .maybeSingle()
 
-  const { data: sheetMusicLinks } = await supabase
-    .from("piece_sheet_music_links")
-    .select("id, url, label")
-    .eq("piece_id", pieceId)
-    .order("created_at", { ascending: true })
+  const ownedListIds = (ownedLists ?? []).map((list) => list.id)
 
-  const { data: pieceComments } = await supabase
-    .from("piece_comments")
-    .select("id, body, created_at, user_id")
-    .eq("piece_id", pieceId)
-    .order("created_at", { ascending: false })
+  const [
+    userPieceMetadataResult,
+    sheetMusicLinksResult,
+    pieceCommentsResult,
+    userPieceResult,
+    userKnownPieceResult,
+    learningListsResult,
+    learningListItemsResult,
+  ] = await Promise.all([
+    supabase
+      .from("user_piece_metadata")
+      .select("notes")
+      .eq("user_id", user.id)
+      .eq("piece_id", pieceId)
+      .maybeSingle(),
+    supabase
+      .from("piece_sheet_music_links")
+      .select("id, url, label")
+      .eq("piece_id", pieceId)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("piece_comments")
+      .select("id, body, created_at, user_id")
+      .eq("piece_id", pieceId)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("user_pieces")
+      .select("id, piece_id, status, next_review_due, stage")
+      .eq("user_id", user.id)
+      .eq("piece_id", pieceId)
+      .maybeSingle(),
+    supabase
+      .from("user_known_pieces")
+      .select("id, piece_id")
+      .eq("user_id", user.id)
+      .eq("piece_id", pieceId)
+      .maybeSingle(),
+    supabase
+      .from("learning_lists")
+      .select("id, name, description")
+      .eq("user_id", user.id)
+      .order("name", { ascending: true }),
+    ownedListIds.length > 0
+      ? supabase
+          .from("learning_list_items")
+          .select("learning_list_id, piece_id")
+          .eq("piece_id", pieceId)
+          .in("learning_list_id", ownedListIds)
+      : Promise.resolve({ data: [], error: null }),
+  ])
 
   const typedPiece = piece as Piece
   const typedUserPieceMetadata =
-    (userPieceMetadata as UserPieceMetadata | null) ?? null
+    (userPieceMetadataResult.data as UserPieceMetadata | null) ?? null
   const typedSheetMusicLinks =
-    (sheetMusicLinks as PieceSheetMusicLink[] | null) ?? []
+    (sheetMusicLinksResult.data as PieceSheetMusicLink[] | null) ?? []
   const typedPieceComments =
-    (pieceComments as PieceCommentRow[] | null) ?? []
+    (pieceCommentsResult.data as PieceCommentRow[] | null) ?? []
+  const typedUserPiece = (userPieceResult.data as UserPiece | null) ?? null
+  const typedUserKnownPiece =
+    (userKnownPieceResult.data as UserKnownPiece | null) ?? null
+  const typedLearningLists =
+    (learningListsResult.data as LearningList[] | null) ?? []
+  const typedLearningListItems =
+    (learningListItemsResult.data as LearningListItemRow[] | null) ?? []
 
   const commentUserIds = Array.from(
     new Set(typedPieceComments.map((comment) => comment.user_id))
@@ -162,103 +210,133 @@ export default async function PiecePage({ params }: PiecePageProps) {
         </Link>
       </div>
 
-      <h1 className="mb-4 text-3xl font-bold">{typedPiece.title}</h1>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <div className="space-y-8">
+          <section className="rounded border p-4">
+            <h1 className="mb-4 text-3xl font-bold">{typedPiece.title}</h1>
 
-      <div className="space-y-2 text-gray-700">
-        <p>Key: {typedPiece.key || "—"}</p>
-        <p>Style: {typedPiece.style || "—"}</p>
-        <p>Time signature: {typedPiece.time_signature || "—"}</p>
-        <p>
-          Reference:{" "}
-          {typedPiece.reference_url ? (
-            <a
-              href={typedPiece.reference_url}
-              target="_blank"
-              rel="noreferrer"
-              className="underline"
-            >
-              Open reference
-            </a>
-          ) : (
-            "—"
-          )}
-        </p>
+            <div className="space-y-2 text-gray-700">
+              <p>Key: {typedPiece.key || "—"}</p>
+              <p>Style: {typedPiece.style || "—"}</p>
+              <p>Time signature: {typedPiece.time_signature || "—"}</p>
+              <p>
+                Reference:{" "}
+                {typedPiece.reference_url ? (
+                  <a
+                    href={typedPiece.reference_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline"
+                  >
+                    Open reference
+                  </a>
+                ) : (
+                  "—"
+                )}
+              </p>
+            </div>
+          </section>
+
+          <TuneDetailActions
+            piece={typedPiece}
+            userPiece={typedUserPiece}
+            userKnownPiece={typedUserKnownPiece}
+            learningLists={typedLearningLists}
+            learningListItems={typedLearningListItems}
+            redirectTo={`/library/${pieceId}`}
+            startLearning={startLearning}
+            addToLearningList={addToLearningList}
+          />
+
+          <TuneCanonicalDetailsCard
+            piece={typedPiece}
+            redirectTo={`/library/${pieceId}`}
+          />
+        </div>
+
+        <div className="space-y-8">
+          <section className="rounded border p-4">
+            <h2 className="mb-2 text-xl font-semibold">My notes</h2>
+
+            <form action={upsertUserPieceNotes} className="space-y-3">
+              <input type="hidden" name="piece_id" value={pieceId} />
+              <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
+
+              <textarea
+                name="notes"
+                defaultValue={typedUserPieceMetadata?.notes || ""}
+                rows={8}
+                placeholder="Add your private notes for this tune"
+                className="w-full border p-3"
+              />
+
+              <SubmitButton
+                label="Save notes"
+                pendingLabel="Saving..."
+                className="border px-4 py-2"
+              />
+            </form>
+          </section>
+
+          <section className="rounded border p-4">
+            <h2 className="mb-2 text-xl font-semibold">Sheet music / tab</h2>
+
+            <form action={addPieceSheetMusicLink} className="mb-6 space-y-3">
+              <input type="hidden" name="piece_id" value={pieceId} />
+              <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
+
+              <input
+                name="label"
+                placeholder="Label, eg Mandolin tab"
+                className="w-full border p-2"
+                required
+              />
+
+              <input
+                name="url"
+                type="url"
+                placeholder="https://..."
+                className="w-full border p-2"
+                required
+              />
+
+              <SubmitButton
+                label="Add sheet music link"
+                pendingLabel="Adding..."
+                className="border px-4 py-2"
+              />
+            </form>
+
+            {typedSheetMusicLinks.length > 0 ? (
+              <ul className="space-y-3">
+                {typedSheetMusicLinks.map((link) => (
+                  <li key={link.id} className="border p-3">
+                    <p className="mb-1 text-sm text-gray-600">{link.label}</p>
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="break-all underline"
+                    >
+                      {link.url}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-700">No sheet music links yet.</p>
+            )}
+          </section>
+        </div>
       </div>
 
-      <section className="mt-8">
-        <h2 className="mb-2 text-xl font-semibold">My notes</h2>
-
-        <form action={upsertUserPieceNotes} className="max-w-xl">
-          <input type="hidden" name="piece_id" value={pieceId} />
-          <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
-
-          <textarea
-            name="notes"
-            defaultValue={typedUserPieceMetadata?.notes || ""}
-            rows={8}
-            placeholder="Add your private notes for this tune"
-            className="mb-3 w-full border p-3"
-          />
-
-          <button type="submit" className="border px-4 py-2">
-            Save notes
-          </button>
-        </form>
+      <section className="mt-8 rounded border p-4">
+        <PieceCommentsSection
+          pieceId={pieceId}
+          comments={typedPieceComments}
+          profileMap={profileMap}
+        />
       </section>
-
-      <section className="mt-8">
-        <h2 className="mb-2 text-xl font-semibold">Sheet music / tab</h2>
-
-        <form action={addPieceSheetMusicLink} className="mb-6 max-w-xl space-y-3">
-          <input type="hidden" name="piece_id" value={pieceId} />
-          <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
-
-          <input
-            name="label"
-            placeholder="Label, eg Mandolin tab"
-            className="w-full border p-2"
-            required
-          />
-
-          <input
-            name="url"
-            type="url"
-            placeholder="https://..."
-            className="w-full border p-2"
-            required
-          />
-
-          <button type="submit" className="border px-4 py-2">
-            Add sheet music link
-          </button>
-        </form>
-
-        {typedSheetMusicLinks.length > 0 ? (
-          <ul className="space-y-3">
-            {typedSheetMusicLinks.map((link) => (
-              <li key={link.id} className="border p-3">
-                <p className="mb-1 text-sm text-gray-600">{link.label}</p>
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="break-all underline"
-                >
-                  {link.url}
-                </a>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-700">No sheet music links yet.</p>
-        )}
-      </section>
-
-      <PieceCommentsSection
-        pieceId={pieceId}
-        comments={typedPieceComments}
-        profileMap={profileMap}
-      />
     </main>
   )
 }

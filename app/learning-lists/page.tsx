@@ -1,6 +1,7 @@
-import Link from "next/link"
+import PendingLinkButton from "@/components/PendingLinkButton"
 import CreateListModal from "@/components/CreateListModal"
 import MyTunesModal from "@/components/MyTunesModal"
+import SubmitButton from "@/components/SubmitButton"
 import UnlistedKnownTunesModal from "@/components/UnlistedKnownTunesModal"
 import UnlistedPracticeTunesModal from "@/components/UnlistedPracticeTunesModal"
 import { createClient } from "@/lib/supabase/server"
@@ -257,12 +258,12 @@ export default async function LearningListsPage({
                   )}
 
                   <div className="mt-3">
-                    <Link
+                    <PendingLinkButton
                       href={`/learning-lists/${list.id}`}
+                      label="View List"
+                      pendingLabel="Loading..."
                       className="text-sm underline"
-                    >
-                      View List
-                    </Link>
+                    />
                   </div>
                 </div>
 
@@ -284,12 +285,11 @@ export default async function LearningListsPage({
                           name="next_visibility"
                           value="public"
                         />
-                        <button
-                          type="submit"
+                        <SubmitButton
+                          label="Make Public"
+                          pendingLabel="Updating..."
                           className="rounded border px-3 py-1 text-sm"
-                        >
-                          Make Public
-                        </button>
+                        />
                       </form>
                     )
                   ) : (
@@ -300,12 +300,11 @@ export default async function LearningListsPage({
                         name="next_visibility"
                         value="private"
                       />
-                      <button
-                        type="submit"
+                      <SubmitButton
+                        label="Make Private"
+                        pendingLabel="Updating..."
                         className="rounded border px-3 py-1 text-sm"
-                      >
-                        Make Private
-                      </button>
+                      />
                     </form>
                   )}
                 </div>

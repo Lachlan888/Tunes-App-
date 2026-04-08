@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation"
+import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
 import { createClient } from "@/lib/supabase/server"
 import { markAsKnown } from "@/lib/actions/known-pieces"
@@ -231,12 +232,11 @@ export default async function PublicListDetailPage({
 
       <form action={importPublicList} className="mb-6">
         <input type="hidden" name="sourceListId" value={typedList.id} />
-        <button
-          type="submit"
+        <SubmitButton
+          label="Import to my lists"
+          pendingLabel="Importing..."
           className="rounded border px-4 py-2 text-sm font-medium"
-        >
-          Import to my lists
-        </button>
+        />
       </form>
 
       <h2 className="text-lg font-semibold mb-3">Tunes</h2>
@@ -290,9 +290,11 @@ export default async function PublicListDetailPage({
                             name="redirect_to"
                             value={`/public-lists/${typedList.id}`}
                           />
-                          <button className="bg-black px-3 py-1 text-sm text-white">
-                            Start Practice
-                          </button>
+                          <SubmitButton
+                            label="Start Practice"
+                            pendingLabel="Starting..."
+                            className="bg-black px-3 py-1 text-sm text-white"
+                          />
                         </form>
                       )}
 
@@ -306,9 +308,16 @@ export default async function PublicListDetailPage({
                               name="piece_id"
                               value={piece.id}
                             />
-                            <button className="border px-3 py-1 text-sm">
-                              Mark as known
-                            </button>
+                            <input
+                              type="hidden"
+                              name="redirect_to"
+                              value={`/public-lists/${typedList.id}`}
+                            />
+                            <SubmitButton
+                              label="Mark as known"
+                              pendingLabel="Saving..."
+                              className="border px-3 py-1 text-sm"
+                            />
                           </form>
                         ))}
                     </>

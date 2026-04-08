@@ -1,4 +1,5 @@
 import Link from "next/link"
+import SubmitButton from "@/components/SubmitButton"
 import { addPieceComment } from "@/lib/actions/piece-comments"
 
 type PieceComment = {
@@ -25,10 +26,17 @@ export default function PieceCommentsSection({
   profileMap,
 }: PieceCommentsSectionProps) {
   return (
-    <section className="mt-12">
-      <h2 className="mb-4 text-xl font-semibold">Comments</h2>
+    <section className="mt-10">
+      <div className="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-semibold">Comments</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            Notes, variants, or useful context from other players.
+          </p>
+        </div>
+      </div>
 
-      <form action={addPieceComment} className="mb-6 max-w-xl space-y-3">
+      <form action={addPieceComment} className="mb-8 max-w-2xl space-y-3">
         <input type="hidden" name="piece_id" value={pieceId} />
         <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
 
@@ -36,13 +44,15 @@ export default function PieceCommentsSection({
           name="body"
           rows={4}
           placeholder="Leave a comment about this tune"
-          className="w-full border p-3"
+          className="w-full rounded border p-3"
           required
         />
 
-        <button type="submit" className="border px-4 py-2">
-          Post comment
-        </button>
+        <SubmitButton
+          label="Post comment"
+          pendingLabel="Posting..."
+          className="border px-4 py-2 text-sm"
+        />
       </form>
 
       {comments.length > 0 ? (
@@ -54,7 +64,7 @@ export default function PieceCommentsSection({
             }
 
             return (
-              <li key={comment.id} className="border p-3">
+              <li key={comment.id} className="rounded border p-4">
                 <p className="mb-2 text-sm text-gray-600">
                   {author.username ? (
                     <Link

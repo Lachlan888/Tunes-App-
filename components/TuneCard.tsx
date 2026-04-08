@@ -1,6 +1,6 @@
 "use client"
 
-import Link from "next/link"
+import PendingLinkButton from "@/components/PendingLinkButton"
 import { getStyleLabelsFromPiece } from "@/lib/search-filters"
 import type { Piece } from "@/lib/types"
 
@@ -28,7 +28,10 @@ export default function TuneCard({
   children,
 }: TuneCardProps) {
   const visibleListNames = listNames.slice(0, 3)
-  const remainingListCount = Math.max(listNames.length - visibleListNames.length, 0)
+  const remainingListCount = Math.max(
+    listNames.length - visibleListNames.length,
+    0
+  )
 
   const styleLabels = getStyleLabelsFromPiece({
     id,
@@ -45,9 +48,12 @@ export default function TuneCard({
   return (
     <div className="rounded border p-3">
       <div>
-        <Link href={`/library/${id}`} className="underline">
-          {title}
-        </Link>
+        <PendingLinkButton
+          href={`/library/${id}`}
+          label={title}
+          pendingLabel="Loading..."
+          className="inline underline"
+        />
         {keyValue ? `, key ${keyValue}` : ""}
         {styleText ? `, ${styleText}` : ""}
         {timeSignature ? `, ${timeSignature}` : ""}

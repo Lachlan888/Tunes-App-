@@ -1,5 +1,5 @@
 import "./globals.css"
-import Link from "next/link"
+import PendingNavLink from "@/components/PendingNavLink"
 
 export default function RootLayout({
   children,
@@ -10,15 +10,15 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <nav className="flex gap-4 border-b p-4">
-          <Link href="/">Home</Link>
-          <Link href="/review">Practice</Link>
-          <Link href="/library">Tunes</Link>
-          <Link href="/learning-lists">Lists</Link>
-          <Link href="/friends">Friends</Link>
-          <Link href="/compare">Compare</Link>
-          <Link href="/public-lists">Shared</Link>
-          <Link href="/dashboard">Profile</Link>
-          <Link href="/login">Login</Link>
+          <PendingNavLink href="/" label="Home" />
+          <PendingNavLink href="/review" label="Practice" />
+          <PendingNavLink href="/library" label="Tunes" />
+          <PendingNavLink href="/learning-lists" label="Lists" />
+          <PendingNavLink href="/friends" label="Friends" />
+          <PendingNavLink href="/compare" label="Compare" />
+          <PendingNavLink href="/public-lists" label="Shared" />
+          <PendingNavLink href="/dashboard" label="Profile" />
+          <PendingNavLink href="/login" label="Login" />
         </nav>
 
         {children}

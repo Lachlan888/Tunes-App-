@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import SubmitButton from "@/components/SubmitButton"
 import type { Piece } from "@/lib/types"
 
 type EditListModalProps = {
@@ -27,6 +28,12 @@ export default function EditListModal({
   deleteList,
 }: EditListModalProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isBusy, setIsBusy] = useState(false)
+
+  function closeModal() {
+    if (isBusy) return
+    setIsOpen(false)
+  }
 
   if (!isOpen) {
     return (
@@ -43,7 +50,7 @@ export default function EditListModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={() => setIsOpen(false)}
+      onClick={closeModal}
     >
       <div
         className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded bg-white p-6 shadow-lg"
@@ -53,8 +60,9 @@ export default function EditListModal({
           <h2 className="text-xl font-semibold">Edit List</h2>
           <button
             type="button"
-            className="border px-3 py-1 text-sm"
-            onClick={() => setIsOpen(false)}
+            className="border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={closeModal}
+            disabled={isBusy}
           >
             Close
           </button>
@@ -64,7 +72,13 @@ export default function EditListModal({
           <section>
             <h3 className="mb-3 text-lg font-semibold">List details</h3>
 
-            <form action={updateList} className="space-y-3">
+            <form
+              action={async (formData: FormData) => {
+                setIsBusy(true)
+                await updateList(formData)
+              }}
+              className="space-y-3"
+            >
               <input type="hidden" name="learning_list_id" value={listId} />
               <input type="hidden" name="redirect_to" value={redirectTo} />
 
@@ -75,6 +89,7 @@ export default function EditListModal({
                   defaultValue={name}
                   className="w-full border p-2"
                   required
+                  disabled={isBusy}
                 />
               </div>
 
@@ -87,6 +102,7 @@ export default function EditListModal({
                   defaultValue={description ?? ""}
                   className="w-full border p-2"
                   rows={3}
+                  disabled={isBusy}
                 />
               </div>
 
@@ -98,15 +114,18 @@ export default function EditListModal({
                   name="visibility"
                   defaultValue={visibility}
                   className="w-full border p-2"
+                  disabled={isBusy}
                 >
                   <option value="private">Private</option>
                   <option value="public">Public</option>
                 </select>
               </div>
 
-              <button className="bg-black px-4 py-2 text-sm text-white">
-                Save List Details
-              </button>
+              <SubmitButton
+                label="Save List Details"
+                pendingLabel="Saving..."
+                className="bg-black px-4 py-2 text-sm text-white"
+              />
             </form>
           </section>
 
@@ -135,7 +154,12 @@ export default function EditListModal({
                       </div>
                     </div>
 
-                    <form action={removeTuneFromList}>
+                    <form
+                      action={async (formData: FormData) => {
+                        setIsBusy(true)
+                        await removeTuneFromList(formData)
+                      }}
+                    >
                       <input
                         type="hidden"
                         name="learning_list_id"
@@ -147,9 +171,11 @@ export default function EditListModal({
                         name="redirect_to"
                         value={redirectTo}
                       />
-                      <button className="border px-3 py-1 text-sm">
-                        Remove from List
-                      </button>
+                      <SubmitButton
+                        label="Remove from List"
+                        pendingLabel="Removing..."
+                        className="border px-3 py-1 text-sm"
+                      />
                     </form>
                   </div>
                 ))}
@@ -163,22 +189,24 @@ export default function EditListModal({
             </h3>
 
             <form
-              action={deleteList}
-              onSubmit={(event) => {
+              action={async (formData: FormData) => {
                 const confirmed = window.confirm(
                   "Delete this list? This will remove the list and its contents, but it will not delete the tunes from your app."
                 )
 
-                if (!confirmed) {
-                  event.preventDefault()
-                }
+                if (!confirmed) return
+
+                setIsBusy(true)
+                await deleteList(formData)
               }}
             >
               <input type="hidden" name="learning_list_id" value={listId} />
               <input type="hidden" name="redirect_to" value="/learning-lists" />
-              <button className="border border-red-600 px-3 py-1 text-sm text-red-700">
-                Delete List
-              </button>
+              <SubmitButton
+                label="Delete List"
+                pendingLabel="Deleting..."
+                className="border border-red-600 px-3 py-1 text-sm text-red-700"
+              />
             </form>
           </section>
         </div>
