@@ -21,6 +21,8 @@ export const VALID_KEYS = KEY_ROOTS.flatMap((root) => [
   `${root} Modal`,
 ]) as string[]
 
+export const KEY_OPTIONS = ["", ...VALID_KEYS] as const
+
 function canonicaliseKey(input: string): string {
   return input.trim().replace(/\s+/g, " ")
 }

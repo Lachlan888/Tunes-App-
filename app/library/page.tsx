@@ -186,7 +186,10 @@ export default async function LibraryPage({
       <p className="mb-4 text-gray-600">Logged in as {user.email}</p>
 
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <CreateTuneModal styleOptions={styleOptions} />
+        <CreateTuneModal
+          styleOptions={styleOptions}
+          learningLists={(learningLists ?? []) as LearningList[]}
+        />
         <BulkImportKnownTunesModal />
       </div>
 

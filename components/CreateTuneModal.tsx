@@ -10,12 +10,19 @@ type StyleOption = {
   label: string
 }
 
+type LearningListOption = {
+  id: number
+  name: string
+}
+
 type CreateTuneModalProps = {
   styleOptions: StyleOption[]
+  learningLists: LearningListOption[]
 }
 
 export default function CreateTuneModal({
   styleOptions,
+  learningLists,
 }: CreateTuneModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -75,6 +82,7 @@ export default function CreateTuneModal({
               <CreateTuneForm
                 createTune={createTune}
                 styleOptions={styleOptions}
+                learningLists={learningLists}
                 redirectTo="/library"
                 onSubmitStart={() => setIsSubmitting(true)}
               />

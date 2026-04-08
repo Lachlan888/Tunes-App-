@@ -11,6 +11,11 @@ type StyleOption = {
   label: string
 }
 
+type LearningListOption = {
+  id: number
+  name: string
+}
+
 export default async function RepertoirePage() {
   const { user, learningLists, pieces } = await loadHomepageData()
 
@@ -23,6 +28,13 @@ export default async function RepertoirePage() {
     .order("sort_order", { ascending: true })
 
   const styleOptions: StyleOption[] = stylesError ? [] : styleRows ?? []
+
+  const learningListOptions: LearningListOption[] = (learningLists ?? []).map(
+    (list) => ({
+      id: list.id,
+      name: list.name,
+    })
+  )
 
   return (
     <main className="p-8">
@@ -48,7 +60,11 @@ export default async function RepertoirePage() {
         <button className="bg-black px-4 py-2 text-white">Create</button>
       </form>
 
-      <CreateTuneForm createTune={createTune} styleOptions={styleOptions} />
+      <CreateTuneForm
+        createTune={createTune}
+        styleOptions={styleOptions}
+        learningLists={learningListOptions}
+      />
 
       <AddToListSection
         pieces={pieces}

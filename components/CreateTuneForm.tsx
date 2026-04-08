@@ -1,4 +1,8 @@
+"use client"
+
+import { useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
+import { KEY_OPTIONS } from "@/lib/music/keys"
 
 type StyleOption = {
   id: number
@@ -6,51 +10,31 @@ type StyleOption = {
   label: string
 }
 
+type LearningListOption = {
+  id: number
+  name: string
+}
+
 type CreateTuneFormProps = {
   createTune: (formData: FormData) => void | Promise<void>
   styleOptions: StyleOption[]
+  learningLists: LearningListOption[]
   redirectTo?: string
   onSubmitStart?: () => void
 }
 
-const KEY_OPTIONS = [
-  "",
-  "A",
-  "Am",
-  "A modal",
-  "Bb",
-  "Bbm",
-  "B",
-  "Bm",
-  "C",
-  "Cm",
-  "C modal",
-  "D",
-  "Dm",
-  "D modal",
-  "Eb",
-  "Ebm",
-  "E",
-  "Em",
-  "E modal",
-  "F",
-  "Fm",
-  "F modal",
-  "F#",
-  "F#m",
-  "G",
-  "Gm",
-  "G modal",
-  "Ab",
-  "Abm",
-]
-
 export default function CreateTuneForm({
   createTune,
   styleOptions,
+  learningLists,
   redirectTo = "/library",
   onSubmitStart,
 }: CreateTuneFormProps) {
+  const [postCreateAction, setPostCreateAction] = useState<
+    "none" | "known" | "practice"
+  >("none")
+  const [addToList, setAddToList] = useState(false)
+
   return (
     <form
       action={async (formData: FormData) => {
@@ -76,10 +60,9 @@ export default function CreateTuneForm({
         defaultValue=""
         className="mb-4 w-full border p-2"
       >
-        <option value="">No key</option>
-        {KEY_OPTIONS.filter((key) => key !== "").map((key) => (
-          <option key={key} value={key}>
-            {key}
+        {KEY_OPTIONS.map((key) => (
+          <option key={key || "none"} value={key}>
+            {key === "" ? "No key" : key}
           </option>
         ))}
       </select>
@@ -110,6 +93,92 @@ export default function CreateTuneForm({
         placeholder="Reference URL"
         className="mb-4 w-full border p-2"
       />
+
+      <fieldset className="mb-4 border p-3">
+        <legend className="px-1 font-medium">After create</legend>
+
+        <div className="space-y-2">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="post_create_action"
+              value="none"
+              checked={postCreateAction === "none"}
+              onChange={() => setPostCreateAction("none")}
+            />
+            <span>Do nothing</span>
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="post_create_action"
+              value="known"
+              checked={postCreateAction === "known"}
+              onChange={() => setPostCreateAction("known")}
+            />
+            <span>Add to known</span>
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="post_create_action"
+              value="practice"
+              checked={postCreateAction === "practice"}
+              onChange={() => setPostCreateAction("practice")}
+            />
+            <span>Start Practice</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset className="mb-4 border p-3">
+        <legend className="px-1 font-medium">Also</legend>
+
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            name="add_to_list"
+            value="true"
+            checked={addToList}
+            onChange={(event) => setAddToList(event.target.checked)}
+          />
+          <span>Add to list</span>
+        </label>
+
+        {addToList && (
+          <div className="mt-3">
+            <label
+              htmlFor="learning_list_id"
+              className="mb-2 block text-sm font-medium"
+            >
+              List
+            </label>
+
+            <select
+              id="learning_list_id"
+              name="learning_list_id"
+              defaultValue=""
+              className="w-full border p-2"
+              required={addToList}
+            >
+              <option value="">Choose a list</option>
+              {learningLists.map((list) => (
+                <option key={list.id} value={list.id}>
+                  {list.name}
+                </option>
+              ))}
+            </select>
+
+            {learningLists.length === 0 && (
+              <p className="mt-2 text-sm text-gray-600">
+                You do not have any lists yet.
+              </p>
+            )}
+          </div>
+        )}
+      </fieldset>
 
       <SubmitButton
         label="Create"
