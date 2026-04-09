@@ -1,3 +1,4 @@
+import Link from "next/link"
 import HomeFriendsActivityBox from "@/components/HomeFriendsActivityBox"
 import type { FriendActivityItem } from "@/lib/friend-activity"
 
@@ -120,13 +121,29 @@ export default function HomeSummarySection({
           ) : (
             <ul className="space-y-2">
               {dueTodayPreview.map((userPiece) => (
-                <li key={userPiece.id} className="rounded border p-3">
-                  <p className="font-medium">
-                    {pieceTitleById.get(userPiece.piece_id) ?? "Untitled tune"}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Stage {userPiece.stage ?? 1}
-                  </p>
+                <li key={userPiece.id}>
+                  <Link
+                    href={`/library/${userPiece.piece_id}`}
+                    className="group block rounded border p-3 transition hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black/10"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium underline-offset-4 group-hover:underline">
+                          {pieceTitleById.get(userPiece.piece_id) ??
+                            "Untitled tune"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Stage {userPiece.stage ?? 1}
+                        </p>
+                      </div>
+                      <span
+                        aria-hidden="true"
+                        className="text-sm text-gray-400 transition group-hover:text-gray-600"
+                      >
+                        →
+                      </span>
+                    </div>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -146,13 +163,29 @@ export default function HomeSummarySection({
           ) : (
             <ul className="space-y-2">
               {inPracticePreview.map((userPiece) => (
-                <li key={userPiece.id} className="rounded border p-3">
-                  <p className="font-medium">
-                    {pieceTitleById.get(userPiece.piece_id) ?? "Untitled tune"}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Stage {userPiece.stage ?? 1}
-                  </p>
+                <li key={userPiece.id}>
+                  <Link
+                    href={`/library/${userPiece.piece_id}`}
+                    className="group block rounded border p-3 transition hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black/10"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium underline-offset-4 group-hover:underline">
+                          {pieceTitleById.get(userPiece.piece_id) ??
+                            "Untitled tune"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Stage {userPiece.stage ?? 1}
+                        </p>
+                      </div>
+                      <span
+                        aria-hidden="true"
+                        className="text-sm text-gray-400 transition group-hover:text-gray-600"
+                      >
+                        →
+                      </span>
+                    </div>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -174,8 +207,23 @@ export default function HomeSummarySection({
           ) : (
             <ul className="space-y-2">
               {listPreview.map((learningList) => (
-                <li key={learningList.id} className="rounded border p-3">
-                  <p className="font-medium">{learningList.name}</p>
+                <li key={learningList.id}>
+                  <Link
+                    href={`/learning-lists/${learningList.id}`}
+                    className="group block rounded border p-3 transition hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black/10"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="font-medium underline-offset-4 group-hover:underline">
+                        {learningList.name}
+                      </p>
+                      <span
+                        aria-hidden="true"
+                        className="text-sm text-gray-400 transition group-hover:text-gray-600"
+                      >
+                        →
+                      </span>
+                    </div>
+                  </Link>
                 </li>
               ))}
             </ul>
