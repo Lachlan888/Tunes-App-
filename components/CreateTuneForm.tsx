@@ -41,33 +41,50 @@ export default function CreateTuneForm({
         onSubmitStart?.()
         await createTune(formData)
       }}
+      className="space-y-4"
     >
       <input type="hidden" name="redirect_to" value={redirectTo} />
 
-      <input
-        name="title"
-        placeholder="Tune title"
-        className="mb-2 w-full border p-2"
-        required
-      />
+      <div>
+        <label htmlFor="title" className="mb-2 block text-sm font-medium">
+          Title
+        </label>
+        <input
+          id="title"
+          name="title"
+          placeholder="e.g. Soldier’s Joy"
+          className="w-full border p-2"
+          required
+        />
+        <p className="mt-2 text-sm text-gray-600">
+          Use the common tune title only. Avoid adding key names, instrument
+          notes, or version labels in the title.
+        </p>
+      </div>
 
-      <label htmlFor="key" className="mb-2 block text-sm font-medium">
-        Key
-      </label>
-      <select
-        id="key"
-        name="key"
-        defaultValue=""
-        className="mb-4 w-full border p-2"
-      >
-        {KEY_OPTIONS.map((key) => (
-          <option key={key || "none"} value={key}>
-            {key === "" ? "No key" : key}
-          </option>
-        ))}
-      </select>
+      <div>
+        <label htmlFor="key" className="mb-2 block text-sm font-medium">
+          Key
+        </label>
+        <select
+          id="key"
+          name="key"
+          defaultValue=""
+          className="w-full border p-2"
+        >
+          {KEY_OPTIONS.map((key) => (
+            <option key={key || "none"} value={key}>
+              {key === "" ? "No key" : key}
+            </option>
+          ))}
+        </select>
+        <p className="mt-2 text-sm text-gray-600">
+          Optional. Use the common playing key for this tune entry if that is
+          musically relevant.
+        </p>
+      </div>
 
-      <fieldset className="mb-4 border p-3">
+      <fieldset className="border p-3">
         <legend className="px-1 font-medium">Styles</legend>
 
         <div className="grid gap-2 sm:grid-cols-2">
@@ -80,21 +97,47 @@ export default function CreateTuneForm({
         </div>
       </fieldset>
 
-      <input
-        name="time_signature"
-        placeholder="Time signature"
-        className="mb-2 w-full border p-2"
-        pattern="^\d+/\d+$"
-        title="Use format like 4/4 or 6/8"
-      />
+      <div>
+        <label
+          htmlFor="time_signature"
+          className="mb-2 block text-sm font-medium"
+        >
+          Time signature
+        </label>
+        <input
+          id="time_signature"
+          name="time_signature"
+          placeholder="e.g. 4/4 or 6/8"
+          className="w-full border p-2"
+          pattern="^\d+/\d+$"
+          title="Use format like 4/4 or 6/8"
+        />
+        <p className="mt-2 text-sm text-gray-600">
+          Optional. Enter as numbers with a slash, for example 4/4, 3/4, or
+          6/8.
+        </p>
+      </div>
 
-      <input
-        name="reference_url"
-        placeholder="Reference URL"
-        className="mb-4 w-full border p-2"
-      />
+      <div>
+        <label
+          htmlFor="reference_url"
+          className="mb-2 block text-sm font-medium"
+        >
+          Reference URL
+        </label>
+        <input
+          id="reference_url"
+          name="reference_url"
+          placeholder="e.g. YouTube, archive, or recording link"
+          className="w-full border p-2"
+        />
+        <p className="mt-2 text-sm text-gray-600">
+          Optional. Add one useful reference link for this tune, such as a
+          YouTube video, field recording, or other version-defining source.
+        </p>
+      </div>
 
-      <fieldset className="mb-4 border p-3">
+      <fieldset className="border p-3">
         <legend className="px-1 font-medium">After create</legend>
 
         <div className="space-y-2">
@@ -133,7 +176,7 @@ export default function CreateTuneForm({
         </div>
       </fieldset>
 
-      <fieldset className="mb-4 border p-3">
+      <fieldset className="border p-3">
         <legend className="px-1 font-medium">Also</legend>
 
         <label className="flex items-center gap-2">
