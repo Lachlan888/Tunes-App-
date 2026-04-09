@@ -5,10 +5,63 @@ import { createClient } from "@/lib/supabase/server"
 import { recordStartedPracticeEvent } from "@/lib/activity-events"
 import { redirect } from "next/navigation"
 
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
+
 function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")
     ? `${url}&${key}=${encodeURIComponent(value)}`
     : `${url}?${key}=${encodeURIComponent(value)}`
+}
+
+export async function startPracticeForUser(
+  supabase: SupabaseServerClient,
+  userId: string,
+  pieceId: number
+): Promise<"started" | "already_in_practice"> {
+  const nextReviewDue = getTomorrow()
+
+  const { data: existingUserPiece, error: fetchUserPieceError } = await supabase
+    .from("user_pieces")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("piece_id", pieceId)
+    .maybeSingle()
+
+  if (fetchUserPieceError) {
+    throw new Error(fetchUserPieceError.message)
+  }
+
+  if (existingUserPiece) {
+    return "already_in_practice"
+  }
+
+  const { error: deleteKnownError } = await supabase
+    .from("user_known_pieces")
+    .delete()
+    .eq("user_id", userId)
+    .eq("piece_id", pieceId)
+
+  if (deleteKnownError) {
+    throw new Error(deleteKnownError.message)
+  }
+
+  const { error: insertUserPieceError } = await supabase
+    .from("user_pieces")
+    .insert({
+      user_id: userId,
+      piece_id: pieceId,
+      status: "learning",
+      stage: 1,
+      next_review_due: nextReviewDue,
+    })
+
+  if (insertUserPieceError) {
+    throw new Error(insertUserPieceError.message)
+  }
+
+  await recordStartedPracticeEvent(userId, pieceId)
+
+  return "started"
 }
 
 export async function startLearning(formData: FormData) {
@@ -22,54 +75,14 @@ export async function startLearning(formData: FormData) {
     redirect("/login")
   }
 
-  const piece_id = Number(formData.get("piece_id"))
+  const pieceId = Number(formData.get("piece_id"))
   const redirectTo = String(formData.get("redirect_to") || "/")
-  const nextReviewDue = getTomorrow()
 
-  if (!piece_id || Number.isNaN(piece_id)) {
+  if (!pieceId || Number.isNaN(pieceId)) {
     redirect(redirectTo)
   }
 
-  const { data: existingUserPiece, error: fetchUserPieceError } = await supabase
-    .from("user_pieces")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("piece_id", piece_id)
-    .maybeSingle()
-
-  if (fetchUserPieceError) {
-    throw new Error(fetchUserPieceError.message)
-  }
-
-  if (existingUserPiece) {
-    redirect(redirectTo)
-  }
-
-  const { error: deleteKnownError } = await supabase
-    .from("user_known_pieces")
-    .delete()
-    .eq("user_id", user.id)
-    .eq("piece_id", piece_id)
-
-  if (deleteKnownError) {
-    throw new Error(deleteKnownError.message)
-  }
-
-  const { error: insertUserPieceError } = await supabase
-    .from("user_pieces")
-    .insert({
-      user_id: user.id,
-      piece_id,
-      status: "learning",
-      stage: 1,
-      next_review_due: nextReviewDue,
-    })
-
-  if (insertUserPieceError) {
-    throw new Error(insertUserPieceError.message)
-  }
-
-  await recordStartedPracticeEvent(user.id, piece_id)
+  await startPracticeForUser(supabase, user.id, pieceId)
 
   redirect(redirectTo)
 }

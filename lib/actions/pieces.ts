@@ -4,6 +4,9 @@ import { normaliseTuneTitle } from "@/lib/normalise"
 import { normaliseKey } from "@/lib/music/keys"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { startPracticeForUser } from "@/lib/actions/user-pieces"
+import { markPieceKnownForUser } from "@/lib/actions/known-pieces"
+import { addPieceToLearningListForUser } from "@/lib/actions/lists"
 
 function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")
@@ -14,6 +17,8 @@ function appendQueryParam(url: string, key: string, value: string) {
 function normaliseForDuplicateMatch(value: string | null) {
   return normaliseTuneTitle(value)
 }
+
+type PostCreateAction = "none" | "known" | "practice"
 
 export async function createTune(formData: FormData) {
   const supabase = await createClient()
@@ -30,12 +35,33 @@ export async function createTune(formData: FormData) {
     .map((value) => Number(value))
     .filter((value) => Number.isInteger(value) && value > 0)
 
+  const postCreateAction = String(
+    formData.get("post_create_action") ?? "none"
+  ).trim() as PostCreateAction
+
+  const addToList = String(formData.get("add_to_list") ?? "") === "true"
+  const learningListId = Number(formData.get("learning_list_id"))
+
   if (!title) {
     redirect(appendQueryParam(redirectTo, "create_tune", "missing_title"))
   }
 
   if (rawKey && !key) {
     redirect(appendQueryParam(redirectTo, "create_tune", "invalid_key"))
+  }
+
+  if (
+    postCreateAction !== "none" &&
+    postCreateAction !== "known" &&
+    postCreateAction !== "practice"
+  ) {
+    redirect(
+      appendQueryParam(redirectTo, "create_tune", "invalid_post_create_action")
+    )
+  }
+
+  if (addToList && (!learningListId || Number.isNaN(learningListId))) {
+    redirect(appendQueryParam(redirectTo, "create_tune", "missing_list"))
   }
 
   const normalisedTitle = normaliseForDuplicateMatch(title)
@@ -115,6 +141,35 @@ export async function createTune(formData: FormData) {
 
     if (pieceStylesError) {
       redirect(appendQueryParam(redirectTo, "create_tune", "error"))
+    }
+  }
+
+  const needsUserAction = postCreateAction !== "none" || addToList
+
+  if (needsUserAction) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      redirect("/login")
+    }
+
+    if (postCreateAction === "known") {
+      await markPieceKnownForUser(supabase, user.id, insertedPiece.id)
+    }
+
+    if (postCreateAction === "practice") {
+      await startPracticeForUser(supabase, user.id, insertedPiece.id)
+    }
+
+    if (addToList) {
+      await addPieceToLearningListForUser(
+        supabase,
+        user.id,
+        insertedPiece.id,
+        learningListId
+      )
     }
   }
 

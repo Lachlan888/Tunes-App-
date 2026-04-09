@@ -7,13 +7,84 @@ import {
 } from "@/lib/activity-events"
 import { redirect } from "next/navigation"
 
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
+type ListVisibility = "private" | "public"
+
 function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")
     ? `${url}&${key}=${encodeURIComponent(value)}`
     : `${url}?${key}=${encodeURIComponent(value)}`
 }
 
-type ListVisibility = "private" | "public"
+export async function addPieceToLearningListForUser(
+  supabase: SupabaseServerClient,
+  userId: string,
+  pieceId: number,
+  learningListId: number
+): Promise<"added" | "duplicate"> {
+  const { data: ownedList, error: ownedListError } = await supabase
+    .from("learning_lists")
+    .select("id")
+    .eq("id", learningListId)
+    .eq("user_id", userId)
+    .maybeSingle()
+
+  if (ownedListError) {
+    throw new Error(ownedListError.message)
+  }
+
+  if (!ownedList) {
+    throw new Error("List not found or not owned by user.")
+  }
+
+  const { data: existingItem, error: existingItemError } = await supabase
+    .from("learning_list_items")
+    .select("id")
+    .eq("learning_list_id", learningListId)
+    .eq("piece_id", pieceId)
+    .maybeSingle()
+
+  if (existingItemError) {
+    throw new Error(existingItemError.message)
+  }
+
+  if (existingItem) {
+    return "duplicate"
+  }
+
+  const { data: existingItems, error: fetchError } = await supabase
+    .from("learning_list_items")
+    .select("position")
+    .eq("learning_list_id", learningListId)
+    .not("position", "is", null)
+    .order("position", { ascending: false })
+    .limit(1)
+
+  if (fetchError) {
+    throw new Error(fetchError.message)
+  }
+
+  const nextPosition =
+    existingItems &&
+    existingItems.length > 0 &&
+    existingItems[0].position != null
+      ? existingItems[0].position + 1
+      : 1
+
+  const { error: insertError } = await supabase
+    .from("learning_list_items")
+    .insert({
+      piece_id: pieceId,
+      learning_list_id: learningListId,
+      position: nextPosition,
+    })
+
+  if (insertError) {
+    throw new Error(insertError.message)
+  }
+
+  return "added"
+}
 
 export async function createList(formData: FormData) {
   const supabase = await createClient()
@@ -168,57 +239,18 @@ export async function addToLearningList(formData: FormData) {
     redirect("/login")
   }
 
-  const piece_id = Number(formData.get("piece_id"))
-  const learning_list_id = Number(formData.get("learning_list_id"))
-  const redirectTo = (formData.get("redirect_to") as string) || "/"
+  const pieceId = Number(formData.get("piece_id"))
+  const learningListId = Number(formData.get("learning_list_id"))
+  const redirectTo = String(formData.get("redirect_to") ?? "/")
 
-  const { data: existingItem, error: existingItemError } = await supabase
-    .from("learning_list_items")
-    .select("id")
-    .eq("learning_list_id", learning_list_id)
-    .eq("piece_id", piece_id)
-    .maybeSingle()
-
-  if (existingItemError) {
-    throw new Error(existingItemError.message)
-  }
-
-  if (existingItem) {
-    redirect(buildRedirectUrl(redirectTo, "duplicate"))
-  }
-
-  const { data: existingItems, error: fetchError } = await supabase
-    .from("learning_list_items")
-    .select("position")
-    .eq("learning_list_id", learning_list_id)
-    .not("position", "is", null)
-    .order("position", { ascending: false })
-    .limit(1)
-
-  if (fetchError) {
-    throw new Error(fetchError.message)
-  }
-
-  const nextPosition =
-    existingItems &&
-    existingItems.length > 0 &&
-    existingItems[0].position != null
-      ? existingItems[0].position + 1
-      : 1
-
-  const { error: insertError } = await supabase
-    .from("learning_list_items")
-    .insert({
-      piece_id,
-      learning_list_id,
-      position: nextPosition,
-    })
-
-  if (insertError) {
-    throw new Error(insertError.message)
-  }
-
-  redirect(buildRedirectUrl(redirectTo, "success"))
+  await addPieceToLearningListForUser(
+    supabase,
+    user.id,
+    pieceId,
+    learningListId
+  ).then((status) => {
+    redirect(buildRedirectUrl(redirectTo, status === "added" ? "success" : "duplicate"))
+  })
 }
 
 export async function updateList(formData: FormData) {
