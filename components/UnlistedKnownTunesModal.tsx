@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
+import PendingLinkButton from "@/components/PendingLinkButton"
 
 type Piece = {
   id: number
@@ -84,7 +85,7 @@ export default function UnlistedKnownTunesModal({
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className="rounded border px-3 py-1 text-sm"
+            className="cursor-pointer rounded border px-3 py-1 text-sm"
           >
             Review tunes
           </button>
@@ -98,7 +99,7 @@ export default function UnlistedKnownTunesModal({
         >
           <div className="flex min-h-full items-start justify-center py-8">
             <div
-              className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-lg max-h-[85vh] overflow-y-auto"
+              className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-lg"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="mb-4 flex items-center justify-between gap-4">
@@ -106,7 +107,7 @@ export default function UnlistedKnownTunesModal({
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="rounded border px-3 py-1 text-sm"
+                  className="cursor-pointer rounded border px-3 py-1 text-sm"
                 >
                   Close
                 </button>
@@ -118,22 +119,27 @@ export default function UnlistedKnownTunesModal({
                     ? userKnownPiece.pieces[0] ?? null
                     : userKnownPiece.pieces
 
+                  const pieceTitle = piece?.title ?? "Untitled tune"
+
                   return (
                     <li key={userKnownPiece.id} className="rounded border p-3">
                       <div className="flex items-center justify-between gap-4">
                         <div>
-                          <p className="font-medium">
-                            {piece?.title ?? "Untitled tune"}
-                          </p>
+                          <PendingLinkButton
+                            href={`/library/${userKnownPiece.piece_id}`}
+                            label={pieceTitle}
+                            pendingLabel={`Opening ${pieceTitle}...`}
+                            className="cursor-pointer text-left font-medium underline underline-offset-4"
+                          />
                         </div>
 
                         <button
                           type="button"
-                          className="rounded border px-3 py-1 text-sm"
+                          className="cursor-pointer rounded border px-3 py-1 text-sm"
                           onClick={() => {
                             setSelectedPiece({
                               id: userKnownPiece.piece_id,
-                              title: piece?.title ?? "Untitled tune",
+                              title: pieceTitle,
                               key: null,
                               style: null,
                               time_signature: null,

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import PendingLinkButton from "@/components/PendingLinkButton"
 import SubmitButton from "@/components/SubmitButton"
 import type { Piece } from "@/lib/types"
 
@@ -41,7 +42,7 @@ export default function EditListModal({
     return (
       <button
         type="button"
-        className="rounded border px-3 py-1 text-sm"
+        className="cursor-pointer rounded border px-3 py-1 text-sm"
         onClick={() => setIsOpen(true)}
       >
         {triggerLabel}
@@ -62,7 +63,7 @@ export default function EditListModal({
           <h2 className="text-xl font-semibold">Manage List</h2>
           <button
             type="button"
-            className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            className="cursor-pointer rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
             onClick={closeModal}
             disabled={isBusy}
           >
@@ -143,10 +144,19 @@ export default function EditListModal({
                     key={tune.id}
                     className="flex items-center justify-between gap-3 rounded border p-3"
                   >
-                    <div className="text-sm">
-                      <div className="font-medium">{tune.title}</div>
+                    <div className="min-w-0 text-sm">
+                      <PendingLinkButton
+                        href={`/library/${tune.id}`}
+                        label={tune.title}
+                        pendingLabel={`Opening ${tune.title}...`}
+                        className="cursor-pointer text-left font-medium underline underline-offset-4"
+                      />
                       <div className="text-gray-600">
-                        {[tune.key ? `Key ${tune.key}` : null, tune.style, tune.time_signature]
+                        {[
+                          tune.key ? `Key ${tune.key}` : null,
+                          tune.style,
+                          tune.time_signature,
+                        ]
                           .filter(Boolean)
                           .join(", ")}
                       </div>

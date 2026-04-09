@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
+import PendingLinkButton from "@/components/PendingLinkButton"
 
 type Piece = {
   id: number
@@ -85,7 +86,7 @@ export default function UnlistedPracticeTunesModal({
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className="rounded border px-3 py-1 text-sm"
+            className="cursor-pointer rounded border px-3 py-1 text-sm"
           >
             Review tunes
           </button>
@@ -99,15 +100,17 @@ export default function UnlistedPracticeTunesModal({
         >
           <div className="flex min-h-full items-start justify-center py-8">
             <div
-              className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-lg max-h-[85vh] overflow-y-auto"
+              className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-lg"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="mb-4 flex items-center justify-between gap-4">
-                <h2 className="text-2xl font-semibold">In practice, not in a list</h2>
+                <h2 className="text-2xl font-semibold">
+                  In practice, not in a list
+                </h2>
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="rounded border px-3 py-1 text-sm"
+                  className="cursor-pointer rounded border px-3 py-1 text-sm"
                 >
                   Close
                 </button>
@@ -119,13 +122,18 @@ export default function UnlistedPracticeTunesModal({
                     ? userPiece.pieces[0] ?? null
                     : userPiece.pieces
 
+                  const pieceTitle = piece?.title ?? "Untitled tune"
+
                   return (
                     <li key={userPiece.id} className="rounded border p-3">
                       <div className="flex items-center justify-between gap-4">
                         <div>
-                          <p className="font-medium">
-                            {piece?.title ?? "Untitled tune"}
-                          </p>
+                          <PendingLinkButton
+                            href={`/library/${userPiece.piece_id}`}
+                            label={pieceTitle}
+                            pendingLabel={`Opening ${pieceTitle}...`}
+                            className="cursor-pointer text-left font-medium underline underline-offset-4"
+                          />
                           <p className="text-sm text-gray-600">
                             Stage {userPiece.stage}
                           </p>
@@ -133,11 +141,11 @@ export default function UnlistedPracticeTunesModal({
 
                         <button
                           type="button"
-                          className="rounded border px-3 py-1 text-sm"
+                          className="cursor-pointer rounded border px-3 py-1 text-sm"
                           onClick={() => {
                             setSelectedPiece({
                               id: userPiece.piece_id,
-                              title: piece?.title ?? "Untitled tune",
+                              title: pieceTitle,
                               key: null,
                               style: null,
                               time_signature: null,
