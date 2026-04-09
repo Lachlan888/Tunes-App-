@@ -38,6 +38,7 @@ type UnlistedKnownTunesModalProps = {
   learningLists: LearningList[] | null
   addToLearningList: (formData: FormData) => Promise<void>
   redirectTo: string
+  summaryClassName?: string
 }
 
 export default function UnlistedKnownTunesModal({
@@ -45,6 +46,7 @@ export default function UnlistedKnownTunesModal({
   learningLists,
   addToLearningList,
   redirectTo,
+  summaryClassName = "rounded border p-4",
 }: UnlistedKnownTunesModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
@@ -72,7 +74,7 @@ export default function UnlistedKnownTunesModal({
 
   return (
     <>
-      <section className="mt-8 rounded border p-4">
+      <section className={summaryClassName}>
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold">Known, not in a list</h2>

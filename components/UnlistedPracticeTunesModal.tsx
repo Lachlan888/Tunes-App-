@@ -39,6 +39,7 @@ type UnlistedPracticeTunesModalProps = {
   learningLists: LearningList[] | null
   addToLearningList: (formData: FormData) => Promise<void>
   redirectTo: string
+  summaryClassName?: string
 }
 
 export default function UnlistedPracticeTunesModal({
@@ -46,6 +47,7 @@ export default function UnlistedPracticeTunesModal({
   learningLists,
   addToLearningList,
   redirectTo,
+  summaryClassName = "rounded border p-4",
 }: UnlistedPracticeTunesModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
@@ -73,7 +75,7 @@ export default function UnlistedPracticeTunesModal({
 
   return (
     <>
-      <section className="mt-8 rounded border p-4">
+      <section className={summaryClassName}>
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold">In practice, not in a list</h2>
