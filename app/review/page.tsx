@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import PracticeReferenceLink from "@/components/PracticeReferenceLink"
+import ReferenceMediaLink from "@/components/ReferenceMediaLink"
 import RemoveFromPracticeButton from "@/components/RemoveFromPracticeButton"
 import SubmitButton from "@/components/SubmitButton"
 import { createClient } from "@/lib/supabase/server"
@@ -180,7 +180,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                   </p>
 
                   {piece?.reference_url && piece?.title && (
-                    <PracticeReferenceLink
+                    <ReferenceMediaLink
                       referenceUrl={piece.reference_url}
                       title={piece.title}
                     />

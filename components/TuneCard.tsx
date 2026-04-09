@@ -1,6 +1,7 @@
 "use client"
 
 import PendingLinkButton from "@/components/PendingLinkButton"
+import ReferenceMediaLink from "@/components/ReferenceMediaLink"
 import { getStyleLabelsFromPiece } from "@/lib/search-filters"
 import type { Piece } from "@/lib/types"
 
@@ -60,16 +61,11 @@ export default function TuneCard({
       </div>
 
       {referenceUrl && (
-        <p className="mt-1 text-sm">
-          <a
-            href={referenceUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="underline"
-          >
-            Reference
-          </a>
-        </p>
+        <ReferenceMediaLink
+          referenceUrl={referenceUrl}
+          title={title}
+          className="text-sm underline"
+        />
       )}
 
       {listNames.length > 0 && (

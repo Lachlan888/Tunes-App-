@@ -2,9 +2,10 @@
 
 import { useMemo, useState } from "react"
 
-type PracticeReferenceLinkProps = {
+type ReferenceMediaLinkProps = {
   referenceUrl: string
   title: string
+  className?: string
 }
 
 function getYouTubeEmbedUrl(referenceUrl: string): string | null {
@@ -43,10 +44,11 @@ function getYouTubeEmbedUrl(referenceUrl: string): string | null {
   return null
 }
 
-export default function PracticeReferenceLink({
+export default function ReferenceMediaLink({
   referenceUrl,
   title,
-}: PracticeReferenceLinkProps) {
+  className,
+}: ReferenceMediaLinkProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const embedUrl = useMemo(() => getYouTubeEmbedUrl(referenceUrl), [referenceUrl])
@@ -62,7 +64,7 @@ export default function PracticeReferenceLink({
         href={referenceUrl}
         target="_blank"
         rel="noreferrer"
-        className="text-sm underline"
+        className={className ?? "text-sm underline"}
       >
         Reference
       </a>
@@ -74,7 +76,7 @@ export default function PracticeReferenceLink({
       <button
         type="button"
         onClick={() => setIsOpen((current) => !current)}
-        className="text-sm underline"
+        className={className ?? "text-sm underline"}
       >
         {isOpen ? "Hide reference" : "Reference"}
       </button>
