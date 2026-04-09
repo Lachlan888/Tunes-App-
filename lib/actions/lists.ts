@@ -13,6 +13,8 @@ function appendQueryParam(url: string, key: string, value: string) {
     : `${url}?${key}=${encodeURIComponent(value)}`
 }
 
+type ListVisibility = "private" | "public"
+
 export async function createList(formData: FormData) {
   const supabase = await createClient()
 
@@ -57,6 +59,97 @@ export async function createList(formData: FormData) {
   }
 
   redirect(appendQueryParam(redirectTo, "create_list", "success"))
+}
+
+export async function createListInline(
+  _prevState: {
+    status: "idle" | "success" | "error"
+    error: string | null
+    createdList: {
+      id: number
+      name: string
+      description: string | null
+      visibility: ListVisibility
+    } | null
+  },
+  formData: FormData
+): Promise<{
+  status: "idle" | "success" | "error"
+  error: string | null
+  createdList: {
+    id: number
+    name: string
+    description: string | null
+    visibility: ListVisibility
+  } | null
+}> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return {
+      status: "error",
+      error: "Please log in again.",
+      createdList: null,
+    }
+  }
+
+  const name = String(formData.get("name") ?? "").trim()
+  const description = String(formData.get("description") ?? "").trim()
+  const visibility = String(formData.get("visibility") ?? "private").trim()
+
+  if (!name) {
+    return {
+      status: "error",
+      error: "Enter a list name.",
+      createdList: null,
+    }
+  }
+
+  if (visibility !== "private" && visibility !== "public") {
+    return {
+      status: "error",
+      error: "Invalid list visibility.",
+      createdList: null,
+    }
+  }
+
+  const { data: createdList, error } = await supabase
+    .from("learning_lists")
+    .insert({
+      name,
+      description: description || null,
+      visibility,
+      user_id: user.id,
+    })
+    .select("id, name, description, visibility")
+    .single()
+
+  if (error || !createdList) {
+    return {
+      status: "error",
+      error: "Could not create list.",
+      createdList: null,
+    }
+  }
+
+  if (createdList.visibility === "public") {
+    await recordPublicListCreatedEvent(user.id, createdList.id)
+  }
+
+  return {
+    status: "success",
+    error: null,
+    createdList: {
+      id: createdList.id,
+      name: createdList.name,
+      description: createdList.description,
+      visibility: createdList.visibility as ListVisibility,
+    },
+  }
 }
 
 function buildRedirectUrl(basePath: string, status: "success" | "duplicate") {
