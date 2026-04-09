@@ -1,12 +1,12 @@
 import PendingLinkButton from "@/components/PendingLinkButton"
 import CreateListModal from "@/components/CreateListModal"
+import EditListModal from "@/components/EditListModal"
 import MyTunesModal from "@/components/MyTunesModal"
-import SubmitButton from "@/components/SubmitButton"
 import UnlistedKnownTunesModal from "@/components/UnlistedKnownTunesModal"
 import UnlistedPracticeTunesModal from "@/components/UnlistedPracticeTunesModal"
+import { addToLearningList, deleteList, removeTuneFromList, updateList } from "@/lib/actions/lists"
 import { createClient } from "@/lib/supabase/server"
-import { toggleLearningListVisibility } from "@/lib/actions/learning-lists"
-import { addToLearningList } from "@/lib/actions/lists"
+import type { Piece } from "@/lib/types"
 import { redirect } from "next/navigation"
 
 type LearningList = {
@@ -48,8 +48,13 @@ type UserKnownPieceWithPiece = {
     | null
 }
 
-type LearningListItem = {
+type LearningListMembershipRow = {
   piece_id: number
+}
+
+type LearningListItemWithPieceRow = {
+  learning_list_id: number
+  pieces: Piece | Piece[] | null
 }
 
 type MyTuneRow = {
@@ -62,6 +67,7 @@ type MyTuneRow = {
 type LearningListsPageProps = {
   searchParams?: Promise<{
     create_list?: string
+    edit_list?: string
   }>
 }
 
@@ -84,6 +90,16 @@ function extractPieceTitle(
   return piece.title
 }
 
+function extractPiece(
+  piece: Piece | Piece[] | null
+): Piece | null {
+  if (!piece) return null
+  if (Array.isArray(piece)) {
+    return piece[0] ?? null
+  }
+  return piece
+}
+
 export default async function LearningListsPage({
   searchParams,
 }: LearningListsPageProps) {
@@ -99,6 +115,7 @@ export default async function LearningListsPage({
 
   const resolvedSearchParams = await searchParams
   const createListStatus = resolvedSearchParams?.create_list ?? ""
+  const editListStatus = resolvedSearchParams?.edit_list ?? ""
 
   const { data: learningLists, error } = await supabase
     .from("learning_lists")
@@ -140,19 +157,39 @@ export default async function LearningListsPage({
     `)
     .eq("user_id", user.id)
 
-  const { data: learningListItems } = await supabase
+  const { data: learningListMemberships } = await supabase
     .from("learning_list_items")
     .select("piece_id, learning_lists!inner(user_id)")
     .eq("learning_lists.user_id", user.id)
+
+  const { data: learningListItemsWithPieces } = await supabase
+    .from("learning_list_items")
+    .select(`
+      learning_list_id,
+      pieces (
+        id,
+        title,
+        key,
+        style,
+        time_signature,
+        reference_url
+      ),
+      learning_lists!inner(user_id)
+    `)
+    .eq("learning_lists.user_id", user.id)
+    .order("position", { ascending: true })
 
   const typedLearningLists = (learningLists ?? []) as LearningList[]
   const typedUserPieces = (userPieces ?? []) as UserPieceWithPiece[]
   const typedUserKnownPieces =
     (userKnownPieces ?? []) as UserKnownPieceWithPiece[]
-  const typedLearningListItems = (learningListItems ?? []) as LearningListItem[]
+  const typedLearningListMemberships =
+    (learningListMemberships ?? []) as LearningListMembershipRow[]
+  const typedLearningListItemsWithPieces =
+    (learningListItemsWithPieces ?? []) as LearningListItemWithPieceRow[]
 
   const listedPieceIds = new Set(
-    typedLearningListItems.map((item) => item.piece_id)
+    typedLearningListMemberships.map((item) => item.piece_id)
   )
 
   const unlistedPracticeTunes = typedUserPieces.filter(
@@ -197,6 +234,17 @@ export default async function LearningListsPage({
     a.title.localeCompare(b.title)
   )
 
+  const tunesByListId = new Map<number, Piece[]>()
+
+  for (const item of typedLearningListItemsWithPieces) {
+    const piece = extractPiece(item.pieces)
+    if (!piece) continue
+
+    const existingTunes = tunesByListId.get(item.learning_list_id) ?? []
+    existingTunes.push(piece)
+    tunesByListId.set(item.learning_list_id, existingTunes)
+  }
+
   return (
     <main className="p-8">
       <h1 className="mb-2 text-3xl font-bold">Lists</h1>
@@ -216,9 +264,69 @@ export default async function LearningListsPage({
         </div>
       )}
 
+      {createListStatus === "invalid_visibility" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Invalid list visibility.
+        </div>
+      )}
+
       {createListStatus === "error" && (
         <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
           Could not create list.
+        </div>
+      )}
+
+      {editListStatus === "success" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          List updated.
+        </div>
+      )}
+
+      {editListStatus === "removed_tune" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          Tune removed from this list.
+        </div>
+      )}
+
+      {editListStatus === "deleted" && (
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          List deleted.
+        </div>
+      )}
+
+      {editListStatus === "missing_list" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Could not tell which list to edit.
+        </div>
+      )}
+
+      {editListStatus === "missing_name" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Please enter a list name.
+        </div>
+      )}
+
+      {editListStatus === "missing_item" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Could not tell which tune to remove from the list.
+        </div>
+      )}
+
+      {editListStatus === "invalid_visibility" && (
+        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Invalid list visibility.
+        </div>
+      )}
+
+      {editListStatus === "not_found" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          List not found or you do not own it.
+        </div>
+      )}
+
+      {editListStatus === "error" && (
+        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          Could not update list.
         </div>
       )}
 
@@ -247,70 +355,61 @@ export default async function LearningListsPage({
         <p className="text-gray-600">No lists yet.</p>
       ) : (
         <div className="space-y-4">
-          {typedLearningLists.map((list) => (
-            <section key={list.id} className="rounded border p-4">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-xl font-semibold">{list.name}</h2>
+          {typedLearningLists.map((list) => {
+            const tunes = tunesByListId.get(list.id) ?? []
 
-                  {list.description && (
-                    <p className="mt-2 text-gray-600">{list.description}</p>
-                  )}
+            return (
+              <section key={list.id} className="rounded border p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-semibold">{list.name}</h2>
 
-                  <div className="mt-3">
-                    <PendingLinkButton
-                      href={`/learning-lists/${list.id}`}
-                      label="View List"
-                      pendingLabel="Loading..."
-                      className="text-sm underline"
-                    />
+                    {list.description && (
+                      <p className="mt-2 text-gray-600">{list.description}</p>
+                    )}
+
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <PendingLinkButton
+                        href={`/learning-lists/${list.id}`}
+                        label="View List"
+                        pendingLabel="Loading..."
+                        className="text-sm underline"
+                      />
+
+                      <EditListModal
+                        listId={list.id}
+                        name={list.name}
+                        description={list.description}
+                        visibility={list.visibility}
+                        redirectTo="/learning-lists"
+                        tunes={tunes}
+                        updateList={updateList}
+                        removeTuneFromList={removeTuneFromList}
+                        deleteList={deleteList}
+                        triggerLabel="Manage List"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 text-right">
+                    <div className="text-sm text-gray-500">
+                      {list.visibility === "public" ? "Public" : "Private"}
+                    </div>
+
+                    {list.is_imported && (
+                      <div className="mt-1 text-sm text-gray-500">
+                        Imported
+                      </div>
+                    )}
+
+                    <div className="mt-1 text-sm text-gray-500">
+                      {tunes.length} tune{tunes.length === 1 ? "" : "s"}
+                    </div>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-500">
-                    {list.visibility === "public" ? "Public" : "Private"}
-                  </span>
-
-                  {list.visibility === "private" ? (
-                    list.is_imported ? (
-                      <span className="text-sm text-gray-500">
-                        Imported lists stay private
-                      </span>
-                    ) : (
-                      <form action={toggleLearningListVisibility}>
-                        <input type="hidden" name="list_id" value={list.id} />
-                        <input
-                          type="hidden"
-                          name="next_visibility"
-                          value="public"
-                        />
-                        <SubmitButton
-                          label="Make Public"
-                          pendingLabel="Updating..."
-                          className="rounded border px-3 py-1 text-sm"
-                        />
-                      </form>
-                    )
-                  ) : (
-                    <form action={toggleLearningListVisibility}>
-                      <input type="hidden" name="list_id" value={list.id} />
-                      <input
-                        type="hidden"
-                        name="next_visibility"
-                        value="private"
-                      />
-                      <SubmitButton
-                        label="Make Private"
-                        pendingLabel="Updating..."
-                        className="rounded border px-3 py-1 text-sm"
-                      />
-                    </form>
-                  )}
-                </div>
-              </div>
-            </section>
-          ))}
+              </section>
+            )
+          })}
         </div>
       )}
 

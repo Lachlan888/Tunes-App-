@@ -168,6 +168,7 @@ export default async function LearningListDetailPage({
           updateList={updateList}
           removeTuneFromList={removeTuneFromList}
           deleteList={deleteList}
+          triggerLabel="Manage List"
         />
       </div>
 

@@ -14,6 +14,7 @@ type EditListModalProps = {
   updateList: (formData: FormData) => Promise<void>
   removeTuneFromList: (formData: FormData) => Promise<void>
   deleteList: (formData: FormData) => Promise<void>
+  triggerLabel?: string
 }
 
 export default function EditListModal({
@@ -26,6 +27,7 @@ export default function EditListModal({
   updateList,
   removeTuneFromList,
   deleteList,
+  triggerLabel = "Manage List",
 }: EditListModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isBusy, setIsBusy] = useState(false)
@@ -39,10 +41,10 @@ export default function EditListModal({
     return (
       <button
         type="button"
-        className="border px-3 py-1 text-sm"
+        className="rounded border px-3 py-1 text-sm"
         onClick={() => setIsOpen(true)}
       >
-        Edit List
+        {triggerLabel}
       </button>
     )
   }
@@ -57,10 +59,10 @@ export default function EditListModal({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Edit List</h2>
+          <h2 className="text-xl font-semibold">Manage List</h2>
           <button
             type="button"
-            className="border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
             onClick={closeModal}
             disabled={isBusy}
           >
@@ -87,7 +89,7 @@ export default function EditListModal({
                 <input
                   name="name"
                   defaultValue={name}
-                  className="w-full border p-2"
+                  className="w-full rounded border p-2"
                   required
                   disabled={isBusy}
                 />
@@ -100,7 +102,7 @@ export default function EditListModal({
                 <textarea
                   name="description"
                   defaultValue={description ?? ""}
-                  className="w-full border p-2"
+                  className="w-full rounded border p-2"
                   rows={3}
                   disabled={isBusy}
                 />
@@ -113,7 +115,7 @@ export default function EditListModal({
                 <select
                   name="visibility"
                   defaultValue={visibility}
-                  className="w-full border p-2"
+                  className="w-full rounded border p-2"
                   disabled={isBusy}
                 >
                   <option value="private">Private</option>
@@ -124,7 +126,7 @@ export default function EditListModal({
               <SubmitButton
                 label="Save List Details"
                 pendingLabel="Saving..."
-                className="bg-black px-4 py-2 text-sm text-white"
+                className="rounded bg-black px-4 py-2 text-sm text-white"
               />
             </form>
           </section>
@@ -139,16 +141,12 @@ export default function EditListModal({
                 {tunes.map((tune) => (
                   <div
                     key={tune.id}
-                    className="flex items-center justify-between gap-3 border p-3"
+                    className="flex items-center justify-between gap-3 rounded border p-3"
                   >
                     <div className="text-sm">
                       <div className="font-medium">{tune.title}</div>
                       <div className="text-gray-600">
-                        {[
-                          tune.key ? `Key ${tune.key}` : null,
-                          tune.style,
-                          tune.time_signature,
-                        ]
+                        {[tune.key ? `Key ${tune.key}` : null, tune.style, tune.time_signature]
                           .filter(Boolean)
                           .join(", ")}
                       </div>
@@ -174,7 +172,7 @@ export default function EditListModal({
                       <SubmitButton
                         label="Remove from List"
                         pendingLabel="Removing..."
-                        className="border px-3 py-1 text-sm"
+                        className="rounded border px-3 py-1 text-sm"
                       />
                     </form>
                   </div>
@@ -205,7 +203,7 @@ export default function EditListModal({
               <SubmitButton
                 label="Delete List"
                 pendingLabel="Deleting..."
-                className="border border-red-600 px-3 py-1 text-sm text-red-700"
+                className="rounded border border-red-600 px-3 py-1 text-sm text-red-700"
               />
             </form>
           </section>

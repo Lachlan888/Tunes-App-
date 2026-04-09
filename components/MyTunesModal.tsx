@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
 
 type MyTuneRow = {
   piece_id: number
@@ -11,6 +12,55 @@ type MyTuneRow = {
 
 type MyTunesModalProps = {
   myTunes: MyTuneRow[]
+}
+
+function MyTuneLinkRow({
+  tune,
+  onNavigate,
+}: {
+  tune: MyTuneRow
+  onNavigate: () => void
+}) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+
+  return (
+    <button
+      type="button"
+      disabled={isPending}
+      onClick={() => {
+        startTransition(() => {
+          onNavigate()
+          router.push(`/library/${tune.piece_id}`)
+        })
+      }}
+      className="group flex w-full cursor-pointer items-center justify-between gap-4 rounded border p-3 text-left transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      <div className="min-w-0">
+        <div className="font-medium underline-offset-4 transition group-hover:underline">
+          {isPending ? `Opening ${tune.title}...` : tune.title}
+        </div>
+        {!isPending && (
+          <div className="mt-1 text-xs text-gray-500 transition group-hover:text-gray-700">
+            Open tune page
+          </div>
+        )}
+      </div>
+
+      <div className="flex shrink-0 flex-wrap items-center gap-2 text-sm">
+        {tune.known && (
+          <span className="rounded border px-2 py-1 text-gray-700">
+            Known
+          </span>
+        )}
+        {tune.inPractice && (
+          <span className="rounded border px-2 py-1 text-gray-700">
+            In practice
+          </span>
+        )}
+      </div>
+    </button>
+  )
 }
 
 export default function MyTunesModal({ myTunes }: MyTunesModalProps) {
@@ -75,25 +125,11 @@ export default function MyTunesModal({ myTunes }: MyTunesModalProps) {
                 <div className="max-h-[70vh] overflow-y-auto pr-1">
                   <div className="space-y-2">
                     {myTunes.map((tune) => (
-                      <div
+                      <MyTuneLinkRow
                         key={tune.piece_id}
-                        className="flex items-center justify-between gap-4 rounded border p-3"
-                      >
-                        <div className="font-medium">{tune.title}</div>
-
-                        <div className="flex flex-wrap items-center gap-2 text-sm">
-                          {tune.known && (
-                            <span className="rounded border px-2 py-1 text-gray-700">
-                              Known
-                            </span>
-                          )}
-                          {tune.inPractice && (
-                            <span className="rounded border px-2 py-1 text-gray-700">
-                              In practice
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                        tune={tune}
+                        onNavigate={() => setIsOpen(false)}
+                      />
                     ))}
                   </div>
                 </div>
