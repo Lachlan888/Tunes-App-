@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
+import RemoveFromPracticeButton from "@/components/RemoveFromPracticeButton"
 import SubmitButton from "@/components/SubmitButton"
 import { createClient } from "@/lib/supabase/server"
 import { markFailed, markShaky, markSolid } from "@/lib/actions/reviews"
@@ -23,6 +24,12 @@ type DuePiece = {
   pieces: Piece[] | Piece | null
 }
 
+type ReviewPageProps = {
+  searchParams?: Promise<{
+    remove_from_practice?: string
+  }>
+}
+
 function getDateOnly(dateValue: string | null) {
   if (!dateValue) return null
   return dateValue.slice(0, 10)
@@ -41,7 +48,11 @@ function formatDueDate(dateValue: string | null) {
   })
 }
 
-export default async function ReviewPage() {
+export default async function ReviewPage({ searchParams }: ReviewPageProps) {
+  const resolvedSearchParams = await searchParams
+  const removeFromPracticeStatus =
+    resolvedSearchParams?.remove_from_practice ?? ""
+
   const supabase = await createClient()
 
   const {
@@ -89,10 +100,35 @@ export default async function ReviewPage() {
   )
 
   const today = getToday()
+  const redirectTo = "/review"
 
   return (
     <main className="p-8">
       <h1 className="text-3xl font-bold">Practice</h1>
+
+      {removeFromPracticeStatus === "success" && (
+        <div className="mb-6 mt-4 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          Tune removed from practice.
+        </div>
+      )}
+
+      {removeFromPracticeStatus === "missing_user_piece" && (
+        <div className="mb-6 mt-4 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          Could not tell which practice item to remove.
+        </div>
+      )}
+
+      {removeFromPracticeStatus === "not_found" && (
+        <div className="mb-6 mt-4 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+          That practice item no longer exists.
+        </div>
+      )}
+
+      {removeFromPracticeStatus === "error" && (
+        <div className="mb-6 mt-4 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+          Could not remove tune from practice.
+        </div>
+      )}
 
       {duePieces.length === 0 ? (
         <p className="mt-4 text-gray-600">No tunes due today.</p>
@@ -199,6 +235,12 @@ export default async function ReviewPage() {
                         className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
                       />
                     </form>
+
+                    <RemoveFromPracticeButton
+                      userPieceId={userPiece.id}
+                      redirectTo={redirectTo}
+                      className="rounded-md border px-4 py-2 text-sm font-medium"
+                    />
                   </div>
                 </div>
               )
@@ -254,6 +296,14 @@ export default async function ReviewPage() {
                           Due: {formatDueDate(userPiece.next_review_due)} |{" "}
                           Stage: {userPiece.stage}
                         </p>
+
+                        <div className="mt-3">
+                          <RemoveFromPracticeButton
+                            userPieceId={userPiece.id}
+                            redirectTo={redirectTo}
+                            className="rounded-md border px-3 py-2 text-sm font-medium"
+                          />
+                        </div>
                       </div>
 
                       <span
