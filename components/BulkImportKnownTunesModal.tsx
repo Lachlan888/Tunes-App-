@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import { uploadKnownTunesCsv } from "@/lib/actions/bulk-import"
 
@@ -8,7 +8,7 @@ export default function BulkImportKnownTunesModal() {
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedFileName, setSelectedFileName] = useState("")
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false)
 
   useEffect(() => {
     if (!isOpen || isSubmitting) return
@@ -27,6 +27,21 @@ export default function BulkImportKnownTunesModal() {
     }
   }, [isOpen, isSubmitting])
 
+  function closeModal() {
+    if (isSubmitting) return
+    setIsOpen(false)
+    setSelectedFileName("")
+    setIsDownloadingTemplate(false)
+  }
+
+  function handleTemplateDownloadClick() {
+    setIsDownloadingTemplate(true)
+
+    window.setTimeout(() => {
+      setIsDownloadingTemplate(false)
+    }, 1200)
+  }
+
   return (
     <section className="mb-6">
       <button
@@ -40,12 +55,7 @@ export default function BulkImportKnownTunesModal() {
       {isOpen && (
         <div
           className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4"
-          onClick={() => {
-            if (!isSubmitting) {
-              setIsOpen(false)
-              setSelectedFileName("")
-            }
-          }}
+          onClick={closeModal}
         >
           <div className="flex min-h-full items-start justify-center py-8">
             <div
@@ -58,10 +68,7 @@ export default function BulkImportKnownTunesModal() {
                 </h2>
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsOpen(false)
-                    setSelectedFileName("")
-                  }}
+                  onClick={closeModal}
                   disabled={isSubmitting}
                   className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -87,9 +94,13 @@ export default function BulkImportKnownTunesModal() {
                   <a
                     href="/bulk-known-tunes-template.csv"
                     download
-                    className="rounded bg-black px-4 py-2 text-sm text-white"
+                    onClick={handleTemplateDownloadClick}
+                    aria-disabled={isSubmitting}
+                    className={`rounded bg-black px-4 py-2 text-sm text-white ${
+                      isSubmitting ? "pointer-events-none opacity-50" : ""
+                    }`}
                   >
-                    Download Template
+                    {isDownloadingTemplate ? "Downloading..." : "Download Template"}
                   </a>
                 </div>
 
@@ -108,28 +119,30 @@ export default function BulkImportKnownTunesModal() {
                     </p>
 
                     <input
-                      ref={fileInputRef}
                       id="csv_file"
                       name="csv_file"
                       type="file"
                       accept=".csv,text/csv"
                       required
-                      className="hidden"
+                      disabled={isSubmitting}
                       onChange={(event) => {
                         const file = event.target.files?.[0]
                         setSelectedFileName(file ? file.name : "")
                       }}
-                      disabled={isSubmitting}
+                      className="sr-only"
                     />
 
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isSubmitting}
-                      className="rounded bg-black px-4 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    <label
+                      htmlFor="csv_file"
+                      aria-disabled={isSubmitting}
+                      className={`inline-block rounded bg-black px-4 py-2 text-sm text-white ${
+                        isSubmitting
+                          ? "pointer-events-none opacity-50"
+                          : "cursor-pointer"
+                      }`}
                     >
-                      Select CSV File
-                    </button>
+                      {selectedFileName ? "Change CSV File" : "Select CSV File"}
+                    </label>
                   </div>
 
                   {selectedFileName && (
@@ -140,7 +153,7 @@ export default function BulkImportKnownTunesModal() {
 
                   <SubmitButton
                     label="Import Known Tunes"
-                    pendingLabel="Importing..."
+                    pendingLabel="Importing tunes..."
                     className="rounded border px-4 py-2 text-sm disabled:opacity-50"
                   />
                 </form>
