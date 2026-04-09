@@ -2,14 +2,22 @@ import SubmitButton from "@/components/SubmitButton"
 import { updateMissingPieceDetails } from "@/lib/actions/piece-metadata"
 import type { Piece } from "@/lib/types"
 
+type StyleOption = {
+  id: number
+  slug: string
+  label: string
+}
+
 type TuneCanonicalDetailsCardProps = {
   piece: Piece
   redirectTo: string
+  styleOptions: StyleOption[]
 }
 
 export default function TuneCanonicalDetailsCard({
   piece,
   redirectTo,
+  styleOptions,
 }: TuneCanonicalDetailsCardProps) {
   const missingFields = [
     !piece.key,
@@ -80,11 +88,18 @@ export default function TuneCanonicalDetailsCard({
           )}
 
           {!piece.style && (
-            <input
-              name="style"
-              placeholder="Add style"
+            <select
+              name="style_id"
+              defaultValue=""
               className="w-full border p-2"
-            />
+            >
+              <option value="">Choose style</option>
+              {styleOptions.map((style) => (
+                <option key={style.id} value={style.id}>
+                  {style.label}
+                </option>
+              ))}
+            </select>
           )}
 
           {!piece.time_signature && (

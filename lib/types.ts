@@ -37,10 +37,15 @@ export type UserKnownPiece = {
   piece_id: number
 }
 
+export type LearningListVisibility = "private" | "public"
+export type LearningListSource = "mine" | "imported"
+
 export type LearningList = {
   id: number
   name: string
   description: string | null
+  visibility?: LearningListVisibility
+  is_imported?: boolean
 }
 
 export type LearningListItem = {
@@ -54,4 +59,54 @@ export type LearningListItem = {
     name: string
     user_id: string
   }
+}
+
+export type UserPieceWithPiece = {
+  id: number
+  piece_id: number
+  stage: number
+  pieces:
+    | {
+        id: number
+        title: string
+      }
+    | {
+        id: number
+        title: string
+      }[]
+    | null
+}
+
+export type UserKnownPieceWithPiece = {
+  id: number
+  piece_id: number
+  pieces:
+    | {
+        id: number
+        title: string
+      }
+    | {
+        id: number
+        title: string
+      }[]
+    | null
+}
+
+export type MyTuneRow = {
+  piece_id: number
+  title: string
+  inPractice: boolean
+  known: boolean
+}
+
+export type FilterableLearningList = {
+  id: number
+  name: string
+  description: string | null
+  visibility: LearningListVisibility
+  is_imported: boolean
+  tunes: Piece[]
+  tuneCount: number
+  stylesPresent: string[]
+  source: LearningListSource
 }

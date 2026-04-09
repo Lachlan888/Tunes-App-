@@ -1,5 +1,5 @@
 import { normaliseTuneTitle } from "@/lib/normalise"
-import type { Piece } from "@/lib/types"
+import type { FilterableLearningList, Piece } from "@/lib/types"
 
 export type PieceSearchFilters = {
   q: string
@@ -12,6 +12,18 @@ export type PieceFilterOptions = {
   keys: string[]
   styles: string[]
   timeSignatures: string[]
+}
+
+export type ListSearchFilters = {
+  q: string
+  size: string
+  styles: string[]
+  source: string
+  visibility: string
+}
+
+export type ListFilterOptions = {
+  styles: string[]
 }
 
 export function normaliseForSearch(value: string | null | undefined) {
@@ -90,4 +102,56 @@ export function pieceMatchesFilters(piece: Piece, filters: PieceSearchFilters) {
       filters.timeSignatures.includes(piece.time_signature))
 
   return matchesSearch && matchesKey && matchesStyle && matchesTimeSignature
+}
+
+export function getListSizeBucketFromTuneCount(tuneCount: number) {
+  if (tuneCount >= 1 && tuneCount <= 10) return "1-10"
+  if (tuneCount >= 11 && tuneCount <= 25) return "11-25"
+  if (tuneCount >= 26 && tuneCount <= 50) return "26-50"
+  return "51-plus"
+}
+
+export function getListFilterOptions(
+  lists: FilterableLearningList[]
+): ListFilterOptions {
+  const styles = Array.from(
+    new Set(lists.flatMap((list) => list.stylesPresent))
+  ).sort()
+
+  return {
+    styles,
+  }
+}
+
+export function listMatchesFilters(
+  list: FilterableLearningList,
+  filters: ListSearchFilters
+) {
+  const hasSearch = filters.q.trim() !== ""
+
+  const matchesSearch =
+    !hasSearch ||
+    normaliseForSearch(list.name).includes(normaliseForSearch(filters.q))
+
+  const matchesSize =
+    filters.size === "" ||
+    getListSizeBucketFromTuneCount(list.tuneCount) === filters.size
+
+  const matchesStyle =
+    filters.styles.length === 0 ||
+    filters.styles.some((selectedStyle) => list.stylesPresent.includes(selectedStyle))
+
+  const matchesSource =
+    filters.source === "" || list.source === filters.source
+
+  const matchesVisibility =
+    filters.visibility === "" || list.visibility === filters.visibility
+
+  return (
+    matchesSearch &&
+    matchesSize &&
+    matchesStyle &&
+    matchesSource &&
+    matchesVisibility
+  )
 }

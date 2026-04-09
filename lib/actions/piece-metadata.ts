@@ -123,11 +123,11 @@ export async function updateMissingPieceDetails(formData: FormData) {
   }
 
   const rawKey = formData.get("key")?.toString().trim() || ""
-  const rawStyle = formData.get("style")?.toString().trim() || ""
   const rawTimeSignature =
     formData.get("time_signature")?.toString().trim() || ""
   const rawReferenceUrl =
     formData.get("reference_url")?.toString().trim() || ""
+  const rawStyleId = Number(formData.get("style_id"))
 
   const updates: {
     key?: string | null
@@ -146,8 +146,20 @@ export async function updateMissingPieceDetails(formData: FormData) {
     updates.key = normalised
   }
 
-  if (!existingPiece.style && rawStyle) {
-    updates.style = rawStyle
+  if (!existingPiece.style && Number.isInteger(rawStyleId) && rawStyleId > 0) {
+    const { data: styleRow, error: styleError } = await supabase
+      .from("styles")
+      .select("id, label")
+      .eq("id", rawStyleId)
+      .eq("is_active", true)
+      .maybeSingle()
+
+    if (styleError || !styleRow) {
+      console.error("Error loading style for canonical update:", styleError)
+      return
+    }
+
+    updates.style = styleRow.label
   }
 
   if (!existingPiece.time_signature && rawTimeSignature) {

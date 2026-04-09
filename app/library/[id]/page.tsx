@@ -8,6 +8,7 @@ import {
 import { addToLearningList } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
 import PieceCommentsSection from "@/components/PieceCommentsSection"
+import ReferenceMediaEmbed from "@/components/ReferenceMediaEmbed"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCanonicalDetailsCard from "@/components/TuneCanonicalDetailsCard"
 import TuneDetailActions from "@/components/TuneDetailActions"
@@ -50,6 +51,12 @@ type CommentAuthor = {
 type LearningListItemRow = {
   learning_list_id: number
   piece_id: number
+}
+
+type StyleOption = {
+  id: number
+  slug: string
+  label: string
 }
 
 export default async function PiecePage({ params }: PiecePageProps) {
@@ -119,6 +126,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
     userKnownPieceResult,
     learningListsResult,
     learningListItemsResult,
+    styleRowsResult,
   ] = await Promise.all([
     supabase
       .from("user_piece_metadata")
@@ -160,6 +168,11 @@ export default async function PiecePage({ params }: PiecePageProps) {
           .eq("piece_id", pieceId)
           .in("learning_list_id", ownedListIds)
       : Promise.resolve({ data: [], error: null }),
+    supabase
+      .from("styles")
+      .select("id, slug, label")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
   ])
 
   const typedPiece = piece as Piece
@@ -176,6 +189,8 @@ export default async function PiecePage({ params }: PiecePageProps) {
     (learningListsResult.data as LearningList[] | null) ?? []
   const typedLearningListItems =
     (learningListItemsResult.data as LearningListItemRow[] | null) ?? []
+  const styleOptions: StyleOption[] =
+    (styleRowsResult.data as StyleOption[] | null) ?? []
 
   const commentUserIds = Array.from(
     new Set(typedPieceComments.map((comment) => comment.user_id))
@@ -237,6 +252,13 @@ export default async function PiecePage({ params }: PiecePageProps) {
             </div>
           </section>
 
+          {typedPiece.reference_url && (
+            <ReferenceMediaEmbed
+              referenceUrl={typedPiece.reference_url}
+              title={typedPiece.title}
+            />
+          )}
+
           <TuneDetailActions
             piece={typedPiece}
             userPiece={typedUserPiece}
@@ -251,6 +273,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
           <TuneCanonicalDetailsCard
             piece={typedPiece}
             redirectTo={`/library/${pieceId}`}
+            styleOptions={styleOptions}
           />
         </div>
 

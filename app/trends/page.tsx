@@ -39,9 +39,9 @@ export default async function TrendsPage() {
           </div>
         ) : (
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {styleEntries.map((entry) => (
+            {styleEntries.map((entry, index) => (
               <li
-                key={entry.slug}
+                key={`${entry.slug}-${entry.styleName}-${index}`}
                 className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm"
               >
                 <div className="text-lg font-semibold">{entry.styleName}</div>

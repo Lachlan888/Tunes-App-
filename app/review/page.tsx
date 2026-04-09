@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
+import PracticeReferenceLink from "@/components/PracticeReferenceLink"
 import RemoveFromPracticeButton from "@/components/RemoveFromPracticeButton"
 import SubmitButton from "@/components/SubmitButton"
 import { createClient } from "@/lib/supabase/server"
@@ -178,17 +179,11 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                     {piece?.time_signature ?? "Unknown"}
                   </p>
 
-                  {piece?.reference_url && (
-                    <p className="mt-2">
-                      <a
-                        href={piece.reference_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-sm underline"
-                      >
-                        Reference
-                      </a>
-                    </p>
+                  {piece?.reference_url && piece?.title && (
+                    <PracticeReferenceLink
+                      referenceUrl={piece.reference_url}
+                      title={piece.title}
+                    />
                   )}
 
                   <p className="mt-2 text-sm text-gray-600">
