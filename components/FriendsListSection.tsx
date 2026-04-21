@@ -48,27 +48,41 @@ export default function FriendsListSection({
         <p className="text-sm text-gray-600">No friends yet.</p>
       ) : (
         <div className="flex flex-wrap gap-3">
-          {visibleFriends.map((friend) => (
-            <div
-              key={friend.connection_id}
-              className="min-w-[220px] flex-1 rounded border p-3"
-            >
-              <p className="font-medium">
-                {friend.display_name || friend.username || "Unnamed user"}
-              </p>
+          {visibleFriends.map((friend) => {
+            const label =
+              friend.display_name || friend.username || "Unnamed user"
 
-              {friend.username && (
-                <p className="mt-1 text-sm text-gray-600">
-                  <Link
-                    href={`/users/${friend.username}`}
-                    className="underline"
-                  >
-                    @{friend.username}
-                  </Link>
+            return (
+              <div
+                key={friend.connection_id}
+                className="min-w-[220px] flex-1 rounded border p-3"
+              >
+                <p className="font-medium">
+                  {friend.username ? (
+                    <Link
+                      href={`/users/${friend.username}`}
+                      className="underline hover:no-underline"
+                    >
+                      {label}
+                    </Link>
+                  ) : (
+                    label
+                  )}
                 </p>
-              )}
-            </div>
-          ))}
+
+                {friend.username && (
+                  <p className="mt-1 text-sm text-gray-600">
+                    <Link
+                      href={`/users/${friend.username}`}
+                      className="underline hover:no-underline"
+                    >
+                      @{friend.username}
+                    </Link>
+                  </p>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
     </section>

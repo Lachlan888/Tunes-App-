@@ -1,3 +1,4 @@
+import Link from "next/link"
 import CompareSearchForm from "@/components/CompareSearchForm"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import SubmitButton from "@/components/SubmitButton"
@@ -75,6 +76,22 @@ function removeUserOnce(users: string[], userToRemove: string) {
   })
 }
 
+function renderProfileLink(
+  username: string | null,
+  label: string | null | undefined
+) {
+  const safeLabel = label || username || "Unnamed user"
+
+  if (!username) {
+    return <span>{safeLabel}</span>
+  }
+
+  return (
+    <Link href={`/users/${username}`} className="underline hover:no-underline">
+      {safeLabel}
+    </Link>
+  )
+}
 export default async function ComparePage({
   searchParams,
 }: ComparePageProps) {
@@ -129,7 +146,9 @@ export default async function ComparePage({
   const redirectTo = buildCompareHref(selectedUsers)
 
   const unresolvedUsers =
-    error === "multiple_matches" || error === "user_not_found" || error === "self_compare"
+    error === "multiple_matches" ||
+    error === "user_not_found" ||
+    error === "self_compare"
       ? [primarySearchValue]
       : []
 
@@ -167,7 +186,8 @@ export default async function ComparePage({
         <section className="mb-8 rounded border p-4">
           <h2 className="text-xl font-semibold">Current group</h2>
           <p className="mt-1 text-sm text-gray-600">
-            You are always included. Add other players to find tunes common to the whole group.
+            You are always included. Add other players to find tunes common to
+            the whole group.
           </p>
 
           {selectedProfiles.length > 0 ? (
@@ -184,9 +204,14 @@ export default async function ComparePage({
                     key={profile.id}
                     className="flex items-center gap-2 rounded-full border px-3 py-2 text-sm"
                   >
-                    <span>{name}</span>
+                    <span>{renderProfileLink(profile.username, name)}</span>
                     {profile.username && (
-                      <span className="text-gray-500">@{profile.username}</span>
+                      <Link
+                        href={`/users/${profile.username}`}
+                        className="text-gray-500 underline hover:no-underline"
+                      >
+                        @{profile.username}
+                      </Link>
                     )}
                     {profile.username && (
                       <PendingLinkButton
@@ -266,9 +291,19 @@ export default async function ComparePage({
                   className="rounded border border-gray-200 p-4"
                 >
                   <p className="font-medium">
-                    {friend.display_name || friend.username}
+                    {renderProfileLink(
+                      friend.username,
+                      friend.display_name || friend.username
+                    )}
                   </p>
-                  <p className="mt-1 text-sm text-gray-600">@{friend.username}</p>
+                  <p className="mt-1 text-sm text-gray-600">
+                    <Link
+                      href={`/users/${friend.username}`}
+                      className="underline hover:no-underline"
+                    >
+                      @{friend.username}
+                    </Link>
+                  </p>
 
                   <div className="mt-3">
                     <PendingLinkButton
@@ -317,6 +352,9 @@ export default async function ComparePage({
                 profile.username ?? "",
               ].filter(Boolean)
 
+              const label =
+                profile.display_name || profile.username || "Unnamed user"
+
               return (
                 <div
                   key={profile.id}
@@ -324,10 +362,17 @@ export default async function ComparePage({
                 >
                   <div>
                     <p className="font-medium">
-                      {profile.display_name || profile.username || "Unnamed user"}
+                      {renderProfileLink(profile.username, label)}
                     </p>
                     {profile.username && (
-                      <p className="text-sm text-gray-600">@{profile.username}</p>
+                      <p className="text-sm text-gray-600">
+                        <Link
+                          href={`/users/${profile.username}`}
+                          className="underline hover:no-underline"
+                        >
+                          @{profile.username}
+                        </Link>
+                      </p>
                     )}
                   </div>
 
@@ -384,6 +429,9 @@ export default async function ComparePage({
                 profile.username ?? "",
               ].filter(Boolean)
 
+              const label =
+                profile.display_name || profile.username || "Unnamed user"
+
               return (
                 <div
                   key={profile.id}
@@ -391,10 +439,17 @@ export default async function ComparePage({
                 >
                   <div>
                     <p className="font-medium">
-                      {profile.display_name || profile.username || "Unnamed user"}
+                      {renderProfileLink(profile.username, label)}
                     </p>
                     {profile.username && (
-                      <p className="text-sm text-gray-600">@{profile.username}</p>
+                      <p className="text-sm text-gray-600">
+                        <Link
+                          href={`/users/${profile.username}`}
+                          className="underline hover:no-underline"
+                        >
+                          @{profile.username}
+                        </Link>
+                      </p>
                     )}
                   </div>
 
@@ -444,10 +499,18 @@ export default async function ComparePage({
           <div className="mt-4 flex items-center justify-between rounded border p-4">
             <div>
               <p className="font-medium">
-                {matchedProfile.display_name || matchedProfile.username}
+                {renderProfileLink(
+                  matchedProfile.username,
+                  matchedProfile.display_name || matchedProfile.username
+                )}
               </p>
               <p className="mt-1 text-sm text-gray-600">
-                @{matchedProfile.username}
+                <Link
+                  href={`/users/${matchedProfile.username}`}
+                  className="underline hover:no-underline"
+                >
+                  @{matchedProfile.username}
+                </Link>
               </p>
             </div>
 
@@ -481,14 +544,41 @@ export default async function ComparePage({
 
             {selectedProfiles.length === 1 ? (
               <p className="mt-1 text-sm text-gray-600">
-                Username: @{selectedProfiles[0]?.username}
+                User:{" "}
+                <Link
+                  href={`/users/${selectedProfiles[0]?.username}`}
+                  className="underline hover:no-underline"
+                >
+                  {selectedProfiles[0]?.display_name ||
+                    selectedProfiles[0]?.username}
+                </Link>{" "}
+                (
+                <Link
+                  href={`/users/${selectedProfiles[0]?.username}`}
+                  className="underline hover:no-underline"
+                >
+                  @{selectedProfiles[0]?.username}
+                </Link>
+                )
               </p>
             ) : (
               <p className="mt-1 text-sm text-gray-600">
                 Group: you,{" "}
-                {selectedProfiles
-                  .map((profile) => profile.display_name || profile.username)
-                  .join(", ")}
+                {selectedProfiles.map((profile, index) => (
+                  <span key={profile.id}>
+                    {index > 0 ? ", " : ""}
+                    {profile.username ? (
+                      <Link
+                        href={`/users/${profile.username}`}
+                        className="underline hover:no-underline"
+                      >
+                        {profile.display_name || profile.username}
+                      </Link>
+                    ) : (
+                      profile.display_name || profile.username
+                    )}
+                  </span>
+                ))}
               </p>
             )}
 

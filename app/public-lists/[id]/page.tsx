@@ -43,14 +43,28 @@ type PublicListDetailPageProps = {
   }>
 }
 
-function formatOwnerLabel(owner: ProfileRow | null) {
-  if (!owner) return "Unknown user"
-  if (owner.display_name && owner.username) {
-    return `${owner.display_name} (@${owner.username})`
+function renderOwnerLabel(owner: ProfileRow | null) {
+  if (!owner) {
+    return <span>Unknown user</span>
   }
-  if (owner.display_name) return owner.display_name
-  if (owner.username) return `@${owner.username}`
-  return "Unknown user"
+
+  if (owner.username) {
+    return (
+      <Link
+        href={`/users/${owner.username}`}
+        className="underline hover:no-underline"
+      >
+        {owner.display_name || owner.username}
+        {owner.display_name ? ` (@${owner.username})` : ""}
+      </Link>
+    )
+  }
+
+  if (owner.display_name) {
+    return <span>{owner.display_name}</span>
+  }
+
+  return <span>Unknown user</span>
 }
 
 export default async function PublicListDetailPage({
@@ -219,8 +233,10 @@ export default async function PublicListDetailPage({
         <h1 className="mb-2 text-2xl font-bold">{typedList.name}</h1>
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
-          <span>By {formatOwnerLabel(owner)}</span>
-          <span>{typedItems.length} tune{typedItems.length === 1 ? "" : "s"}</span>
+          <span>By {renderOwnerLabel(owner)}</span>
+          <span>
+            {typedItems.length} tune{typedItems.length === 1 ? "" : "s"}
+          </span>
           {isViewingOwnPublicList && (
             <span className="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
               Your public list

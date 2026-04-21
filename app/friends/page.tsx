@@ -1,3 +1,4 @@
+import Link from "next/link"
 import FriendSearchForm from "@/components/FriendSearchForm"
 import FriendsListSection from "@/components/FriendsListSection"
 import RecentFriendActivitySection from "@/components/RecentFriendActivitySection"
@@ -15,6 +16,20 @@ type FriendsPageProps = {
 
 function getSingleValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? "" : value ?? ""
+}
+
+function renderUserLink(username: string | null, displayName: string | null) {
+  const label = displayName || username || "Unnamed user"
+
+  if (!username) {
+    return <span>{label}</span>
+  }
+
+  return (
+    <Link href={`/users/${username}`} className="underline hover:no-underline">
+      {label}
+    </Link>
+  )
 }
 
 export default async function FriendsPage({ searchParams }: FriendsPageProps) {
@@ -118,10 +133,17 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               >
                 <div>
                   <p className="font-medium">
-                    {match.display_name || match.username || "Unnamed user"}
+                    {renderUserLink(match.username, match.display_name)}
                   </p>
                   {match.username && (
-                    <p className="text-sm text-gray-600">@{match.username}</p>
+                    <p className="text-sm text-gray-600">
+                      <Link
+                        href={`/users/${match.username}`}
+                        className="underline hover:no-underline"
+                      >
+                        @{match.username}
+                      </Link>
+                    </p>
                   )}
                 </div>
 
@@ -158,10 +180,17 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               >
                 <div>
                   <p className="font-medium">
-                    {request.display_name || request.username || "Unnamed user"}
+                    {renderUserLink(request.username, request.display_name)}
                   </p>
                   {request.username && (
-                    <p className="text-sm text-gray-600">@{request.username}</p>
+                    <p className="text-sm text-gray-600">
+                      <Link
+                        href={`/users/${request.username}`}
+                        className="underline hover:no-underline"
+                      >
+                        @{request.username}
+                      </Link>
+                    </p>
                   )}
                 </div>
 
