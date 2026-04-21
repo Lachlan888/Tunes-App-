@@ -27,14 +27,61 @@ function toArray(value: string | string[] | undefined) {
   return Array.isArray(value) ? value.filter(Boolean) : [value]
 }
 
+function buildCompareHref(
+  users: string[],
+  extraParams?: {
+    q?: string
+    key?: string[]
+    style?: string[]
+    time_signature?: string[]
+  }
+) {
+  const params = new URLSearchParams()
+
+  users.forEach((user) => {
+    params.append("user", user)
+  })
+
+  if (extraParams?.q) {
+    params.set("q", extraParams.q)
+  }
+
+  extraParams?.key?.forEach((value) => {
+    params.append("key", value)
+  })
+
+  extraParams?.style?.forEach((value) => {
+    params.append("style", value)
+  })
+
+  extraParams?.time_signature?.forEach((value) => {
+    params.append("time_signature", value)
+  })
+
+  const query = params.toString()
+  return query ? `/compare?${query}` : "/compare"
+}
+
+function removeUserOnce(users: string[], userToRemove: string) {
+  let removed = false
+
+  return users.filter((user) => {
+    if (!removed && user.toLowerCase() === userToRemove.toLowerCase()) {
+      removed = true
+      return false
+    }
+
+    return true
+  })
+}
+
 export default async function ComparePage({
   searchParams,
 }: ComparePageProps) {
   const resolvedSearchParams = await searchParams
 
-  const searchValue = Array.isArray(resolvedSearchParams?.user)
-    ? resolvedSearchParams?.user[0] ?? ""
-    : resolvedSearchParams?.user ?? ""
+  const selectedUsers = toArray(resolvedSearchParams?.user)
+  const primarySearchValue = selectedUsers[selectedUsers.length - 1] ?? ""
 
   const titleQuery = Array.isArray(resolvedSearchParams?.q)
     ? resolvedSearchParams?.q[0] ?? ""
@@ -55,7 +102,8 @@ export default async function ComparePage({
     isAcceptedFriend,
     canCompare,
     error,
-  } = await loadCompareData(searchValue)
+    selectedProfiles,
+  } = await loadCompareData(selectedUsers)
 
   const {
     keys: availableKeys,
@@ -78,18 +126,92 @@ export default async function ComparePage({
     selectedStyles.length > 0 ||
     selectedTimeSignatures.length > 0
 
-  const redirectTo = searchValue
-    ? `/compare?user=${encodeURIComponent(searchValue)}`
-    : "/compare"
+  const redirectTo = buildCompareHref(selectedUsers)
+
+  const unresolvedUsers =
+    error === "multiple_matches" || error === "user_not_found" || error === "self_compare"
+      ? [primarySearchValue]
+      : []
+
+  const stableSelectedUsernames = [
+    ...selectedProfiles
+      .map((profile) => profile.username)
+      .filter((username): username is string => Boolean(username)),
+    ...unresolvedUsers.filter(Boolean),
+  ]
+
+  const compareSummaryNames = selectedProfiles.map(
+    (profile) => profile.display_name || profile.username
+  )
+
+  const compareHeading =
+    compareSummaryNames.length === 0
+      ? "Common tunes"
+      : compareSummaryNames.length === 1
+        ? `In common with ${compareSummaryNames[0]}`
+        : `Common to your group (${compareSummaryNames.length + 1} players including you)`
+
+  const filterPreservedUsers =
+    stableSelectedUsernames.length > 0 ? stableSelectedUsernames : selectedUsers
 
   return (
     <main className="p-8">
       <h1 className="mb-2 text-3xl font-bold">Compare Tunes</h1>
       <p className="mb-6 text-gray-600">
-        Search for another user, then compare the tunes you have in common.
+        Build a group, then see the tunes common to everyone in it.
       </p>
 
-      <CompareSearchForm initialQuery={searchValue} />
+      <CompareSearchForm initialQuery="" selectedUsers={filterPreservedUsers} />
+
+      {filterPreservedUsers.length > 0 && (
+        <section className="mb-8 rounded border p-4">
+          <h2 className="text-xl font-semibold">Current group</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            You are always included. Add other players to find tunes common to the whole group.
+          </p>
+
+          {selectedProfiles.length > 0 ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {selectedProfiles.map((profile) => {
+                const name = profile.display_name || profile.username
+                const nextUsers = removeUserOnce(
+                  filterPreservedUsers,
+                  profile.username ?? ""
+                )
+
+                return (
+                  <div
+                    key={profile.id}
+                    className="flex items-center gap-2 rounded-full border px-3 py-2 text-sm"
+                  >
+                    <span>{name}</span>
+                    {profile.username && (
+                      <span className="text-gray-500">@{profile.username}</span>
+                    )}
+                    {profile.username && (
+                      <PendingLinkButton
+                        href={buildCompareHref(nextUsers, {
+                          q: titleQuery,
+                          key: selectedKeys,
+                          style: selectedStyles,
+                          time_signature: selectedTimeSignatures,
+                        })}
+                        label="Remove"
+                        pendingLabel="Removing..."
+                        className="rounded border px-2 py-1 text-xs"
+                      />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-gray-600">
+              No confirmed users in the group yet.
+            </p>
+          )}
+        </section>
+      )}
 
       {friendRequestStatus === "sent" && (
         <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
@@ -123,51 +245,61 @@ export default async function ComparePage({
 
       {compareSuggestions.length > 0 && (
         <section className="mb-8 rounded border p-4">
-          <h2 className="text-xl font-semibold">Compare with a friend</h2>
+          <h2 className="text-xl font-semibold">Add a friend</h2>
           <p className="mt-1 text-sm text-gray-600">
             Quick suggestions from your accepted friends.
           </p>
 
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {compareSuggestions.map((friend) => (
-              <div
-                key={friend.user_id}
-                className="rounded border border-gray-200 p-4"
-              >
-                <p className="font-medium">
-                  {friend.display_name || friend.username}
-                </p>
-                <p className="mt-1 text-sm text-gray-600">@{friend.username}</p>
+            {compareSuggestions.map((friend) => {
+              const alreadySelected = filterPreservedUsers.some(
+                (user) => user.toLowerCase() === friend.username.toLowerCase()
+              )
 
-                <div className="mt-3">
-                  <PendingLinkButton
-                    href={`/compare?user=${encodeURIComponent(friend.username)}`}
-                    label="Compare"
-                    pendingLabel="Loading..."
-                    className="rounded bg-black px-4 py-2 text-sm text-white"
-                  />
+              const nextUsers = alreadySelected
+                ? filterPreservedUsers
+                : [...filterPreservedUsers, friend.username]
+
+              return (
+                <div
+                  key={friend.user_id}
+                  className="rounded border border-gray-200 p-4"
+                >
+                  <p className="font-medium">
+                    {friend.display_name || friend.username}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-600">@{friend.username}</p>
+
+                  <div className="mt-3">
+                    <PendingLinkButton
+                      href={buildCompareHref(nextUsers)}
+                      label={alreadySelected ? "Already added" : "Add to group"}
+                      pendingLabel="Loading..."
+                      className="rounded bg-black px-4 py-2 text-sm text-white"
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </section>
       )}
 
       {error === "missing_search" && (
         <div className="mb-6 rounded border border-gray-300 bg-gray-50 p-3 text-sm text-gray-700">
-          Enter a username or display name to compare.
+          Add at least one username or display name to start comparing.
         </div>
       )}
 
       {error === "user_not_found" && (
         <div className="mb-6 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700">
-          No user found for “{searchValue}”.
+          No user found for “{primarySearchValue}”.
         </div>
       )}
 
       {error === "self_compare" && (
         <div className="mb-6 rounded border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-800">
-          You cannot compare with your own profile.
+          You cannot add your own profile to the compare group.
         </div>
       )}
 
@@ -175,58 +307,65 @@ export default async function ComparePage({
         <section className="mb-8 rounded border p-4">
           <h2 className="text-xl font-semibold">Choose a user</h2>
           <p className="mt-1 text-sm text-gray-600">
-            More than one user matched “{searchValue}”.
+            More than one user matched “{primarySearchValue}”.
           </p>
 
           <div className="mt-4 space-y-3">
-            {matchingProfiles.map((profile) => (
-              <div
-                key={profile.id}
-                className="flex items-center justify-between rounded border p-3"
-              >
-                <div>
-                  <p className="font-medium">
-                    {profile.display_name || profile.username || "Unnamed user"}
-                  </p>
-                  {profile.username && (
-                    <p className="text-sm text-gray-600">@{profile.username}</p>
-                  )}
-                </div>
+            {matchingProfiles.map((profile) => {
+              const nextUsers = [
+                ...removeUserOnce(filterPreservedUsers, primarySearchValue),
+                profile.username ?? "",
+              ].filter(Boolean)
 
-                <div className="flex gap-2">
-                  {profile.username ? (
-                    <PendingLinkButton
-                      href={`/compare?user=${encodeURIComponent(profile.username)}`}
-                      label="Compare"
-                      pendingLabel="Loading..."
-                      className="rounded bg-black px-3 py-2 text-sm text-white"
-                    />
-                  ) : (
-                    <span className="text-sm text-gray-500">
-                      No username available
-                    </span>
-                  )}
+              return (
+                <div
+                  key={profile.id}
+                  className="flex items-center justify-between rounded border p-3"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {profile.display_name || profile.username || "Unnamed user"}
+                    </p>
+                    {profile.username && (
+                      <p className="text-sm text-gray-600">@{profile.username}</p>
+                    )}
+                  </div>
 
-                  <form action={sendFriendRequest}>
-                    <input
-                      type="hidden"
-                      name="addressee_id"
-                      value={profile.id}
-                    />
-                    <input
-                      type="hidden"
-                      name="redirect_to"
-                      value={redirectTo}
-                    />
-                    <SubmitButton
-                      label="Send request"
-                      pendingLabel="Sending..."
-                      className="rounded border px-3 py-2 text-sm"
-                    />
-                  </form>
+                  <div className="flex gap-2">
+                    {profile.username ? (
+                      <PendingLinkButton
+                        href={buildCompareHref(nextUsers)}
+                        label="Add to group"
+                        pendingLabel="Loading..."
+                        className="rounded bg-black px-3 py-2 text-sm text-white"
+                      />
+                    ) : (
+                      <span className="text-sm text-gray-500">
+                        No username available
+                      </span>
+                    )}
+
+                    <form action={sendFriendRequest}>
+                      <input
+                        type="hidden"
+                        name="addressee_id"
+                        value={profile.id}
+                      />
+                      <input
+                        type="hidden"
+                        name="redirect_to"
+                        value={redirectTo}
+                      />
+                      <SubmitButton
+                        label="Send request"
+                        pendingLabel="Sending..."
+                        className="rounded border px-3 py-2 text-sm"
+                      />
+                    </form>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </section>
       )}
@@ -235,58 +374,65 @@ export default async function ComparePage({
         <section className="mb-8 rounded border p-4">
           <h2 className="text-xl font-semibold">Choose a user</h2>
           <p className="mt-1 text-sm text-gray-600">
-            Select the person you want to compare with.
+            Select the person you want to add to this compare group.
           </p>
 
           <div className="mt-4 space-y-3">
-            {searchMatches.map((profile) => (
-              <div
-                key={profile.id}
-                className="flex items-center justify-between rounded border p-3"
-              >
-                <div>
-                  <p className="font-medium">
-                    {profile.display_name || profile.username || "Unnamed user"}
-                  </p>
-                  {profile.username && (
-                    <p className="text-sm text-gray-600">@{profile.username}</p>
-                  )}
-                </div>
+            {searchMatches.map((profile) => {
+              const nextUsers = [
+                ...removeUserOnce(filterPreservedUsers, primarySearchValue),
+                profile.username ?? "",
+              ].filter(Boolean)
 
-                <div className="flex gap-2">
-                  {profile.username ? (
-                    <PendingLinkButton
-                      href={`/compare?user=${encodeURIComponent(profile.username)}`}
-                      label="Compare"
-                      pendingLabel="Loading..."
-                      className="rounded bg-black px-3 py-2 text-sm text-white"
-                    />
-                  ) : (
-                    <span className="text-sm text-gray-500">
-                      No username available
-                    </span>
-                  )}
+              return (
+                <div
+                  key={profile.id}
+                  className="flex items-center justify-between rounded border p-3"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {profile.display_name || profile.username || "Unnamed user"}
+                    </p>
+                    {profile.username && (
+                      <p className="text-sm text-gray-600">@{profile.username}</p>
+                    )}
+                  </div>
 
-                  <form action={sendFriendRequest}>
-                    <input
-                      type="hidden"
-                      name="addressee_id"
-                      value={profile.id}
-                    />
-                    <input
-                      type="hidden"
-                      name="redirect_to"
-                      value={redirectTo}
-                    />
-                    <SubmitButton
-                      label="Send request"
-                      pendingLabel="Sending..."
-                      className="rounded border px-3 py-2 text-sm"
-                    />
-                  </form>
+                  <div className="flex gap-2">
+                    {profile.username ? (
+                      <PendingLinkButton
+                        href={buildCompareHref(nextUsers)}
+                        label="Add to group"
+                        pendingLabel="Loading..."
+                        className="rounded bg-black px-3 py-2 text-sm text-white"
+                      />
+                    ) : (
+                      <span className="text-sm text-gray-500">
+                        No username available
+                      </span>
+                    )}
+
+                    <form action={sendFriendRequest}>
+                      <input
+                        type="hidden"
+                        name="addressee_id"
+                        value={profile.id}
+                      />
+                      <input
+                        type="hidden"
+                        name="redirect_to"
+                        value={redirectTo}
+                      />
+                      <SubmitButton
+                        label="Send request"
+                        pendingLabel="Sending..."
+                        className="rounded border px-3 py-2 text-sm"
+                      />
+                    </form>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </section>
       )}
@@ -328,22 +474,31 @@ export default async function ComparePage({
         </section>
       )}
 
-      {matchedProfile && error === null && canCompare && (
+      {selectedProfiles.length > 0 && error === null && canCompare && (
         <>
           <div className="mb-6 rounded border p-4">
-            <h2 className="text-xl font-semibold">
-              In common with{" "}
-              {matchedProfile.display_name || matchedProfile.username}
-            </h2>
-            <p className="mt-1 text-sm text-gray-600">
-              Username: @{matchedProfile.username}
-            </p>
-            {!isAcceptedFriend && (
+            <h2 className="text-xl font-semibold">{compareHeading}</h2>
+
+            {selectedProfiles.length === 1 ? (
+              <p className="mt-1 text-sm text-gray-600">
+                Username: @{selectedProfiles[0]?.username}
+              </p>
+            ) : (
+              <p className="mt-1 text-sm text-gray-600">
+                Group: you,{" "}
+                {selectedProfiles
+                  .map((profile) => profile.display_name || profile.username)
+                  .join(", ")}
+              </p>
+            )}
+
+            {selectedProfiles.length === 1 && !isAcceptedFriend && (
               <p className="mt-2 text-sm text-gray-600">
                 Compare is public for this user, so you do not need to be
                 friends to view overlap.
               </p>
             )}
+
             <p className="mt-2 text-sm text-gray-700">
               {mutualPieces.length} mutual tune
               {mutualPieces.length === 1 ? "" : "s"} found.
@@ -362,7 +517,7 @@ export default async function ComparePage({
             availableStyles={availableStyles}
             availableTimeSignatures={availableTimeSignatures}
             hasActiveFilters={hasActiveFilters}
-            preservedParams={{ user: searchValue }}
+            preservedParams={{ user: filterPreservedUsers }}
           />
 
           {filteredPieces.length === 0 ? (

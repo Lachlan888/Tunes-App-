@@ -43,6 +43,7 @@ type CompareLoaderResult = {
   isAcceptedFriend: boolean
   canCompare: boolean
   error: CompareError
+  selectedProfiles: ProfileSearchRow[]
 }
 
 async function loadCompareSuggestions(
@@ -160,8 +161,112 @@ function pickSingleStrongMatch(
   return null
 }
 
-export async function loadCompareData(
+async function resolveSelectedProfile(
+  currentUserId: string,
   rawSearchValue: string
+): Promise<{
+  matchedProfile: ProfileSearchRow | null
+  matchingProfiles: ProfileSearchRow[]
+  searchMatches: RankedProfileMatch[]
+  error: CompareError
+  searchValue: string
+}> {
+  const searchValue = rawSearchValue.trim()
+
+  if (!searchValue) {
+    return {
+      matchedProfile: null,
+      matchingProfiles: [],
+      searchMatches: [],
+      error: "missing_search",
+      searchValue: "",
+    }
+  }
+
+  const searchMatches = await searchProfilesForSelection({
+    query: searchValue,
+    currentUserId,
+    limit: 10,
+    requireCompareDiscoverability: true,
+  })
+
+  if (searchMatches.length === 0) {
+    return {
+      matchedProfile: null,
+      matchingProfiles: [],
+      searchMatches: [],
+      error: "user_not_found",
+      searchValue,
+    }
+  }
+
+  const exactUsernameMatch = pickExactUsernameMatch(searchMatches, searchValue)
+  const singleStrongMatch = pickSingleStrongMatch(searchMatches, searchValue)
+  const matchedProfile = exactUsernameMatch ?? singleStrongMatch ?? null
+
+  if (!matchedProfile) {
+    return {
+      matchedProfile: null,
+      matchingProfiles: searchMatches,
+      searchMatches,
+      error: "multiple_matches",
+      searchValue,
+    }
+  }
+
+  if (matchedProfile.id === currentUserId) {
+    return {
+      matchedProfile,
+      matchingProfiles: [],
+      searchMatches,
+      error: "self_compare",
+      searchValue,
+    }
+  }
+
+  return {
+    matchedProfile,
+    matchingProfiles: [],
+    searchMatches,
+    error: null,
+    searchValue,
+  }
+}
+
+async function loadUserRepertoirePieceIds(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string
+): Promise<Set<number>> {
+  const { data: practiceRows, error: practiceError } = await supabase
+    .from("user_pieces")
+    .select("piece_id")
+    .eq("user_id", userId)
+
+  if (practiceError) {
+    throw new Error(practiceError.message)
+  }
+
+  const { data: knownRows, error: knownError } = await supabase
+    .from("user_known_pieces")
+    .select("piece_id")
+    .eq("user_id", userId)
+
+  if (knownError) {
+    throw new Error(knownError.message)
+  }
+
+  return new Set<number>([
+    ...((practiceRows ?? []) as PieceIdRow[]).map((row) => row.piece_id),
+    ...((knownRows ?? []) as PieceIdRow[]).map((row) => row.piece_id),
+  ])
+}
+
+function intersectSets(base: Set<number>, other: Set<number>) {
+  return new Set<number>(Array.from(base).filter((pieceId) => other.has(pieceId)))
+}
+
+export async function loadCompareData(
+  rawSearchValues: string[]
 ): Promise<CompareLoaderResult> {
   const supabase = await createClient()
 
@@ -174,9 +279,16 @@ export async function loadCompareData(
   }
 
   const compareSuggestions = await loadCompareSuggestions(supabase, user.id)
-  const searchValue = rawSearchValue.trim()
 
-  if (!searchValue) {
+  const cleanedSearchValues = Array.from(
+    new Set(
+      rawSearchValues
+        .map((value) => value.trim())
+        .filter(Boolean)
+    )
+  )
+
+  if (cleanedSearchValues.length === 0) {
     return {
       currentUserId: user.id,
       searchValue: "",
@@ -188,20 +300,43 @@ export async function loadCompareData(
       isAcceptedFriend: false,
       canCompare: false,
       error: "missing_search",
+      selectedProfiles: [],
     }
   }
 
-  const searchMatches = await searchProfilesForSelection({
-    query: searchValue,
-    currentUserId: user.id,
-    limit: 10,
-    requireCompareDiscoverability: true,
-  })
+  const resolvedProfiles: ProfileSearchRow[] = []
 
-  if (searchMatches.length === 0) {
+  for (const rawSearchValue of cleanedSearchValues) {
+    const resolution = await resolveSelectedProfile(user.id, rawSearchValue)
+
+    if (resolution.error) {
+      return {
+        currentUserId: user.id,
+        searchValue: resolution.searchValue,
+        matchedProfile: resolution.matchedProfile,
+        matchingProfiles: resolution.matchingProfiles,
+        searchMatches: resolution.searchMatches,
+        mutualPieces: [],
+        compareSuggestions,
+        isAcceptedFriend: false,
+        canCompare: false,
+        error: resolution.error,
+        selectedProfiles: resolvedProfiles,
+      }
+    }
+
+    if (
+      resolution.matchedProfile &&
+      !resolvedProfiles.some((profile) => profile.id === resolution.matchedProfile?.id)
+    ) {
+      resolvedProfiles.push(resolution.matchedProfile)
+    }
+  }
+
+  if (resolvedProfiles.length === 0) {
     return {
       currentUserId: user.id,
-      searchValue,
+      searchValue: "",
       matchedProfile: null,
       matchingProfiles: [],
       searchMatches: [],
@@ -209,131 +344,67 @@ export async function loadCompareData(
       compareSuggestions,
       isAcceptedFriend: false,
       canCompare: false,
-      error: "user_not_found",
+      error: "missing_search",
+      selectedProfiles: [],
     }
   }
 
-  const exactUsernameMatch = pickExactUsernameMatch(searchMatches, searchValue)
-  const singleStrongMatch = pickSingleStrongMatch(searchMatches, searchValue)
-  const matchedProfile = exactUsernameMatch ?? singleStrongMatch ?? null
+  let blockedProfile: ProfileSearchRow | null = null
+  let allAccepted = true
 
-  if (!matchedProfile) {
+  for (const profile of resolvedProfiles) {
+    const isAcceptedFriend = await getIsAcceptedFriend(supabase, user.id, profile.id)
+    const profileCanCompare = !profile.compare_requires_friend || isAcceptedFriend
+
+    if (!profileCanCompare) {
+      blockedProfile = profile
+      allAccepted = false
+      break
+    }
+
+    if (!isAcceptedFriend) {
+      allAccepted = false
+    }
+  }
+
+  if (blockedProfile) {
     return {
       currentUserId: user.id,
-      searchValue,
-      matchedProfile: null,
-      matchingProfiles: searchMatches,
-      searchMatches,
+      searchValue: blockedProfile.username ?? blockedProfile.display_name ?? "",
+      matchedProfile: blockedProfile,
+      matchingProfiles: [],
+      searchMatches: [],
       mutualPieces: [],
       compareSuggestions,
       isAcceptedFriend: false,
       canCompare: false,
-      error: "multiple_matches",
-    }
-  }
-
-  if (matchedProfile.id === user.id) {
-    return {
-      currentUserId: user.id,
-      searchValue,
-      matchedProfile,
-      matchingProfiles: [],
-      searchMatches,
-      mutualPieces: [],
-      compareSuggestions,
-      isAcceptedFriend: false,
-      canCompare: false,
-      error: "self_compare",
-    }
-  }
-
-  const isAcceptedFriend = await getIsAcceptedFriend(
-    supabase,
-    user.id,
-    matchedProfile.id
-  )
-
-  const canCompare =
-    !matchedProfile.compare_requires_friend || isAcceptedFriend
-
-  if (!canCompare) {
-    return {
-      currentUserId: user.id,
-      searchValue,
-      matchedProfile,
-      matchingProfiles: [],
-      searchMatches,
-      mutualPieces: [],
-      compareSuggestions,
-      isAcceptedFriend,
-      canCompare,
       error: null,
+      selectedProfiles: resolvedProfiles,
     }
   }
 
-  const { data: currentPracticeRows, error: currentPracticeError } =
-    await supabase
-      .from("user_pieces")
-      .select("piece_id")
-      .eq("user_id", user.id)
+  const currentUserPieceIds = await loadUserRepertoirePieceIds(supabase, user.id)
 
-  if (currentPracticeError) {
-    throw new Error(currentPracticeError.message)
+  let mutualPieceIds = new Set<number>(currentUserPieceIds)
+
+  for (const profile of resolvedProfiles) {
+    const otherUserPieceIds = await loadUserRepertoirePieceIds(supabase, profile.id)
+    mutualPieceIds = intersectSets(mutualPieceIds, otherUserPieceIds)
   }
 
-  const { data: currentKnownRows, error: currentKnownError } = await supabase
-    .from("user_known_pieces")
-    .select("piece_id")
-    .eq("user_id", user.id)
-
-  if (currentKnownError) {
-    throw new Error(currentKnownError.message)
-  }
-
-  const { data: otherPracticeRows, error: otherPracticeError } = await supabase
-    .from("user_pieces")
-    .select("piece_id")
-    .eq("user_id", matchedProfile.id)
-
-  if (otherPracticeError) {
-    throw new Error(otherPracticeError.message)
-  }
-
-  const { data: otherKnownRows, error: otherKnownError } = await supabase
-    .from("user_known_pieces")
-    .select("piece_id")
-    .eq("user_id", matchedProfile.id)
-
-  if (otherKnownError) {
-    throw new Error(otherKnownError.message)
-  }
-
-  const currentUserPieceIds = new Set<number>([
-    ...((currentPracticeRows ?? []) as PieceIdRow[]).map((row) => row.piece_id),
-    ...((currentKnownRows ?? []) as PieceIdRow[]).map((row) => row.piece_id),
-  ])
-
-  const otherUserPieceIds = new Set<number>([
-    ...((otherPracticeRows ?? []) as PieceIdRow[]).map((row) => row.piece_id),
-    ...((otherKnownRows ?? []) as PieceIdRow[]).map((row) => row.piece_id),
-  ])
-
-  const mutualPieceIds = Array.from(currentUserPieceIds).filter((pieceId) =>
-    otherUserPieceIds.has(pieceId)
-  )
-
-  if (mutualPieceIds.length === 0) {
+  if (mutualPieceIds.size === 0) {
     return {
       currentUserId: user.id,
-      searchValue,
-      matchedProfile,
+      searchValue: cleanedSearchValues[0] ?? "",
+      matchedProfile: resolvedProfiles[0] ?? null,
       matchingProfiles: [],
-      searchMatches,
+      searchMatches: [],
       mutualPieces: [],
       compareSuggestions,
-      isAcceptedFriend,
-      canCompare,
+      isAcceptedFriend: resolvedProfiles.length === 1 ? allAccepted : false,
+      canCompare: true,
       error: null,
+      selectedProfiles: resolvedProfiles,
     }
   }
 
@@ -355,7 +426,7 @@ export async function loadCompareData(
         )
       )
     `)
-    .in("id", mutualPieceIds)
+    .in("id", Array.from(mutualPieceIds))
     .order("title", { ascending: true })
 
   if (mutualPiecesError) {
@@ -364,14 +435,15 @@ export async function loadCompareData(
 
   return {
     currentUserId: user.id,
-    searchValue,
-    matchedProfile,
+    searchValue: cleanedSearchValues[0] ?? "",
+    matchedProfile: resolvedProfiles[0] ?? null,
     matchingProfiles: [],
-    searchMatches,
+    searchMatches: [],
     mutualPieces: (mutualPiecesRows ?? []) as Piece[],
     compareSuggestions,
-    isAcceptedFriend,
-    canCompare,
+    isAcceptedFriend: resolvedProfiles.length === 1 ? allAccepted : false,
+    canCompare: true,
     error: null,
+    selectedProfiles: resolvedProfiles,
   }
 }

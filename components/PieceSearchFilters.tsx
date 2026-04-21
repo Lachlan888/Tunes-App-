@@ -11,6 +11,8 @@ import {
   type FormEvent,
 } from "react"
 
+type PreservedParamValue = string | string[]
+
 type PieceSearchFiltersProps = {
   basePath: string
   searchLabel: string
@@ -29,12 +31,29 @@ type PieceSearchFiltersProps = {
   availableStyles: string[]
   availableTimeSignatures: string[]
   hasActiveFilters: boolean
-  preservedParams?: Record<string, string>
+  preservedParams?: Record<string, PreservedParamValue>
 }
 
 function toSafeArray(value: string[] | string | undefined) {
   if (!value) return []
   return Array.isArray(value) ? value : [value]
+}
+
+function appendPreservedParams(
+  params: URLSearchParams,
+  preservedParams: Record<string, PreservedParamValue>
+) {
+  for (const [key, value] of Object.entries(preservedParams)) {
+    params.delete(key)
+
+    if (Array.isArray(value)) {
+      value.filter(Boolean).forEach((item) => {
+        params.append(key, item)
+      })
+    } else if (value) {
+      params.set(key, value)
+    }
+  }
 }
 
 function formatFilterLabel(group: "key" | "style" | "time_signature") {
@@ -129,11 +148,7 @@ export default function PieceSearchFilters({
   function buildParamsFromCurrentSearch() {
     const params = new URLSearchParams()
 
-    for (const [key, value] of Object.entries(preservedParams)) {
-      if (value) {
-        params.set(key, value)
-      }
-    }
+    appendPreservedParams(params, preservedParams)
 
     const currentQuery = searchParams.get("q")
     if (currentQuery) {
@@ -158,11 +173,7 @@ export default function PieceSearchFilters({
   function buildClearFiltersHref() {
     const params = new URLSearchParams()
 
-    for (const [key, value] of Object.entries(preservedParams)) {
-      if (value) {
-        params.set(key, value)
-      }
-    }
+    appendPreservedParams(params, preservedParams)
 
     return params.toString() ? `${basePath}?${params.toString()}` : basePath
   }
@@ -193,11 +204,7 @@ export default function PieceSearchFilters({
 
     const params = new URLSearchParams()
 
-    for (const [key, value] of Object.entries(preservedParams)) {
-      if (value) {
-        params.set(key, value)
-      }
-    }
+    appendPreservedParams(params, preservedParams)
 
     const trimmedQuery = query.trim()
     if (trimmedQuery) {
@@ -240,11 +247,7 @@ export default function PieceSearchFilters({
   function handleClearAll() {
     const params = new URLSearchParams()
 
-    for (const [key, value] of Object.entries(preservedParams)) {
-      if (value) {
-        params.set(key, value)
-      }
-    }
+    appendPreservedParams(params, preservedParams)
 
     navigateWithParams(params)
     setIsPanelOpen(false)
@@ -325,8 +328,8 @@ export default function PieceSearchFilters({
               {isPending
                 ? "Updating..."
                 : activeFilterCount > 0
-                ? `Filters (${activeFilterCount})`
-                : "Filters"}
+                  ? `Filters (${activeFilterCount})`
+                  : "Filters"}
             </button>
 
             {hasActiveFilters && (

@@ -4,11 +4,13 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 
 type CompareSearchFormProps = {
-  initialQuery: string
+  initialQuery?: string
+  selectedUsers?: string[]
 }
 
 export default function CompareSearchForm({
-  initialQuery,
+  initialQuery = "",
+  selectedUsers = [],
 }: CompareSearchFormProps) {
   const router = useRouter()
   const [query, setQuery] = useState(initialQuery)
@@ -20,18 +22,35 @@ export default function CompareSearchForm({
     const trimmedQuery = query.trim()
 
     startTransition(() => {
-      if (trimmedQuery) {
-        router.push(`/compare?user=${encodeURIComponent(trimmedQuery)}`)
-      } else {
+      if (!trimmedQuery) {
         router.push("/compare")
+        return
       }
+
+      const existingUsers = selectedUsers.filter(Boolean)
+      const alreadySelected = existingUsers.some(
+        (user) => user.toLowerCase() === trimmedQuery.toLowerCase()
+      )
+
+      const nextUsers = alreadySelected
+        ? existingUsers
+        : [...existingUsers, trimmedQuery]
+
+      const params = new URLSearchParams()
+
+      nextUsers.forEach((user) => {
+        params.append("user", user)
+      })
+
+      router.push(`/compare?${params.toString()}`)
+      setQuery("")
     })
   }
 
   return (
     <form onSubmit={handleSubmit} className="mb-8 rounded border p-4">
       <label htmlFor="user" className="mb-2 block text-sm font-medium">
-        Username or display name
+        Add user to compare
       </label>
 
       <div className="flex gap-3">
@@ -48,7 +67,7 @@ export default function CompareSearchForm({
           disabled={isPending}
           className="rounded bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isPending ? "Searching..." : "Search"}
+          {isPending ? "Adding..." : "Add"}
         </button>
       </div>
     </form>
