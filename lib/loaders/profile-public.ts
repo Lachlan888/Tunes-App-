@@ -1,71 +1,11 @@
 import { createClient } from "@/lib/supabase/server"
-
-export type PublicProfileData = {
-  viewerId: string | null
-  isOwnProfile: boolean
-  isAcceptedFriend: boolean
-  hasPendingOutgoingRequest: boolean
-  hasPendingIncomingRequest: boolean
-  pendingIncomingConnectionId: number | null
-  canCompare: boolean
-  compareBlockedByFriendship: boolean
-  profile: {
-    id: string
-    username: string
-    display_name: string | null
-    bio: string | null
-    show_identity: boolean
-    show_instruments: boolean
-    show_public_lists_on_profile: boolean
-    show_repertoire_summary: boolean
-    show_comment_activity: boolean
-    show_compare_discoverability: boolean
-    compare_requires_friend: boolean
-  } | null
-  instruments: {
-    id: number
-    instrument_name: string
-    position: number | null
-  }[]
-  publicLists: {
-    id: number
-    name: string
-    description: string | null
-    visibility: string
-    tune_count: number
-  }[]
-  repertoireSummary: {
-    known_count: number
-    practice_count: number
-  } | null
-}
-
-type ProfileRow = {
-  id: string
-  username: string
-  display_name: string | null
-  bio: string | null
-  show_identity: boolean
-  show_instruments: boolean
-  show_public_lists_on_profile: boolean
-  show_repertoire_summary: boolean
-  show_comment_activity: boolean
-  show_compare_discoverability: boolean
-  compare_requires_friend: boolean
-}
-
-type InstrumentRow = {
-  id: number
-  instrument_name: string
-  position: number | null
-}
-
-type PublicListRow = {
-  id: number
-  name: string
-  description: string | null
-  visibility: string
-}
+import type {
+  Profile,
+  PublicProfileData,
+  PublicProfileList,
+  RepertoireSummary,
+  UserInstrument,
+} from "@/lib/types"
 
 type LearningListItemRow = {
   learning_list_id: number
@@ -131,55 +71,74 @@ export async function loadPublicProfileData(
     }
   }
 
-  const typedProfile = profile as ProfileRow
+  const typedProfile = profile as Profile
   const isOwnProfile = viewerId === typedProfile.id
 
-  const { data: instruments, error: instrumentsError } = await supabase
-    .from("user_instruments")
-    .select("id, instrument_name, position")
-    .eq("user_id", typedProfile.id)
-    .order("position", { ascending: true })
-    .order("id", { ascending: true })
+  let instruments: UserInstrument[] = []
+  if (typedProfile.show_instruments) {
+    const { data: instrumentRows, error: instrumentsError } = await supabase
+      .from("user_instruments")
+      .select("id, instrument_name, position")
+      .eq("user_id", typedProfile.id)
+      .order("position", { ascending: true })
+      .order("id", { ascending: true })
 
-  if (instrumentsError) {
-    throw new Error(instrumentsError.message)
-  }
-
-  const { data: publicLists, error: publicListsError } = await supabase
-    .from("learning_lists")
-    .select("id, name, description, visibility")
-    .eq("user_id", typedProfile.id)
-    .eq("visibility", "public")
-    .order("name", { ascending: true })
-
-  if (publicListsError) {
-    throw new Error(publicListsError.message)
-  }
-
-  const typedPublicLists = (publicLists as PublicListRow[] | null) ?? []
-  const publicListIds = typedPublicLists.map((list) => list.id)
-
-  let tuneCountsByListId: Record<number, number> = {}
-
-  if (publicListIds.length > 0) {
-    const { data: listItems, error: listItemsError } = await supabase
-      .from("learning_list_items")
-      .select("learning_list_id")
-      .in("learning_list_id", publicListIds)
-
-    if (listItemsError) {
-      throw new Error(listItemsError.message)
+    if (instrumentsError) {
+      throw new Error(instrumentsError.message)
     }
 
-    const typedListItems = (listItems as LearningListItemRow[] | null) ?? []
+    instruments = (instrumentRows ?? []) as UserInstrument[]
+  }
 
-    tuneCountsByListId = typedListItems.reduce<Record<number, number>>(
-      (acc, item) => {
-        acc[item.learning_list_id] = (acc[item.learning_list_id] ?? 0) + 1
-        return acc
-      },
-      {}
-    )
+  let publicLists: PublicProfileList[] = []
+  if (typedProfile.show_public_lists_on_profile) {
+    const { data: publicListRows, error: publicListsError } = await supabase
+      .from("learning_lists")
+      .select("id, name, description, visibility")
+      .eq("user_id", typedProfile.id)
+      .eq("visibility", "public")
+      .order("name", { ascending: true })
+
+    if (publicListsError) {
+      throw new Error(publicListsError.message)
+    }
+
+    const typedPublicLists =
+      ((publicListRows ?? []) as Array<{
+        id: number
+        name: string
+        description: string | null
+        visibility: string
+      }>) ?? []
+
+    const publicListIds = typedPublicLists.map((list) => list.id)
+    let tuneCountsByListId: Record<number, number> = {}
+
+    if (publicListIds.length > 0) {
+      const { data: listItems, error: listItemsError } = await supabase
+        .from("learning_list_items")
+        .select("learning_list_id")
+        .in("learning_list_id", publicListIds)
+
+      if (listItemsError) {
+        throw new Error(listItemsError.message)
+      }
+
+      const typedListItems = (listItems ?? []) as LearningListItemRow[]
+
+      tuneCountsByListId = typedListItems.reduce<Record<number, number>>(
+        (acc, item) => {
+          acc[item.learning_list_id] = (acc[item.learning_list_id] ?? 0) + 1
+          return acc
+        },
+        {}
+      )
+    }
+
+    publicLists = typedPublicLists.map((list) => ({
+      ...list,
+      tune_count: tuneCountsByListId[list.id] ?? 0,
+    }))
   }
 
   let isAcceptedFriend = false
@@ -216,7 +175,7 @@ export async function loadPublicProfileData(
     }
   }
 
-  let repertoireSummary: PublicProfileData["repertoireSummary"] = null
+  let repertoireSummary: RepertoireSummary | null = null
 
   if (typedProfile.show_repertoire_summary) {
     const [
@@ -268,11 +227,8 @@ export async function loadPublicProfileData(
     canCompare,
     compareBlockedByFriendship,
     profile: typedProfile,
-    instruments: (instruments ?? []) as InstrumentRow[],
-    publicLists: typedPublicLists.map((list) => ({
-      ...list,
-      tune_count: tuneCountsByListId[list.id] ?? 0,
-    })),
+    instruments,
+    publicLists,
     repertoireSummary,
   }
 }

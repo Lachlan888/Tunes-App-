@@ -1,6 +1,7 @@
-import Link from "next/link"
 import { notFound } from "next/navigation"
 import PublicProfileActions from "@/components/PublicProfileActions"
+import PublicProfileHeader from "@/components/profile/PublicProfileHeader"
+import PublicProfileOverview from "@/components/profile/PublicProfileOverview"
 import { loadPublicProfileData } from "@/lib/loaders/profile-public"
 
 type PublicProfilePageProps = {
@@ -156,21 +157,7 @@ export default async function PublicProfilePage({
         </div>
       )}
 
-      <header className="rounded border p-6">
-        <h1 className="text-3xl font-bold">
-          {profile.show_identity
-            ? profile.display_name || profile.username
-            : "User profile"}
-        </h1>
-
-        {profile.show_identity && (
-          <p className="mt-2 text-gray-600">@{profile.username}</p>
-        )}
-
-        {profile.show_identity && profile.bio && (
-          <p className="mt-4 whitespace-pre-wrap text-gray-700">{profile.bio}</p>
-        )}
-      </header>
+      <PublicProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
 
       <PublicProfileActions
         username={profile.username}
@@ -186,78 +173,12 @@ export default async function PublicProfilePage({
         showCompareDiscoverability={profile.show_compare_discoverability}
       />
 
-      {profile.show_repertoire_summary && repertoireSummary && (
-        <section className="mt-6 rounded border p-4">
-          <h2 className="text-xl font-semibold">Repertoire summary</h2>
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className="rounded border p-3">
-              <p className="text-sm text-gray-500">Known tunes</p>
-              <p className="mt-1 text-2xl font-semibold">
-                {repertoireSummary.known_count}
-              </p>
-            </div>
-
-            <div className="rounded border p-3">
-              <p className="text-sm text-gray-500">In practice</p>
-              <p className="mt-1 text-2xl font-semibold">
-                {repertoireSummary.practice_count}
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {profile.show_instruments && (
-        <section className="mt-6 rounded border p-4">
-          <h2 className="text-xl font-semibold">
-            Instruments ({instruments.length})
-          </h2>
-
-          {instruments.length > 0 ? (
-            <ul className="mt-4 list-disc pl-5 text-gray-700">
-              {instruments.map((instrument) => (
-                <li key={instrument.id}>{instrument.instrument_name}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-4 text-gray-600">No instruments listed.</p>
-          )}
-        </section>
-      )}
-
-      {profile.show_public_lists_on_profile && (
-        <section className="mt-6 rounded border p-4">
-          <h2 className="text-xl font-semibold">
-            Public lists ({publicLists.length})
-          </h2>
-
-          {publicLists.length > 0 ? (
-            <ul className="mt-4 space-y-3">
-              {publicLists.map((list) => (
-                <li key={list.id} className="rounded border p-3">
-                  <Link
-                    href={`/public-lists/${list.id}`}
-                    className="font-medium underline hover:no-underline"
-                  >
-                    {list.name}
-                  </Link>
-
-                  {list.description && (
-                    <p className="mt-1 text-gray-600">{list.description}</p>
-                  )}
-
-                  <p className="mt-2 text-sm text-gray-500">
-                    {list.tune_count} {list.tune_count === 1 ? "tune" : "tunes"}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-4 text-gray-600">No public lists yet.</p>
-          )}
-        </section>
-      )}
+      <PublicProfileOverview
+        profile={profile}
+        instruments={instruments}
+        publicLists={publicLists}
+        repertoireSummary={repertoireSummary}
+      />
     </main>
   )
 }

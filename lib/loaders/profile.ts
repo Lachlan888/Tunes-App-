@@ -1,48 +1,6 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-
-export type OwnProfileData = {
-  user: {
-    id: string
-    email: string | null
-  }
-  profile: {
-    username: string
-    display_name: string | null
-    bio: string | null
-    show_identity: boolean
-    show_instruments: boolean
-    show_public_lists_on_profile: boolean
-    show_repertoire_summary: boolean
-    show_comment_activity: boolean
-    show_compare_discoverability: boolean
-    compare_requires_friend: boolean
-  } | null
-  instruments: {
-    id: number
-    instrument_name: string
-    position: number | null
-  }[]
-}
-
-type ProfileRow = {
-  username: string
-  display_name: string | null
-  bio: string | null
-  show_identity: boolean
-  show_instruments: boolean
-  show_public_lists_on_profile: boolean
-  show_repertoire_summary: boolean
-  show_comment_activity: boolean
-  show_compare_discoverability: boolean
-  compare_requires_friend: boolean
-}
-
-type InstrumentRow = {
-  id: number
-  instrument_name: string
-  position: number | null
-}
+import type { OwnProfileData, Profile, UserInstrument } from "@/lib/types"
 
 export async function loadOwnProfileData(): Promise<OwnProfileData> {
   const supabase = await createClient()
@@ -59,6 +17,7 @@ export async function loadOwnProfileData(): Promise<OwnProfileData> {
     .from("profiles")
     .select(
       `
+        id,
         username,
         display_name,
         bio,
@@ -94,7 +53,7 @@ export async function loadOwnProfileData(): Promise<OwnProfileData> {
       id: user.id,
       email: user.email ?? null,
     },
-    profile: (profile ?? null) as ProfileRow | null,
-    instruments: (instruments ?? []) as InstrumentRow[],
+    profile: (profile ?? null) as Profile | null,
+    instruments: (instruments ?? []) as UserInstrument[],
   }
 }

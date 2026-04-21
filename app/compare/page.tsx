@@ -1,14 +1,16 @@
-import Link from "next/link"
 import CompareSearchForm from "@/components/CompareSearchForm"
-import PendingLinkButton from "@/components/PendingLinkButton"
-import SubmitButton from "@/components/SubmitButton"
-import TuneCard from "@/components/TuneCard"
-import PieceSearchFilters from "@/components/PieceSearchFilters"
-import { sendFriendRequest } from "@/lib/actions/friends"
+import CompareBlockedSection from "@/components/compare/CompareBlockedSection"
+import CompareCandidateListSection from "@/components/compare/CompareCandidateListSection"
+import CompareMutualPiecesSection from "@/components/compare/CompareMutualPiecesSection"
+import CompareResultsHeader from "@/components/compare/CompareResultsHeader"
+import CompareStatusMessage from "@/components/compare/CompareStatusMessage"
+import CompareSuggestionsSection from "@/components/compare/CompareSuggestionsSection"
+import CurrentCompareGroupSection from "@/components/compare/CurrentCompareGroupSection"
 import {
   getPieceFilterOptions,
   pieceMatchesFilters,
 } from "@/lib/search-filters"
+import { buildCompareHref, toArray } from "@/lib/compare-page"
 import { loadCompareData } from "@/lib/loaders/compare"
 import type { Piece } from "@/lib/types"
 
@@ -23,75 +25,6 @@ type ComparePageProps = {
   }>
 }
 
-function toArray(value: string | string[] | undefined) {
-  if (!value) return []
-  return Array.isArray(value) ? value.filter(Boolean) : [value]
-}
-
-function buildCompareHref(
-  users: string[],
-  extraParams?: {
-    q?: string
-    key?: string[]
-    style?: string[]
-    time_signature?: string[]
-  }
-) {
-  const params = new URLSearchParams()
-
-  users.forEach((user) => {
-    params.append("user", user)
-  })
-
-  if (extraParams?.q) {
-    params.set("q", extraParams.q)
-  }
-
-  extraParams?.key?.forEach((value) => {
-    params.append("key", value)
-  })
-
-  extraParams?.style?.forEach((value) => {
-    params.append("style", value)
-  })
-
-  extraParams?.time_signature?.forEach((value) => {
-    params.append("time_signature", value)
-  })
-
-  const query = params.toString()
-  return query ? `/compare?${query}` : "/compare"
-}
-
-function removeUserOnce(users: string[], userToRemove: string) {
-  let removed = false
-
-  return users.filter((user) => {
-    if (!removed && user.toLowerCase() === userToRemove.toLowerCase()) {
-      removed = true
-      return false
-    }
-
-    return true
-  })
-}
-
-function renderProfileLink(
-  username: string | null,
-  label: string | null | undefined
-) {
-  const safeLabel = label || username || "Unnamed user"
-
-  if (!username) {
-    return <span>{safeLabel}</span>
-  }
-
-  return (
-    <Link href={`/users/${username}`} className="underline hover:no-underline">
-      {safeLabel}
-    </Link>
-  )
-}
 export default async function ComparePage({
   searchParams,
 }: ComparePageProps) {
@@ -183,423 +116,111 @@ export default async function ComparePage({
       <CompareSearchForm initialQuery="" selectedUsers={filterPreservedUsers} />
 
       {filterPreservedUsers.length > 0 && (
-        <section className="mb-8 rounded border p-4">
-          <h2 className="text-xl font-semibold">Current group</h2>
-          <p className="mt-1 text-sm text-gray-600">
-            You are always included. Add other players to find tunes common to
-            the whole group.
-          </p>
-
-          {selectedProfiles.length > 0 ? (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {selectedProfiles.map((profile) => {
-                const name = profile.display_name || profile.username
-                const nextUsers = removeUserOnce(
-                  filterPreservedUsers,
-                  profile.username ?? ""
-                )
-
-                return (
-                  <div
-                    key={profile.id}
-                    className="flex items-center gap-2 rounded-full border px-3 py-2 text-sm"
-                  >
-                    <span>{renderProfileLink(profile.username, name)}</span>
-                    {profile.username && (
-                      <Link
-                        href={`/users/${profile.username}`}
-                        className="text-gray-500 underline hover:no-underline"
-                      >
-                        @{profile.username}
-                      </Link>
-                    )}
-                    {profile.username && (
-                      <PendingLinkButton
-                        href={buildCompareHref(nextUsers, {
-                          q: titleQuery,
-                          key: selectedKeys,
-                          style: selectedStyles,
-                          time_signature: selectedTimeSignatures,
-                        })}
-                        label="Remove"
-                        pendingLabel="Removing..."
-                        className="rounded border px-2 py-1 text-xs"
-                      />
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <p className="mt-4 text-sm text-gray-600">
-              No confirmed users in the group yet.
-            </p>
-          )}
-        </section>
+        <CurrentCompareGroupSection
+          selectedProfiles={selectedProfiles}
+          filterPreservedUsers={filterPreservedUsers}
+          titleQuery={titleQuery}
+          selectedKeys={selectedKeys}
+          selectedStyles={selectedStyles}
+          selectedTimeSignatures={selectedTimeSignatures}
+        />
       )}
 
       {friendRequestStatus === "sent" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+        <CompareStatusMessage tone="success">
           Friend request sent.
-        </div>
+        </CompareStatusMessage>
       )}
 
       {friendRequestStatus === "missing_user" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+        <CompareStatusMessage tone="warning">
           Please choose a valid user.
-        </div>
+        </CompareStatusMessage>
       )}
 
       {friendRequestStatus === "self" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+        <CompareStatusMessage tone="warning">
           You cannot send a friend request to yourself.
-        </div>
+        </CompareStatusMessage>
       )}
 
       {friendRequestStatus === "not_found" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+        <CompareStatusMessage tone="error">
           That user could not be found.
-        </div>
+        </CompareStatusMessage>
       )}
 
       {friendRequestStatus === "duplicate" && (
-        <div className="mb-6 rounded border border-gray-400 bg-gray-50 p-3 text-sm text-gray-800">
+        <CompareStatusMessage tone="neutral">
           A pending or accepted connection already exists with that user.
-        </div>
+        </CompareStatusMessage>
       )}
 
-      {compareSuggestions.length > 0 && (
-        <section className="mb-8 rounded border p-4">
-          <h2 className="text-xl font-semibold">Add a friend</h2>
-          <p className="mt-1 text-sm text-gray-600">
-            Quick suggestions from your accepted friends.
-          </p>
-
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {compareSuggestions.map((friend) => {
-              const alreadySelected = filterPreservedUsers.some(
-                (user) => user.toLowerCase() === friend.username.toLowerCase()
-              )
-
-              const nextUsers = alreadySelected
-                ? filterPreservedUsers
-                : [...filterPreservedUsers, friend.username]
-
-              return (
-                <div
-                  key={friend.user_id}
-                  className="rounded border border-gray-200 p-4"
-                >
-                  <p className="font-medium">
-                    {renderProfileLink(
-                      friend.username,
-                      friend.display_name || friend.username
-                    )}
-                  </p>
-                  <p className="mt-1 text-sm text-gray-600">
-                    <Link
-                      href={`/users/${friend.username}`}
-                      className="underline hover:no-underline"
-                    >
-                      @{friend.username}
-                    </Link>
-                  </p>
-
-                  <div className="mt-3">
-                    <PendingLinkButton
-                      href={buildCompareHref(nextUsers)}
-                      label={alreadySelected ? "Already added" : "Add to group"}
-                      pendingLabel="Loading..."
-                      className="rounded bg-black px-4 py-2 text-sm text-white"
-                    />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </section>
-      )}
+      <CompareSuggestionsSection
+        compareSuggestions={compareSuggestions}
+        filterPreservedUsers={filterPreservedUsers}
+      />
 
       {error === "missing_search" && (
-        <div className="mb-6 rounded border border-gray-300 bg-gray-50 p-3 text-sm text-gray-700">
+        <CompareStatusMessage tone="neutral">
           Add at least one username or display name to start comparing.
-        </div>
+        </CompareStatusMessage>
       )}
 
       {error === "user_not_found" && (
-        <div className="mb-6 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+        <CompareStatusMessage tone="error">
           No user found for “{primarySearchValue}”.
-        </div>
+        </CompareStatusMessage>
       )}
 
       {error === "self_compare" && (
-        <div className="mb-6 rounded border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-800">
+        <CompareStatusMessage tone="warning">
           You cannot add your own profile to the compare group.
-        </div>
+        </CompareStatusMessage>
       )}
 
       {error === "multiple_matches" && (
-        <section className="mb-8 rounded border p-4">
-          <h2 className="text-xl font-semibold">Choose a user</h2>
-          <p className="mt-1 text-sm text-gray-600">
-            More than one user matched “{primarySearchValue}”.
-          </p>
-
-          <div className="mt-4 space-y-3">
-            {matchingProfiles.map((profile) => {
-              const nextUsers = [
-                ...removeUserOnce(filterPreservedUsers, primarySearchValue),
-                profile.username ?? "",
-              ].filter(Boolean)
-
-              const label =
-                profile.display_name || profile.username || "Unnamed user"
-
-              return (
-                <div
-                  key={profile.id}
-                  className="flex items-center justify-between rounded border p-3"
-                >
-                  <div>
-                    <p className="font-medium">
-                      {renderProfileLink(profile.username, label)}
-                    </p>
-                    {profile.username && (
-                      <p className="text-sm text-gray-600">
-                        <Link
-                          href={`/users/${profile.username}`}
-                          className="underline hover:no-underline"
-                        >
-                          @{profile.username}
-                        </Link>
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2">
-                    {profile.username ? (
-                      <PendingLinkButton
-                        href={buildCompareHref(nextUsers)}
-                        label="Add to group"
-                        pendingLabel="Loading..."
-                        className="rounded bg-black px-3 py-2 text-sm text-white"
-                      />
-                    ) : (
-                      <span className="text-sm text-gray-500">
-                        No username available
-                      </span>
-                    )}
-
-                    <form action={sendFriendRequest}>
-                      <input
-                        type="hidden"
-                        name="addressee_id"
-                        value={profile.id}
-                      />
-                      <input
-                        type="hidden"
-                        name="redirect_to"
-                        value={redirectTo}
-                      />
-                      <SubmitButton
-                        label="Send request"
-                        pendingLabel="Sending..."
-                        className="rounded border px-3 py-2 text-sm"
-                      />
-                    </form>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </section>
+        <CompareCandidateListSection
+          title="Choose a user"
+          description={`More than one user matched “${primarySearchValue}”.`}
+          profiles={matchingProfiles}
+          primarySearchValue={primarySearchValue}
+          filterPreservedUsers={filterPreservedUsers}
+          redirectTo={redirectTo}
+        />
       )}
 
       {error === null && !matchedProfile && searchMatches.length > 0 && (
-        <section className="mb-8 rounded border p-4">
-          <h2 className="text-xl font-semibold">Choose a user</h2>
-          <p className="mt-1 text-sm text-gray-600">
-            Select the person you want to add to this compare group.
-          </p>
-
-          <div className="mt-4 space-y-3">
-            {searchMatches.map((profile) => {
-              const nextUsers = [
-                ...removeUserOnce(filterPreservedUsers, primarySearchValue),
-                profile.username ?? "",
-              ].filter(Boolean)
-
-              const label =
-                profile.display_name || profile.username || "Unnamed user"
-
-              return (
-                <div
-                  key={profile.id}
-                  className="flex items-center justify-between rounded border p-3"
-                >
-                  <div>
-                    <p className="font-medium">
-                      {renderProfileLink(profile.username, label)}
-                    </p>
-                    {profile.username && (
-                      <p className="text-sm text-gray-600">
-                        <Link
-                          href={`/users/${profile.username}`}
-                          className="underline hover:no-underline"
-                        >
-                          @{profile.username}
-                        </Link>
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2">
-                    {profile.username ? (
-                      <PendingLinkButton
-                        href={buildCompareHref(nextUsers)}
-                        label="Add to group"
-                        pendingLabel="Loading..."
-                        className="rounded bg-black px-3 py-2 text-sm text-white"
-                      />
-                    ) : (
-                      <span className="text-sm text-gray-500">
-                        No username available
-                      </span>
-                    )}
-
-                    <form action={sendFriendRequest}>
-                      <input
-                        type="hidden"
-                        name="addressee_id"
-                        value={profile.id}
-                      />
-                      <input
-                        type="hidden"
-                        name="redirect_to"
-                        value={redirectTo}
-                      />
-                      <SubmitButton
-                        label="Send request"
-                        pendingLabel="Sending..."
-                        className="rounded border px-3 py-2 text-sm"
-                      />
-                    </form>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </section>
+        <CompareCandidateListSection
+          title="Choose a user"
+          description="Select the person you want to add to this compare group."
+          profiles={searchMatches}
+          primarySearchValue={primarySearchValue}
+          filterPreservedUsers={filterPreservedUsers}
+          redirectTo={redirectTo}
+        />
       )}
 
       {matchedProfile && error === null && !canCompare && (
-        <section className="mb-8 rounded border p-4">
-          <h2 className="text-xl font-semibold">User found</h2>
-
-          <div className="mt-4 flex items-center justify-between rounded border p-4">
-            <div>
-              <p className="font-medium">
-                {renderProfileLink(
-                  matchedProfile.username,
-                  matchedProfile.display_name || matchedProfile.username
-                )}
-              </p>
-              <p className="mt-1 text-sm text-gray-600">
-                <Link
-                  href={`/users/${matchedProfile.username}`}
-                  className="underline hover:no-underline"
-                >
-                  @{matchedProfile.username}
-                </Link>
-              </p>
-            </div>
-
-            {!isAcceptedFriend && (
-              <form action={sendFriendRequest}>
-                <input
-                  type="hidden"
-                  name="addressee_id"
-                  value={matchedProfile.id}
-                />
-                <input type="hidden" name="redirect_to" value={redirectTo} />
-                <SubmitButton
-                  label="Send request"
-                  pendingLabel="Sending..."
-                  className="rounded border px-3 py-2 text-sm"
-                />
-              </form>
-            )}
-          </div>
-
-          <p className="mt-3 text-sm text-gray-600">
-            This user requires friendship before others can compare with them.
-          </p>
-        </section>
+        <CompareBlockedSection
+          matchedProfile={matchedProfile}
+          isAcceptedFriend={isAcceptedFriend}
+          redirectTo={redirectTo}
+        />
       )}
 
       {selectedProfiles.length > 0 && error === null && canCompare && (
         <>
-          <div className="mb-6 rounded border p-4">
-            <h2 className="text-xl font-semibold">{compareHeading}</h2>
+          <CompareResultsHeader
+            compareHeading={compareHeading}
+            selectedProfiles={selectedProfiles}
+            mutualPiecesCount={mutualPieces.length}
+            isAcceptedFriend={isAcceptedFriend}
+          />
 
-            {selectedProfiles.length === 1 ? (
-              <p className="mt-1 text-sm text-gray-600">
-                User:{" "}
-                <Link
-                  href={`/users/${selectedProfiles[0]?.username}`}
-                  className="underline hover:no-underline"
-                >
-                  {selectedProfiles[0]?.display_name ||
-                    selectedProfiles[0]?.username}
-                </Link>{" "}
-                (
-                <Link
-                  href={`/users/${selectedProfiles[0]?.username}`}
-                  className="underline hover:no-underline"
-                >
-                  @{selectedProfiles[0]?.username}
-                </Link>
-                )
-              </p>
-            ) : (
-              <p className="mt-1 text-sm text-gray-600">
-                Group: you,{" "}
-                {selectedProfiles.map((profile, index) => (
-                  <span key={profile.id}>
-                    {index > 0 ? ", " : ""}
-                    {profile.username ? (
-                      <Link
-                        href={`/users/${profile.username}`}
-                        className="underline hover:no-underline"
-                      >
-                        {profile.display_name || profile.username}
-                      </Link>
-                    ) : (
-                      profile.display_name || profile.username
-                    )}
-                  </span>
-                ))}
-              </p>
-            )}
-
-            {selectedProfiles.length === 1 && !isAcceptedFriend && (
-              <p className="mt-2 text-sm text-gray-600">
-                Compare is public for this user, so you do not need to be
-                friends to view overlap.
-              </p>
-            )}
-
-            <p className="mt-2 text-sm text-gray-700">
-              {mutualPieces.length} mutual tune
-              {mutualPieces.length === 1 ? "" : "s"} found.
-            </p>
-          </div>
-
-          <PieceSearchFilters
-            basePath="/compare"
-            searchLabel="Search by title"
-            searchPlaceholder="Search mutual tunes"
-            searchValue={titleQuery}
+          <CompareMutualPiecesSection
+            filteredPieces={filteredPieces}
+            titleQuery={titleQuery}
             selectedKeys={selectedKeys}
             selectedStyles={selectedStyles}
             selectedTimeSignatures={selectedTimeSignatures}
@@ -607,28 +228,8 @@ export default async function ComparePage({
             availableStyles={availableStyles}
             availableTimeSignatures={availableTimeSignatures}
             hasActiveFilters={hasActiveFilters}
-            preservedParams={{ user: filterPreservedUsers }}
+            filterPreservedUsers={filterPreservedUsers}
           />
-
-          {filteredPieces.length === 0 ? (
-            <p>No mutual tunes match this filter.</p>
-          ) : (
-            <div className="space-y-3">
-              {filteredPieces.map((piece) => (
-                <TuneCard
-                  key={piece.id}
-                  id={piece.id}
-                  title={piece.title}
-                  keyValue={piece.key}
-                  style={piece.style}
-                  pieceStyles={piece.piece_styles}
-                  timeSignature={piece.time_signature}
-                  referenceUrl={piece.reference_url}
-                  listNames={[]}
-                />
-              ))}
-            </div>
-          )}
         </>
       )}
     </main>

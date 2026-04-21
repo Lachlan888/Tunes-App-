@@ -1,8 +1,8 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
 
 function asNullableString(value: FormDataEntryValue | null) {
   const trimmed = String(value ?? "").trim()
@@ -17,8 +17,8 @@ export async function updateProfile(formData: FormData) {
   const username = String(formData.get("username") ?? "").trim().toLowerCase()
   const displayNameRaw = String(formData.get("display_name") ?? "").trim()
   const display_name = displayNameRaw === "" ? null : displayNameRaw
-
   const bio = asNullableString(formData.get("bio"))
+
   const show_identity = asBoolean(formData.get("show_identity"))
   const show_instruments = asBoolean(formData.get("show_instruments"))
   const show_public_lists_on_profile = asBoolean(
@@ -27,7 +27,6 @@ export async function updateProfile(formData: FormData) {
   const show_repertoire_summary = asBoolean(
     formData.get("show_repertoire_summary")
   )
-  const show_comment_activity = asBoolean(formData.get("show_comment_activity"))
   const show_compare_discoverability = asBoolean(
     formData.get("show_compare_discoverability")
   )
@@ -54,9 +53,26 @@ export async function updateProfile(formData: FormData) {
     redirect("/login")
   }
 
-  const { error } = await supabase
+  const { data: existingProfile, error: existingProfileError } = await supabase
     .from("profiles")
-    .update({
+    .select("username")
+    .eq("id", user.id)
+    .maybeSingle()
+
+  if (existingProfileError) {
+    redirect(
+      `/dashboard?error=save_failed&username=${encodedUsername}&display_name=${encodedDisplayName}`
+    )
+  }
+
+  const previousUsername =
+    existingProfile && typeof existingProfile.username === "string"
+      ? existingProfile.username
+      : null
+
+  const { error } = await supabase.from("profiles").upsert(
+    {
+      id: user.id,
       username,
       display_name,
       bio,
@@ -64,12 +80,12 @@ export async function updateProfile(formData: FormData) {
       show_instruments,
       show_public_lists_on_profile,
       show_repertoire_summary,
-      show_comment_activity,
       show_compare_discoverability,
       compare_requires_friend,
       updated_at: new Date().toISOString(),
-    })
-    .eq("id", user.id)
+    },
+    { onConflict: "id" }
+  )
 
   if (error) {
     if (error.code === "23505") {
@@ -85,5 +101,13 @@ export async function updateProfile(formData: FormData) {
 
   revalidatePath("/dashboard")
   revalidatePath("/compare")
+  revalidatePath("/friends")
+
+  if (previousUsername) {
+    revalidatePath(`/users/${previousUsername}`)
+  }
+
+  revalidatePath(`/users/${username}`)
+
   redirect("/dashboard?saved=1")
 }

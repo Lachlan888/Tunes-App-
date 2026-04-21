@@ -110,3 +110,60 @@ export type FilterableLearningList = {
   stylesPresent: string[]
   source: LearningListSource
 }
+
+export type UserInstrument = {
+  id: number
+  instrument_name: string
+  position: number | null
+}
+
+export type Profile = {
+  id: string
+  username: string
+  display_name: string | null
+  bio: string | null
+  show_identity: boolean
+  show_instruments: boolean
+  show_public_lists_on_profile: boolean
+  show_repertoire_summary: boolean
+  show_comment_activity: boolean
+  show_compare_discoverability: boolean
+  compare_requires_friend: boolean
+}
+
+export type PublicProfileList = {
+  id: number
+  name: string
+  description: string | null
+  visibility: LearningListVisibility | string
+  tune_count: number
+}
+
+export type RepertoireSummary = {
+  known_count: number
+  practice_count: number
+}
+
+export type OwnProfileData = {
+  user: {
+    id: string
+    email: string | null
+  }
+  profile: Profile | null
+  instruments: UserInstrument[]
+}
+
+export type PublicProfileData = {
+  viewerId: string | null
+  isOwnProfile: boolean
+  isAcceptedFriend: boolean
+  hasPendingOutgoingRequest: boolean
+  hasPendingIncomingRequest: boolean
+  pendingIncomingConnectionId: number | null
+  canCompare: boolean
+  compareBlockedByFriendship: boolean
+  profile: Profile | null
+  instruments: UserInstrument[]
+  publicLists: PublicProfileList[]
+  repertoireSummary: RepertoireSummary | null
+}
