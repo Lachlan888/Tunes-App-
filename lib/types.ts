@@ -191,3 +191,11 @@ export type PublicProfileData = {
   publicLists: PublicProfileList[]
   repertoireSummary: RepertoireSummary | null
 }
+
+export type BacklogTier = "due_now" | "overdue" | "overdue_longest"
+
+export type BacklogGroupSummary = {
+  tier: BacklogTier
+  label: string
+  count: number
+}

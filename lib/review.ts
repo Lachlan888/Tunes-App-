@@ -1,3 +1,5 @@
+import type { BacklogTier } from "@/lib/types"
+
 const REVIEW_INTERVALS = [1, 2, 3, 7, 14, 30, 60, 90, 120, 360] as const
 
 export const APP_TIME_ZONE = "Australia/Melbourne"
@@ -26,6 +28,11 @@ function getAppDateParts() {
 function getAppTodayDateOnly() {
   const { year, month, day } = getAppDateParts()
   return `${year}-${month}-${day}`
+}
+
+function parseDateOnlyAsUtc(dateOnly: string) {
+  const [year, month, day] = dateOnly.split("-").map(Number)
+  return Date.UTC(year, month - 1, day)
 }
 
 export function normaliseStoredDate(dateValue: string | null | undefined) {
@@ -59,6 +66,74 @@ export function isDueOnOrBefore(
 
 export function isDueToday(dateValue: string | null | undefined) {
   return isDueOnOrBefore(dateValue, getToday())
+}
+
+export function isDueExactlyOn(
+  dateValue: string | null | undefined,
+  targetDate: string
+) {
+  const normalised = normaliseStoredDate(dateValue)
+  if (!normalised) return false
+  return normalised === targetDate
+}
+
+export function isDueExactlyToday(dateValue: string | null | undefined) {
+  return isDueExactlyOn(dateValue, getToday())
+}
+
+export function isOverdue(dateValue: string | null | undefined) {
+  const normalised = normaliseStoredDate(dateValue)
+  if (!normalised) return false
+  return normalised < getToday()
+}
+
+export function getOverdueDays(
+  dateValue: string | null | undefined,
+  today: string = getToday()
+) {
+  const normalised = normaliseStoredDate(dateValue)
+
+  if (!normalised || normalised >= today) {
+    return 0
+  }
+
+  const millisecondsPerDay = 24 * 60 * 60 * 1000
+  const diff =
+    parseDateOnlyAsUtc(today) - parseDateOnlyAsUtc(normalised)
+
+  return Math.floor(diff / millisecondsPerDay)
+}
+
+export function getBacklogTier(
+  dateValue: string | null | undefined,
+  today: string = getToday()
+): BacklogTier | null {
+  const overdueDays = getOverdueDays(dateValue, today)
+
+  if (overdueDays >= 1 && overdueDays <= 7) {
+    return "due_now"
+  }
+
+  if (overdueDays >= 8 && overdueDays <= 21) {
+    return "overdue"
+  }
+
+  if (overdueDays >= 22) {
+    return "overdue_longest"
+  }
+
+  return null
+}
+
+export function getBacklogTierLabel(tier: BacklogTier) {
+  switch (tier) {
+    case "due_now":
+      return "Due now"
+    case "overdue":
+      return "Overdue"
+    case "overdue_longest":
+      return "Overdue (longest)"
+  }
 }
 
 export function getNextReviewDateFromStage(stage: number) {

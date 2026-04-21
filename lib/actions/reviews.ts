@@ -26,6 +26,7 @@ async function recordReview(
   }
 
   const userPieceId = Number(formData.get("userPieceId"))
+  const redirectTo = String(formData.get("redirectTo") || "/review")
 
   const { data: userPiece, error: fetchError } = await supabase
     .from("user_pieces")
@@ -76,7 +77,7 @@ async function recordReview(
     markPracticeActivity: true,
   })
 
-  redirect("/review")
+  redirect(redirectTo)
 }
 
 export async function markSolid(formData: FormData) {

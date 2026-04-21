@@ -1,9 +1,14 @@
 import { loadRecentFriendActivity } from "@/lib/loaders/friends"
-import { isDueToday } from "@/lib/review"
+import {
+  getBacklogTier,
+  getBacklogTierLabel,
+  isDueExactlyToday,
+} from "@/lib/review"
 import { reconcileStreaksForUser } from "@/lib/streaks"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import type {
+  BacklogGroupSummary,
   LearningList,
   Piece,
   StreakSummary,
@@ -143,7 +148,37 @@ export async function loadHomepageData() {
   const typedUserPieces = (userPieces ?? []) as UserPiece[]
 
   const dueToday = typedUserPieces.filter((userPiece) =>
-    isDueToday(userPiece.next_review_due)
+    isDueExactlyToday(userPiece.next_review_due)
+  )
+
+  const backlogSummary: BacklogGroupSummary[] = [
+    {
+      tier: "due_now",
+      label: getBacklogTierLabel("due_now"),
+      count: typedUserPieces.filter(
+        (userPiece) => getBacklogTier(userPiece.next_review_due) === "due_now"
+      ).length,
+    },
+    {
+      tier: "overdue",
+      label: getBacklogTierLabel("overdue"),
+      count: typedUserPieces.filter(
+        (userPiece) => getBacklogTier(userPiece.next_review_due) === "overdue"
+      ).length,
+    },
+    {
+      tier: "overdue_longest",
+      label: getBacklogTierLabel("overdue_longest"),
+      count: typedUserPieces.filter(
+        (userPiece) =>
+          getBacklogTier(userPiece.next_review_due) === "overdue_longest"
+      ).length,
+    },
+  ]
+
+  const needsAttentionCount = backlogSummary.reduce(
+    (sum, group) => sum + group.count,
+    0
   )
 
   return {
@@ -153,6 +188,8 @@ export async function loadHomepageData() {
     userPieces: typedUserPieces,
     userKnownPieces: (userKnownPieces ?? []) as UserKnownPiece[],
     dueToday,
+    backlogSummary,
+    needsAttentionCount,
     recentFriendActivity,
     streakSummary,
   }

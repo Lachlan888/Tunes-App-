@@ -1,8 +1,10 @@
 import Link from "next/link"
+import BacklogSummarySection from "@/components/BacklogSummarySection"
 import HomeFriendsActivityBox from "@/components/HomeFriendsActivityBox"
 import StreakSummarySection from "@/components/StreakSummarySection"
 import type { FriendActivityItem } from "@/lib/friend-activity"
 import type {
+  BacklogGroupSummary,
   LearningList,
   Piece,
   StreakSummary,
@@ -16,6 +18,8 @@ type HomeSummarySectionProps = {
   userKnownPieces: UserKnownPiece[] | null
   learningLists: LearningList[] | null
   dueToday: UserPiece[] | null
+  backlogSummary: BacklogGroupSummary[]
+  needsAttentionCount: number
   recentFriendActivity: FriendActivityItem[]
   streakSummary: StreakSummary
 }
@@ -26,6 +30,8 @@ export default function HomeSummarySection({
   userKnownPieces,
   learningLists,
   dueToday,
+  backlogSummary,
+  needsAttentionCount,
   recentFriendActivity,
   streakSummary,
 }: HomeSummarySectionProps) {
@@ -37,14 +43,13 @@ export default function HomeSummarySection({
 
   const dueTodayPreview = dueTodayItems.slice(0, 3)
 
-  const inPracticePreview =
-    [...(userPieces ?? [])]
-      .sort((a, b) => {
-        const aStage = a.stage ?? 999
-        const bStage = b.stage ?? 999
-        return aStage - bStage
-      })
-      .slice(0, 3)
+  const inPracticePreview = [...(userPieces ?? [])]
+    .sort((a, b) => {
+      const aStage = a.stage ?? 999
+      const bStage = b.stage ?? 999
+      return aStage - bStage
+    })
+    .slice(0, 3)
 
   const listPreview = (learningLists ?? []).slice(0, 3)
 
@@ -69,10 +74,13 @@ export default function HomeSummarySection({
           </div>
 
           <div className="rounded-lg border p-4">
-            <p className="text-sm text-gray-600">In practice</p>
-            <p className="mt-1 text-3xl font-bold">{totalInPractice}</p>
-            <a href="/review" className="mt-3 inline-block text-sm underline">
-              Open Practice
+            <p className="text-sm text-gray-600">Needs attention</p>
+            <p className="mt-1 text-3xl font-bold">{needsAttentionCount}</p>
+            <a
+              href="/review?mode=catch-up"
+              className="mt-3 inline-block text-sm underline"
+            >
+              Catch up
             </a>
           </div>
 
@@ -96,6 +104,14 @@ export default function HomeSummarySection({
           </div>
         </div>
       </section>
+
+      {needsAttentionCount > 0 && (
+        <BacklogSummarySection
+          groups={backlogSummary}
+          actionHref="/review?mode=catch-up"
+          actionLabel="Catch up"
+        />
+      )}
 
       <section className="grid gap-4 md:grid-cols-2">
         <div className="rounded-lg border p-4">

@@ -9,6 +9,8 @@ export default async function HomePage() {
     userKnownPieces,
     learningLists,
     dueToday,
+    backlogSummary,
+    needsAttentionCount,
     recentFriendActivity,
     streakSummary,
   } = await loadHomepageData()
@@ -24,6 +26,8 @@ export default async function HomePage() {
         userKnownPieces={userKnownPieces}
         learningLists={learningLists}
         dueToday={dueToday}
+        backlogSummary={backlogSummary}
+        needsAttentionCount={needsAttentionCount}
         recentFriendActivity={recentFriendActivity}
         streakSummary={streakSummary}
       />
