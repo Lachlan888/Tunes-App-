@@ -1,8 +1,15 @@
 import { loadRecentFriendActivity } from "@/lib/loaders/friends"
 import { isDueToday } from "@/lib/review"
+import { reconcileStreaksForUser } from "@/lib/streaks"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import type { Piece, UserKnownPiece, UserPiece } from "@/lib/types"
+import type {
+  LearningList,
+  Piece,
+  StreakSummary,
+  UserKnownPiece,
+  UserPiece,
+} from "@/lib/types"
 
 type LearningListItem = {
   id: number
@@ -10,10 +17,7 @@ type LearningListItem = {
   pieces: Piece | Piece[] | null
 }
 
-type LearningList = {
-  id: number
-  name: string
-  description: string | null
+type LearningListWithItems = LearningList & {
   learning_list_items: LearningListItem[]
 }
 
@@ -34,6 +38,11 @@ export async function loadHomepageData() {
   if (!user) {
     redirect("/login")
   }
+
+  const streakSummary: StreakSummary = await reconcileStreaksForUser(
+    supabase,
+    user.id
+  )
 
   const { data: learningLists, error: learningListsError } = await supabase
     .from("learning_lists")
@@ -139,11 +148,12 @@ export async function loadHomepageData() {
 
   return {
     user,
-    learningLists: (learningLists ?? []) as LearningList[],
+    learningLists: (learningLists ?? []) as LearningListWithItems[],
     pieces: (pieces ?? []) as Piece[],
     userPieces: typedUserPieces,
     userKnownPieces: (userKnownPieces ?? []) as UserKnownPiece[],
     dueToday,
     recentFriendActivity,
+    streakSummary,
   }
 }

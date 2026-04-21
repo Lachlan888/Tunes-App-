@@ -2,10 +2,12 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import ReferenceMediaLink from "@/components/ReferenceMediaLink"
 import RemoveFromPracticeButton from "@/components/RemoveFromPracticeButton"
+import StreakSummarySection from "@/components/StreakSummarySection"
 import SubmitButton from "@/components/SubmitButton"
-import { createClient } from "@/lib/supabase/server"
 import { markFailed, markShaky, markSolid } from "@/lib/actions/reviews"
 import { getToday, isDueToday } from "@/lib/review"
+import { reconcileStreaksForUser } from "@/lib/streaks"
+import { createClient } from "@/lib/supabase/server"
 
 type Piece = {
   id: number
@@ -64,6 +66,8 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     redirect("/login")
   }
 
+  const streakSummary = await reconcileStreaksForUser(supabase, user.id)
+
   const { data: learningPieces, error } = await supabase
     .from("user_pieces")
     .select(`
@@ -90,6 +94,9 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     return (
       <main className="p-8">
         <h1 className="text-3xl font-bold">Practice</h1>
+        <div className="mt-8">
+          <StreakSummarySection streakSummary={streakSummary} />
+        </div>
         <p className="mt-4 text-red-600">Could not load due tunes.</p>
       </main>
     )
@@ -106,6 +113,10 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   return (
     <main className="p-8">
       <h1 className="text-3xl font-bold">Practice</h1>
+
+      <div className="mt-8">
+        <StreakSummarySection streakSummary={streakSummary} />
+      </div>
 
       {removeFromPracticeStatus === "success" && (
         <div className="mb-6 mt-4 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">

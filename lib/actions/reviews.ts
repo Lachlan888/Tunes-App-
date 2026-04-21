@@ -6,6 +6,7 @@ import {
   getNextStageForShaky,
   getNextStageForSolid,
 } from "@/lib/review"
+import { reconcileStreaksForUser } from "@/lib/streaks"
 import { createClient } from "@/lib/supabase/server"
 import { recordTuneReviewedEvent } from "@/lib/activity-events"
 import { redirect } from "next/navigation"
@@ -71,6 +72,9 @@ async function recordReview(
   }
 
   await recordTuneReviewedEvent(user.id, userPiece.piece_id)
+  await reconcileStreaksForUser(supabase, user.id, {
+    markPracticeActivity: true,
+  })
 
   redirect("/review")
 }

@@ -10,6 +10,7 @@ export default async function HomePage() {
     learningLists,
     dueToday,
     recentFriendActivity,
+    streakSummary,
   } = await loadHomepageData()
 
   return (
@@ -24,6 +25,7 @@ export default async function HomePage() {
         learningLists={learningLists}
         dueToday={dueToday}
         recentFriendActivity={recentFriendActivity}
+        streakSummary={streakSummary}
       />
     </main>
   )

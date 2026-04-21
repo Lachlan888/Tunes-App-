@@ -1,6 +1,7 @@
 "use server"
 
 import { getTomorrow } from "@/lib/review"
+import { reconcileStreaksForUser } from "@/lib/streaks"
 import { createClient } from "@/lib/supabase/server"
 import { recordStartedPracticeEvent } from "@/lib/activity-events"
 import { redirect } from "next/navigation"
@@ -60,6 +61,9 @@ export async function startPracticeForUser(
   }
 
   await recordStartedPracticeEvent(userId, pieceId)
+  await reconcileStreaksForUser(supabase, userId, {
+    markPracticeActivity: true,
+  })
 
   return "started"
 }

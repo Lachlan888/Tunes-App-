@@ -1,6 +1,6 @@
 const REVIEW_INTERVALS = [1, 2, 3, 7, 14, 30, 60, 90, 120, 360] as const
 
-const APP_TIME_ZONE = "Australia/Melbourne"
+export const APP_TIME_ZONE = "Australia/Melbourne"
 
 function getAppDateParts() {
   const formatter = new Intl.DateTimeFormat("en-CA", {
@@ -28,12 +28,12 @@ function getAppTodayDateOnly() {
   return `${year}-${month}-${day}`
 }
 
-function normaliseStoredDate(dateValue: string | null | undefined) {
+export function normaliseStoredDate(dateValue: string | null | undefined) {
   if (!dateValue) return null
   return dateValue.slice(0, 10)
 }
 
-function addDaysToDateOnly(dateOnly: string, days: number) {
+export function addDaysToDateOnly(dateOnly: string, days: number) {
   const [year, month, day] = dateOnly.split("-").map(Number)
   const date = new Date(Date.UTC(year, month - 1, day))
   date.setUTCDate(date.getUTCDate() + days)
@@ -48,10 +48,17 @@ export function getTomorrow() {
   return addDaysToDateOnly(getToday(), 1)
 }
 
-export function isDueToday(dateValue: string | null | undefined) {
+export function isDueOnOrBefore(
+  dateValue: string | null | undefined,
+  targetDate: string
+) {
   const normalised = normaliseStoredDate(dateValue)
   if (!normalised) return false
-  return normalised <= getToday()
+  return normalised <= targetDate
+}
+
+export function isDueToday(dateValue: string | null | undefined) {
+  return isDueOnOrBefore(dateValue, getToday())
 }
 
 export function getNextReviewDateFromStage(stage: number) {

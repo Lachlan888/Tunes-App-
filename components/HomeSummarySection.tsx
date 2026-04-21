@@ -1,28 +1,14 @@
 import Link from "next/link"
 import HomeFriendsActivityBox from "@/components/HomeFriendsActivityBox"
+import StreakSummarySection from "@/components/StreakSummarySection"
 import type { FriendActivityItem } from "@/lib/friend-activity"
-
-type Piece = {
-  id: number
-  title?: string | null
-}
-
-type UserPiece = {
-  id: number
-  piece_id: number
-  stage?: number | null
-  next_review_due: string | null
-}
-
-type UserKnownPiece = {
-  id: number
-  piece_id: number
-}
-
-type LearningList = {
-  id: number
-  name: string
-}
+import type {
+  LearningList,
+  Piece,
+  StreakSummary,
+  UserKnownPiece,
+  UserPiece,
+} from "@/lib/types"
 
 type HomeSummarySectionProps = {
   pieces: Piece[] | null
@@ -31,6 +17,7 @@ type HomeSummarySectionProps = {
   learningLists: LearningList[] | null
   dueToday: UserPiece[] | null
   recentFriendActivity: FriendActivityItem[]
+  streakSummary: StreakSummary
 }
 
 export default function HomeSummarySection({
@@ -40,6 +27,7 @@ export default function HomeSummarySection({
   learningLists,
   dueToday,
   recentFriendActivity,
+  streakSummary,
 }: HomeSummarySectionProps) {
   const totalLists = learningLists?.length ?? 0
   const totalInPractice = userPieces?.length ?? 0
@@ -66,6 +54,8 @@ export default function HomeSummarySection({
 
   return (
     <section className="space-y-8">
+      <StreakSummarySection streakSummary={streakSummary} />
+
       <section>
         <h2 className="mb-4 text-2xl font-semibold">Overview</h2>
 

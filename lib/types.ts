@@ -37,6 +37,30 @@ export type UserKnownPiece = {
   piece_id: number
 }
 
+export type UserDailyStreak = {
+  id: number
+  user_id: string
+  local_date: string
+  revision_done: boolean
+  practice_done: boolean
+  due_count: number
+  created_at?: string
+  updated_at?: string
+}
+
+export type StreakSummary = {
+  current_revision_streak: number
+  longest_revision_streak: number
+  current_practice_streak: number
+  longest_practice_streak: number
+  last_reconciled_date: string | null
+}
+
+export type UserStreakStats = StreakSummary & {
+  user_id: string
+  updated_at?: string
+}
+
 export type LearningListVisibility = "private" | "public"
 export type LearningListSource = "mine" | "imported"
 
