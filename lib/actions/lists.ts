@@ -16,6 +16,20 @@ function appendQueryParam(url: string, key: string, value: string) {
     : `${url}?${key}=${encodeURIComponent(value)}`
 }
 
+function appendQueryParams(
+  url: string,
+  params: Record<string, string | number | null | undefined>
+) {
+  let nextUrl = url
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value === null || value === undefined || value === "") continue
+    nextUrl = appendQueryParam(nextUrl, key, String(value))
+  }
+
+  return nextUrl
+}
+
 export async function addPieceToLearningListForUser(
   supabase: SupabaseServerClient,
   userId: string,
@@ -249,8 +263,198 @@ export async function addToLearningList(formData: FormData) {
     pieceId,
     learningListId
   ).then((status) => {
-    redirect(buildRedirectUrl(redirectTo, status === "added" ? "success" : "duplicate"))
+    redirect(
+      buildRedirectUrl(redirectTo, status === "added" ? "success" : "duplicate")
+    )
   })
+}
+
+export async function importPublicList(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const sourceListId = Number(formData.get("source_list_id"))
+  const redirectTo = String(
+    formData.get("redirect_to") ?? `/public-lists/${sourceListId}`
+  )
+
+  if (!sourceListId) {
+    redirect(appendQueryParam(redirectTo, "import_public", "source_not_found"))
+  }
+
+  const { data: sourceList, error: sourceListError } = await supabase
+    .from("learning_lists")
+    .select("id, name, description, visibility")
+    .eq("id", sourceListId)
+    .eq("visibility", "public")
+    .single()
+
+  if (sourceListError || !sourceList) {
+    redirect(appendQueryParam(redirectTo, "import_public", "source_not_found"))
+  }
+
+  const { data: sourceItems, error: sourceItemsError } = await supabase
+    .from("learning_list_items")
+    .select("piece_id, position")
+    .eq("learning_list_id", sourceListId)
+    .order("position", { ascending: true })
+
+  if (sourceItemsError) {
+    redirect(appendQueryParam(redirectTo, "import_public", "error"))
+  }
+
+  const { data: newList, error: newListError } = await supabase
+    .from("learning_lists")
+    .insert({
+      user_id: user.id,
+      name: `${sourceList.name} (Imported)`,
+      description: sourceList.description,
+      visibility: "private",
+      is_imported: true,
+    })
+    .select("id")
+    .single()
+
+  if (newListError || !newList) {
+    redirect(appendQueryParam(redirectTo, "import_public", "error"))
+  }
+
+  if (sourceItems && sourceItems.length > 0) {
+    const copiedItems = sourceItems.map((item) => ({
+      learning_list_id: newList.id,
+      piece_id: item.piece_id,
+      position: item.position,
+    }))
+
+    const { error: copyItemsError } = await supabase
+      .from("learning_list_items")
+      .insert(copiedItems)
+
+    if (copyItemsError) {
+      redirect(appendQueryParam(redirectTo, "import_public", "error"))
+    }
+  }
+
+  redirect(
+    appendQueryParams(redirectTo, {
+      import_public: "imported_all",
+      imported_list_id: newList.id,
+    })
+  )
+}
+
+export async function importSelectedPublicListItems(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const sourceListId = Number(formData.get("source_list_id"))
+  const targetLearningListId = Number(formData.get("target_learning_list_id"))
+  const redirectTo = String(
+    formData.get("redirect_to") ?? `/public-lists/${sourceListId}`
+  )
+
+  if (!sourceListId) {
+    redirect(appendQueryParam(redirectTo, "import_public", "source_not_found"))
+  }
+
+  if (!targetLearningListId) {
+    redirect(
+      appendQueryParam(redirectTo, "import_public", "missing_target_list")
+    )
+  }
+
+  const selectedPieceIds = Array.from(
+    new Set(
+      formData
+        .getAll("piece_ids")
+        .map((value) => Number(value))
+        .filter((value) => Number.isInteger(value) && value > 0)
+    )
+  )
+
+  if (selectedPieceIds.length === 0) {
+    redirect(appendQueryParam(redirectTo, "import_public", "no_selection"))
+  }
+
+  const { data: sourceList, error: sourceListError } = await supabase
+    .from("learning_lists")
+    .select("id")
+    .eq("id", sourceListId)
+    .eq("visibility", "public")
+    .maybeSingle()
+
+  if (sourceListError || !sourceList) {
+    redirect(appendQueryParam(redirectTo, "import_public", "source_not_found"))
+  }
+
+  const { data: targetList, error: targetListError } = await supabase
+    .from("learning_lists")
+    .select("id")
+    .eq("id", targetLearningListId)
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (targetListError || !targetList) {
+    redirect(
+      appendQueryParam(redirectTo, "import_public", "missing_target_list")
+    )
+  }
+
+  const { data: sourceItems, error: sourceItemsError } = await supabase
+    .from("learning_list_items")
+    .select("piece_id, position")
+    .eq("learning_list_id", sourceListId)
+    .in("piece_id", selectedPieceIds)
+    .order("position", { ascending: true })
+
+  if (sourceItemsError) {
+    redirect(appendQueryParam(redirectTo, "import_public", "error"))
+  }
+
+  if (!sourceItems || sourceItems.length === 0) {
+    redirect(appendQueryParam(redirectTo, "import_public", "no_selection"))
+  }
+
+  let addedCount = 0
+  let duplicateCount = 0
+
+  for (const item of sourceItems) {
+    const status = await addPieceToLearningListForUser(
+      supabase,
+      user.id,
+      item.piece_id,
+      targetLearningListId
+    )
+
+    if (status === "added") {
+      addedCount += 1
+    } else {
+      duplicateCount += 1
+    }
+  }
+
+  redirect(
+    appendQueryParams(redirectTo, {
+      import_public: "imported_selected",
+      added_count: addedCount,
+      duplicate_count: duplicateCount,
+      imported_list_id: targetLearningListId,
+    })
+  )
 }
 
 export async function updateList(formData: FormData) {
