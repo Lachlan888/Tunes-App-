@@ -4,19 +4,69 @@ import { redirect } from "next/navigation"
 import { markPieceKnownForUser } from "@/lib/actions/known-pieces"
 import { recordTuneReviewedEvent } from "@/lib/activity-events"
 import {
+  addDaysToDateOnly,
   getMaxPracticeStage,
   getNextReviewDateFromStage,
   getNextStageForFailed,
   getNextStageForShaky,
   getNextStageForSolid,
+  getToday,
+  normaliseStoredDate,
 } from "@/lib/review"
 import { reconcileStreaksForUser } from "@/lib/streaks"
 import { createClient } from "@/lib/supabase/server"
+
+const BACKLOG_RECOVERY_DAILY_CAP = 5
 
 function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")
     ? `${url}&${key}=${encodeURIComponent(value)}`
     : `${url}?${key}=${encodeURIComponent(value)}`
+}
+
+async function countPracticeTunesDueOnDate(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  candidateDate: string,
+  currentUserPieceId: number
+) {
+  const { count, error } = await supabase
+    .from("user_pieces")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("status", "learning")
+    .eq("next_review_due", candidateDate)
+    .neq("id", currentUserPieceId)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return count ?? 0
+}
+
+async function findAvailableRecoveryDate(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  currentUserPieceId: number,
+  baseDate: string
+) {
+  let candidateDate = baseDate
+
+  while (true) {
+    const dueCount = await countPracticeTunesDueOnDate(
+      supabase,
+      userId,
+      candidateDate,
+      currentUserPieceId
+    )
+
+    if (dueCount < BACKLOG_RECOVERY_DAILY_CAP) {
+      return candidateDate
+    }
+
+    candidateDate = addDaysToDateOnly(candidateDate, 1)
+  }
 }
 
 async function recordReview(
@@ -38,7 +88,7 @@ async function recordReview(
 
   const { data: userPiece, error: fetchError } = await supabase
     .from("user_pieces")
-    .select("id, user_id, piece_id, stage")
+    .select("id, user_id, piece_id, stage, next_review_due")
     .eq("id", userPieceId)
     .eq("user_id", user.id)
     .single()
@@ -60,8 +110,23 @@ async function recordReview(
   const shouldMoveToKnown =
     outcome === "solid" && newStage >= getMaxPracticeStage()
 
+  const today = getToday()
+  const existingDueDate = normaliseStoredDate(userPiece.next_review_due)
+  const wasOverdueBeforeReview = Boolean(
+    existingDueDate && existingDueDate < today
+  )
+
   if (!shouldMoveToKnown) {
-    const nextReviewDue = getNextReviewDateFromStage(newStage)
+    const baseNextReviewDue = getNextReviewDateFromStage(newStage)
+
+    const nextReviewDue = wasOverdueBeforeReview
+      ? await findAvailableRecoveryDate(
+          supabase,
+          user.id,
+          userPieceId,
+          baseNextReviewDue
+        )
+      : baseNextReviewDue
 
     const { error: updateError } = await supabase
       .from("user_pieces")

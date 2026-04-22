@@ -2,7 +2,7 @@ import type { BacklogTier } from "@/lib/types"
 
 const REVIEW_INTERVALS = [1, 2, 3, 7, 14, 30, 60, 90, 120, 360] as const
 
-const STAGE_PROGRESS_PERCENTAGES = [18, 32, 43, 55, 65, 74, 82, 89, 95, 100] as const
+const STAGE_PROGRESS_PERCENTAGES = [0, 18, 32, 43, 55, 65, 74, 82, 89, 100] as const
 
 export const APP_TIME_ZONE = "Australia/Melbourne"
 
