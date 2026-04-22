@@ -3,7 +3,7 @@ type ReferenceMediaEmbedProps = {
   title: string
 }
 
-function getYouTubeEmbedUrl(referenceUrl: string): string | null {
+export function getYouTubeEmbedUrl(referenceUrl: string): string | null {
   let url: URL
 
   try {

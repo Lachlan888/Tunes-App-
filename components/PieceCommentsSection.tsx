@@ -1,6 +1,9 @@
 import Link from "next/link"
 import SubmitButton from "@/components/SubmitButton"
-import { addPieceComment } from "@/lib/actions/piece-comments"
+import {
+  addPieceComment,
+  deletePieceComment,
+} from "@/lib/actions/piece-comments"
 
 type PieceComment = {
   id: number
@@ -18,12 +21,14 @@ type PieceCommentsSectionProps = {
   pieceId: number
   comments: PieceComment[]
   profileMap: Record<string, CommentAuthor>
+  currentUserId: string
 }
 
 export default function PieceCommentsSection({
   pieceId,
   comments,
   profileMap,
+  currentUserId,
 }: PieceCommentsSectionProps) {
   return (
     <section className="mt-10">
@@ -63,20 +68,46 @@ export default function PieceCommentsSection({
               username: null,
             }
 
+            const isOwnComment = comment.user_id === currentUserId
+
             return (
               <li key={comment.id} className="rounded border p-4">
-                <p className="mb-2 text-sm text-gray-600">
-                  {author.username ? (
-                    <Link
-                      href={`/users/${author.username}`}
-                      className="underline hover:no-underline"
-                    >
-                      {author.displayName}
-                    </Link>
-                  ) : (
-                    author.displayName
-                  )}
-                </p>
+                <div className="mb-2 flex items-start justify-between gap-4">
+                  <p className="text-sm text-gray-600">
+                    {author.username ? (
+                      <Link
+                        href={`/users/${author.username}`}
+                        className="underline hover:no-underline"
+                      >
+                        {author.displayName}
+                      </Link>
+                    ) : (
+                      author.displayName
+                    )}
+                  </p>
+
+                  {isOwnComment ? (
+                    <form action={deletePieceComment}>
+                      <input type="hidden" name="piece_id" value={pieceId} />
+                      <input
+                        type="hidden"
+                        name="redirect_to"
+                        value={`/library/${pieceId}`}
+                      />
+                      <input
+                        type="hidden"
+                        name="comment_id"
+                        value={comment.id}
+                      />
+
+                      <SubmitButton
+                        label="Delete"
+                        pendingLabel="Deleting..."
+                        className="border px-3 py-1 text-xs"
+                      />
+                    </form>
+                  ) : null}
+                </div>
 
                 <p className="whitespace-pre-wrap text-gray-800">
                   {comment.body}

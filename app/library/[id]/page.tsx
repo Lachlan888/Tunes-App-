@@ -2,12 +2,14 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import {
+  addPieceMediaLink,
   addPieceSheetMusicLink,
   upsertUserPieceNotes,
 } from "@/lib/actions/piece-metadata"
 import { addToLearningList } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
 import PieceCommentsSection from "@/components/PieceCommentsSection"
+import PieceMediaLinksSection from "@/components/PieceMediaLinksSection"
 import ReferenceMediaEmbed from "@/components/ReferenceMediaEmbed"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCanonicalDetailsCard from "@/components/TuneCanonicalDetailsCard"
@@ -25,6 +27,12 @@ type UserPieceMetadata = {
 }
 
 type PieceSheetMusicLink = {
+  id: number
+  url: string
+  label: string | null
+}
+
+type PieceMediaLink = {
   id: number
   url: string
   label: string | null
@@ -121,6 +129,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
   const [
     userPieceMetadataResult,
     sheetMusicLinksResult,
+    mediaLinksResult,
     pieceCommentsResult,
     userPieceResult,
     userKnownPieceResult,
@@ -136,6 +145,11 @@ export default async function PiecePage({ params }: PiecePageProps) {
       .maybeSingle(),
     supabase
       .from("piece_sheet_music_links")
+      .select("id, url, label")
+      .eq("piece_id", pieceId)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("piece_media_links")
       .select("id, url, label")
       .eq("piece_id", pieceId)
       .order("created_at", { ascending: true }),
@@ -180,6 +194,8 @@ export default async function PiecePage({ params }: PiecePageProps) {
     (userPieceMetadataResult.data as UserPieceMetadata | null) ?? null
   const typedSheetMusicLinks =
     (sheetMusicLinksResult.data as PieceSheetMusicLink[] | null) ?? []
+  const typedMediaLinks =
+    (mediaLinksResult.data as PieceMediaLink[] | null) ?? []
   const typedPieceComments =
     (pieceCommentsResult.data as PieceCommentRow[] | null) ?? []
   const typedUserPiece = (userPieceResult.data as UserPiece | null) ?? null
@@ -235,7 +251,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
               <p>Style: {typedPiece.style || "—"}</p>
               <p>Time signature: {typedPiece.time_signature || "—"}</p>
               <p>
-                Reference:{" "}
+                Reference{" "}
                 {typedPiece.reference_url ? (
                   <a
                     href={typedPiece.reference_url}
@@ -300,6 +316,13 @@ export default async function PiecePage({ params }: PiecePageProps) {
               />
             </form>
           </section>
+
+          <PieceMediaLinksSection
+            pieceId={pieceId}
+            redirectTo={`/library/${pieceId}`}
+            mediaLinks={typedMediaLinks}
+            addPieceMediaLink={addPieceMediaLink}
+          />
 
           <section className="rounded border p-4">
             <h2 className="mb-2 text-xl font-semibold">Sheet music / tab</h2>
