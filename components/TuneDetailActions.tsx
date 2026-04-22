@@ -1,5 +1,6 @@
 import AddToListAction from "@/components/AddToListAction"
 import MarkAsKnownButton from "@/components/MarkAsKnownButton"
+import PracticeProgress from "@/components/PracticeProgress"
 import RemoveTuneButton from "@/components/RemoveTuneButton"
 import StartPracticeButton from "@/components/StartPracticeButton"
 import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
@@ -46,7 +47,11 @@ export default function TuneDetailActions({
       <div className="space-y-2 text-sm text-gray-700">
         <p>In practice: {isAlreadyInPractice ? "Yes" : "No"}</p>
         <p>Known: {isKnown ? "Yes" : "No"}</p>
-        <p>Stage: {currentStage ?? "—"}</p>
+
+        {isAlreadyInPractice && currentStage ? (
+          <PracticeProgress stage={currentStage} className="pt-1" />
+        ) : null}
+
         <p>Lists containing this tune: {existingListCount}</p>
       </div>
 
