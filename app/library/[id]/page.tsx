@@ -376,11 +376,12 @@ export default async function PiecePage({ params }: PiecePageProps) {
         </div>
       </div>
 
-      <section className="mt-8 rounded border p-4">
+       <section className="mt-8 rounded border p-4">
         <PieceCommentsSection
           pieceId={pieceId}
           comments={typedPieceComments}
           profileMap={profileMap}
+          currentUserId={user.id}
         />
       </section>
     </main>

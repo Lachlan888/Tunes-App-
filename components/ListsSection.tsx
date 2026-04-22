@@ -1,3 +1,5 @@
+import PracticeProgress from "@/components/PracticeProgress"
+import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
 import type { Piece, UserPiece } from "@/lib/types"
 
@@ -86,9 +88,10 @@ export default function ListsSection({
                             listNames={[]}
                           >
                             {practiceStage !== null && (
-                              <p className="text-sm text-gray-600">
-                                Stage: {practiceStage}
-                              </p>
+                              <PracticeProgress
+                                stage={practiceStage}
+                                className="min-w-[220px] flex-1"
+                              />
                             )}
 
                             {isAlreadyInPractice ? (
@@ -98,9 +101,11 @@ export default function ListsSection({
                             ) : (
                               <form action={startLearning}>
                                 <input type="hidden" name="piece_id" value={piece.id} />
-                                <button className="bg-black px-3 py-1 text-sm text-white">
-                                  Start Practice
-                                </button>
+                                <SubmitButton
+                                  label="Start Practice"
+                                  pendingLabel="Starting..."
+                                  className="bg-black px-3 py-1 text-sm text-white"
+                                />
                               </form>
                             )}
                           </TuneCard>

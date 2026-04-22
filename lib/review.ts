@@ -2,6 +2,8 @@ import type { BacklogTier } from "@/lib/types"
 
 const REVIEW_INTERVALS = [1, 2, 3, 7, 14, 30, 60, 90, 120, 360] as const
 
+const STAGE_PROGRESS_PERCENTAGES = [18, 32, 43, 55, 65, 74, 82, 89, 95, 100] as const
+
 export const APP_TIME_ZONE = "Australia/Melbourne"
 
 function getAppDateParts() {
@@ -33,6 +35,14 @@ function getAppTodayDateOnly() {
 function parseDateOnlyAsUtc(dateOnly: string) {
   const [year, month, day] = dateOnly.split("-").map(Number)
   return Date.UTC(year, month - 1, day)
+}
+
+function getSafeStage(stage: number | null | undefined) {
+  if (!stage || Number.isNaN(stage) || stage < 1) {
+    return 1
+  }
+
+  return Math.min(stage, REVIEW_INTERVALS.length)
 }
 
 export function normaliseStoredDate(dateValue: string | null | undefined) {
@@ -98,8 +108,7 @@ export function getOverdueDays(
   }
 
   const millisecondsPerDay = 24 * 60 * 60 * 1000
-  const diff =
-    parseDateOnlyAsUtc(today) - parseDateOnlyAsUtc(normalised)
+  const diff = parseDateOnlyAsUtc(today) - parseDateOnlyAsUtc(normalised)
 
   return Math.floor(diff / millisecondsPerDay)
 }
@@ -136,23 +145,31 @@ export function getBacklogTierLabel(tier: BacklogTier) {
   }
 }
 
+export function getMaxPracticeStage() {
+  return REVIEW_INTERVALS.length
+}
+
 export function getNextReviewDateFromStage(stage: number) {
-  const safeStage = Math.max(1, Math.min(stage, REVIEW_INTERVALS.length))
+  const safeStage = getSafeStage(stage)
   const intervalDays = REVIEW_INTERVALS[safeStage - 1]
   return addDaysToDateOnly(getToday(), intervalDays)
 }
 
 export function getNextStageForSolid(currentStage: number | null | undefined) {
-  const safeCurrentStage = currentStage && currentStage > 0 ? currentStage : 1
+  const safeCurrentStage = getSafeStage(currentStage)
   return Math.min(safeCurrentStage + 1, REVIEW_INTERVALS.length)
 }
 
 export function getNextStageForShaky(currentStage: number | null | undefined) {
-  const safeCurrentStage = currentStage && currentStage > 0 ? currentStage : 1
-  return safeCurrentStage
+  return getSafeStage(currentStage)
 }
 
 export function getNextStageForFailed(currentStage: number | null | undefined) {
-  const safeCurrentStage = currentStage && currentStage > 0 ? currentStage : 1
+  const safeCurrentStage = getSafeStage(currentStage)
   return Math.max(safeCurrentStage - 2, 1)
+}
+
+export function getProgressTowardsKnown(stage: number | null | undefined) {
+  const safeStage = getSafeStage(stage)
+  return STAGE_PROGRESS_PERCENTAGES[safeStage - 1]
 }

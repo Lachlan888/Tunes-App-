@@ -1,6 +1,10 @@
 "use server"
 
+import { redirect } from "next/navigation"
+import { markPieceKnownForUser } from "@/lib/actions/known-pieces"
+import { recordTuneReviewedEvent } from "@/lib/activity-events"
 import {
+  getMaxPracticeStage,
   getNextReviewDateFromStage,
   getNextStageForFailed,
   getNextStageForShaky,
@@ -8,8 +12,12 @@ import {
 } from "@/lib/review"
 import { reconcileStreaksForUser } from "@/lib/streaks"
 import { createClient } from "@/lib/supabase/server"
-import { recordTuneReviewedEvent } from "@/lib/activity-events"
-import { redirect } from "next/navigation"
+
+function appendQueryParam(url: string, key: string, value: string) {
+  return url.includes("?")
+    ? `${url}&${key}=${encodeURIComponent(value)}`
+    : `${url}?${key}=${encodeURIComponent(value)}`
+}
 
 async function recordReview(
   formData: FormData,
@@ -39,27 +47,35 @@ async function recordReview(
     throw new Error(fetchError.message)
   }
 
+  const currentStage =
+    userPiece.stage && userPiece.stage > 0 ? userPiece.stage : 1
+
   const newStage =
     outcome === "solid"
-      ? getNextStageForSolid(userPiece.stage)
+      ? getNextStageForSolid(currentStage)
       : outcome === "shaky"
-        ? getNextStageForShaky(userPiece.stage)
-        : getNextStageForFailed(userPiece.stage)
+        ? getNextStageForShaky(currentStage)
+        : getNextStageForFailed(currentStage)
 
-  const nextReviewDue = getNextReviewDateFromStage(newStage)
+  const shouldMoveToKnown =
+    outcome === "solid" && newStage >= getMaxPracticeStage()
 
-  const { error: updateError } = await supabase
-    .from("user_pieces")
-    .update({
-      stage: newStage,
-      next_review_due: nextReviewDue,
-      status: "learning",
-    })
-    .eq("id", userPieceId)
-    .eq("user_id", user.id)
+  if (!shouldMoveToKnown) {
+    const nextReviewDue = getNextReviewDateFromStage(newStage)
 
-  if (updateError) {
-    throw new Error(updateError.message)
+    const { error: updateError } = await supabase
+      .from("user_pieces")
+      .update({
+        stage: newStage,
+        next_review_due: nextReviewDue,
+        status: "learning",
+      })
+      .eq("id", userPieceId)
+      .eq("user_id", user.id)
+
+    if (updateError) {
+      throw new Error(updateError.message)
+    }
   }
 
   const { error: reviewEventError } = await supabase.from("review_events").insert({
@@ -72,10 +88,18 @@ async function recordReview(
     throw new Error(reviewEventError.message)
   }
 
+  if (shouldMoveToKnown) {
+    await markPieceKnownForUser(supabase, user.id, userPiece.piece_id)
+  }
+
   await recordTuneReviewedEvent(user.id, userPiece.piece_id)
   await reconcileStreaksForUser(supabase, user.id, {
     markPracticeActivity: true,
   })
+
+  if (shouldMoveToKnown) {
+    redirect(appendQueryParam(redirectTo, "practice_update", "moved_to_known"))
+  }
 
   redirect(redirectTo)
 }

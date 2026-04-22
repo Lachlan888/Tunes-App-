@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import BacklogSummarySection from "@/components/BacklogSummarySection"
+import PracticeProgress from "@/components/PracticeProgress"
 import ReferenceMediaLink from "@/components/ReferenceMediaLink"
 import RemoveFromPracticeButton from "@/components/RemoveFromPracticeButton"
 import StreakSummarySection from "@/components/StreakSummarySection"
@@ -12,6 +13,7 @@ import { APP_TIME_ZONE } from "@/lib/review"
 type ReviewPageProps = {
   searchParams?: Promise<{
     remove_from_practice?: string
+    practice_update?: string
     mode?: string
   }>
 }
@@ -41,6 +43,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const resolvedSearchParams = await searchParams
   const removeFromPracticeStatus =
     resolvedSearchParams?.remove_from_practice ?? ""
+  const practiceUpdate = resolvedSearchParams?.practice_update ?? ""
   const mode = resolvedSearchParams?.mode ?? ""
   const isCatchUpMode = mode === "catch-up"
 
@@ -68,6 +71,12 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
       <div className="mt-8">
         <StreakSummarySection streakSummary={streakSummary} />
       </div>
+
+      {practiceUpdate === "moved_to_known" && (
+        <div className="mb-6 mt-4 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+          Tune completed its final practice review and moved to known tunes.
+        </div>
+      )}
 
       {removeFromPracticeStatus === "success" && (
         <div className="mb-6 mt-4 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
@@ -161,9 +170,10 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                     )}
 
                     <p className="mt-2 text-sm text-gray-600">
-                      Due: {formatDueDate(userPiece.next_review_due)} | Stage:{" "}
-                      {userPiece.stage}
+                      Due: {formatDueDate(userPiece.next_review_due)}
                     </p>
+
+                    <PracticeProgress stage={userPiece.stage} className="mt-3" />
 
                     <div className="mt-6 flex flex-wrap gap-3">
                       <form action={markFailed}>
@@ -278,9 +288,10 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                     )}
 
                     <p className="mt-2 text-sm text-gray-600">
-                      Due: {formatDueDate(userPiece.next_review_due)} | Stage:{" "}
-                      {userPiece.stage}
+                      Due: {formatDueDate(userPiece.next_review_due)}
                     </p>
+
+                    <PracticeProgress stage={userPiece.stage} className="mt-3" />
 
                     <div className="mt-6 flex flex-wrap gap-3">
                       <form action={markFailed}>
@@ -375,7 +386,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                 return (
                   <li key={userPiece.id} className="rounded border p-3">
                     <div className="flex items-start justify-between gap-4">
-                      <div>
+                      <div className="flex-1">
                         <p className="font-medium">
                           {userPiece.piece ? (
                             <Link
@@ -394,9 +405,13 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                           {userPiece.piece?.time_signature ?? "Unknown"}
                         </p>
                         <p className="mt-1 text-sm text-gray-600">
-                          Due: {formatDueDate(userPiece.next_review_due)} | Stage:{" "}
-                          {userPiece.stage}
+                          Due: {formatDueDate(userPiece.next_review_due)}
                         </p>
+
+                        <PracticeProgress
+                          stage={userPiece.stage}
+                          className="mt-3 max-w-sm"
+                        />
 
                         <div className="mt-3">
                           <RemoveFromPracticeButton
