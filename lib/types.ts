@@ -192,6 +192,39 @@ export type PublicProfileData = {
   repertoireSummary: RepertoireSummary | null
 }
 
+export type GettingStartedTaskId =
+  | "complete_profile"
+  | "add_tunes"
+  | "mark_known"
+  | "start_practice"
+  | "create_list"
+  | "complete_first_review"
+  | "finish_today"
+
+export type GettingStartedTaskGroup =
+  | "Set up your account"
+  | "Build repertoire state"
+  | "Learn the practice loop"
+
+export type GettingStartedTask = {
+  id: GettingStartedTaskId
+  group: GettingStartedTaskGroup
+  label: string
+  description: string
+  href: string
+  actionLabel: string
+  pendingLabel: string
+  isComplete: boolean
+}
+
+export type GettingStartedState = {
+  shouldShow: boolean
+  completedCount: number
+  totalCount: number
+  nextTask: GettingStartedTask | null
+  tasks: GettingStartedTask[]
+}
+
 export type BacklogTier = "due_now" | "overdue" | "overdue_longest"
 
 export type BacklogGroupSummary = {

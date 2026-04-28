@@ -24,6 +24,37 @@ type HomeSummarySectionProps = {
   streakSummary: StreakSummary
 }
 
+type OverviewCardProps = {
+  href: string
+  label: string
+  value: number
+  helper: string
+}
+
+function OverviewCard({ href, label, value, helper }: OverviewCardProps) {
+  return (
+    <Link
+      href={href}
+      className="group block rounded-lg border p-4 transition hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black/10"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm text-gray-600">{label}</p>
+          <p className="mt-1 text-3xl font-bold">{value}</p>
+          <p className="mt-2 text-sm text-gray-600">{helper}</p>
+        </div>
+
+        <span
+          aria-hidden="true"
+          className="text-sm text-gray-400 transition group-hover:text-gray-600"
+        >
+          →
+        </span>
+      </div>
+    </Link>
+  )
+}
+
 export default function HomeSummarySection({
   pieces,
   userPieces,
@@ -64,51 +95,64 @@ export default function HomeSummarySection({
       <section>
         <h2 className="mb-4 text-2xl font-semibold">Overview</h2>
 
-        <div className="grid gap-4 md:grid-cols-4">
-          <div className="rounded-lg border p-4">
-            <p className="text-sm text-gray-600">Due today</p>
-            <p className="mt-1 text-3xl font-bold">{dueTodayCount}</p>
-            <a href="/review" className="mt-3 inline-block text-sm underline">
-              Go to Practice
-            </a>
-          </div>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <section className="rounded-lg border p-4">
+            <h3 className="mb-3 text-lg font-semibold">Your repertoire</h3>
 
-          <div className="rounded-lg border p-4">
-            <p className="text-sm text-gray-600">Needs attention</p>
-            <p className="mt-1 text-3xl font-bold">{needsAttentionCount}</p>
-            <a
-              href="/review?mode=catch-up"
-              className="mt-3 inline-block text-sm underline"
-            >
-              Catch up
-            </a>
-          </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <OverviewCard
+                href="/library/known"
+                label="Known tunes"
+                value={totalKnown}
+                helper="Tunes you have marked as already known."
+              />
 
-          <div className="rounded-lg border p-4">
-            <p className="text-sm text-gray-600">Known tunes</p>
-            <p className="mt-1 text-3xl font-bold">{totalKnown}</p>
-            <a href="/library" className="mt-3 inline-block text-sm underline">
-              Open Tunes
-            </a>
-          </div>
+              <OverviewCard
+                href="/library/practice"
+                label="In practice"
+                value={totalInPractice}
+                helper="Tunes currently in your review system."
+              />
+            </div>
+          </section>
 
-          <div className="rounded-lg border p-4">
-            <p className="text-sm text-gray-600">Lists</p>
-            <p className="mt-1 text-3xl font-bold">{totalLists}</p>
-            <a
+          <section className="rounded-lg border p-4">
+            <h3 className="mb-3 text-lg font-semibold">Practice status</h3>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <OverviewCard
+                href="/review#due-today"
+                label="Due today"
+                value={dueTodayCount}
+                helper="Reviews scheduled for today."
+              />
+
+              <OverviewCard
+                href="/review?mode=catch-up#catch-up"
+                label="Needs attention"
+                value={needsAttentionCount}
+                helper="Overdue tunes waiting for catch-up."
+              />
+            </div>
+          </section>
+
+          <section className="rounded-lg border p-4">
+            <h3 className="mb-3 text-lg font-semibold">Organisation</h3>
+
+            <OverviewCard
               href="/learning-lists"
-              className="mt-3 inline-block text-sm underline"
-            >
-              Open Lists
-            </a>
-          </div>
+              label="Lists"
+              value={totalLists}
+              helper="Your tune collections and planning lists."
+            />
+          </section>
         </div>
       </section>
 
       {needsAttentionCount > 0 && (
         <BacklogSummarySection
           groups={backlogSummary}
-          actionHref="/review?mode=catch-up"
+          actionHref="/review?mode=catch-up#catch-up"
           actionLabel="Catch up"
         />
       )}
@@ -117,9 +161,9 @@ export default function HomeSummarySection({
         <div className="rounded-lg border p-4">
           <div className="mb-3 flex items-center justify-between gap-4">
             <h3 className="text-lg font-semibold">Due next</h3>
-            <a href="/review" className="text-sm underline">
+            <Link href="/review#due-today" className="text-sm underline">
               View all
-            </a>
+            </Link>
           </div>
 
           {dueTodayPreview.length === 0 ? (
@@ -159,9 +203,9 @@ export default function HomeSummarySection({
         <div className="rounded-lg border p-4">
           <div className="mb-3 flex items-center justify-between gap-4">
             <h3 className="text-lg font-semibold">Currently in practice</h3>
-            <a href="/review" className="text-sm underline">
+            <Link href="/library/practice" className="text-sm underline">
               View all
-            </a>
+            </Link>
           </div>
 
           {inPracticePreview.length === 0 ? (
@@ -203,9 +247,9 @@ export default function HomeSummarySection({
         <section className="rounded-lg border p-4">
           <div className="mb-3 flex items-center justify-between gap-4">
             <h3 className="text-lg font-semibold">Your lists</h3>
-            <a href="/learning-lists" className="text-sm underline">
+            <Link href="/learning-lists" className="text-sm underline">
               View all
-            </a>
+            </Link>
           </div>
 
           {listPreview.length === 0 ? (
