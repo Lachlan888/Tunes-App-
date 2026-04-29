@@ -1,65 +1,17 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-
-type UserKnownPiece = {
-  id: number
-  piece_id: number
-}
-
-type StyleOption = {
-  id: number
-  slug: string
-  label: string
-}
-
-type FilterOptionPiece = {
-  key: string | null
-  style: string | null
-  time_signature: string | null
-  piece_styles:
-    | {
-        style_id: number
-        styles:
-          | {
-              id: number
-              slug: string
-              label: string
-            }
-          | {
-              id: number
-              slug: string
-              label: string
-            }[]
-          | null
-      }[]
-    | null
-}
+import type {
+  LearningListItemMembership,
+  LearningListOwner,
+  PieceFilterOption,
+  StyleOption,
+  UserKnownPiece,
+} from "@/lib/types"
 
 type LearningListItemRow = {
   piece_id: number
   learning_list_id: number
-  learning_lists:
-    | {
-        id: number
-        name: string
-        user_id: string
-      }
-    | {
-        id: number
-        name: string
-        user_id: string
-      }[]
-    | null
-}
-
-type NormalisedLearningListItem = {
-  piece_id: number
-  learning_list_id: number
-  learning_lists: {
-    id: number
-    name: string
-    user_id: string
-  }
+  learning_lists: LearningListOwner | LearningListOwner[] | null
 }
 
 type LoadLibraryDataParams = {
@@ -71,7 +23,7 @@ type LoadLibraryDataParams = {
 
 function normaliseLearningListItem(
   item: LearningListItemRow
-): NormalisedLearningListItem | null {
+): LearningListItemMembership | null {
   const learningList = Array.isArray(item.learning_lists)
     ? item.learning_lists[0] ?? null
     : item.learning_lists
@@ -201,7 +153,7 @@ export async function loadLibraryData({
 
   let userKnownPieces: UserKnownPiece[] = []
 
-  let learningListItems: NormalisedLearningListItem[] = []
+  let learningListItems: LearningListItemMembership[] = []
 
   if (displayPieceIds.length > 0) {
     const { data: userPiecesRows, error: userPiecesError } = await supabase
@@ -245,7 +197,7 @@ export async function loadLibraryData({
     learningListItems = ((learningListItemsRows ?? []) as LearningListItemRow[])
       .map(normaliseLearningListItem)
       .filter(
-        (item): item is NormalisedLearningListItem => item !== null
+        (item): item is LearningListItemMembership => item !== null
       )
   }
 
@@ -260,7 +212,7 @@ export async function loadLibraryData({
   return {
     user,
     pieces,
-    filterOptionPieces: (filterOptionPiecesRows ?? []) as FilterOptionPiece[],
+    filterOptionPieces: (filterOptionPiecesRows ?? []) as PieceFilterOption[],
     userPieces,
     userKnownPieces,
     learningLists,

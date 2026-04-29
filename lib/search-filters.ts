@@ -1,5 +1,9 @@
 import { normaliseTuneTitle } from "@/lib/normalise"
-import type { FilterableLearningList, Piece } from "@/lib/types"
+import type {
+  FilterableLearningList,
+  Piece,
+  PieceFilterOption,
+} from "@/lib/types"
 
 export type PieceSearchFilters = {
   q: string
@@ -30,7 +34,7 @@ export function normaliseForSearch(value: string | null | undefined) {
   return normaliseTuneTitle(value)
 }
 
-export function getStyleLabelsFromPiece(piece: Piece): string[] {
+export function getStyleLabelsFromPiece(piece: Piece | PieceFilterOption): string[] {
   const labelsFromJoin = (piece.piece_styles ?? [])
     .flatMap((pieceStyle) => {
       if (!pieceStyle.styles) return []
@@ -48,12 +52,14 @@ export function getStyleLabelsFromPiece(piece: Piece): string[] {
   return piece.style ? [piece.style] : []
 }
 
-export function getPrimaryStyleLabel(piece: Piece): string | null {
+export function getPrimaryStyleLabel(piece: Piece | PieceFilterOption): string | null {
   const labels = getStyleLabelsFromPiece(piece)
   return labels[0] ?? null
 }
 
-export function getPieceFilterOptions(pieces: Piece[]): PieceFilterOptions {
+export function getPieceFilterOptions(
+  pieces: PieceFilterOption[]
+): PieceFilterOptions {
   const keys = Array.from(
     new Set(
       pieces.map((piece) => piece.key).filter((key): key is string => Boolean(key))
@@ -141,8 +147,7 @@ export function listMatchesFilters(
     filters.styles.length === 0 ||
     filters.styles.some((selectedStyle) => list.stylesPresent.includes(selectedStyle))
 
-  const matchesSource =
-    filters.source === "" || list.source === filters.source
+  const matchesSource = filters.source === "" || list.source === filters.source
 
   const matchesVisibility =
     filters.visibility === "" || list.visibility === filters.visibility

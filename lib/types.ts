@@ -24,6 +24,19 @@ export type Piece = {
   piece_styles?: PieceStyleTag[] | null
 }
 
+export type PieceFilterOption = {
+  key: string | null
+  style: string | null
+  time_signature: string | null
+  piece_styles?: PieceStyleTag[] | null
+}
+
+export type StyleOption = {
+  id: number
+  slug: string
+  label: string
+}
+
 export type UserPiece = {
   id: number
   piece_id: number
@@ -72,17 +85,40 @@ export type LearningList = {
   is_imported?: boolean
 }
 
+export type LearningListOwner = {
+  id: number
+  name: string
+  user_id: string
+}
+
+export type LearningListItemMembership = {
+  piece_id: number
+  learning_list_id: number
+  learning_lists: LearningListOwner
+}
+
+export type LearningListDetail = {
+  id: number
+  user_id: string
+  name: string
+  description: string | null
+  visibility: LearningListVisibility
+  is_imported: boolean
+}
+
+export type LearningListItemWithPiece = {
+  id: number
+  position: number | null
+  pieces: Piece | Piece[] | null
+}
+
 export type LearningListItem = {
   id?: number
   piece_id?: number
   learning_list_id?: number
   position?: number | null
   pieces?: Piece | Piece[] | null
-  learning_lists?: {
-    id: number
-    name: string
-    user_id: string
-  }
+  learning_lists?: LearningListOwner
 }
 
 export type UserPieceWithPiece = {

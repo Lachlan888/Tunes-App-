@@ -6,24 +6,20 @@ import EmptyState from "@/components/EmptyState"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
 import { markAsKnown } from "@/lib/actions/known-pieces"
-import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
-
-type LearningListItem = {
-  piece_id: number
-  learning_list_id: number
-  learning_lists: {
-    id: number
-    name: string
-    user_id: string
-  }
-}
+import type {
+  LearningList,
+  LearningListItemMembership,
+  Piece,
+  UserKnownPiece,
+  UserPiece,
+} from "@/lib/types"
 
 type LibraryListProps = {
   pieces: Piece[] | null
   userPieces: UserPiece[] | null
   userKnownPieces: UserKnownPiece[] | null
   learningLists: LearningList[] | null
-  learningListItems: LearningListItem[] | null
+  learningListItems: LearningListItemMembership[] | null
   startLearning: (formData: FormData) => Promise<void>
   addToLearningList: (formData: FormData) => Promise<void>
   removeTuneFromMyApp: (formData: FormData) => Promise<void>
