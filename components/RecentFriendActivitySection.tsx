@@ -1,3 +1,4 @@
+import EmptyState from "@/components/EmptyState"
 import {
   formatFriendActivityRelativeTime,
   renderFriendActivityText,
@@ -16,7 +17,10 @@ export default function RecentFriendActivitySection({
       <h2 className="mb-4 text-xl font-semibold">Recent activity</h2>
 
       {items.length === 0 ? (
-        <p className="text-sm text-gray-600">No recent friend activity yet.</p>
+        <EmptyState
+          title="No recent friend activity"
+          description="Once you have friends, recent public practice and list activity can appear here."
+        />
       ) : (
         <div className="space-y-3">
           {items.map((item) => (

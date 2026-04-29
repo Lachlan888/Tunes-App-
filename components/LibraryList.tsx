@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
+import EmptyState from "@/components/EmptyState"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
 import { markAsKnown } from "@/lib/actions/known-pieces"
@@ -27,6 +28,7 @@ type LibraryListProps = {
   addToLearningList: (formData: FormData) => Promise<void>
   removeTuneFromMyApp: (formData: FormData) => Promise<void>
   redirectTo: string
+  hasActiveFilters: boolean
 }
 
 export default function LibraryList({
@@ -39,20 +41,33 @@ export default function LibraryList({
   addToLearningList,
   removeTuneFromMyApp,
   redirectTo,
+  hasActiveFilters,
 }: LibraryListProps) {
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
-  const [selectedListId, setSelectedListId] = useState<string>("")
+  const [selectedListId, setSelectedListId] = useState("")
 
   const allPieces = pieces ?? []
 
   if (allPieces.length === 0) {
-    return <p className="text-gray-600">No tunes match this filter.</p>
+    return hasActiveFilters ? (
+      <EmptyState
+        title="No tunes match this search"
+        description="Try removing a filter, changing the title search, or creating the tune if it is genuinely missing."
+        primaryActionHref="/library"
+        primaryActionLabel="Reset filters"
+      />
+    ) : (
+      <EmptyState
+        title="No tunes in the library yet"
+        description="Use Create Tune or Bulk Import Known Tunes above to start building the canonical tune library."
+      />
+    )
   }
 
   return (
     <>
       <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {allPieces.map((piece: Piece) => {
+        {allPieces.map((piece) => {
           const isAlreadyInPractice = (userPieces ?? []).some(
             (userPiece) => userPiece.piece_id === piece.id
           )

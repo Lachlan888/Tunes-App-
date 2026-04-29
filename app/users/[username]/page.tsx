@@ -178,6 +178,7 @@ export default async function PublicProfilePage({
         instruments={instruments}
         publicLists={publicLists}
         repertoireSummary={repertoireSummary}
+        isOwnProfile={isOwnProfile}
       />
     </main>
   )

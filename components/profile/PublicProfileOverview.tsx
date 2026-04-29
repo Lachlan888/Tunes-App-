@@ -1,4 +1,5 @@
 import Link from "next/link"
+import EmptyState from "@/components/EmptyState"
 import type {
   Profile,
   PublicProfileList,
@@ -11,6 +12,7 @@ type PublicProfileOverviewProps = {
   instruments: UserInstrument[]
   publicLists: PublicProfileList[]
   repertoireSummary: RepertoireSummary | null
+  isOwnProfile: boolean
 }
 
 export default function PublicProfileOverview({
@@ -18,6 +20,7 @@ export default function PublicProfileOverview({
   instruments,
   publicLists,
   repertoireSummary,
+  isOwnProfile,
 }: PublicProfileOverviewProps) {
   return (
     <>
@@ -55,8 +58,20 @@ export default function PublicProfileOverview({
                 <li key={instrument.id}>{instrument.instrument_name}</li>
               ))}
             </ul>
+          ) : isOwnProfile ? (
+            <EmptyState
+              title="No instruments listed"
+              description="Add instruments on your Profile page so other players know what you play."
+              primaryActionHref="/dashboard"
+              primaryActionLabel="Edit Profile"
+              className="mt-4"
+            />
           ) : (
-            <p className="mt-4 text-gray-600">No instruments listed.</p>
+            <EmptyState
+              title="No instruments listed"
+              description="This user has not added instruments to their profile yet."
+              className="mt-4"
+            />
           )}
         </section>
       )}
@@ -88,8 +103,20 @@ export default function PublicProfileOverview({
                 </li>
               ))}
             </ul>
+          ) : isOwnProfile ? (
+            <EmptyState
+              title="No public lists yet"
+              description="Make one of your lists public if you want other users to browse or import it."
+              primaryActionHref="/learning-lists"
+              primaryActionLabel="Manage Lists"
+              className="mt-4"
+            />
           ) : (
-            <p className="mt-4 text-gray-600">No public lists yet.</p>
+            <EmptyState
+              title="No public lists yet"
+              description="Public lists this user chooses to share will appear here."
+              className="mt-4"
+            />
           )}
         </section>
       )}

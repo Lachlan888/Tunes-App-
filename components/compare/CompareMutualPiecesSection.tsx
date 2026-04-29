@@ -1,9 +1,11 @@
+import EmptyState from "@/components/EmptyState"
 import TuneCard from "@/components/TuneCard"
 import PieceSearchFilters from "@/components/PieceSearchFilters"
 import type { Piece } from "@/lib/types"
 
 type CompareMutualPiecesSectionProps = {
   filteredPieces: Piece[]
+  mutualPiecesCount: number
   titleQuery: string
   selectedKeys: string[]
   selectedStyles: string[]
@@ -15,8 +17,21 @@ type CompareMutualPiecesSectionProps = {
   filterPreservedUsers: string[]
 }
 
+function buildCompareClearFiltersHref(filterPreservedUsers: string[]) {
+  const params = new URLSearchParams()
+
+  for (const username of filterPreservedUsers) {
+    if (username) {
+      params.append("user", username)
+    }
+  }
+
+  return params.toString() ? `/compare?${params.toString()}` : "/compare"
+}
+
 export default function CompareMutualPiecesSection({
   filteredPieces,
+  mutualPiecesCount,
   titleQuery,
   selectedKeys,
   selectedStyles,
@@ -45,7 +60,21 @@ export default function CompareMutualPiecesSection({
       />
 
       {filteredPieces.length === 0 ? (
-        <p>No mutual tunes match this filter.</p>
+        mutualPiecesCount > 0 ? (
+          <EmptyState
+            title="No common tunes match these filters"
+            description="You may still have tunes in common. Clear the filters to see the full overlap."
+            primaryActionHref={buildCompareClearFiltersHref(filterPreservedUsers)}
+            primaryActionLabel="Clear filters"
+          />
+        ) : (
+          <EmptyState
+            title="No common tunes yet"
+            description="You and this player or group do not currently have overlapping known or practice tunes."
+            secondaryActionHref="/friends"
+            secondaryActionLabel="Find friends"
+          />
+        )
       ) : (
         <div className="space-y-3">
           {filteredPieces.map((piece) => (

@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import EmptyState from "@/components/EmptyState"
 
 type AcceptedFriend = {
   connection_id: number
@@ -17,9 +18,7 @@ type FriendsListSectionProps = {
 
 const DEFAULT_VISIBLE_COUNT = 4
 
-export default function FriendsListSection({
-  friends,
-}: FriendsListSectionProps) {
+export default function FriendsListSection({ friends }: FriendsListSectionProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const visibleFriends = isExpanded
@@ -45,12 +44,18 @@ export default function FriendsListSection({
       </div>
 
       {friends.length === 0 ? (
-        <p className="text-sm text-gray-600">No friends yet.</p>
+        <EmptyState
+          title="No friends yet"
+          description="Search for another user, send a request, and then compare your repertoire once connected."
+          primaryActionHref="/friends"
+          primaryActionLabel="Search users"
+          secondaryActionHref="/compare"
+          secondaryActionLabel="Compare tunes"
+        />
       ) : (
         <div className="flex flex-wrap gap-3">
           {visibleFriends.map((friend) => {
-            const label =
-              friend.display_name || friend.username || "Unnamed user"
+            const label = friend.display_name || friend.username || "Unnamed user"
 
             return (
               <div

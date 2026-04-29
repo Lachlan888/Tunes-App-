@@ -220,6 +220,7 @@ export default async function ComparePage({
 
           <CompareMutualPiecesSection
             filteredPieces={filteredPieces}
+            mutualPiecesCount={mutualPieces.length}
             titleQuery={titleQuery}
             selectedKeys={selectedKeys}
             selectedStyles={selectedStyles}

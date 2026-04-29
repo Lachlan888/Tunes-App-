@@ -410,6 +410,7 @@ export default async function LibraryPage({
         addToLearningList={addToLearningList}
         removeTuneFromMyApp={removeTuneFromMyApp}
         redirectTo={redirectTo}
+        hasActiveFilters={hasActiveFilters}
       />
     </main>
   )

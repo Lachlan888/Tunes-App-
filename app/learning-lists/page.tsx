@@ -1,6 +1,7 @@
 import PendingLinkButton from "@/components/PendingLinkButton"
 import CreateListModal from "@/components/CreateListModal"
 import EditListModal from "@/components/EditListModal"
+import EmptyState from "@/components/EmptyState"
 import ListSearchFilters from "@/components/ListSearchFilters"
 import MyTunesModal from "@/components/MyTunesModal"
 import UnlistedKnownTunesModal from "@/components/UnlistedKnownTunesModal"
@@ -71,6 +72,18 @@ function buildListsHref(options: {
   return params.toString() ? `/learning-lists?${params.toString()}` : "/learning-lists"
 }
 
+function getSummaryGridClass(visibleSummaryCount: number) {
+  if (visibleSummaryCount <= 1) {
+    return "mb-8 grid gap-4"
+  }
+
+  if (visibleSummaryCount === 2) {
+    return "mb-8 grid gap-4 lg:grid-cols-2"
+  }
+
+  return "mb-8 grid gap-4 lg:grid-cols-3"
+}
+
 export default async function LearningListsPage({
   searchParams,
 }: LearningListsPageProps) {
@@ -120,6 +133,11 @@ export default async function LearningListsPage({
     source: selectedSource,
     visibility: selectedVisibility,
   })
+
+  const visibleSummaryCount =
+    1 +
+    (unlistedPracticeTunes.length > 0 ? 1 : 0) +
+    (unlistedKnownTunes.length > 0 ? 1 : 0)
 
   return (
     <main className="p-8">
@@ -206,7 +224,7 @@ export default async function LearningListsPage({
         </div>
       )}
 
-      <div className="mb-8 grid gap-4 lg:grid-cols-3">
+      <div className={getSummaryGridClass(visibleSummaryCount)}>
         <section className="rounded border p-4">
           <div>
             <h2 className="text-xl font-semibold">My Tunes</h2>
@@ -220,7 +238,13 @@ export default async function LearningListsPage({
           </div>
 
           {myTunes.length === 0 ? (
-            <p className="mt-4 text-sm text-gray-600">No tunes yet.</p>
+            <EmptyState
+              title="No personal tunes yet"
+              description="Tunes you mark as known or start practising will appear here."
+              secondaryActionHref="/library"
+              secondaryActionLabel="Browse Tunes"
+              className="mt-4"
+            />
           ) : (
             <div className="mt-4">
               <MyTunesModal myTunes={myTunes} />
@@ -276,9 +300,19 @@ export default async function LearningListsPage({
       )}
 
       {listOverviews.length === 0 ? (
-        <p className="text-gray-600">No lists yet.</p>
+        <EmptyState
+          title="No lists yet"
+          description="Lists are where you organise tunes for learning, repertoire, sessions, or publishing. Use Create List above to start one."
+          secondaryActionHref="/library"
+          secondaryActionLabel="Browse Tunes"
+        />
       ) : filteredListOverviews.length === 0 ? (
-        <p className="text-gray-600">No lists match this filter.</p>
+        <EmptyState
+          title="No lists match this view"
+          description="Try clearing the search or filters."
+          primaryActionHref="/learning-lists"
+          primaryActionLabel="Reset view"
+        />
       ) : (
         <div className="space-y-4">
           {filteredListOverviews.map((list) => (

@@ -1,4 +1,5 @@
 import Link from "next/link"
+import EmptyState from "@/components/EmptyState"
 import FriendSearchForm from "@/components/FriendSearchForm"
 import FriendsListSection from "@/components/FriendsListSection"
 import RecentFriendActivitySection from "@/components/RecentFriendActivitySection"
@@ -120,8 +121,20 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
 
         <FriendSearchForm initialQuery={searchQuery} />
 
+        {!searchQuery && (
+          <EmptyState
+            title="Find musicians to connect with"
+            description="Search by username or display name. Once connected, you can compare repertoire and see relevant activity."
+            className="mt-4"
+          />
+        )}
+
         {searchQuery && searchMatches.length === 0 && (
-          <p className="text-sm text-gray-600">No matching users found.</p>
+          <EmptyState
+            title="No matching users found"
+            description="Try a different username or display name."
+            className="mt-4"
+          />
         )}
 
         {searchMatches.length > 0 && (
@@ -170,7 +183,10 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
         <h2 className="mb-4 text-xl font-semibold">Incoming requests</h2>
 
         {pendingIncomingRequests.length === 0 ? (
-          <p className="text-sm text-gray-600">No incoming requests.</p>
+          <EmptyState
+            title="No incoming requests"
+            description="Friend requests from other users will appear here."
+          />
         ) : (
           <div className="space-y-3">
             {pendingIncomingRequests.map((request) => (
