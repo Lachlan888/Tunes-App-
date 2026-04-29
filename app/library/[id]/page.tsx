@@ -1,6 +1,4 @@
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
 import {
   addPieceMediaLink,
   addPieceSheetMusicLink,
@@ -14,7 +12,7 @@ import ReferenceMediaEmbed from "@/components/ReferenceMediaEmbed"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCanonicalDetailsCard from "@/components/TuneCanonicalDetailsCard"
 import TuneDetailActions from "@/components/TuneDetailActions"
-import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
+import { loadTuneDetailData } from "@/lib/loaders/tune-detail"
 
 type PiecePageProps = {
   params: Promise<{
@@ -22,76 +20,11 @@ type PiecePageProps = {
   }>
 }
 
-type UserPieceMetadata = {
-  notes: string | null
-}
-
-type PieceSheetMusicLink = {
-  id: number
-  url: string
-  label: string | null
-}
-
-type PieceMediaLink = {
-  id: number
-  url: string
-  label: string | null
-}
-
-type PieceCommentRow = {
-  id: number
-  body: string
-  created_at: string
-  user_id: string
-}
-
-type ProfileRow = {
-  id: string
-  username: string | null
-  display_name: string | null
-}
-
-type CommentAuthor = {
-  displayName: string
-  username: string | null
-}
-
-type LearningListItemRow = {
-  learning_list_id: number
-  piece_id: number
-}
-
-type StyleOption = {
-  id: number
-  slug: string
-  label: string
-}
-
 export default async function PiecePage({ params }: PiecePageProps) {
   const { id } = await params
-  const pieceId = Number(id)
+  const tuneDetail = await loadTuneDetailData(id)
 
-  if (!Number.isInteger(pieceId) || pieceId <= 0) {
-    redirect("/library")
-  }
-
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect("/login")
-  }
-
-  const { data: piece, error } = await supabase
-    .from("pieces")
-    .select("id, title, key, style, time_signature, reference_url")
-    .eq("id", pieceId)
-    .maybeSingle()
-
-  if (error) {
+  if (tuneDetail.status === "load_error") {
     return (
       <main className="p-8">
         <h1 className="mb-4 text-3xl font-bold">Tune</h1>
@@ -105,11 +38,13 @@ export default async function PiecePage({ params }: PiecePageProps) {
     )
   }
 
-  if (!piece) {
+  if (tuneDetail.status === "not_found") {
     return (
       <main className="p-8">
         <h1 className="mb-4 text-3xl font-bold">Tune not found</h1>
-        <p className="text-gray-600">No tune exists at id {pieceId}.</p>
+        <p className="text-gray-600">
+          No tune exists at id {tuneDetail.pieceId}.
+        </p>
         <div className="mt-4">
           <Link href="/library" className="underline">
             Back to Tunes
@@ -119,119 +54,22 @@ export default async function PiecePage({ params }: PiecePageProps) {
     )
   }
 
-  const { data: ownedLists } = await supabase
-    .from("learning_lists")
-    .select("id")
-    .eq("user_id", user.id)
-
-  const ownedListIds = (ownedLists ?? []).map((list) => list.id)
-
-  const [
-    userPieceMetadataResult,
-    sheetMusicLinksResult,
-    mediaLinksResult,
-    pieceCommentsResult,
-    userPieceResult,
-    userKnownPieceResult,
-    learningListsResult,
-    learningListItemsResult,
-    styleRowsResult,
-  ] = await Promise.all([
-    supabase
-      .from("user_piece_metadata")
-      .select("notes")
-      .eq("user_id", user.id)
-      .eq("piece_id", pieceId)
-      .maybeSingle(),
-    supabase
-      .from("piece_sheet_music_links")
-      .select("id, url, label")
-      .eq("piece_id", pieceId)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("piece_media_links")
-      .select("id, url, label")
-      .eq("piece_id", pieceId)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("piece_comments")
-      .select("id, body, created_at, user_id")
-      .eq("piece_id", pieceId)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("user_pieces")
-      .select("id, piece_id, status, next_review_due, stage")
-      .eq("user_id", user.id)
-      .eq("piece_id", pieceId)
-      .maybeSingle(),
-    supabase
-      .from("user_known_pieces")
-      .select("id, piece_id")
-      .eq("user_id", user.id)
-      .eq("piece_id", pieceId)
-      .maybeSingle(),
-    supabase
-      .from("learning_lists")
-      .select("id, name, description")
-      .eq("user_id", user.id)
-      .order("name", { ascending: true }),
-    ownedListIds.length > 0
-      ? supabase
-          .from("learning_list_items")
-          .select("learning_list_id, piece_id")
-          .eq("piece_id", pieceId)
-          .in("learning_list_id", ownedListIds)
-      : Promise.resolve({ data: [], error: null }),
-    supabase
-      .from("styles")
-      .select("id, slug, label")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true }),
-  ])
-
-  const typedPiece = piece as Piece
-  const typedUserPieceMetadata =
-    (userPieceMetadataResult.data as UserPieceMetadata | null) ?? null
-  const typedSheetMusicLinks =
-    (sheetMusicLinksResult.data as PieceSheetMusicLink[] | null) ?? []
-  const typedMediaLinks =
-    (mediaLinksResult.data as PieceMediaLink[] | null) ?? []
-  const typedPieceComments =
-    (pieceCommentsResult.data as PieceCommentRow[] | null) ?? []
-  const typedUserPiece = (userPieceResult.data as UserPiece | null) ?? null
-  const typedUserKnownPiece =
-    (userKnownPieceResult.data as UserKnownPiece | null) ?? null
-  const typedLearningLists =
-    (learningListsResult.data as LearningList[] | null) ?? []
-  const typedLearningListItems =
-    (learningListItemsResult.data as LearningListItemRow[] | null) ?? []
-  const styleOptions: StyleOption[] =
-    (styleRowsResult.data as StyleOption[] | null) ?? []
-
-  const commentUserIds = Array.from(
-    new Set(typedPieceComments.map((comment) => comment.user_id))
-  )
-
-  let profileMap: Record<string, CommentAuthor> = {}
-
-  if (commentUserIds.length > 0) {
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, username, display_name")
-      .in("id", commentUserIds)
-
-    const typedProfiles = (profiles as ProfileRow[] | null) ?? []
-
-    profileMap = Object.fromEntries(
-      typedProfiles.map((profile) => [
-        profile.id,
-        {
-          displayName: profile.display_name || profile.username || "Unknown user",
-          username: profile.username,
-        },
-      ])
-    )
-  }
+  const {
+    user,
+    pieceId,
+    redirectTo,
+    typedPiece,
+    typedUserPieceMetadata,
+    typedSheetMusicLinks,
+    typedMediaLinks,
+    typedPieceComments,
+    typedUserPiece,
+    typedUserKnownPiece,
+    typedLearningLists,
+    typedLearningListItems,
+    styleOptions,
+    profileMap,
+  } = tuneDetail
 
   return (
     <main className="p-8">
@@ -281,14 +119,14 @@ export default async function PiecePage({ params }: PiecePageProps) {
             userKnownPiece={typedUserKnownPiece}
             learningLists={typedLearningLists}
             learningListItems={typedLearningListItems}
-            redirectTo={`/library/${pieceId}`}
+            redirectTo={redirectTo}
             startLearning={startLearning}
             addToLearningList={addToLearningList}
           />
 
           <TuneCanonicalDetailsCard
             piece={typedPiece}
-            redirectTo={`/library/${pieceId}`}
+            redirectTo={redirectTo}
             styleOptions={styleOptions}
           />
         </div>
@@ -299,7 +137,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
 
             <form action={upsertUserPieceNotes} className="space-y-3">
               <input type="hidden" name="piece_id" value={pieceId} />
-              <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
+              <input type="hidden" name="redirect_to" value={redirectTo} />
 
               <textarea
                 name="notes"
@@ -319,7 +157,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
 
           <PieceMediaLinksSection
             pieceId={pieceId}
-            redirectTo={`/library/${pieceId}`}
+            redirectTo={redirectTo}
             mediaLinks={typedMediaLinks}
             addPieceMediaLink={addPieceMediaLink}
           />
@@ -329,7 +167,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
 
             <form action={addPieceSheetMusicLink} className="mb-6 space-y-3">
               <input type="hidden" name="piece_id" value={pieceId} />
-              <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
+              <input type="hidden" name="redirect_to" value={redirectTo} />
 
               <input
                 name="label"
@@ -376,7 +214,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
         </div>
       </div>
 
-       <section className="mt-8 rounded border p-4">
+      <section className="mt-8 rounded border p-4">
         <PieceCommentsSection
           pieceId={pieceId}
           comments={typedPieceComments}

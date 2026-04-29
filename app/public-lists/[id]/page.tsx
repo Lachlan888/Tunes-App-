@@ -1,37 +1,16 @@
 import Link from "next/link"
-import { notFound, redirect } from "next/navigation"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
-import { importPublicList, importSelectedPublicListItems } from "@/lib/actions/lists"
+import {
+  importPublicList,
+  importSelectedPublicListItems,
+} from "@/lib/actions/lists"
 import { markAsKnown } from "@/lib/actions/known-pieces"
-import { createClient } from "@/lib/supabase/server"
 import { startLearning } from "@/lib/actions/user-pieces"
-import type { Piece } from "@/lib/types"
-
-type LearningListRow = {
-  id: number
-  user_id: string
-  name: string
-  description: string | null
-  visibility: string
-}
-
-type ProfileRow = {
-  id: string
-  username: string | null
-  display_name: string | null
-}
-
-type LearningListItemRow = {
-  id: number
-  position: number | null
-  pieces: Piece | Piece[] | null
-}
-
-type OwnedLearningListRow = {
-  id: number
-  name: string
-}
+import {
+  loadPublicListDetailData,
+  type PublicListOwnerProfile,
+} from "@/lib/loaders/public-list-detail"
 
 type PublicListDetailPageProps = {
   params: Promise<{ id: string }>
@@ -43,7 +22,7 @@ type PublicListDetailPageProps = {
   }>
 }
 
-function renderOwnerLabel(owner: ProfileRow | null) {
+function renderOwnerLabel(owner: PublicListOwnerProfile | null) {
   if (!owner) {
     return <span>Unknown user</span>
   }
@@ -72,149 +51,24 @@ export default async function PublicListDetailPage({
   searchParams,
 }: PublicListDetailPageProps) {
   const { id } = await params
-  const listId = Number(id)
-
-  if (Number.isNaN(listId)) {
-    notFound()
-  }
-
   const resolvedSearchParams = await searchParams
+
   const importStatus = resolvedSearchParams?.import_public ?? ""
   const addedCount = Number(resolvedSearchParams?.added_count ?? "0")
   const duplicateCount = Number(resolvedSearchParams?.duplicate_count ?? "0")
   const importedListId = Number(resolvedSearchParams?.imported_list_id ?? "0")
 
-  const supabase = await createClient()
-
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  const { data: list, error: listError } = await supabase
-    .from("learning_lists")
-    .select("id, user_id, name, description, visibility")
-    .eq("id", listId)
-    .eq("visibility", "public")
-    .single()
-
-  if (listError || !list) {
-    notFound()
-  }
-
-  const typedList = list as LearningListRow
-  const redirectTo = `/public-lists/${typedList.id}`
-  const isViewingOwnPublicList = user?.id === typedList.user_id
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id, username, display_name")
-    .eq("id", typedList.user_id)
-    .maybeSingle()
-
-  const owner = (profile as ProfileRow | null) ?? null
-
-  const { data: items, error: itemsError } = await supabase
-    .from("learning_list_items")
-    .select(`
-      id,
-      position,
-      pieces (
-        id,
-        title,
-        key,
-        style,
-        time_signature,
-        reference_url
-      )
-    `)
-    .eq("learning_list_id", listId)
-    .order("position", { ascending: true })
-
-  if (itemsError) {
-    return (
-      <main className="mx-auto max-w-5xl p-6">
-        <h1 className="mb-4 text-2xl font-bold">{typedList.name}</h1>
-        <p>Could not load list items.</p>
-        <p className="mt-2 text-sm text-red-600">{itemsError.message}</p>
-      </main>
-    )
-  }
-
-  const typedItems = (items ?? []) as LearningListItemRow[]
-
-  const pieceIds = typedItems
-    .map((item) => {
-      const piece = Array.isArray(item.pieces) ? item.pieces[0] : item.pieces
-      return piece?.id ?? null
-    })
-    .filter((pieceId): pieceId is number => pieceId !== null)
-
-  let activePieceIds = new Set<number>()
-  let knownPieceIds = new Set<number>()
-  let ownedLists: OwnedLearningListRow[] = []
-
-  if (user) {
-    const { data: ownedLearningLists, error: ownedLearningListsError } =
-      await supabase
-        .from("learning_lists")
-        .select("id, name")
-        .eq("user_id", user.id)
-        .order("name", { ascending: true })
-
-    if (ownedLearningListsError) {
-      return (
-        <main className="mx-auto max-w-5xl p-6">
-          <h1 className="mb-4 text-2xl font-bold">{typedList.name}</h1>
-          <p>Could not load your lists.</p>
-          <p className="mt-2 text-sm text-red-600">
-            {ownedLearningListsError.message}
-          </p>
-        </main>
-      )
-    }
-
-    ownedLists = (ownedLearningLists ?? []) as OwnedLearningListRow[]
-  }
-
-  if (user && pieceIds.length > 0) {
-    const { data: userPieces, error: userPiecesError } = await supabase
-      .from("user_pieces")
-      .select("piece_id")
-      .eq("user_id", user.id)
-      .in("piece_id", pieceIds)
-
-    if (userPiecesError) {
-      return (
-        <main className="mx-auto max-w-5xl p-6">
-          <h1 className="mb-4 text-2xl font-bold">{typedList.name}</h1>
-          <p>Could not load practice state.</p>
-          <p className="mt-2 text-sm text-red-600">{userPiecesError.message}</p>
-        </main>
-      )
-    }
-
-    activePieceIds = new Set((userPieces ?? []).map((row) => row.piece_id))
-
-    const { data: userKnownPieces, error: userKnownPiecesError } = await supabase
-      .from("user_known_pieces")
-      .select("piece_id")
-      .eq("user_id", user.id)
-      .in("piece_id", pieceIds)
-
-    if (userKnownPiecesError) {
-      return (
-        <main className="mx-auto max-w-5xl p-6">
-          <h1 className="mb-4 text-2xl font-bold">{typedList.name}</h1>
-          <p>Could not load known state.</p>
-          <p className="mt-2 text-sm text-red-600">
-            {userKnownPiecesError.message}
-          </p>
-        </main>
-      )
-    }
-
-    knownPieceIds = new Set((userKnownPieces ?? []).map((row) => row.piece_id))
-  }
+    user,
+    typedList,
+    owner,
+    typedItems,
+    ownedLists,
+    activePieceIds,
+    knownPieceIds,
+    redirectTo,
+    isViewingOwnPublicList,
+  } = await loadPublicListDetailData(id)
 
   const importedList =
     importedListId > 0
