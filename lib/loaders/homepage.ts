@@ -83,12 +83,12 @@ function buildGettingStartedState(options: {
     {
       id: "add_tunes",
       group: "Set up your account",
-      label: "Add or import tunes",
+      label: "Import or add your known tunes",
       description:
-        "Start by adding tunes you already know, importing a CSV, or finding tunes in the catalogue.",
-      href: "/library",
-      actionLabel: "Open Tunes",
-      pendingLabel: "Opening Tunes...",
+        "The fastest start is to import tunes you already know, or browse the catalogue and mark tunes as known.",
+      href: "/library?import=known",
+      actionLabel: "Import Known Tunes",
+      pendingLabel: "Opening import...",
       isComplete: hasAnyTuneState,
     },
     {

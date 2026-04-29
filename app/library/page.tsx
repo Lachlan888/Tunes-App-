@@ -1,3 +1,4 @@
+import Link from "next/link"
 import BulkImportKnownTunesModal from "@/components/BulkImportKnownTunesModal"
 import CreateTuneModal from "@/components/CreateTuneModal"
 import LibraryList from "@/components/LibraryList"
@@ -12,36 +13,47 @@ import {
 } from "@/lib/search-filters"
 import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
 
+type SearchParamValue = string | string[] | undefined
+
 type LibraryPageProps = {
   searchParams?: Promise<{
-    q?: string | string[]
-    key?: string | string[]
-    style?: string | string[]
-    time_signature?: string | string[]
-    visible?: string | string[]
-    list_add?: string
-    create_tune?: string
-    bulk_upload?: string
-    row?: string
-    created_pieces?: string
-    reused_pieces?: string
-    added_known?: string
-    already_known?: string
-    added_to_list?: string
-    already_in_list?: string
-    remove_tune?: string
+    q?: SearchParamValue
+    key?: SearchParamValue
+    style?: SearchParamValue
+    time_signature?: SearchParamValue
+    visible?: SearchParamValue
+    import?: SearchParamValue
+    list_add?: SearchParamValue
+    create_tune?: SearchParamValue
+    bulk_upload?: SearchParamValue
+    row?: SearchParamValue
+    created_pieces?: SearchParamValue
+    reused_pieces?: SearchParamValue
+    added_known?: SearchParamValue
+    already_known?: SearchParamValue
+    added_to_list?: SearchParamValue
+    already_in_list?: SearchParamValue
+    uploaded_list_id?: SearchParamValue
+    remove_tune?: SearchParamValue
   }>
 }
 
-function toArray(value: string | string[] | undefined) {
+function toArray(value: SearchParamValue) {
   if (!value) return []
   return Array.isArray(value) ? value.filter(Boolean) : [value]
 }
 
-function parseVisibleCount(
-  value: string | string[] | undefined
-): number | "all" {
-  const singleValue = Array.isArray(value) ? value[0] ?? "20" : value ?? "20"
+function firstParam(value: SearchParamValue) {
+  if (!value) return ""
+  return Array.isArray(value) ? value[0] ?? "" : value
+}
+
+function numberParam(value: SearchParamValue) {
+  return Number(firstParam(value) || "0")
+}
+
+function parseVisibleCount(value: SearchParamValue): number | "all" {
+  const singleValue = firstParam(value) || "20"
 
   if (singleValue === "all") return "all"
   if (singleValue === "50") return 50
@@ -88,10 +100,8 @@ export default async function LibraryPage({
   searchParams,
 }: LibraryPageProps) {
   const resolvedSearchParams = await searchParams
-  const searchQuery = Array.isArray(resolvedSearchParams?.q)
-    ? resolvedSearchParams?.q[0] ?? ""
-    : resolvedSearchParams?.q ?? ""
 
+  const searchQuery = firstParam(resolvedSearchParams?.q)
   const selectedKeys = toArray(resolvedSearchParams?.key)
   const selectedStyles = toArray(resolvedSearchParams?.style)
   const selectedTimeSignatures = toArray(resolvedSearchParams?.time_signature)
@@ -113,20 +123,19 @@ export default async function LibraryPage({
     visibleCount,
   })
 
-  const listAddStatus = resolvedSearchParams?.list_add ?? ""
-  const createTuneStatus = resolvedSearchParams?.create_tune ?? ""
-  const bulkUploadStatus = resolvedSearchParams?.bulk_upload ?? ""
-  const bulkUploadRow = resolvedSearchParams?.row ?? ""
-  const removeTuneStatus = resolvedSearchParams?.remove_tune ?? ""
+  const listAddStatus = firstParam(resolvedSearchParams?.list_add)
+  const createTuneStatus = firstParam(resolvedSearchParams?.create_tune)
+  const bulkUploadStatus = firstParam(resolvedSearchParams?.bulk_upload)
+  const bulkUploadRow = firstParam(resolvedSearchParams?.row)
+  const removeTuneStatus = firstParam(resolvedSearchParams?.remove_tune)
+  const uploadedListId = firstParam(resolvedSearchParams?.uploaded_list_id)
 
-  const createdPiecesCount = Number(resolvedSearchParams?.created_pieces ?? "0")
-  const reusedPiecesCount = Number(resolvedSearchParams?.reused_pieces ?? "0")
-  const addedKnownCount = Number(resolvedSearchParams?.added_known ?? "0")
-  const alreadyKnownCount = Number(resolvedSearchParams?.already_known ?? "0")
-  const addedToListCount = Number(resolvedSearchParams?.added_to_list ?? "0")
-  const alreadyInListCount = Number(
-    resolvedSearchParams?.already_in_list ?? "0"
-  )
+  const createdPiecesCount = numberParam(resolvedSearchParams?.created_pieces)
+  const reusedPiecesCount = numberParam(resolvedSearchParams?.reused_pieces)
+  const addedKnownCount = numberParam(resolvedSearchParams?.added_known)
+  const alreadyKnownCount = numberParam(resolvedSearchParams?.already_known)
+  const addedToListCount = numberParam(resolvedSearchParams?.added_to_list)
+  const alreadyInListCount = numberParam(resolvedSearchParams?.already_in_list)
 
   const redirectParams = new URLSearchParams()
 
@@ -276,7 +285,7 @@ export default async function LibraryPage({
       )}
 
       {bulkUploadStatus === "imported" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+        <div className="mb-6 rounded border border-green-600 bg-green-50 p-4 text-sm text-green-800">
           <p className="font-medium">Bulk import completed.</p>
           <p className="mt-1">
             Created pieces: {createdPiecesCount}. Reused existing pieces:{" "}
@@ -290,6 +299,31 @@ export default async function LibraryPage({
             Added to Uploaded Tunes list: {addedToListCount}. Already in list:{" "}
             {alreadyInListCount}.
           </p>
+
+          <div className="mt-4 flex flex-wrap gap-3">
+            {uploadedListId && (
+              <Link
+                href={`/learning-lists/${uploadedListId}`}
+                className="rounded bg-green-800 px-3 py-2 text-sm font-medium text-white"
+              >
+                View Uploaded Tunes
+              </Link>
+            )}
+
+            <Link
+              href="/library/known"
+              className="rounded border border-green-700 bg-white px-3 py-2 text-sm font-medium text-green-900"
+            >
+              View Known Tunes
+            </Link>
+
+            <Link
+              href="/library"
+              className="rounded border border-green-700 bg-white px-3 py-2 text-sm font-medium text-green-900"
+            >
+              Start Practice
+            </Link>
+          </div>
         </div>
       )}
 

@@ -369,6 +369,11 @@ export async function uploadKnownTunesCsv(formData: FormData) {
     "already_in_list",
     String(alreadyInListCount)
   )
+  nextUrl = appendQueryParam(
+    nextUrl,
+    "uploaded_list_id",
+    String(uploadedTunesListId)
+  )
 
   redirect(nextUrl)
 }

@@ -1,14 +1,27 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import SubmitButton from "@/components/SubmitButton"
 import { uploadKnownTunesCsv } from "@/lib/actions/bulk-import"
 
 export default function BulkImportKnownTunesModal() {
+  const searchParams = useSearchParams()
+
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedFileName, setSelectedFileName] = useState("")
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false)
+  const [hasHandledAutoOpen, setHasHandledAutoOpen] = useState(false)
+
+  useEffect(() => {
+    if (hasHandledAutoOpen) return
+
+    if (searchParams.get("import") === "known") {
+      setIsOpen(true)
+      setHasHandledAutoOpen(true)
+    }
+  }, [hasHandledAutoOpen, searchParams])
 
   useEffect(() => {
     if (!isOpen || isSubmitting) return
@@ -77,10 +90,17 @@ export default function BulkImportKnownTunesModal() {
               </div>
 
               <div className="space-y-4">
-                <p className="text-sm text-gray-600">
-                  Upload a CSV of tunes you already know. We’ll add them to your
-                  known tunes and place them in your Uploaded Tunes list.
-                </p>
+                <div className="space-y-2 text-sm text-gray-600">
+                  <p>
+                    Upload a CSV of tunes you already know. We’ll add them to
+                    your known tunes and place them in your Uploaded Tunes list.
+                  </p>
+                  <p>
+                    This is the quickest way to make the app useful: your known
+                    tunes will count as repertoire immediately, without putting
+                    everything into practice.
+                  </p>
+                </div>
 
                 <div className="rounded border bg-gray-50 p-3 text-sm">
                   <p className="font-medium">CSV template</p>
@@ -100,7 +120,9 @@ export default function BulkImportKnownTunesModal() {
                       isSubmitting ? "pointer-events-none opacity-50" : ""
                     }`}
                   >
-                    {isDownloadingTemplate ? "Downloading..." : "Download Template"}
+                    {isDownloadingTemplate
+                      ? "Downloading..."
+                      : "Download Template"}
                   </a>
                 </div>
 
