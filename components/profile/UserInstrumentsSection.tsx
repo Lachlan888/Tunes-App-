@@ -5,11 +5,72 @@ import {
 } from "@/lib/actions/user-instruments"
 import type { UserInstrument } from "@/lib/types"
 
+type ProfileDraft = {
+  username: string
+  displayName: string
+  bio: string
+  showIdentity: boolean
+  showInstruments: boolean
+  showPublicListsOnProfile: boolean
+  showRepertoireSummary: boolean
+  showCompareDiscoverability: boolean
+  compareRequiresFriend: boolean
+}
+
 type UserInstrumentsSectionProps = {
   instruments: UserInstrument[]
   instrumentErrorMessage: string | null
   instrumentSaved: boolean
   instrumentRemoved: boolean
+  profileDraft: ProfileDraft
+}
+
+function ProfileDraftHiddenInputs({
+  profileDraft,
+}: {
+  profileDraft: ProfileDraft
+}) {
+  return (
+    <>
+      <input type="hidden" name="profile_username" value={profileDraft.username} />
+      <input
+        type="hidden"
+        name="profile_display_name"
+        value={profileDraft.displayName}
+      />
+      <input type="hidden" name="profile_bio" value={profileDraft.bio} />
+      <input
+        type="hidden"
+        name="profile_show_identity"
+        value={String(profileDraft.showIdentity)}
+      />
+      <input
+        type="hidden"
+        name="profile_show_instruments"
+        value={String(profileDraft.showInstruments)}
+      />
+      <input
+        type="hidden"
+        name="profile_show_public_lists_on_profile"
+        value={String(profileDraft.showPublicListsOnProfile)}
+      />
+      <input
+        type="hidden"
+        name="profile_show_repertoire_summary"
+        value={String(profileDraft.showRepertoireSummary)}
+      />
+      <input
+        type="hidden"
+        name="profile_show_compare_discoverability"
+        value={String(profileDraft.showCompareDiscoverability)}
+      />
+      <input
+        type="hidden"
+        name="profile_compare_requires_friend"
+        value={String(profileDraft.compareRequiresFriend)}
+      />
+    </>
+  )
 }
 
 export default function UserInstrumentsSection({
@@ -17,6 +78,7 @@ export default function UserInstrumentsSection({
   instrumentErrorMessage,
   instrumentSaved,
   instrumentRemoved,
+  profileDraft,
 }: UserInstrumentsSectionProps) {
   return (
     <section className="rounded border p-6">
@@ -46,6 +108,7 @@ export default function UserInstrumentsSection({
 
       <form action={addUserInstrument} className="mt-4 flex gap-2">
         <input type="hidden" name="redirect_to" value="/dashboard" />
+        <ProfileDraftHiddenInputs profileDraft={profileDraft} />
         <input
           name="instrument_name"
           placeholder="Add an instrument"
@@ -70,6 +133,7 @@ export default function UserInstrumentsSection({
               <form action={removeUserInstrument}>
                 <input type="hidden" name="instrument_id" value={instrument.id} />
                 <input type="hidden" name="redirect_to" value="/dashboard" />
+                <ProfileDraftHiddenInputs profileDraft={profileDraft} />
                 <SubmitButton
                   label="Remove"
                   pendingLabel="Removing..."

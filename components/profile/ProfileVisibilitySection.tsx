@@ -1,11 +1,37 @@
+"use client"
+
 import type { Profile } from "@/lib/types"
 
 type ProfileVisibilitySectionProps = {
   profile: Profile | null
+  showIdentity: boolean
+  setShowIdentity: (value: boolean) => void
+  showInstruments: boolean
+  setShowInstruments: (value: boolean) => void
+  showPublicListsOnProfile: boolean
+  setShowPublicListsOnProfile: (value: boolean) => void
+  showRepertoireSummary: boolean
+  setShowRepertoireSummary: (value: boolean) => void
+  showCompareDiscoverability: boolean
+  setShowCompareDiscoverability: (value: boolean) => void
+  compareRequiresFriend: boolean
+  setCompareRequiresFriend: (value: boolean) => void
 }
 
 export default function ProfileVisibilitySection({
   profile,
+  showIdentity,
+  setShowIdentity,
+  showInstruments,
+  setShowInstruments,
+  showPublicListsOnProfile,
+  setShowPublicListsOnProfile,
+  showRepertoireSummary,
+  setShowRepertoireSummary,
+  showCompareDiscoverability,
+  setShowCompareDiscoverability,
+  compareRequiresFriend,
+  setCompareRequiresFriend,
 }: ProfileVisibilitySectionProps) {
   return (
     <div className="rounded border p-4">
@@ -21,7 +47,8 @@ export default function ProfileVisibilitySection({
             <input
               type="checkbox"
               name="show_identity"
-              defaultChecked={profile?.show_identity ?? true}
+              checked={showIdentity}
+              onChange={(event) => setShowIdentity(event.target.checked)}
             />
             <span className="font-medium">Show identity</span>
           </span>
@@ -35,7 +62,8 @@ export default function ProfileVisibilitySection({
             <input
               type="checkbox"
               name="show_instruments"
-              defaultChecked={profile?.show_instruments ?? true}
+              checked={showInstruments}
+              onChange={(event) => setShowInstruments(event.target.checked)}
             />
             <span className="font-medium">Show instruments</span>
           </span>
@@ -49,7 +77,10 @@ export default function ProfileVisibilitySection({
             <input
               type="checkbox"
               name="show_public_lists_on_profile"
-              defaultChecked={profile?.show_public_lists_on_profile ?? true}
+              checked={showPublicListsOnProfile}
+              onChange={(event) =>
+                setShowPublicListsOnProfile(event.target.checked)
+              }
             />
             <span className="font-medium">Show public lists</span>
           </span>
@@ -63,7 +94,10 @@ export default function ProfileVisibilitySection({
             <input
               type="checkbox"
               name="show_repertoire_summary"
-              defaultChecked={profile?.show_repertoire_summary ?? false}
+              checked={showRepertoireSummary}
+              onChange={(event) =>
+                setShowRepertoireSummary(event.target.checked)
+              }
             />
             <span className="font-medium">Show repertoire summary</span>
           </span>
@@ -77,7 +111,10 @@ export default function ProfileVisibilitySection({
             <input
               type="checkbox"
               name="show_compare_discoverability"
-              defaultChecked={profile?.show_compare_discoverability ?? true}
+              checked={showCompareDiscoverability}
+              onChange={(event) =>
+                setShowCompareDiscoverability(event.target.checked)
+              }
             />
             <span className="font-medium">Allow compare discovery</span>
           </span>
@@ -91,7 +128,10 @@ export default function ProfileVisibilitySection({
             <input
               type="checkbox"
               name="compare_requires_friend"
-              defaultChecked={profile?.compare_requires_friend ?? false}
+              checked={compareRequiresFriend}
+              onChange={(event) =>
+                setCompareRequiresFriend(event.target.checked)
+              }
             />
             <span className="font-medium">Require friendship for compare</span>
           </span>
@@ -100,6 +140,12 @@ export default function ProfileVisibilitySection({
           </p>
         </label>
       </div>
+
+      {profile === null && (
+        <p className="mt-3 text-sm text-gray-600">
+          These settings will be saved when you save your profile.
+        </p>
+      )}
     </div>
   )
 }

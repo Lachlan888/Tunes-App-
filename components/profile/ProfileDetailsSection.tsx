@@ -1,16 +1,34 @@
+"use client"
+
 import PendingLinkButton from "@/components/PendingLinkButton"
 import SubmitButton from "@/components/SubmitButton"
+import ProfileVisibilitySection from "@/components/profile/ProfileVisibilitySection"
 import { updateProfile } from "@/lib/actions/profile"
 import type { Profile } from "@/lib/types"
-import ProfileVisibilitySection from "@/components/profile/ProfileVisibilitySection"
 
 type ProfileDetailsSectionProps = {
   email: string | null
   profile: Profile | null
   errorMessage: string | null
   saved: boolean
-  usernameValue: string
-  displayNameValue: string
+  username: string
+  setUsername: (value: string) => void
+  displayName: string
+  setDisplayName: (value: string) => void
+  bio: string
+  setBio: (value: string) => void
+  showIdentity: boolean
+  setShowIdentity: (value: boolean) => void
+  showInstruments: boolean
+  setShowInstruments: (value: boolean) => void
+  showPublicListsOnProfile: boolean
+  setShowPublicListsOnProfile: (value: boolean) => void
+  showRepertoireSummary: boolean
+  setShowRepertoireSummary: (value: boolean) => void
+  showCompareDiscoverability: boolean
+  setShowCompareDiscoverability: (value: boolean) => void
+  compareRequiresFriend: boolean
+  setCompareRequiresFriend: (value: boolean) => void
 }
 
 export default function ProfileDetailsSection({
@@ -18,13 +36,28 @@ export default function ProfileDetailsSection({
   profile,
   errorMessage,
   saved,
-  usernameValue,
-  displayNameValue,
+  username,
+  setUsername,
+  displayName,
+  setDisplayName,
+  bio,
+  setBio,
+  showIdentity,
+  setShowIdentity,
+  showInstruments,
+  setShowInstruments,
+  showPublicListsOnProfile,
+  setShowPublicListsOnProfile,
+  showRepertoireSummary,
+  setShowRepertoireSummary,
+  showCompareDiscoverability,
+  setShowCompareDiscoverability,
+  compareRequiresFriend,
+  setCompareRequiresFriend,
 }: ProfileDetailsSectionProps) {
-  const bioValue = profile?.bio ?? ""
   const publicProfileHref =
-    usernameValue.trim() !== ""
-      ? `/users/${encodeURIComponent(usernameValue.trim().toLowerCase())}`
+    username.trim() !== ""
+      ? `/users/${encodeURIComponent(username.trim().toLowerCase())}`
       : null
 
   return (
@@ -72,7 +105,8 @@ export default function ProfileDetailsSection({
             <input
               id="username"
               name="username"
-              defaultValue={usernameValue}
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
               className="w-full rounded border p-2"
               required
             />
@@ -91,7 +125,8 @@ export default function ProfileDetailsSection({
             <input
               id="display_name"
               name="display_name"
-              defaultValue={displayNameValue}
+              value={displayName}
+              onChange={(event) => setDisplayName(event.target.value)}
               className="w-full rounded border p-2"
               placeholder="How other users should see your name"
             />
@@ -105,14 +140,29 @@ export default function ProfileDetailsSection({
           <textarea
             id="bio"
             name="bio"
-            defaultValue={bioValue}
+            value={bio}
+            onChange={(event) => setBio(event.target.value)}
             rows={4}
             className="w-full rounded border p-2"
             placeholder="Tell other users a little about yourself"
           />
         </div>
 
-        <ProfileVisibilitySection profile={profile} />
+        <ProfileVisibilitySection
+          profile={profile}
+          showIdentity={showIdentity}
+          setShowIdentity={setShowIdentity}
+          showInstruments={showInstruments}
+          setShowInstruments={setShowInstruments}
+          showPublicListsOnProfile={showPublicListsOnProfile}
+          setShowPublicListsOnProfile={setShowPublicListsOnProfile}
+          showRepertoireSummary={showRepertoireSummary}
+          setShowRepertoireSummary={setShowRepertoireSummary}
+          showCompareDiscoverability={showCompareDiscoverability}
+          setShowCompareDiscoverability={setShowCompareDiscoverability}
+          compareRequiresFriend={compareRequiresFriend}
+          setCompareRequiresFriend={setCompareRequiresFriend}
+        />
 
         <SubmitButton
           label="Save profile"

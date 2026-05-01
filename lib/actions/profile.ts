@@ -13,6 +13,48 @@ function asBoolean(value: FormDataEntryValue | null) {
   return value === "on"
 }
 
+function getProfileDraftParams(formData: FormData) {
+  const params = new URLSearchParams()
+
+  const username = String(formData.get("username") ?? "").trim().toLowerCase()
+  const displayName = String(formData.get("display_name") ?? "").trim()
+  const bio = String(formData.get("bio") ?? "").trim()
+
+  params.set("username", username)
+  params.set("display_name", displayName)
+  params.set("bio", bio)
+  params.set("show_identity", String(asBoolean(formData.get("show_identity"))))
+  params.set(
+    "show_instruments",
+    String(asBoolean(formData.get("show_instruments")))
+  )
+  params.set(
+    "show_public_lists_on_profile",
+    String(asBoolean(formData.get("show_public_lists_on_profile")))
+  )
+  params.set(
+    "show_repertoire_summary",
+    String(asBoolean(formData.get("show_repertoire_summary")))
+  )
+  params.set(
+    "show_compare_discoverability",
+    String(asBoolean(formData.get("show_compare_discoverability")))
+  )
+  params.set(
+    "compare_requires_friend",
+    String(asBoolean(formData.get("compare_requires_friend")))
+  )
+
+  return params
+}
+
+function redirectWithProfileError(error: string, formData: FormData): never {
+  const params = getProfileDraftParams(formData)
+  params.set("error", error)
+
+  redirect(`/dashboard?${params.toString()}`)
+}
+
 export async function updateProfile(formData: FormData) {
   const username = String(formData.get("username") ?? "").trim().toLowerCase()
   const displayNameRaw = String(formData.get("display_name") ?? "").trim()
@@ -34,13 +76,8 @@ export async function updateProfile(formData: FormData) {
     formData.get("compare_requires_friend")
   )
 
-  const encodedUsername = encodeURIComponent(username)
-  const encodedDisplayName = encodeURIComponent(displayNameRaw)
-
   if (!/^[a-zA-Z0-9_]{3,30}$/.test(username)) {
-    redirect(
-      `/dashboard?error=invalid_username&username=${encodedUsername}&display_name=${encodedDisplayName}`
-    )
+    redirectWithProfileError("invalid_username", formData)
   }
 
   const supabase = await createClient()
@@ -60,9 +97,7 @@ export async function updateProfile(formData: FormData) {
     .maybeSingle()
 
   if (existingProfileError) {
-    redirect(
-      `/dashboard?error=save_failed&username=${encodedUsername}&display_name=${encodedDisplayName}`
-    )
+    redirectWithProfileError("save_failed", formData)
   }
 
   const previousUsername =
@@ -89,14 +124,10 @@ export async function updateProfile(formData: FormData) {
 
   if (error) {
     if (error.code === "23505") {
-      redirect(
-        `/dashboard?error=username_taken&username=${encodedUsername}&display_name=${encodedDisplayName}`
-      )
+      redirectWithProfileError("username_taken", formData)
     }
 
-    redirect(
-      `/dashboard?error=save_failed&username=${encodedUsername}&display_name=${encodedDisplayName}`
-    )
+    redirectWithProfileError("save_failed", formData)
   }
 
   revalidatePath("/dashboard")
