@@ -1,10 +1,10 @@
 "use server"
 
+import { redirect } from "next/navigation"
 import { getTomorrow } from "@/lib/review"
 import { reconcileStreaksForUser } from "@/lib/streaks"
 import { createClient } from "@/lib/supabase/server"
-import { recordStartedPracticeEvent } from "@/lib/activity-events"
-import { redirect } from "next/navigation"
+import { recordStartedPracticeEvent } from "@/lib/services/activity-events"
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 

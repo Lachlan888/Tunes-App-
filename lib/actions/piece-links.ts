@@ -2,9 +2,8 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
-import { recordCommentAddedEvent } from "@/lib/services/activity-events"
 
-export async function addPieceComment(formData: FormData) {
+export async function addPieceSheetMusicLink(formData: FormData) {
   const supabase = await createClient()
 
   const {
@@ -18,38 +17,40 @@ export async function addPieceComment(formData: FormData) {
   const pieceId = Number(formData.get("piece_id"))
   const redirectTo =
     formData.get("redirect_to")?.toString() || `/library/${pieceId}`
-  const body = formData.get("body")?.toString().trim() || ""
+  const url = formData.get("url")?.toString().trim() || ""
+  const label = formData.get("label")?.toString().trim() || null
 
   if (!pieceId || Number.isNaN(pieceId)) {
     return
   }
 
-  if (!body) {
+  if (!url || !label) {
     return
   }
 
-  const { data: insertedComment, error } = await supabase
-    .from("piece_comments")
-    .insert({
-      piece_id: pieceId,
-      user_id: user.id,
-      body,
-    })
-    .select("id")
-    .single()
+  try {
+    new URL(url)
+  } catch {
+    return
+  }
+
+  const { error } = await supabase.from("piece_sheet_music_links").insert({
+    piece_id: pieceId,
+    url,
+    label,
+    created_by: user.id,
+  })
 
   if (error) {
-    console.error("Error adding piece comment:", error)
+    console.error("Error adding piece sheet music link:", error)
     return
   }
-
-  await recordCommentAddedEvent(user.id, pieceId, insertedComment.id)
 
   revalidatePath(`/library/${pieceId}`)
   revalidatePath(redirectTo)
 }
 
-export async function deletePieceComment(formData: FormData) {
+export async function addPieceMediaLink(formData: FormData) {
   const supabase = await createClient()
 
   const {
@@ -61,26 +62,34 @@ export async function deletePieceComment(formData: FormData) {
   }
 
   const pieceId = Number(formData.get("piece_id"))
-  const commentId = Number(formData.get("comment_id"))
   const redirectTo =
     formData.get("redirect_to")?.toString() || `/library/${pieceId}`
+  const url = formData.get("url")?.toString().trim() || ""
+  const label = formData.get("label")?.toString().trim() || null
 
   if (!pieceId || Number.isNaN(pieceId)) {
     return
   }
 
-  if (!commentId || Number.isNaN(commentId)) {
+  if (!url || !label) {
     return
   }
 
-  const { error } = await supabase
-    .from("piece_comments")
-    .delete()
-    .eq("id", commentId)
-    .eq("user_id", user.id)
+  try {
+    new URL(url)
+  } catch {
+    return
+  }
+
+  const { error } = await supabase.from("piece_media_links").insert({
+    piece_id: pieceId,
+    url,
+    label,
+    created_by: user.id,
+  })
 
   if (error) {
-    console.error("Error deleting piece comment:", error)
+    console.error("Error adding piece media link:", error)
     return
   }
 

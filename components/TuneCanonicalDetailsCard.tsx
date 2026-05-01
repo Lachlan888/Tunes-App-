@@ -1,5 +1,5 @@
 import SubmitButton from "@/components/SubmitButton"
-import { updateMissingPieceDetails } from "@/lib/actions/piece-metadata"
+import { updateMissingPieceDetails } from "@/lib/actions/pieces"
 import type { Piece } from "@/lib/types"
 
 type StyleOption = {

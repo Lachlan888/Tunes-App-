@@ -1,9 +1,10 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { normaliseTuneTitle } from "@/lib/normalise"
 import { normaliseKey } from "@/lib/music/keys"
 import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
 import { startPracticeForUser } from "@/lib/actions/user-pieces"
 import { markPieceKnownForUser } from "@/lib/actions/known-pieces"
 import { addPieceToLearningListForUser } from "@/lib/actions/lists"
@@ -238,4 +239,104 @@ export async function removeTuneFromMyApp(formData: FormData) {
   }
 
   redirect(appendQueryParam(redirectTo, "remove_tune", "success"))
+}
+
+export async function updateMissingPieceDetails(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return
+  }
+
+  const pieceId = Number(formData.get("piece_id"))
+  const redirectTo =
+    formData.get("redirect_to")?.toString() || `/library/${pieceId}`
+
+  if (!pieceId || Number.isNaN(pieceId)) {
+    return
+  }
+
+  const { data: existingPiece, error: existingPieceError } = await supabase
+    .from("pieces")
+    .select("id, key, style, time_signature, reference_url")
+    .eq("id", pieceId)
+    .maybeSingle()
+
+  if (existingPieceError || !existingPiece) {
+    console.error("Error loading piece for canonical update:", existingPieceError)
+    return
+  }
+
+  const rawKey = formData.get("key")?.toString().trim() || ""
+  const rawTimeSignature =
+    formData.get("time_signature")?.toString().trim() || ""
+  const rawReferenceUrl = formData.get("reference_url")?.toString().trim() || ""
+  const rawStyleId = Number(formData.get("style_id"))
+
+  const updates: {
+    key?: string | null
+    style?: string | null
+    time_signature?: string | null
+    reference_url?: string | null
+  } = {}
+
+  if (!existingPiece.key && rawKey) {
+    const normalised = normaliseKey(rawKey)
+
+    if (!normalised) {
+      return
+    }
+
+    updates.key = normalised
+  }
+
+  if (!existingPiece.style && Number.isInteger(rawStyleId) && rawStyleId > 0) {
+    const { data: styleRow, error: styleError } = await supabase
+      .from("styles")
+      .select("id, label")
+      .eq("id", rawStyleId)
+      .eq("is_active", true)
+      .maybeSingle()
+
+    if (styleError || !styleRow) {
+      console.error("Error loading style for canonical update:", styleError)
+      return
+    }
+
+    updates.style = styleRow.label
+  }
+
+  if (!existingPiece.time_signature && rawTimeSignature) {
+    updates.time_signature = rawTimeSignature
+  }
+
+  if (!existingPiece.reference_url && rawReferenceUrl) {
+    try {
+      new URL(rawReferenceUrl)
+      updates.reference_url = rawReferenceUrl
+    } catch {
+      return
+    }
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return
+  }
+
+  const { error: updateError } = await supabase
+    .from("pieces")
+    .update(updates)
+    .eq("id", pieceId)
+
+  if (updateError) {
+    console.error("Error updating missing piece details:", updateError)
+    return
+  }
+
+  revalidatePath(`/library/${pieceId}`)
+  revalidatePath(redirectTo)
 }

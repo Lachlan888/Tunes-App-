@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation"
 import { markPieceKnownForUser } from "@/lib/actions/known-pieces"
-import { recordTuneReviewedEvent } from "@/lib/activity-events"
+import { recordTuneReviewedEvent } from "@/lib/services/activity-events"
 import {
   addDaysToDateOnly,
   getMaxPracticeStage,

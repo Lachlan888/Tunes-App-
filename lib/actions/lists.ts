@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server"
 import {
   recordPublicListCreatedEvent,
   recordPublicListUpdatedEvent,
-} from "@/lib/activity-events"
+} from "@/lib/services/activity-events"
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 type ListVisibility = "private" | "public"

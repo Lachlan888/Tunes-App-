@@ -1,9 +1,9 @@
 import Link from "next/link"
+import { upsertUserPieceNotes } from "@/lib/actions/user-piece-metadata"
 import {
   addPieceMediaLink,
   addPieceSheetMusicLink,
-  upsertUserPieceNotes,
-} from "@/lib/actions/piece-metadata"
+} from "@/lib/actions/piece-links"
 import { addToLearningList } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
 import PieceCommentsSection from "@/components/PieceCommentsSection"

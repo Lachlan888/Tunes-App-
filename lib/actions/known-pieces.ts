@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { recordMarkedKnownEvent } from "@/lib/activity-events"
+import { recordMarkedKnownEvent } from "@/lib/services/activity-events"
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 
