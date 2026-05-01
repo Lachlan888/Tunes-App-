@@ -5,6 +5,7 @@ export type ProfileSearchRow = {
   username: string | null
   display_name: string | null
   compare_requires_friend: boolean
+  show_compare_discoverability: boolean
 }
 
 export type RankedProfileMatch = ProfileSearchRow & {
@@ -57,7 +58,9 @@ export async function searchProfilesForSelection({
 
   let request = supabase
     .from("profiles")
-    .select("id, username, display_name, compare_requires_friend")
+    .select(
+      "id, username, display_name, compare_requires_friend, show_compare_discoverability"
+    )
     .neq("id", currentUserId)
     .limit(200)
 

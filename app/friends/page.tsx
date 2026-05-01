@@ -52,7 +52,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
     <main className="p-8">
       <h1 className="mb-2 text-3xl font-bold">Friends</h1>
       <p className="mb-6 text-gray-600">
-        Search for other users, send friend requests, and manage your music
+        Search for new musicians, send friend requests, and manage your music
         connections.
       </p>
 
@@ -117,7 +117,11 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
       )}
 
       <section className="mb-10 rounded border p-4">
-        <h2 className="mb-4 text-xl font-semibold">Search users</h2>
+        <h2 className="mb-2 text-xl font-semibold">Find new friends</h2>
+        <p className="mb-4 text-sm text-gray-600">
+          Search returns users you are not already connected with. Existing
+          friends and pending requests appear in the sections below.
+        </p>
 
         <FriendSearchForm initialQuery={searchQuery} />
 
@@ -131,8 +135,8 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
 
         {searchQuery && searchMatches.length === 0 && (
           <EmptyState
-            title="No matching users found"
-            description="Try a different username or display name."
+            title="No new users found"
+            description="No unconnected users matched that search. If you are already friends or already have a pending request, they will appear in your friends or requests sections instead."
             className="mt-4"
           />
         )}

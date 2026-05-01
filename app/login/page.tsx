@@ -6,6 +6,10 @@ import { createClient } from "@/lib/supabase/client"
 
 type AuthMode = "login" | "signup" | "reset"
 
+function isAlreadyRegisteredMessage(message: string) {
+  return message.toLowerCase().includes("already registered")
+}
+
 export default function LoginPage() {
   const [mode, setMode] = useState<AuthMode>("login")
   const [email, setEmail] = useState("")
@@ -27,7 +31,7 @@ export default function LoginPage() {
     setIsSubmitting(true)
 
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim(),
       password,
     })
 
@@ -47,13 +51,22 @@ export default function LoginPage() {
     setIsSubmitting(true)
 
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: email.trim(),
       password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/login`,
+      },
     })
 
     setIsSubmitting(false)
 
     if (error) {
+      if (isAlreadyRegisteredMessage(error.message)) {
+        setMessage("That email already has an account. Sign in instead.")
+        setMode("login")
+        return
+      }
+
       setErrorMessage(error.message)
       return
     }
@@ -64,7 +77,15 @@ export default function LoginPage() {
       return
     }
 
-    setMessage("Account created. Check your email if confirmation is required, then sign in.")
+    if (data.user) {
+      setMessage(
+        "Account created. Check your email if confirmation is required, then sign in."
+      )
+      setMode("login")
+      return
+    }
+
+    setMessage("Check your email if confirmation is required, then sign in.")
     setMode("login")
   }
 
@@ -72,7 +93,7 @@ export default function LoginPage() {
     resetMessages()
     setIsSubmitting(true)
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: `${window.location.origin}/update-password`,
     })
 
