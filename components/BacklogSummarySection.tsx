@@ -34,15 +34,29 @@ export default function BacklogSummarySection({
         <p className="mt-3 text-sm text-gray-600">{emptyMessage}</p>
       ) : (
         <ul className="mt-3 space-y-2">
-          {groups.map((group) => (
-            <li
-              key={group.tier}
-              className="flex items-center justify-between rounded border px-3 py-2"
-            >
-              <span className="text-sm font-medium">{group.label}</span>
-              <span className="text-sm text-gray-600">{group.count}</span>
-            </li>
-          ))}
+          {groups.map((group) => {
+            const rowContent = (
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-medium">{group.label}</span>
+                <span className="text-sm text-gray-600">{group.count}</span>
+              </div>
+            )
+
+            return (
+              <li key={group.tier}>
+                {actionHref ? (
+                  <Link
+                    href={actionHref}
+                    className="group block rounded border px-3 py-2 transition hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black/10"
+                  >
+                    {rowContent}
+                  </Link>
+                ) : (
+                  <div className="rounded border px-3 py-2">{rowContent}</div>
+                )}
+              </li>
+            )
+          })}
         </ul>
       )}
     </section>
