@@ -105,24 +105,25 @@ export default function LibraryList({
                   </form>
                 )}
 
-                {!isAlreadyInPractice &&
-                  (isKnown ? (
-                    <p className="text-sm text-gray-600">Known</p>
-                  ) : (
-                    <form action={markAsKnown}>
-                      <input type="hidden" name="piece_id" value={piece.id} />
-                      <input
-                        type="hidden"
-                        name="redirect_to"
-                        value={redirectTo}
-                      />
-                      <SubmitButton
-                        label="Mark as known"
-                        pendingLabel="Saving..."
-                        className="border px-3 py-1 text-sm"
-                      />
-                    </form>
-                  ))}
+                {isKnown ? (
+                  <p className="text-sm text-gray-600">Known</p>
+                ) : (
+                  <form action={markAsKnown}>
+                    <input type="hidden" name="piece_id" value={piece.id} />
+                    <input
+                      type="hidden"
+                      name="redirect_to"
+                      value={redirectTo}
+                    />
+                    <SubmitButton
+                      label={
+                        isAlreadyInPractice ? "Set as known" : "Mark as known"
+                      }
+                      pendingLabel="Saving..."
+                      className="border px-3 py-1 text-sm"
+                    />
+                  </form>
+                )}
 
                 <button
                   type="button"
