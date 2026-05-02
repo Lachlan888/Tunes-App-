@@ -8,6 +8,7 @@ import { loadReviewPageData } from "@/lib/loaders/review"
 
 type ReviewPageProps = {
   searchParams?: Promise<{
+    mode?: string
     remove_from_practice?: string
     practice_update?: string
   }>
@@ -15,6 +16,7 @@ type ReviewPageProps = {
 
 export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const resolvedSearchParams = await searchParams
+  const mode = resolvedSearchParams?.mode ?? ""
   const removeFromPracticeStatus =
     resolvedSearchParams?.remove_from_practice ?? ""
   const practiceUpdate = resolvedSearchParams?.practice_update ?? ""
@@ -28,6 +30,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   } = await loadReviewPageData()
 
   const redirectTo = "/review"
+  const shouldOpenCatchUp = mode === "catch-up"
 
   if (!streakSummary) {
     redirect("/login")
@@ -50,6 +53,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         catchUpQueue={catchUpQueue}
         backlogSummary={backlogSummary}
         redirectTo={redirectTo}
+        defaultOpen={shouldOpenCatchUp}
       />
 
       <DueTodaySection

@@ -1,10 +1,8 @@
 import Link from "next/link"
-import BacklogSummarySection from "@/components/BacklogSummarySection"
 import HomeFriendsActivityBox from "@/components/HomeFriendsActivityBox"
 import StreakSummarySection from "@/components/StreakSummarySection"
 import type { FriendActivityItem } from "@/lib/friend-activity"
 import type {
-  BacklogGroupSummary,
   LearningList,
   Piece,
   StreakSummary,
@@ -18,7 +16,6 @@ type HomeSummarySectionProps = {
   userKnownPieces: UserKnownPiece[] | null
   learningLists: LearningList[] | null
   dueToday: UserPiece[] | null
-  backlogSummary: BacklogGroupSummary[]
   needsAttentionCount: number
   recentFriendActivity: FriendActivityItem[]
   streakSummary: StreakSummary
@@ -61,7 +58,6 @@ export default function HomeSummarySection({
   userKnownPieces,
   learningLists,
   dueToday,
-  backlogSummary,
   needsAttentionCount,
   recentFriendActivity,
   streakSummary,
@@ -148,14 +144,6 @@ export default function HomeSummarySection({
           </section>
         </div>
       </section>
-
-      {needsAttentionCount > 0 && (
-        <BacklogSummarySection
-          groups={backlogSummary}
-          actionHref="/review?mode=catch-up#catch-up"
-          actionLabel="Catch up"
-        />
-      )}
 
       <section className="grid gap-4 md:grid-cols-2">
         <div className="rounded-lg border p-4">

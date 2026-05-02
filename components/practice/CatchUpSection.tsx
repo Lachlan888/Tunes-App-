@@ -6,6 +6,7 @@ type CatchUpSectionProps = {
   catchUpQueue: ReviewQueueItem[]
   backlogSummary: BacklogGroupSummary[]
   redirectTo: string
+  defaultOpen?: boolean
 }
 
 function getStatusBadgeClasses(label: string | null) {
@@ -25,10 +26,11 @@ export default function CatchUpSection({
   catchUpQueue,
   backlogSummary,
   redirectTo,
+  defaultOpen = false,
 }: CatchUpSectionProps) {
   return (
-    <section className="mt-8 rounded-lg border p-4">
-      <details>
+    <section id="catch-up" className="mt-8 rounded-lg border p-4">
+      <details open={defaultOpen}>
         <summary className="cursor-pointer text-lg font-semibold">
           Catch up ({catchUpQueue.length})
         </summary>
