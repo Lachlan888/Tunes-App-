@@ -38,7 +38,7 @@ const LORE_CATEGORY_OPTIONS: {
   label: string
 }[] = [
   { value: "region", label: "Region" },
-  { value: "informant", label: "Informant" },
+  { value: "informant", label: "Source" },
   { value: "collector", label: "Collector" },
   { value: "alternate_title", label: "Alternate title" },
   { value: "tune_family", label: "Tune family" },
@@ -47,8 +47,8 @@ const LORE_CATEGORY_OPTIONS: {
 
 const LORE_CATEGORY_LABELS: Record<PieceLoreCategory, string> = {
   region: "Region",
-  informant: "Informant",
-  collector: "Collector",
+  informant: "Sources",
+  collector: "Collectors",
   alternate_title: "Alternate titles",
   tune_family: "Tune family",
   story_folklore_note: "Story / folklore notes",
@@ -75,8 +75,8 @@ export default function PieceLoreSection({
       <div className="mb-5">
         <h2 className="text-2xl font-semibold">Sources &amp; Lore</h2>
         <p className="mt-1 text-sm text-gray-600">
-          Region, informants, collectors, alternate titles, tune-family notes,
-          and folklore from players.
+          Structured tune knowledge: regions, sources, collectors, alternate
+          titles, tune families, and folklore notes.
         </p>
       </div>
 
@@ -95,7 +95,7 @@ export default function PieceLoreSection({
         <textarea
           name="entry_text"
           rows={4}
-          placeholder="Add a source, alternate title, tune-family note, or bit of folklore"
+          placeholder="Add a source, alternate title, regional note, tune-family link, or bit of folklore"
           className="w-full rounded border p-3"
           required
         />

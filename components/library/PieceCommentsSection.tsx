@@ -31,12 +31,13 @@ export default function PieceCommentsSection({
   currentUserId,
 }: PieceCommentsSectionProps) {
   return (
-    <section className="mt-10">
+    <section>
       <div className="mb-5 flex items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl font-semibold">Comments</h2>
           <p className="mt-1 text-sm text-gray-600">
-            Notes, variants, or useful context from other players.
+            Conversation about this tune. Comments are social and may appear in
+            friends’ activity feeds.
           </p>
         </div>
       </div>
@@ -48,7 +49,7 @@ export default function PieceCommentsSection({
         <textarea
           name="body"
           rows={4}
-          placeholder="Leave a comment about this tune"
+          placeholder="Ask a question, add a playing note, or continue the conversation"
           className="w-full rounded border p-3"
           required
         />
