@@ -3,7 +3,7 @@ import ActivePracticeSection from "@/components/practice/ActivePracticeSection"
 import CatchUpSection from "@/components/practice/CatchUpSection"
 import DueTodaySection from "@/components/practice/DueTodaySection"
 import PracticeStatusMessages from "@/components/practice/PracticeStatusMessages"
-import StreakSummarySection from "@/components/StreakSummarySection"
+import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import { loadReviewPageData } from "@/lib/loaders/review"
 
 type ReviewPageProps = {

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import PublicProfileActions from "@/components/PublicProfileActions"
+import PublicProfileActions from "@/components/profile/PublicProfileActions"
 import PublicProfileHeader from "@/components/profile/PublicProfileHeader"
 import PublicProfileOverview from "@/components/profile/PublicProfileOverview"
 import { loadPublicProfileData } from "@/lib/loaders/profile-public"

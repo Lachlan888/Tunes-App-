@@ -1,5 +1,5 @@
-import GettingStartedSection from "@/components/GettingStartedSection"
-import HomeSummarySection from "@/components/HomeSummarySection"
+import GettingStartedSection from "@/components/home/GettingStartedSection"
+import HomeSummarySection from "@/components/home/HomeSummarySection"
 import { loadHomepageData } from "@/lib/loaders/homepage"
 
 export default async function HomePage() {

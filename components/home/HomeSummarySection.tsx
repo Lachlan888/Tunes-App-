@@ -1,6 +1,6 @@
 import Link from "next/link"
-import HomeFriendsActivityBox from "@/components/HomeFriendsActivityBox"
-import StreakSummarySection from "@/components/StreakSummarySection"
+import HomeFriendsActivityBox from "@/components/home/HomeFriendsActivityBox"
+import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import type { FriendActivityItem } from "@/lib/friend-activity"
 import type {
   LearningList,

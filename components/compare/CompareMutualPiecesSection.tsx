@@ -1,6 +1,6 @@
 import EmptyState from "@/components/EmptyState"
 import TuneCard from "@/components/TuneCard"
-import PieceSearchFilters from "@/components/PieceSearchFilters"
+import PieceSearchFilters from "@/components/library/PieceSearchFilters"
 import type { Piece } from "@/lib/types"
 
 type CompareMutualPiecesSectionProps = {

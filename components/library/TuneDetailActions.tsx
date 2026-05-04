@@ -1,6 +1,6 @@
 import AddToListAction from "@/components/AddToListAction"
 import MarkAsKnownButton from "@/components/MarkAsKnownButton"
-import PracticeProgress from "@/components/PracticeProgress"
+import PracticeProgress from "@/components/practice/PracticeProgress"
 import RemoveTuneButton from "@/components/RemoveTuneButton"
 import StartPracticeButton from "@/components/StartPracticeButton"
 import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"

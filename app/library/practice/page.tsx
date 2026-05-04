@@ -1,4 +1,4 @@
-import RepertoireTuneList from "@/components/RepertoireTuneList"
+import RepertoireTuneList from "@/components/repertoire/RepertoireTuneList"
 import { addToLearningList } from "@/lib/actions/lists"
 import { loadPracticeTunesPageData } from "@/lib/loaders/repertoire"
 

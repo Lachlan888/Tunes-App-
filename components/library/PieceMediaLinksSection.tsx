@@ -3,7 +3,7 @@
 import { useState } from "react"
 import ReferenceMediaEmbed, {
   getYouTubeEmbedUrl,
-} from "@/components/ReferenceMediaEmbed"
+} from "@/components/library/ReferenceMediaEmbed"
 import SubmitButton from "@/components/SubmitButton"
 
 type PieceMediaLink = {

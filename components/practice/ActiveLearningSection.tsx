@@ -1,4 +1,4 @@
-import PracticeProgress from "@/components/PracticeProgress"
+import PracticeProgress from "@/components/practice/PracticeProgress"
 
 type Piece = {
   id: number

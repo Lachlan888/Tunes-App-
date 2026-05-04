@@ -1,4 +1,10 @@
 import Link from "next/link"
+import PieceCommentsSection from "@/components/library/PieceCommentsSection"
+import PieceLoreSection from "@/components/library/PieceLoreSection"
+import PieceMediaLinksSection from "@/components/library/PieceMediaLinksSection"
+import SubmitButton from "@/components/SubmitButton"
+import TuneCanonicalDetailsCard from "@/components/library/TuneCanonicalDetailsCard"
+import TuneDetailActions from "@/components/library/TuneDetailActions"
 import { upsertUserPieceNotes } from "@/lib/actions/user-piece-metadata"
 import {
   addPieceMediaLink,
@@ -6,12 +12,6 @@ import {
 } from "@/lib/actions/piece-links"
 import { addToLearningList } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
-import PieceCommentsSection from "@/components/PieceCommentsSection"
-import PieceLoreSection from "@/components/PieceLoreSection"
-import PieceMediaLinksSection from "@/components/PieceMediaLinksSection"
-import SubmitButton from "@/components/SubmitButton"
-import TuneCanonicalDetailsCard from "@/components/TuneCanonicalDetailsCard"
-import TuneDetailActions from "@/components/TuneDetailActions"
 import { loadTuneDetailData } from "@/lib/loaders/tune-detail"
 
 type PiecePageProps = {

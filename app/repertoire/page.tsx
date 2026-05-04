@@ -1,5 +1,5 @@
 import AddToListSection from "@/components/AddToListSection"
-import CreateTuneForm from "@/components/CreateTuneForm"
+import CreateTuneForm from "@/components/library/CreateTuneForm"
 import { addToLearningList, createList } from "@/lib/actions/lists"
 import { createTune } from "@/lib/actions/pieces"
 import { loadHomepageData } from "@/lib/loaders/homepage"

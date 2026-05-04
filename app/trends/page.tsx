@@ -1,6 +1,6 @@
-import TrendFriendPatternsSection from "@/components/TrendFriendPatternsSection"
-import TrendSummaryCards from "@/components/TrendSummaryCards"
-import TrendTuneList from "@/components/TrendTuneList"
+import TrendFriendPatternsSection from "@/components/trends/TrendFriendPatternsSection"
+import TrendSummaryCards from "@/components/trends/TrendSummaryCards"
+import TrendTuneList from "@/components/trends/TrendTuneList"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import { loadTrendLandingData } from "@/lib/loaders/trends"
 

@@ -1,6 +1,6 @@
 import Link from "next/link"
-import PracticeProgress from "@/components/PracticeProgress"
-import RemoveFromPracticeButton from "@/components/RemoveFromPracticeButton"
+import PracticeProgress from "@/components/practice/PracticeProgress"
+import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeButton"
 import { APP_TIME_ZONE } from "@/lib/review"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import CreateTuneForm from "@/components/CreateTuneForm"
+import CreateTuneForm from "@/components/library/CreateTuneForm"
 import { createTune } from "@/lib/actions/pieces"
 
 type StyleOption = {

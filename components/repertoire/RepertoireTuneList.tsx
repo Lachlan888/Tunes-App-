@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
-import RemoveFromPracticeButton from "@/components/RemoveFromPracticeButton"
+import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeButton"
 import RemoveTuneButton from "@/components/RemoveTuneButton"
 import TuneCard from "@/components/TuneCard"
 import { APP_TIME_ZONE } from "@/lib/review"
