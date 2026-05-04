@@ -1,21 +1,25 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
 export default function LogoutButton() {
   const [isPending, setIsPending] = useState(false)
-  const router = useRouter()
   const supabase = createClient()
 
   async function handleLogout() {
+    if (isPending) return
+
     setIsPending(true)
 
-    await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut()
 
-    router.refresh()
-    router.push("/login")
+    if (error) {
+      setIsPending(false)
+      return
+    }
+
+    window.location.href = "/login"
   }
 
   return (

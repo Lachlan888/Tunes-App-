@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
 type AuthMode = "login" | "signup" | "reset"
@@ -17,8 +16,8 @@ export default function LoginPage() {
   const [message, setMessage] = useState("")
   const [errorMessage, setErrorMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
-  const router = useRouter()
   const supabase = createClient()
 
   function resetMessages() {
@@ -35,15 +34,14 @@ export default function LoginPage() {
       password,
     })
 
-    setIsSubmitting(false)
-
     if (error) {
+      setIsSubmitting(false)
       setErrorMessage(error.message)
       return
     }
 
-    router.refresh()
-    router.push("/")
+    setIsRedirecting(true)
+    window.location.href = "/"
   }
 
   async function handleSignup() {
@@ -58,9 +56,9 @@ export default function LoginPage() {
       },
     })
 
-    setIsSubmitting(false)
-
     if (error) {
+      setIsSubmitting(false)
+
       if (isAlreadyRegisteredMessage(error.message)) {
         setMessage("That email already has an account. Sign in instead.")
         setMode("login")
@@ -72,10 +70,12 @@ export default function LoginPage() {
     }
 
     if (data.session) {
-      router.refresh()
-      router.push("/")
+      setIsRedirecting(true)
+      window.location.href = "/"
       return
     }
+
+    setIsSubmitting(false)
 
     if (data.user) {
       setMessage(
@@ -112,6 +112,7 @@ export default function LoginPage() {
   const isLogin = mode === "login"
   const isSignup = mode === "signup"
   const isReset = mode === "reset"
+  const isBusy = isSubmitting || isRedirecting
 
   return (
     <main className="mx-auto max-w-md p-8">
@@ -129,6 +130,12 @@ export default function LoginPage() {
         {isReset &&
           "Enter your email and we’ll send you a link to set a new password."}
       </p>
+
+      {isRedirecting && (
+        <div className="mb-4 rounded border border-gray-400 bg-gray-50 p-3 text-sm text-gray-800">
+          Loading your tunes...
+        </div>
+      )}
 
       {message && (
         <div className="mb-4 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
@@ -154,7 +161,7 @@ export default function LoginPage() {
             autoComplete="email"
             placeholder="you@example.com"
             value={email}
-            disabled={isSubmitting}
+            disabled={isBusy}
             onChange={(event) => setEmail(event.target.value)}
           />
         </div>
@@ -174,7 +181,7 @@ export default function LoginPage() {
               autoComplete={isSignup ? "new-password" : "current-password"}
               placeholder="Password"
               value={password}
-              disabled={isSubmitting}
+              disabled={isBusy}
               onChange={(event) => setPassword(event.target.value)}
             />
           </div>
@@ -183,29 +190,37 @@ export default function LoginPage() {
         {isLogin && (
           <button
             type="button"
-            disabled={isSubmitting}
+            disabled={isBusy}
             onClick={handleLogin}
             className="w-full rounded bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "Signing in..." : "Sign in"}
+            {isRedirecting
+              ? "Loading your tunes..."
+              : isSubmitting
+                ? "Signing in..."
+                : "Sign in"}
           </button>
         )}
 
         {isSignup && (
           <button
             type="button"
-            disabled={isSubmitting}
+            disabled={isBusy}
             onClick={handleSignup}
             className="w-full rounded bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "Creating account..." : "Create account"}
+            {isRedirecting
+              ? "Loading your tunes..."
+              : isSubmitting
+                ? "Creating account..."
+                : "Create account"}
           </button>
         )}
 
         {isReset && (
           <button
             type="button"
-            disabled={isSubmitting}
+            disabled={isBusy}
             onClick={handlePasswordReset}
             className="w-full rounded bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
@@ -218,7 +233,7 @@ export default function LoginPage() {
         {!isLogin && (
           <button
             type="button"
-            disabled={isSubmitting}
+            disabled={isBusy}
             onClick={() => {
               resetMessages()
               setMode("login")
@@ -232,7 +247,7 @@ export default function LoginPage() {
         {!isSignup && (
           <button
             type="button"
-            disabled={isSubmitting}
+            disabled={isBusy}
             onClick={() => {
               resetMessages()
               setMode("signup")
@@ -246,7 +261,7 @@ export default function LoginPage() {
         {!isReset && (
           <button
             type="button"
-            disabled={isSubmitting}
+            disabled={isBusy}
             onClick={() => {
               resetMessages()
               setMode("reset")
