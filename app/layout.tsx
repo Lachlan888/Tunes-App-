@@ -3,6 +3,8 @@ import LogoutButton from "@/components/LogoutButton"
 import PendingNavLink from "@/components/PendingNavLink"
 import { createClient } from "@/lib/supabase/server"
 
+export const dynamic = "force-dynamic"
+
 export default async function RootLayout({
   children,
 }: {
