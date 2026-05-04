@@ -55,38 +55,43 @@ export default function CreateTuneModal({
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
           onClick={() => {
             if (!isSubmitting) {
               setIsOpen(false)
             }
           }}
         >
-          <div className="flex min-h-full items-start justify-center py-8">
-            <div
-              className="w-full max-w-xl rounded-lg bg-white p-6 shadow-lg"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className="mb-4 flex items-center justify-between gap-4">
+          <div
+            className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-lg"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex shrink-0 items-start justify-between gap-4 border-b px-6 py-4">
+              <div>
                 <h2 className="text-2xl font-semibold">Create Tune</h2>
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  disabled={isSubmitting}
-                  className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Close
-                </button>
+                <p className="mt-1 text-sm text-gray-600">
+                  Add a tune to the shared catalogue, then optionally place it
+                  straight into your own repertoire workflow.
+                </p>
               </div>
 
-              <CreateTuneForm
-                createTune={createTune}
-                styleOptions={styleOptions}
-                learningLists={learningLists}
-                redirectTo="/library"
-                onSubmitStart={() => setIsSubmitting(true)}
-              />
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                disabled={isSubmitting}
+                className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Close
+              </button>
             </div>
+
+            <CreateTuneForm
+              createTune={createTune}
+              styleOptions={styleOptions}
+              learningLists={learningLists}
+              redirectTo="/library"
+              onSubmitStart={() => setIsSubmitting(true)}
+            />
           </div>
         </div>
       )}
