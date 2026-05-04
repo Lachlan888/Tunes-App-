@@ -23,6 +23,10 @@ export type FriendActivityItem = {
     id: number
     name: string
   } | null
+  comment: {
+    id: number
+    body: string
+  } | null
 }
 
 export function formatFriendActivityRelativeTime(createdAt: string) {
@@ -46,18 +50,31 @@ export function formatFriendActivityRelativeTime(createdAt: string) {
   return new Date(createdAt).toLocaleDateString("en-AU")
 }
 
+function renderCommentExcerpt(body: string) {
+  const cleanedBody = body.replace(/\s+/g, " ").trim()
+  const excerpt =
+    cleanedBody.length > 180
+      ? `${cleanedBody.slice(0, 180).trim()}…`
+      : cleanedBody
+
+  return (
+    <span className="mt-2 block border-l-2 pl-3 text-gray-700">
+      “{excerpt}”
+    </span>
+  )
+}
+
 export function renderFriendActivityText(item: FriendActivityItem) {
   const actorName =
     item.actor?.display_name || item.actor?.username || "Unnamed user"
 
-  const actorNode =
-    item.actor?.username ? (
-      <Link href={`/users/${item.actor.username}`} className="underline">
-        {actorName}
-      </Link>
-    ) : (
-      <span>{actorName}</span>
-    )
+  const actorNode = item.actor?.username ? (
+    <Link href={`/users/${item.actor.username}`} className="underline">
+      {actorName}
+    </Link>
+  ) : (
+    <span>{actorName}</span>
+  )
 
   if (item.event_type === "started_practice" && item.piece) {
     return (
@@ -100,6 +117,7 @@ export function renderFriendActivityText(item: FriendActivityItem) {
         <Link href={`/library/${item.piece.id}`} className="underline">
           {item.piece.title}
         </Link>
+        {item.comment?.body ? renderCommentExcerpt(item.comment.body) : null}
       </>
     )
   }

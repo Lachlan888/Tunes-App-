@@ -50,7 +50,7 @@ export default function ReferenceMediaEmbed({
   }
 
   return (
-    <section className="rounded border p-4">
+    <div>
       <h2 className="mb-3 text-xl font-semibold">Reference video</h2>
 
       <div className="aspect-video w-full overflow-hidden rounded border">
@@ -63,6 +63,6 @@ export default function ReferenceMediaEmbed({
           allowFullScreen
         />
       </div>
-    </section>
+    </div>
   )
 }

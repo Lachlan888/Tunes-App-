@@ -7,8 +7,8 @@ import {
 import { addToLearningList } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
 import PieceCommentsSection from "@/components/PieceCommentsSection"
+import PieceLoreSection from "@/components/PieceLoreSection"
 import PieceMediaLinksSection from "@/components/PieceMediaLinksSection"
-import ReferenceMediaEmbed from "@/components/ReferenceMediaEmbed"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCanonicalDetailsCard from "@/components/TuneCanonicalDetailsCard"
 import TuneDetailActions from "@/components/TuneDetailActions"
@@ -63,6 +63,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
     typedSheetMusicLinks,
     typedMediaLinks,
     typedPieceComments,
+    typedPieceLoreEntries,
     typedUserPiece,
     typedUserKnownPiece,
     typedLearningLists,
@@ -105,13 +106,6 @@ export default async function PiecePage({ params }: PiecePageProps) {
               </p>
             </div>
           </section>
-
-          {typedPiece.reference_url && (
-            <ReferenceMediaEmbed
-              referenceUrl={typedPiece.reference_url}
-              title={typedPiece.title}
-            />
-          )}
 
           <TuneDetailActions
             piece={typedPiece}
@@ -159,6 +153,8 @@ export default async function PiecePage({ params }: PiecePageProps) {
             pieceId={pieceId}
             redirectTo={redirectTo}
             mediaLinks={typedMediaLinks}
+            referenceUrl={typedPiece.reference_url}
+            referenceTitle={typedPiece.title}
             addPieceMediaLink={addPieceMediaLink}
           />
 
@@ -213,6 +209,15 @@ export default async function PiecePage({ params }: PiecePageProps) {
           </section>
         </div>
       </div>
+
+      <section className="mt-8">
+        <PieceLoreSection
+          pieceId={pieceId}
+          loreEntries={typedPieceLoreEntries}
+          profileMap={profileMap}
+          currentUserId={user.id}
+        />
+      </section>
 
       <section className="mt-8 rounded border p-4">
         <PieceCommentsSection

@@ -31,6 +31,22 @@ export type PieceCommentRow = {
   user_id: string
 }
 
+export type PieceLoreCategory =
+  | "region"
+  | "informant"
+  | "collector"
+  | "alternate_title"
+  | "tune_family"
+  | "story_folklore_note"
+
+export type PieceLoreEntryRow = {
+  id: number
+  category: PieceLoreCategory
+  entry_text: string
+  created_at: string
+  user_id: string
+}
+
 type ProfileRow = {
   id: string
   username: string | null
@@ -61,6 +77,7 @@ export type TuneDetailLoadResult =
       typedSheetMusicLinks: PieceSheetMusicLink[]
       typedMediaLinks: PieceMediaLink[]
       typedPieceComments: PieceCommentRow[]
+      typedPieceLoreEntries: PieceLoreEntryRow[]
       typedUserPiece: UserPiece | null
       typedUserKnownPiece: UserKnownPiece | null
       typedLearningLists: LearningList[]
@@ -128,6 +145,7 @@ export async function loadTuneDetailData(
     sheetMusicLinksResult,
     mediaLinksResult,
     pieceCommentsResult,
+    pieceLoreEntriesResult,
     userPieceResult,
     userKnownPieceResult,
     learningListsResult,
@@ -155,6 +173,12 @@ export async function loadTuneDetailData(
       .select("id, body, created_at, user_id")
       .eq("piece_id", pieceId)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("piece_lore_entries")
+      .select("id, category, entry_text, created_at, user_id")
+      .eq("piece_id", pieceId)
+      .order("category", { ascending: true })
+      .order("created_at", { ascending: true }),
     supabase
       .from("user_pieces")
       .select("id, piece_id, status, next_review_due, stage")
@@ -195,6 +219,8 @@ export async function loadTuneDetailData(
     (mediaLinksResult.data as PieceMediaLink[] | null) ?? []
   const typedPieceComments =
     (pieceCommentsResult.data as PieceCommentRow[] | null) ?? []
+  const typedPieceLoreEntries =
+    (pieceLoreEntriesResult.data as PieceLoreEntryRow[] | null) ?? []
   const typedUserPiece = (userPieceResult.data as UserPiece | null) ?? null
   const typedUserKnownPiece =
     (userKnownPieceResult.data as UserKnownPiece | null) ?? null
@@ -204,17 +230,20 @@ export async function loadTuneDetailData(
     (learningListItemsResult.data as LearningListItemRow[] | null) ?? []
   const styleOptions = (styleRowsResult.data as StyleOption[] | null) ?? []
 
-  const commentUserIds = Array.from(
-    new Set(typedPieceComments.map((comment) => comment.user_id))
+  const profileUserIds = Array.from(
+    new Set([
+      ...typedPieceComments.map((comment) => comment.user_id),
+      ...typedPieceLoreEntries.map((entry) => entry.user_id),
+    ])
   )
 
   let profileMap: Record<string, CommentAuthor> = {}
 
-  if (commentUserIds.length > 0) {
+  if (profileUserIds.length > 0) {
     const { data: profiles } = await supabase
       .from("profiles")
       .select("id, username, display_name")
-      .in("id", commentUserIds)
+      .in("id", profileUserIds)
 
     const typedProfiles = (profiles as ProfileRow[] | null) ?? []
 
@@ -241,6 +270,7 @@ export async function loadTuneDetailData(
     typedSheetMusicLinks,
     typedMediaLinks,
     typedPieceComments,
+    typedPieceLoreEntries,
     typedUserPiece,
     typedUserKnownPiece,
     typedLearningLists,

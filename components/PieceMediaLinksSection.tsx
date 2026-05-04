@@ -1,8 +1,10 @@
 "use client"
 
 import { useState } from "react"
+import ReferenceMediaEmbed, {
+  getYouTubeEmbedUrl,
+} from "@/components/ReferenceMediaEmbed"
 import SubmitButton from "@/components/SubmitButton"
-import { getYouTubeEmbedUrl } from "@/components/ReferenceMediaEmbed"
 
 type PieceMediaLink = {
   id: number
@@ -14,6 +16,8 @@ type PieceMediaLinksSectionProps = {
   pieceId: number
   redirectTo: string
   mediaLinks: PieceMediaLink[]
+  referenceUrl?: string | null
+  referenceTitle?: string
   addPieceMediaLink: (formData: FormData) => Promise<void>
 }
 
@@ -21,12 +25,23 @@ export default function PieceMediaLinksSection({
   pieceId,
   redirectTo,
   mediaLinks,
+  referenceUrl,
+  referenceTitle = "Tune",
   addPieceMediaLink,
 }: PieceMediaLinksSectionProps) {
   const [openMediaId, setOpenMediaId] = useState<number | null>(null)
 
   return (
     <section className="rounded border p-4">
+      {referenceUrl ? (
+        <div className="mb-8">
+          <ReferenceMediaEmbed
+            referenceUrl={referenceUrl}
+            title={referenceTitle}
+          />
+        </div>
+      ) : null}
+
       <h2 className="mb-2 text-xl font-semibold">Media</h2>
 
       <form action={addPieceMediaLink} className="mb-6 space-y-3">

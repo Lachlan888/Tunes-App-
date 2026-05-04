@@ -41,6 +41,11 @@ type LearningListRow = {
   visibility: string | null
 }
 
+type PieceCommentRow = {
+  id: number
+  body: string
+}
+
 export type FriendSearchMatch = {
   id: string
   username: string | null
@@ -86,6 +91,10 @@ export type FriendActivityItem = {
   learning_list: {
     id: number
     name: string
+  } | null
+  comment: {
+    id: number
+    body: string
   } | null
 }
 
@@ -133,9 +142,18 @@ export async function loadRecentFriendActivity(
     )
   )
 
+  const commentIds = Array.from(
+    new Set(
+      typedActivityRows
+        .map((row) => row.comment_id)
+        .filter((value): value is number => value !== null)
+    )
+  )
+
   let activityProfilesById = new Map<string, ProfileSearchRow>()
   let piecesById = new Map<number, PieceRow>()
   let learningListsById = new Map<number, LearningListRow>()
+  let commentsById = new Map<number, PieceCommentRow>()
 
   if (activityUserIds.length > 0) {
     const { data: activityProfiles, error: activityProfilesError } =
@@ -183,7 +201,28 @@ export async function loadRecentFriendActivity(
     }
 
     learningListsById = new Map(
-      ((learningLists ?? []) as LearningListRow[]).map((list) => [list.id, list])
+      ((learningLists ?? []) as LearningListRow[]).map((list) => [
+        list.id,
+        list,
+      ])
+    )
+  }
+
+  if (commentIds.length > 0) {
+    const { data: comments, error: commentsError } = await supabase
+      .from("piece_comments")
+      .select("id, body")
+      .in("id", commentIds)
+
+    if (commentsError) {
+      throw new Error(commentsError.message)
+    }
+
+    commentsById = new Map(
+      ((comments ?? []) as PieceCommentRow[]).map((comment) => [
+        comment.id,
+        comment,
+      ])
     )
   }
 
@@ -196,6 +235,8 @@ export async function loadRecentFriendActivity(
         row.learning_list_id != null
           ? learningListsById.get(row.learning_list_id) ?? null
           : null
+      const comment =
+        row.comment_id != null ? commentsById.get(row.comment_id) ?? null : null
 
       if (
         (row.event_type === "public_list_created" ||
@@ -226,6 +267,12 @@ export async function loadRecentFriendActivity(
           ? {
               id: learningList.id,
               name: learningList.name,
+            }
+          : null,
+        comment: comment
+          ? {
+              id: comment.id,
+              body: comment.body,
             }
           : null,
       }
