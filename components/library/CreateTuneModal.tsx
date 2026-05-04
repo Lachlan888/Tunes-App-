@@ -44,7 +44,7 @@ export default function CreateTuneModal({
   }, [isOpen, isSubmitting])
 
   return (
-    <section className="mb-6">
+    <section>
       <button
         type="button"
         onClick={() => setIsOpen(true)}

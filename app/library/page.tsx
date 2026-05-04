@@ -1,7 +1,7 @@
-import Link from "next/link"
-import BulkImportKnownTunesModal from "@/components/BulkImportKnownTunesModal"
-import CreateTuneModal from "@/components/CreateTuneModal"
-import LibraryList from "@/components/LibraryList"
+import LibraryHeaderActions from "@/components/library/LibraryHeaderActions"
+import LibraryList from "@/components/library/LibraryList"
+import LibraryResultsHeader from "@/components/library/LibraryResultsHeader"
+import LibraryStatusMessages from "@/components/library/LibraryStatusMessages"
 import PieceSearchFilters from "@/components/PieceSearchFilters"
 import { addToLearningList } from "@/lib/actions/lists"
 import { removeTuneFromMyApp } from "@/lib/actions/pieces"
@@ -62,43 +62,7 @@ function parseVisibleCount(value: SearchParamValue): number | "all" {
   return 20
 }
 
-function buildLibraryHref(options: {
-  searchQuery: string
-  selectedKeys: string[]
-  selectedStyles: string[]
-  selectedTimeSignatures: string[]
-  visibleCount: number | "all"
-}) {
-  const params = new URLSearchParams()
-
-  if (options.searchQuery) {
-    params.set("q", options.searchQuery)
-  }
-
-  for (const key of options.selectedKeys) {
-    params.append("key", key)
-  }
-
-  for (const style of options.selectedStyles) {
-    params.append("style", style)
-  }
-
-  for (const timeSignature of options.selectedTimeSignatures) {
-    params.append("time_signature", timeSignature)
-  }
-
-  if (options.visibleCount === "all") {
-    params.set("visible", "all")
-  } else {
-    params.set("visible", String(options.visibleCount))
-  }
-
-  return params.toString() ? `/library?${params.toString()}` : "/library"
-}
-
-export default async function LibraryPage({
-  searchParams,
-}: LibraryPageProps) {
+export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   const resolvedSearchParams = await searchParams
 
   const searchQuery = firstParam(resolvedSearchParams?.q)
@@ -194,194 +158,25 @@ export default async function LibraryPage({
       <h1 className="mb-2 text-3xl font-bold">Tunes</h1>
       <p className="mb-4 text-gray-600">Logged in as {user.email}</p>
 
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <CreateTuneModal
-          styleOptions={styleOptions}
-          learningLists={(learningLists ?? []) as LearningList[]}
-        />
-        <BulkImportKnownTunesModal />
-      </div>
+      <LibraryHeaderActions
+        styleOptions={styleOptions}
+        learningLists={(learningLists ?? []) as LearningList[]}
+      />
 
-      {createTuneStatus === "success" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
-          Tune created.
-        </div>
-      )}
-
-      {createTuneStatus === "missing_title" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
-          Please enter a tune title.
-        </div>
-      )}
-
-      {createTuneStatus === "duplicate" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
-          A tune with that title already exists; either add that tune or give
-          this one a new title. For example, if Black Mountain Rag already
-          exists in D you can make it in A by titling it Black Mountain Rag in
-          A.
-        </div>
-      )}
-
-      {createTuneStatus === "invalid_key" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
-          Invalid key. Format is "D", "Dm" or "D modal" for modal tunes.
-        </div>
-      )}
-
-      {createTuneStatus === "error" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
-          Could not create tune.
-        </div>
-      )}
-
-      {listAddStatus === "success" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
-          Tune added to list.
-        </div>
-      )}
-
-      {listAddStatus === "duplicate" && (
-        <div className="mb-6 rounded border border-gray-400 bg-gray-50 p-3 text-sm text-gray-800">
-          That tune is already in this list.
-        </div>
-      )}
-
-      {removeTuneStatus === "success" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
-          Tune removed from your app.
-        </div>
-      )}
-
-      {removeTuneStatus === "missing_piece" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
-          Could not tell which tune to remove.
-        </div>
-      )}
-
-      {removeTuneStatus === "error" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
-          Could not remove tune.
-        </div>
-      )}
-
-      {bulkUploadStatus === "received" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
-          CSV received. Next step is parsing and validation.
-        </div>
-      )}
-
-      {bulkUploadStatus === "parsed" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
-          CSV parsed successfully. Header row is valid and data rows were found.
-        </div>
-      )}
-
-      {bulkUploadStatus === "validated" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
-          CSV validated successfully. All rows have the right column count and a
-          title.
-        </div>
-      )}
-
-      {bulkUploadStatus === "imported" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-4 text-sm text-green-800">
-          <p className="font-medium">Bulk import completed.</p>
-          <p className="mt-1">
-            Created pieces: {createdPiecesCount}. Reused existing pieces:{" "}
-            {reusedPiecesCount}.
-          </p>
-          <p>
-            Added to known tunes: {addedKnownCount}. Already known:{" "}
-            {alreadyKnownCount}.
-          </p>
-          <p>
-            Added to Uploaded Tunes list: {addedToListCount}. Already in list:{" "}
-            {alreadyInListCount}.
-          </p>
-
-          <div className="mt-4 flex flex-wrap gap-3">
-            {uploadedListId && (
-              <Link
-                href={`/learning-lists/${uploadedListId}`}
-                className="rounded bg-green-800 px-3 py-2 text-sm font-medium text-white"
-              >
-                View Uploaded Tunes
-              </Link>
-            )}
-
-            <Link
-              href="/library/known"
-              className="rounded border border-green-700 bg-white px-3 py-2 text-sm font-medium text-green-900"
-            >
-              View Known Tunes
-            </Link>
-
-            <Link
-              href="/library"
-              className="rounded border border-green-700 bg-white px-3 py-2 text-sm font-medium text-green-900"
-            >
-              Start Practice
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {bulkUploadStatus === "nothing_to_import" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
-          No tunes were available to import.
-        </div>
-      )}
-
-      {bulkUploadStatus === "missing_file" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
-          Please choose a CSV file.
-        </div>
-      )}
-
-      {bulkUploadStatus === "empty_file" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
-          The selected CSV file is empty.
-        </div>
-      )}
-
-      {bulkUploadStatus === "empty_rows" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
-          The CSV has a valid header row but no tune rows underneath it.
-        </div>
-      )}
-
-      {bulkUploadStatus === "invalid_type" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
-          That file does not look like a CSV.
-        </div>
-      )}
-
-      {bulkUploadStatus === "invalid_csv" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
-          The CSV could not be parsed. Check for broken quotes or malformed
-          rows.
-        </div>
-      )}
-
-      {bulkUploadStatus === "invalid_headers" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
-          CSV headers are invalid. Use the template and keep this exact column
-          order: title, key, style, time_signature, reference_url
-        </div>
-      )}
-
-      {bulkUploadStatus === "invalid_row_shape" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
-          CSV row {bulkUploadRow || "?"} does not have exactly 5 columns.
-        </div>
-      )}
-
-      {bulkUploadStatus === "missing_title_row" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
-          CSV row {bulkUploadRow || "?"} is missing a title.
-        </div>
-      )}
+      <LibraryStatusMessages
+        createTuneStatus={createTuneStatus}
+        listAddStatus={listAddStatus}
+        removeTuneStatus={removeTuneStatus}
+        bulkUploadStatus={bulkUploadStatus}
+        bulkUploadRow={bulkUploadRow}
+        uploadedListId={uploadedListId}
+        createdPiecesCount={createdPiecesCount}
+        reusedPiecesCount={reusedPiecesCount}
+        addedKnownCount={addedKnownCount}
+        alreadyKnownCount={alreadyKnownCount}
+        addedToListCount={addedToListCount}
+        alreadyInListCount={alreadyInListCount}
+      />
 
       <PieceSearchFilters
         basePath="/library"
@@ -400,39 +195,14 @@ export default async function LibraryPage({
         }}
       />
 
-      <h2 className="mb-4 text-2xl font-semibold">All tunes</h2>
-
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-gray-600">
-          Showing {filteredPieces.length} tune
-          {filteredPieces.length === 1 ? "" : "s"}
-        </p>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {([20, 50, 100, "all"] as const).map((countOption) => {
-            const isActive = visibleCount === countOption
-            const href = buildLibraryHref({
-              searchQuery,
-              selectedKeys,
-              selectedStyles,
-              selectedTimeSignatures,
-              visibleCount: countOption,
-            })
-
-            return (
-              <a
-                key={String(countOption)}
-                href={href}
-                className={`rounded border px-3 py-1 text-sm ${
-                  isActive ? "bg-black text-white" : "bg-white text-black"
-                }`}
-              >
-                {countOption === "all" ? "All" : countOption}
-              </a>
-            )
-          })}
-        </div>
-      </div>
+      <LibraryResultsHeader
+        filteredCount={filteredPieces.length}
+        visibleCount={visibleCount}
+        searchQuery={searchQuery}
+        selectedKeys={selectedKeys}
+        selectedStyles={selectedStyles}
+        selectedTimeSignatures={selectedTimeSignatures}
+      />
 
       <LibraryList
         pieces={filteredPieces}

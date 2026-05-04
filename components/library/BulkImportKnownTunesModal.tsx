@@ -56,7 +56,7 @@ export default function BulkImportKnownTunesModal() {
   }
 
   return (
-    <section className="mb-6">
+    <section>
       <button
         type="button"
         onClick={() => setIsOpen(true)}
