@@ -1,7 +1,7 @@
-import CreateListModal from "@/components/CreateListModal"
 import EmptyState from "@/components/EmptyState"
-import ListSearchFilters from "@/components/ListSearchFilters"
+import CreateListModal from "@/components/lists/CreateListModal"
 import ListOverviewCard from "@/components/lists/ListOverviewCard"
+import ListSearchFilters from "@/components/lists/ListSearchFilters"
 import ListsResultsHeader from "@/components/lists/ListsResultsHeader"
 import ListsStatusMessages from "@/components/lists/ListsStatusMessages"
 import ListsSummaryGrid from "@/components/lists/ListsSummaryGrid"
@@ -68,7 +68,9 @@ function buildListsHref(options: {
     params.set("visibility", options.visibility)
   }
 
-  return params.toString() ? `/learning-lists?${params.toString()}` : "/learning-lists"
+  return params.toString()
+    ? `/learning-lists?${params.toString()}`
+    : "/learning-lists"
 }
 
 export default async function LearningListsPage({

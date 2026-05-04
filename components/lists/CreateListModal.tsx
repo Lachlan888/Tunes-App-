@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import CreateListForm from "@/components/CreateListForm"
+import CreateListForm from "@/components/lists/CreateListForm"
 import { createList } from "@/lib/actions/lists"
 
 export default function CreateListModal() {

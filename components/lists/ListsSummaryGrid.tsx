@@ -1,7 +1,7 @@
 import EmptyState from "@/components/EmptyState"
-import MyTunesModal from "@/components/MyTunesModal"
-import UnlistedKnownTunesModal from "@/components/UnlistedKnownTunesModal"
-import UnlistedPracticeTunesModal from "@/components/UnlistedPracticeTunesModal"
+import MyTunesModal from "@/components/lists/MyTunesModal"
+import UnlistedKnownTunesModal from "@/components/lists/UnlistedKnownTunesModal"
+import UnlistedPracticeTunesModal from "@/components/lists/UnlistedPracticeTunesModal"
 import type {
   LearningList,
   MyTuneRow,
