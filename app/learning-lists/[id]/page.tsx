@@ -1,4 +1,4 @@
-import EditListModal from "@/components/EditListModal"
+import EditListModal from "@/components/lists/EditListModal"
 import RemoveTuneButton from "@/components/RemoveTuneButton"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
