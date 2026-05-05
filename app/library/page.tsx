@@ -7,10 +7,7 @@ import { addToLearningList } from "@/lib/actions/lists"
 import { removeTuneFromMyApp } from "@/lib/actions/pieces"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadLibraryData } from "@/lib/loaders/library"
-import {
-  getPieceFilterOptions,
-  pieceMatchesFilters,
-} from "@/lib/search-filters"
+import { getPieceFilterOptions } from "@/lib/search-filters"
 import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
 
 type SearchParamValue = string | string[] | undefined
@@ -22,6 +19,7 @@ type LibraryPageProps = {
     style?: SearchParamValue
     time_signature?: SearchParamValue
     visible?: SearchParamValue
+    page?: SearchParamValue
     import?: SearchParamValue
     list_add?: SearchParamValue
     create_tune?: SearchParamValue
@@ -63,6 +61,16 @@ function parseVisibleCount(value: SearchParamValue): number | "all" {
   return 20
 }
 
+function parsePage(value: SearchParamValue) {
+  const page = Number(firstParam(value) || "1")
+
+  if (!Number.isInteger(page) || page < 1) {
+    return 1
+  }
+
+  return page
+}
+
 export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   const resolvedSearchParams = await searchParams
 
@@ -71,12 +79,15 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   const selectedStyles = toArray(resolvedSearchParams?.style)
   const selectedTimeSignatures = toArray(resolvedSearchParams?.time_signature)
   const visibleCount = parseVisibleCount(resolvedSearchParams?.visible)
+  const requestedPage = parsePage(resolvedSearchParams?.page)
   const scrollPieceId = firstParam(resolvedSearchParams?.scroll_piece)
 
   const {
     user,
     pieces,
     filterOptionPieces,
+    totalPieceCount,
+    currentPage,
     userPieces,
     userKnownPieces,
     learningLists,
@@ -85,8 +96,10 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   } = await loadLibraryData({
     searchQuery,
     selectedKeys,
+    selectedStyles,
     selectedTimeSignatures,
     visibleCount,
+    page: requestedPage,
   })
 
   const listAddStatus = firstParam(resolvedSearchParams?.list_add)
@@ -125,6 +138,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     redirectParams.set("visible", "all")
   } else {
     redirectParams.set("visible", String(visibleCount))
+    redirectParams.set("page", String(currentPage))
   }
 
   const redirectTo = redirectParams.toString()
@@ -140,20 +154,28 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     timeSignatures: availableTimeSignatures,
   } = getPieceFilterOptions(optionPieces)
 
-  const filteredPieces = loaderPieces.filter((piece) =>
-    pieceMatchesFilters(piece, {
-      q: "",
-      keys: [],
-      styles: selectedStyles,
-      timeSignatures: [],
-    })
-  )
-
   const hasActiveFilters =
     searchQuery !== "" ||
     selectedKeys.length > 0 ||
     selectedStyles.length > 0 ||
     selectedTimeSignatures.length > 0
+
+  const totalPages =
+    visibleCount === "all"
+      ? 1
+      : Math.max(1, Math.ceil(totalPieceCount / visibleCount))
+
+  const resultsHeaderProps = {
+    displayedCount: loaderPieces.length,
+    totalCount: totalPieceCount,
+    visibleCount,
+    currentPage,
+    totalPages,
+    searchQuery,
+    selectedKeys,
+    selectedStyles,
+    selectedTimeSignatures,
+  }
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
@@ -210,17 +232,10 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
         }}
       />
 
-      <LibraryResultsHeader
-        filteredCount={filteredPieces.length}
-        visibleCount={visibleCount}
-        searchQuery={searchQuery}
-        selectedKeys={selectedKeys}
-        selectedStyles={selectedStyles}
-        selectedTimeSignatures={selectedTimeSignatures}
-      />
+      <LibraryResultsHeader {...resultsHeaderProps} />
 
       <LibraryList
-        pieces={filteredPieces}
+        pieces={loaderPieces}
         userPieces={userPieces as UserPiece[] | null}
         userKnownPieces={userKnownPieces as UserKnownPiece[]}
         learningLists={learningLists as LearningList[] | null}
@@ -232,6 +247,8 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
         scrollPieceId={scrollPieceId}
         hasActiveFilters={hasActiveFilters}
       />
+
+      <LibraryResultsHeader {...resultsHeaderProps} position="bottom" />
     </main>
   )
 }

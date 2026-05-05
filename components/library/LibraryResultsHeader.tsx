@@ -1,11 +1,17 @@
 type LibraryResultsHeaderProps = {
-  filteredCount: number
+  displayedCount: number
+  totalCount: number
   visibleCount: number | "all"
+  currentPage: number
+  totalPages: number
   searchQuery: string
   selectedKeys: string[]
   selectedStyles: string[]
   selectedTimeSignatures: string[]
+  position?: "top" | "bottom"
 }
+
+type PageItem = number | "ellipsis"
 
 function buildLibraryHref(options: {
   searchQuery: string
@@ -13,6 +19,7 @@ function buildLibraryHref(options: {
   selectedStyles: string[]
   selectedTimeSignatures: string[]
   visibleCount: number | "all"
+  page?: number
 }) {
   const params = new URLSearchParams()
 
@@ -36,59 +43,223 @@ function buildLibraryHref(options: {
     params.set("visible", "all")
   } else {
     params.set("visible", String(options.visibleCount))
+    params.set("page", String(options.page ?? 1))
   }
 
   return params.toString() ? `/library?${params.toString()}` : "/library"
 }
 
+function getPageItems(currentPage: number, totalPages: number): PageItem[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1)
+  }
+
+  const items: PageItem[] = []
+  const pages = new Set<number>()
+
+  pages.add(1)
+  pages.add(totalPages)
+  pages.add(currentPage)
+  pages.add(currentPage - 1)
+  pages.add(currentPage + 1)
+
+  const sortedPages = Array.from(pages)
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((a, b) => a - b)
+
+  for (let index = 0; index < sortedPages.length; index += 1) {
+    const page = sortedPages[index]
+    const previousPage = sortedPages[index - 1]
+
+    if (previousPage && page - previousPage > 1) {
+      items.push("ellipsis")
+    }
+
+    items.push(page)
+  }
+
+  return items
+}
+
 export default function LibraryResultsHeader({
-  filteredCount,
+  displayedCount,
+  totalCount,
   visibleCount,
+  currentPage,
+  totalPages,
   searchQuery,
   selectedKeys,
   selectedStyles,
   selectedTimeSignatures,
+  position = "top",
 }: LibraryResultsHeaderProps) {
+  const isBottom = position === "bottom"
+  const isAll = visibleCount === "all"
+  const hasMultiplePages = !isAll && totalPages > 1
+
+  const previousPageHref =
+    currentPage > 1
+      ? buildLibraryHref({
+          searchQuery,
+          selectedKeys,
+          selectedStyles,
+          selectedTimeSignatures,
+          visibleCount,
+          page: currentPage - 1,
+        })
+      : null
+
+  const nextPageHref =
+    currentPage < totalPages
+      ? buildLibraryHref({
+          searchQuery,
+          selectedKeys,
+          selectedStyles,
+          selectedTimeSignatures,
+          visibleCount,
+          page: currentPage + 1,
+        })
+      : null
+
+  const pageItems = getPageItems(currentPage, totalPages)
+
   return (
-    <section className="mb-5 flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Catalogue
-        </p>
-        <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
-          All tunes
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Showing {filteredCount} tune{filteredCount === 1 ? "" : "s"}
-        </p>
+    <section
+      className={
+        isBottom
+          ? "mt-8 flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm"
+          : "mb-5 flex flex-col gap-4"
+      }
+    >
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          {!isBottom && (
+            <>
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Catalogue
+              </p>
+              <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
+                All tunes
+              </h2>
+            </>
+          )}
+
+          <p
+            className={
+              isBottom
+                ? "text-sm font-medium text-muted-foreground"
+                : "mt-2 text-sm text-muted-foreground"
+            }
+          >
+            Showing {displayedCount} of {totalCount} tune
+            {totalCount === 1 ? "" : "s"}
+            {!isAll && totalCount > 0 ? `, page ${currentPage} of ${totalPages}` : ""}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="mr-1 text-sm font-medium text-muted-foreground">
+            Per page
+          </span>
+
+          {([20, 50, 100, "all"] as const).map((countOption) => {
+            const isActive = visibleCount === countOption
+            const href = buildLibraryHref({
+              searchQuery,
+              selectedKeys,
+              selectedStyles,
+              selectedTimeSignatures,
+              visibleCount: countOption,
+              page: 1,
+            })
+
+            return (
+              <a
+                key={String(countOption)}
+                href={href}
+                className={`rounded-full border px-4 py-2 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] ${
+                  isActive
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                {countOption === "all" ? "All" : countOption}
+              </a>
+            )
+          })}
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        {([20, 50, 100, "all"] as const).map((countOption) => {
-          const isActive = visibleCount === countOption
-          const href = buildLibraryHref({
-            searchQuery,
-            selectedKeys,
-            selectedStyles,
-            selectedTimeSignatures,
-            visibleCount: countOption,
-          })
-
-          return (
+      {hasMultiplePages && (
+        <nav
+          aria-label="Tune catalogue pages"
+          className="flex flex-wrap items-center gap-2"
+        >
+          {previousPageHref ? (
             <a
-              key={String(countOption)}
-              href={href}
-              className={`rounded-full border px-4 py-2 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] ${
-                isActive
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
+              href={previousPageHref}
+              className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             >
-              {countOption === "all" ? "All" : countOption}
+              Previous
             </a>
-          )
-        })}
-      </div>
+          ) : (
+            <span className="rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground opacity-60">
+              Previous
+            </span>
+          )}
+
+          {pageItems.map((pageItem, index) => {
+            if (pageItem === "ellipsis") {
+              return (
+                <span
+                  key={`ellipsis-${index}`}
+                  className="px-2 text-sm text-muted-foreground"
+                >
+                  …
+                </span>
+              )
+            }
+
+            const isActive = pageItem === currentPage
+            const href = buildLibraryHref({
+              searchQuery,
+              selectedKeys,
+              selectedStyles,
+              selectedTimeSignatures,
+              visibleCount,
+              page: pageItem,
+            })
+
+            return (
+              <a
+                key={pageItem}
+                href={href}
+                aria-current={isActive ? "page" : undefined}
+                className={`rounded-full border px-4 py-2 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] ${
+                  isActive
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                {pageItem}
+              </a>
+            )
+          })}
+
+          {nextPageHref ? (
+            <a
+              href={nextPageHref}
+              className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            >
+              Next
+            </a>
+          ) : (
+            <span className="rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground opacity-60">
+              Next
+            </span>
+          )}
+        </nav>
+      )}
     </section>
   )
 }

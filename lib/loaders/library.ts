@@ -1,3 +1,4 @@
+import { getStyleLabelsFromPiece } from "@/lib/search-filters"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import type {
@@ -17,8 +18,10 @@ type LearningListItemRow = {
 type LoadLibraryDataParams = {
   searchQuery?: string
   selectedKeys?: string[]
+  selectedStyles?: string[]
   selectedTimeSignatures?: string[]
   visibleCount?: number | "all"
+  page?: number
 }
 
 function normaliseLearningListItem(
@@ -43,11 +46,30 @@ function normaliseLearningListItem(
   }
 }
 
+function normalisePage(value: number | undefined) {
+  if (!value || Number.isNaN(value) || value < 1) return 1
+  return Math.floor(value)
+}
+
+function getTotalPages(totalCount: number, visibleCount: number | "all") {
+  if (visibleCount === "all") return 1
+  return Math.max(1, Math.ceil(totalCount / visibleCount))
+}
+
+function getRangeForPage(page: number, visibleCount: number) {
+  const from = (page - 1) * visibleCount
+  const to = from + visibleCount - 1
+
+  return { from, to }
+}
+
 export async function loadLibraryData({
   searchQuery,
   selectedKeys = [],
+  selectedStyles = [],
   selectedTimeSignatures = [],
   visibleCount = 20,
+  page = 1,
 }: LoadLibraryDataParams = {}) {
   const supabase = await createClient()
 
@@ -60,41 +82,154 @@ export async function loadLibraryData({
   }
 
   const trimmedSearchQuery = (searchQuery ?? "").trim()
+  const requestedPage = normalisePage(page)
 
-  let piecesQuery = supabase
-    .from("pieces")
-    .select(`
-      id,
-      title,
-      key,
-      style,
-      time_signature,
-      reference_url,
-      piece_styles (
-        style_id,
-        styles (
-          id,
-          slug,
-          label
+  let pieces: any[] = []
+  let totalPieceCount = 0
+  let currentPage = requestedPage
+
+  if (selectedStyles.length > 0) {
+    let allStyleCandidatePiecesQuery = supabase
+      .from("pieces")
+      .select(`
+        id,
+        title,
+        key,
+        style,
+        time_signature,
+        reference_url,
+        piece_styles (
+          style_id,
+          styles (
+            id,
+            slug,
+            label
+          )
         )
+      `)
+      .order("title")
+
+    if (trimmedSearchQuery) {
+      allStyleCandidatePiecesQuery = allStyleCandidatePiecesQuery.ilike(
+        "title",
+        `%${trimmedSearchQuery}%`
       )
-    `)
-    .order("title")
+    }
 
-  if (trimmedSearchQuery) {
-    piecesQuery = piecesQuery.ilike("title", `%${trimmedSearchQuery}%`)
-  }
+    if (selectedKeys.length > 0) {
+      allStyleCandidatePiecesQuery = allStyleCandidatePiecesQuery.in(
+        "key",
+        selectedKeys
+      )
+    }
 
-  if (selectedKeys.length > 0) {
-    piecesQuery = piecesQuery.in("key", selectedKeys)
-  }
+    if (selectedTimeSignatures.length > 0) {
+      allStyleCandidatePiecesQuery = allStyleCandidatePiecesQuery.in(
+        "time_signature",
+        selectedTimeSignatures
+      )
+    }
 
-  if (selectedTimeSignatures.length > 0) {
-    piecesQuery = piecesQuery.in("time_signature", selectedTimeSignatures)
-  }
+    const { data: styleCandidatePieces, error: styleCandidatePiecesError } =
+      await allStyleCandidatePiecesQuery
 
-  if (visibleCount !== "all") {
-    piecesQuery = piecesQuery.limit(visibleCount)
+    if (styleCandidatePiecesError) {
+      throw new Error(styleCandidatePiecesError.message)
+    }
+
+    const styleFilteredPieces = (styleCandidatePieces ?? []).filter((piece) => {
+      const styleLabels = getStyleLabelsFromPiece(piece as PieceFilterOption)
+
+      return selectedStyles.some((selectedStyle) =>
+        styleLabels.includes(selectedStyle)
+      )
+    })
+
+    totalPieceCount = styleFilteredPieces.length
+
+    const totalPages = getTotalPages(totalPieceCount, visibleCount)
+    currentPage =
+      visibleCount === "all" ? 1 : Math.min(requestedPage, totalPages)
+
+    if (visibleCount === "all") {
+      pieces = styleFilteredPieces
+    } else {
+      const { from, to } = getRangeForPage(currentPage, visibleCount)
+      pieces = styleFilteredPieces.slice(from, to + 1)
+    }
+  } else {
+    let countQuery = supabase
+      .from("pieces")
+      .select("id", { count: "exact", head: true })
+
+    if (trimmedSearchQuery) {
+      countQuery = countQuery.ilike("title", `%${trimmedSearchQuery}%`)
+    }
+
+    if (selectedKeys.length > 0) {
+      countQuery = countQuery.in("key", selectedKeys)
+    }
+
+    if (selectedTimeSignatures.length > 0) {
+      countQuery = countQuery.in("time_signature", selectedTimeSignatures)
+    }
+
+    const { count, error: countError } = await countQuery
+
+    if (countError) {
+      throw new Error(countError.message)
+    }
+
+    totalPieceCount = count ?? 0
+
+    const totalPages = getTotalPages(totalPieceCount, visibleCount)
+    currentPage =
+      visibleCount === "all" ? 1 : Math.min(requestedPage, totalPages)
+
+    let piecesQuery = supabase
+      .from("pieces")
+      .select(`
+        id,
+        title,
+        key,
+        style,
+        time_signature,
+        reference_url,
+        piece_styles (
+          style_id,
+          styles (
+            id,
+            slug,
+            label
+          )
+        )
+      `)
+      .order("title")
+
+    if (trimmedSearchQuery) {
+      piecesQuery = piecesQuery.ilike("title", `%${trimmedSearchQuery}%`)
+    }
+
+    if (selectedKeys.length > 0) {
+      piecesQuery = piecesQuery.in("key", selectedKeys)
+    }
+
+    if (selectedTimeSignatures.length > 0) {
+      piecesQuery = piecesQuery.in("time_signature", selectedTimeSignatures)
+    }
+
+    if (visibleCount !== "all") {
+      const { from, to } = getRangeForPage(currentPage, visibleCount)
+      piecesQuery = piecesQuery.range(from, to)
+    }
+
+    const { data: pieceRows, error: piecesError } = await piecesQuery
+
+    if (piecesError) {
+      throw new Error(piecesError.message)
+    }
+
+    pieces = pieceRows ?? []
   }
 
   let filterOptionPiecesQuery = supabase.from("pieces").select(`
@@ -119,13 +254,10 @@ export async function loadLibraryData({
   }
 
   const [
-    { data: pieces, error: piecesError },
     { data: filterOptionPiecesRows, error: filterOptionPiecesError },
     { data: learningLists, error: learningListsError },
     { data: styleRows, error: stylesError },
   ] = await Promise.all([
-    piecesQuery,
-
     filterOptionPiecesQuery,
 
     supabase
@@ -140,10 +272,6 @@ export async function loadLibraryData({
       .eq("is_active", true)
       .order("sort_order", { ascending: true }),
   ])
-
-  if (piecesError) {
-    throw new Error(piecesError.message)
-  }
 
   if (filterOptionPiecesError) {
     throw new Error(filterOptionPiecesError.message)
@@ -210,9 +338,7 @@ export async function loadLibraryData({
 
     learningListItems = ((learningListItemsRows ?? []) as LearningListItemRow[])
       .map(normaliseLearningListItem)
-      .filter(
-        (item): item is LearningListItemMembership => item !== null
-      )
+      .filter((item): item is LearningListItemMembership => item !== null)
   }
 
   const styleOptions: StyleOption[] = stylesError ? [] : styleRows ?? []
@@ -221,6 +347,8 @@ export async function loadLibraryData({
     user,
     pieces,
     filterOptionPieces: (filterOptionPiecesRows ?? []) as PieceFilterOption[],
+    totalPieceCount,
+    currentPage,
     userPieces,
     userKnownPieces,
     learningLists,
