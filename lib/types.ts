@@ -268,3 +268,26 @@ export type BacklogGroupSummary = {
   label: string
   count: number
 }
+
+export type HomeTunePreview = {
+  user_piece_id: number
+  piece_id: number
+  title: string
+  stage: number
+}
+
+export type HomeListPreview = {
+  id: number
+  name: string
+}
+
+export type HomeSummaryData = {
+  knownCount: number
+  practiceCount: number
+  dueTodayCount: number
+  needsAttentionCount: number
+  listCount: number
+  dueTodayPreview: HomeTunePreview[]
+  inPracticePreview: HomeTunePreview[]
+  listPreview: HomeListPreview[]
+}

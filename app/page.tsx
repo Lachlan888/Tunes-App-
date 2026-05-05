@@ -5,12 +5,7 @@ import { loadHomepageData } from "@/lib/loaders/homepage"
 export default async function HomePage() {
   const {
     user,
-    pieces,
-    userPieces,
-    userKnownPieces,
-    learningLists,
-    dueToday,
-    needsAttentionCount,
+    summary,
     recentFriendActivity,
     streakSummary,
     gettingStartedState,
@@ -43,12 +38,7 @@ export default async function HomePage() {
       <GettingStartedSection state={gettingStartedState} />
 
       <HomeSummarySection
-        pieces={pieces}
-        userPieces={userPieces}
-        userKnownPieces={userKnownPieces}
-        learningLists={learningLists}
-        dueToday={dueToday}
-        needsAttentionCount={needsAttentionCount}
+        summary={summary}
         recentFriendActivity={recentFriendActivity}
         streakSummary={streakSummary}
       />

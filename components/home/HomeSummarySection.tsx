@@ -2,21 +2,10 @@ import Link from "next/link"
 import HomeFriendsActivityBox from "@/components/home/HomeFriendsActivityBox"
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import type { FriendActivityItem } from "@/lib/friend-activity"
-import type {
-  LearningList,
-  Piece,
-  StreakSummary,
-  UserKnownPiece,
-  UserPiece,
-} from "@/lib/types"
+import type { HomeSummaryData, StreakSummary } from "@/lib/types"
 
 type HomeSummarySectionProps = {
-  pieces: Piece[] | null
-  userPieces: UserPiece[] | null
-  userKnownPieces: UserKnownPiece[] | null
-  learningLists: LearningList[] | null
-  dueToday: UserPiece[] | null
-  needsAttentionCount: number
+  summary: HomeSummaryData
   recentFriendActivity: FriendActivityItem[]
   streakSummary: StreakSummary
 }
@@ -161,37 +150,10 @@ function PreviewLink({
 }
 
 export default function HomeSummarySection({
-  pieces,
-  userPieces,
-  userKnownPieces,
-  learningLists,
-  dueToday,
-  needsAttentionCount,
+  summary,
   recentFriendActivity,
   streakSummary,
 }: HomeSummarySectionProps) {
-  const totalLists = learningLists?.length ?? 0
-  const totalInPractice = userPieces?.length ?? 0
-  const totalKnown = userKnownPieces?.length ?? 0
-  const dueTodayItems = dueToday ?? []
-  const dueTodayCount = dueTodayItems.length
-
-  const dueTodayPreview = dueTodayItems.slice(0, 3)
-
-  const inPracticePreview = [...(userPieces ?? [])]
-    .sort((a, b) => {
-      const aStage = a.stage ?? 999
-      const bStage = b.stage ?? 999
-      return aStage - bStage
-    })
-    .slice(0, 3)
-
-  const listPreview = (learningLists ?? []).slice(0, 3)
-
-  const pieceTitleById = new Map(
-    (pieces ?? []).map((piece) => [piece.id, piece.title ?? "Untitled tune"])
-  )
-
   return (
     <section className="space-y-8">
       <section>
@@ -205,7 +167,7 @@ export default function HomeSummarySection({
           <OverviewCard
             href="/library/known"
             label="Known"
-            value={totalKnown}
+            value={summary.knownCount}
             helper="Tunes already in your hands."
             tone="success"
           />
@@ -213,7 +175,7 @@ export default function HomeSummarySection({
           <OverviewCard
             href="/library/practice"
             label="Practice"
-            value={totalInPractice}
+            value={summary.practiceCount}
             helper="Tunes inside the review system."
             tone="practice"
           />
@@ -221,7 +183,7 @@ export default function HomeSummarySection({
           <OverviewCard
             href="/review#due-today"
             label="Due today"
-            value={dueTodayCount}
+            value={summary.dueTodayCount}
             helper="Scheduled reviews for today."
             tone="due"
           />
@@ -229,7 +191,7 @@ export default function HomeSummarySection({
           <OverviewCard
             href="/review?mode=catch-up#catch-up"
             label="Attention"
-            value={needsAttentionCount}
+            value={summary.needsAttentionCount}
             helper="Overdue tunes waiting for catch-up."
             tone="warning"
           />
@@ -237,7 +199,7 @@ export default function HomeSummarySection({
           <OverviewCard
             href="/learning-lists"
             label="Lists"
-            value={totalLists}
+            value={summary.listCount}
             helper="Collections, plans, and repertoire shelves."
             tone="neutral"
           />
@@ -248,18 +210,16 @@ export default function HomeSummarySection({
 
       <section className="grid gap-4 xl:grid-cols-2">
         <PreviewPanel title="Due next" href="/review#due-today" linkLabel="View all">
-          {dueTodayPreview.length === 0 ? (
+          {summary.dueTodayPreview.length === 0 ? (
             <EmptyPreview>Nothing due today.</EmptyPreview>
           ) : (
             <ul className="space-y-3">
-              {dueTodayPreview.map((userPiece) => (
-                <li key={userPiece.id}>
+              {summary.dueTodayPreview.map((userPiece) => (
+                <li key={userPiece.user_piece_id}>
                   <PreviewLink
                     href={`/library/${userPiece.piece_id}`}
-                    title={
-                      pieceTitleById.get(userPiece.piece_id) ?? "Untitled tune"
-                    }
-                    meta={`Stage ${userPiece.stage ?? 1}`}
+                    title={userPiece.title}
+                    meta={`Stage ${userPiece.stage}`}
                   />
                 </li>
               ))}
@@ -272,18 +232,16 @@ export default function HomeSummarySection({
           href="/library/practice"
           linkLabel="View all"
         >
-          {inPracticePreview.length === 0 ? (
+          {summary.inPracticePreview.length === 0 ? (
             <EmptyPreview>No tunes in practice yet.</EmptyPreview>
           ) : (
             <ul className="space-y-3">
-              {inPracticePreview.map((userPiece) => (
-                <li key={userPiece.id}>
+              {summary.inPracticePreview.map((userPiece) => (
+                <li key={userPiece.user_piece_id}>
                   <PreviewLink
                     href={`/library/${userPiece.piece_id}`}
-                    title={
-                      pieceTitleById.get(userPiece.piece_id) ?? "Untitled tune"
-                    }
-                    meta={`Stage ${userPiece.stage ?? 1}`}
+                    title={userPiece.title}
+                    meta={`Stage ${userPiece.stage}`}
                   />
                 </li>
               ))}
@@ -294,11 +252,11 @@ export default function HomeSummarySection({
 
       <section className="grid gap-4 xl:grid-cols-2">
         <PreviewPanel title="Your lists" href="/learning-lists" linkLabel="View all">
-          {listPreview.length === 0 ? (
+          {summary.listPreview.length === 0 ? (
             <EmptyPreview>No lists yet.</EmptyPreview>
           ) : (
             <ul className="space-y-3">
-              {listPreview.map((learningList) => (
+              {summary.listPreview.map((learningList) => (
                 <li key={learningList.id}>
                   <PreviewLink
                     href={`/learning-lists/${learningList.id}`}

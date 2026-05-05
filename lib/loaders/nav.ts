@@ -1,4 +1,4 @@
-import { isOverdue } from "@/lib/review"
+import { getToday, normaliseStoredDate } from "@/lib/review"
 import type { createClient } from "@/lib/supabase/server"
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
@@ -36,8 +36,10 @@ export async function loadNavCounts(
 
     supabase
       .from("user_pieces")
-      .select("id, next_review_due")
-      .eq("user_id", userId),
+      .select("next_review_due")
+      .eq("user_id", userId)
+      .eq("status", "learning")
+      .not("next_review_due", "is", null),
   ])
 
   if (notificationError) {
@@ -60,10 +62,14 @@ export async function loadNavCounts(
   const safeUnreadMessageCount =
     messageError || unreadMessageCount === null ? 0 : unreadMessageCount
 
+  const today = getToday()
+
   const overduePracticeCount = practiceError
     ? 0
-    : (practiceRows ?? []).filter((row) => isOverdue(row.next_review_due))
-        .length
+    : (practiceRows ?? []).filter((row) => {
+        const dueDate = normaliseStoredDate(row.next_review_due)
+        return Boolean(dueDate && dueDate < today)
+      }).length
 
   return {
     unreadNotificationCount: safeUnreadNotificationCount,
