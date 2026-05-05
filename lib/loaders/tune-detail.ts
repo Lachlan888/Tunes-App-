@@ -29,6 +29,7 @@ export type PieceCommentRow = {
   body: string
   created_at: string
   user_id: string
+  parent_comment_id: number | null
 }
 
 export type PieceLoreCategory =
@@ -170,9 +171,9 @@ export async function loadTuneDetailData(
       .order("created_at", { ascending: true }),
     supabase
       .from("piece_comments")
-      .select("id, body, created_at, user_id")
+      .select("id, body, created_at, user_id, parent_comment_id")
       .eq("piece_id", pieceId)
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: true }),
     supabase
       .from("piece_lore_entries")
       .select("id, category, entry_text, created_at, user_id")

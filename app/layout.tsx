@@ -38,6 +38,7 @@ export default async function RootLayout({
                   <PendingNavLink href="/library" label="Tunes" />
                   <PendingNavLink href="/learning-lists" label="Lists" />
                   <PendingNavLink href="/friends" label="Friends" />
+                  <PendingNavLink href="/inbox" label="Inbox" />
                   <PendingNavLink href="/compare" label="Compare" />
                   <PendingNavLink href="/trends" label="Trends" />
                   <PendingNavLink href="/public-lists" label="Shared" />

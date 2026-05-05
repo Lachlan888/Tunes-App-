@@ -32,6 +32,13 @@ function getDirectMessageMessage(status?: string) {
     }
   }
 
+  if (status === "archived") {
+    return {
+      tone: "success" as const,
+      text: "Conversation archived.",
+    }
+  }
+
   if (status === "missing_user") {
     return {
       tone: "warning" as const,
@@ -165,11 +172,6 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Messages
           </h2>
-
-          <p className="mt-2 text-sm text-muted-foreground">
-            Direct messages are threaded by musician. Both incoming and outgoing
-            messages appear here. You can edit or delete messages you sent.
-          </p>
         </div>
 
         <DirectMessageThreadList threads={messageThreads} />

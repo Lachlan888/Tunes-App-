@@ -1,4 +1,5 @@
 import Link from "next/link"
+import ActivityInteractionPanel from "@/components/activity/ActivityInteractionPanel"
 import {
   formatFriendActivityRelativeTime,
   renderFriendActivityText,
@@ -40,12 +41,14 @@ export default function HomeFriendsActivityBox({
               key={item.id}
               className="rounded-xl border border-border bg-background/70 p-4"
             >
-              <p className="max-h-12 overflow-hidden text-sm text-foreground">
+              <p className="text-sm leading-6 text-foreground">
                 {renderFriendActivityText(item)}
               </p>
               <p className="mt-2 text-xs font-medium text-muted-foreground">
                 {formatFriendActivityRelativeTime(item.created_at)}
               </p>
+
+              <ActivityInteractionPanel item={item} redirectTo="/" />
             </li>
           ))}
         </ul>

@@ -1,5 +1,22 @@
 import Link from "next/link"
 
+export type ActivityReactionSummary = {
+  reaction_type: string
+  count: number
+  user_has_reacted: boolean
+}
+
+export type ActivityReplyItem = {
+  id: number
+  body: string
+  created_at: string
+  author: {
+    id: string
+    username: string | null
+    display_name: string | null
+  } | null
+}
+
 export type FriendActivityItem = {
   id: number
   created_at: string
@@ -27,6 +44,12 @@ export type FriendActivityItem = {
     id: number
     body: string
   } | null
+  reactions: ActivityReactionSummary[]
+  replies: ActivityReplyItem[]
+}
+
+export const ACTIVITY_REACTION_LABELS: Record<string, string> = {
+  good_craic: "Good craic!",
 }
 
 export function formatFriendActivityRelativeTime(createdAt: string) {
@@ -58,10 +81,22 @@ function renderCommentExcerpt(body: string) {
       : cleanedBody
 
   return (
-    <span className="mt-2 block border-l-2 pl-3 text-gray-700">
+    <span className="mt-2 block border-l-2 border-border pl-3 text-muted-foreground">
       “{excerpt}”
     </span>
   )
+}
+
+export function getActivityContextHref(item: FriendActivityItem) {
+  if (item.piece) {
+    return `/library/${item.piece.id}`
+  }
+
+  if (item.learning_list) {
+    return `/public-lists/${item.learning_list.id}`
+  }
+
+  return "/friends"
 }
 
 export function renderFriendActivityText(item: FriendActivityItem) {
@@ -69,7 +104,10 @@ export function renderFriendActivityText(item: FriendActivityItem) {
     item.actor?.display_name || item.actor?.username || "Unnamed user"
 
   const actorNode = item.actor?.username ? (
-    <Link href={`/users/${item.actor.username}`} className="underline">
+    <Link
+      href={`/users/${item.actor.username}`}
+      className="font-medium underline underline-offset-4 hover:text-primary"
+    >
       {actorName}
     </Link>
   ) : (
@@ -80,7 +118,10 @@ export function renderFriendActivityText(item: FriendActivityItem) {
     return (
       <>
         {actorNode} started practising{" "}
-        <Link href={`/library/${item.piece.id}`} className="underline">
+        <Link
+          href={`/library/${item.piece.id}`}
+          className="font-medium underline underline-offset-4 hover:text-primary"
+        >
           {item.piece.title}
         </Link>
       </>
@@ -91,7 +132,10 @@ export function renderFriendActivityText(item: FriendActivityItem) {
     return (
       <>
         {actorNode} practised{" "}
-        <Link href={`/library/${item.piece.id}`} className="underline">
+        <Link
+          href={`/library/${item.piece.id}`}
+          className="font-medium underline underline-offset-4 hover:text-primary"
+        >
           {item.piece.title}
         </Link>
       </>
@@ -102,7 +146,10 @@ export function renderFriendActivityText(item: FriendActivityItem) {
     return (
       <>
         {actorNode} marked{" "}
-        <Link href={`/library/${item.piece.id}`} className="underline">
+        <Link
+          href={`/library/${item.piece.id}`}
+          className="font-medium underline underline-offset-4 hover:text-primary"
+        >
           {item.piece.title}
         </Link>{" "}
         as known
@@ -114,7 +161,10 @@ export function renderFriendActivityText(item: FriendActivityItem) {
     return (
       <>
         {actorNode} commented on{" "}
-        <Link href={`/library/${item.piece.id}`} className="underline">
+        <Link
+          href={`/library/${item.piece.id}`}
+          className="font-medium underline underline-offset-4 hover:text-primary"
+        >
           {item.piece.title}
         </Link>
         {item.comment?.body ? renderCommentExcerpt(item.comment.body) : null}
@@ -128,7 +178,7 @@ export function renderFriendActivityText(item: FriendActivityItem) {
         {actorNode} created a public list:{" "}
         <Link
           href={`/public-lists/${item.learning_list.id}`}
-          className="underline"
+          className="font-medium underline underline-offset-4 hover:text-primary"
         >
           {item.learning_list.name}
         </Link>
@@ -142,7 +192,7 @@ export function renderFriendActivityText(item: FriendActivityItem) {
         {actorNode} updated the public list{" "}
         <Link
           href={`/public-lists/${item.learning_list.id}`}
-          className="underline"
+          className="font-medium underline underline-offset-4 hover:text-primary"
         >
           {item.learning_list.name}
         </Link>

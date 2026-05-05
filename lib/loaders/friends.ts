@@ -4,6 +4,11 @@ import {
   searchProfilesForSelection,
   type ProfileSearchRow,
 } from "@/lib/profile-search"
+import type {
+  ActivityReactionSummary,
+  ActivityReplyItem,
+  FriendActivityItem,
+} from "@/lib/friend-activity"
 
 type ConnectionRow = {
   id: number
@@ -46,6 +51,21 @@ type PieceCommentRow = {
   body: string
 }
 
+type ActivityReactionRow = {
+  id: number
+  activity_event_id: number
+  user_id: string
+  reaction_type: string
+}
+
+type ActivityReplyRow = {
+  id: number
+  activity_event_id: number
+  user_id: string
+  body: string
+  created_at: string
+}
+
 export type FriendSearchMatch = {
   id: string
   username: string | null
@@ -69,38 +89,35 @@ export type AcceptedFriend = {
   accepted_at: string | null
 }
 
-export type FriendActivityItem = {
-  id: number
-  created_at: string
-  event_type:
-    | "started_practice"
-    | "tune_reviewed"
-    | "marked_known"
-    | "comment_added"
-    | "public_list_created"
-    | "public_list_updated"
-  actor: {
-    id: string
-    username: string | null
-    display_name: string | null
-  } | null
-  piece: {
-    id: number
-    title: string
-  } | null
-  learning_list: {
-    id: number
-    name: string
-  } | null
-  comment: {
-    id: number
-    body: string
-  } | null
+function buildReactionSummaries(
+  reactions: ActivityReactionRow[],
+  currentUserId: string
+): ActivityReactionSummary[] {
+  const summaryMap = new Map<string, ActivityReactionSummary>()
+
+  for (const reaction of reactions) {
+    const existing = summaryMap.get(reaction.reaction_type) ?? {
+      reaction_type: reaction.reaction_type,
+      count: 0,
+      user_has_reacted: false,
+    }
+
+    existing.count += 1
+
+    if (reaction.user_id === currentUserId) {
+      existing.user_has_reacted = true
+    }
+
+    summaryMap.set(reaction.reaction_type, existing)
+  }
+
+  return Array.from(summaryMap.values())
 }
 
 export async function loadRecentFriendActivity(
   supabase: Awaited<ReturnType<typeof createClient>>,
   acceptedFriendIds: string[],
+  currentUserId: string,
   limit = 25
 ): Promise<FriendActivityItem[]> {
   if (acceptedFriendIds.length === 0) {
@@ -121,6 +138,8 @@ export async function loadRecentFriendActivity(
   }
 
   const typedActivityRows = (activityRows ?? []) as ActivityEventRow[]
+
+  const activityIds = typedActivityRows.map((row) => row.id)
 
   const activityUserIds = Array.from(
     new Set(typedActivityRows.map((row) => row.user_id))
@@ -154,6 +173,8 @@ export async function loadRecentFriendActivity(
   let piecesById = new Map<number, PieceRow>()
   let learningListsById = new Map<number, LearningListRow>()
   let commentsById = new Map<number, PieceCommentRow>()
+  let reactionsByActivityId = new Map<number, ActivityReactionSummary[]>()
+  let repliesByActivityId = new Map<number, ActivityReplyItem[]>()
 
   if (activityUserIds.length > 0) {
     const { data: activityProfiles, error: activityProfilesError } =
@@ -226,6 +247,91 @@ export async function loadRecentFriendActivity(
     )
   }
 
+  if (activityIds.length > 0) {
+    const { data: reactions, error: reactionsError } = await supabase
+      .from("activity_reactions")
+      .select("id, activity_event_id, user_id, reaction_type")
+      .in("activity_event_id", activityIds)
+
+    if (reactionsError) {
+      throw new Error(reactionsError.message)
+    }
+
+    const typedReactions = (reactions ?? []) as ActivityReactionRow[]
+
+    reactionsByActivityId = typedReactions.reduce<
+      Map<number, ActivityReactionSummary[]>
+    >((map, reaction) => {
+      const existingRows = typedReactions.filter(
+        (row) => row.activity_event_id === reaction.activity_event_id
+      )
+
+      map.set(
+        reaction.activity_event_id,
+        buildReactionSummaries(existingRows, currentUserId)
+      )
+
+      return map
+    }, new Map())
+
+    const { data: replies, error: repliesError } = await supabase
+      .from("activity_replies")
+      .select("id, activity_event_id, user_id, body, created_at")
+      .in("activity_event_id", activityIds)
+      .order("created_at", { ascending: true })
+
+    if (repliesError) {
+      throw new Error(repliesError.message)
+    }
+
+    const typedReplies = (replies ?? []) as ActivityReplyRow[]
+    const replyUserIds = Array.from(new Set(typedReplies.map((row) => row.user_id)))
+
+    let replyProfilesById = new Map<string, ProfileSearchRow>()
+
+    if (replyUserIds.length > 0) {
+      const { data: replyProfiles, error: replyProfilesError } = await supabase
+        .from("profiles")
+        .select("id, username, display_name")
+        .in("id", replyUserIds)
+
+      if (replyProfilesError) {
+        throw new Error(replyProfilesError.message)
+      }
+
+      replyProfilesById = new Map(
+        ((replyProfiles ?? []) as ProfileSearchRow[]).map((profile) => [
+          profile.id,
+          profile,
+        ])
+      )
+    }
+
+    repliesByActivityId = typedReplies.reduce<Map<number, ActivityReplyItem[]>>(
+      (map, reply) => {
+        const existing = map.get(reply.activity_event_id) ?? []
+        const author = replyProfilesById.get(reply.user_id) ?? null
+
+        existing.push({
+          id: reply.id,
+          body: reply.body,
+          created_at: reply.created_at,
+          author: author
+            ? {
+                id: author.id,
+                username: author.username,
+                display_name: author.display_name,
+              }
+            : null,
+        })
+
+        map.set(reply.activity_event_id, existing)
+        return map
+      },
+      new Map()
+    )
+  }
+
   return typedActivityRows
     .map((row) => {
       const actor = activityProfilesById.get(row.user_id) ?? null
@@ -275,6 +381,8 @@ export async function loadRecentFriendActivity(
               body: comment.body,
             }
           : null,
+        reactions: reactionsByActivityId.get(row.id) ?? [],
+        replies: repliesByActivityId.get(row.id) ?? [],
       }
     })
     .filter((row): row is FriendActivityItem => row !== null)
@@ -379,6 +487,7 @@ export async function loadFriendsPageData(searchQuery?: string) {
   const recentFriendActivity = await loadRecentFriendActivity(
     supabase,
     acceptedFriendIds,
+    user.id,
     25
   )
 

@@ -294,6 +294,7 @@ export async function loadHomepageData() {
   const recentFriendActivity = await loadRecentFriendActivity(
     supabase,
     acceptedFriendIds,
+    user.id,
     5
   )
 

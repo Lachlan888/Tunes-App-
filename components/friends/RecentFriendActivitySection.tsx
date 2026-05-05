@@ -1,4 +1,5 @@
 import EmptyState from "@/components/EmptyState"
+import ActivityInteractionPanel from "@/components/activity/ActivityInteractionPanel"
 import {
   formatFriendActivityRelativeTime,
   renderFriendActivityText,
@@ -22,8 +23,8 @@ export default function RecentFriendActivitySection({
           Recent activity
         </h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          A quiet preview of public activity from musicians you are connected
-          with.
+          Activity from musicians you are connected with. React, reply, or open
+          the tune for more context.
         </p>
       </div>
 
@@ -45,6 +46,8 @@ export default function RecentFriendActivitySection({
               <p className="mt-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                 {formatFriendActivityRelativeTime(item.created_at)}
               </p>
+
+              <ActivityInteractionPanel item={item} redirectTo="/friends" />
             </article>
           ))}
         </div>
