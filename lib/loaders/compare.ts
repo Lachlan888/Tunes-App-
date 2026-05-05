@@ -194,7 +194,7 @@ async function resolveSelectedProfile(
     return {
       matchedProfile: null,
       matchingProfiles: [],
-      searchMatches: [],
+      searchMatches,
       error: "user_not_found",
       searchValue,
     }
@@ -237,19 +237,24 @@ async function loadUserRepertoirePieceIds(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string
 ): Promise<Set<number>> {
-  const { data: practiceRows, error: practiceError } = await supabase
-    .from("user_pieces")
-    .select("piece_id")
-    .eq("user_id", userId)
+  const [
+    { data: practiceRows, error: practiceError },
+    { data: knownRows, error: knownError },
+  ] = await Promise.all([
+    supabase
+      .from("user_pieces")
+      .select("piece_id")
+      .eq("user_id", userId),
+
+    supabase
+      .from("user_known_pieces")
+      .select("piece_id")
+      .eq("user_id", userId),
+  ])
 
   if (practiceError) {
     throw new Error(practiceError.message)
   }
-
-  const { data: knownRows, error: knownError } = await supabase
-    .from("user_known_pieces")
-    .select("piece_id")
-    .eq("user_id", userId)
 
   if (knownError) {
     throw new Error(knownError.message)
@@ -278,17 +283,15 @@ export async function loadCompareData(
     redirect("/login")
   }
 
-  const compareSuggestions = await loadCompareSuggestions(supabase, user.id)
+  const compareSuggestionsPromise = loadCompareSuggestions(supabase, user.id)
 
   const cleanedSearchValues = Array.from(
-    new Set(
-      rawSearchValues
-        .map((value) => value.trim())
-        .filter(Boolean)
-    )
+    new Set(rawSearchValues.map((value) => value.trim()).filter(Boolean))
   )
 
   if (cleanedSearchValues.length === 0) {
+    const compareSuggestions = await compareSuggestionsPromise
+
     return {
       currentUserId: user.id,
       searchValue: "",
@@ -304,11 +307,18 @@ export async function loadCompareData(
     }
   }
 
+  const [compareSuggestions, profileResolutions] = await Promise.all([
+    compareSuggestionsPromise,
+    Promise.all(
+      cleanedSearchValues.map((rawSearchValue) =>
+        resolveSelectedProfile(user.id, rawSearchValue)
+      )
+    ),
+  ])
+
   const resolvedProfiles: ProfileSearchRow[] = []
 
-  for (const rawSearchValue of cleanedSearchValues) {
-    const resolution = await resolveSelectedProfile(user.id, rawSearchValue)
-
+  for (const resolution of profileResolutions) {
     if (resolution.error) {
       return {
         currentUserId: user.id,
@@ -327,7 +337,9 @@ export async function loadCompareData(
 
     if (
       resolution.matchedProfile &&
-      !resolvedProfiles.some((profile) => profile.id === resolution.matchedProfile?.id)
+      !resolvedProfiles.some(
+        (profile) => profile.id === resolution.matchedProfile?.id
+      )
     ) {
       resolvedProfiles.push(resolution.matchedProfile)
     }
@@ -349,25 +361,33 @@ export async function loadCompareData(
     }
   }
 
-  let blockedProfile: ProfileSearchRow | null = null
-  let allAccepted = true
+  const friendshipChecks = await Promise.all(
+    resolvedProfiles.map(async (profile) => {
+      const isAcceptedFriend = await getIsAcceptedFriend(
+        supabase,
+        user.id,
+        profile.id
+      )
 
-  for (const profile of resolvedProfiles) {
-    const isAcceptedFriend = await getIsAcceptedFriend(supabase, user.id, profile.id)
-    const profileCanCompare = !profile.compare_requires_friend || isAcceptedFriend
+      const profileCanCompare =
+        !profile.compare_requires_friend || isAcceptedFriend
 
-    if (!profileCanCompare) {
-      blockedProfile = profile
-      allAccepted = false
-      break
-    }
+      return {
+        profile,
+        isAcceptedFriend,
+        profileCanCompare,
+      }
+    })
+  )
 
-    if (!isAcceptedFriend) {
-      allAccepted = false
-    }
-  }
+  const blockedCheck =
+    friendshipChecks.find((check) => !check.profileCanCompare) ?? null
 
-  if (blockedProfile) {
+  const allAccepted = friendshipChecks.every((check) => check.isAcceptedFriend)
+
+  if (blockedCheck) {
+    const blockedProfile = blockedCheck.profile
+
     return {
       currentUserId: user.id,
       searchValue: blockedProfile.username ?? blockedProfile.display_name ?? "",
@@ -383,12 +403,18 @@ export async function loadCompareData(
     }
   }
 
-  const currentUserPieceIds = await loadUserRepertoirePieceIds(supabase, user.id)
+  const repertoireSets = await Promise.all([
+    loadUserRepertoirePieceIds(supabase, user.id),
+    ...resolvedProfiles.map((profile) =>
+      loadUserRepertoirePieceIds(supabase, profile.id)
+    ),
+  ])
+
+  const [currentUserPieceIds, ...otherUserPieceIdSets] = repertoireSets
 
   let mutualPieceIds = new Set<number>(currentUserPieceIds)
 
-  for (const profile of resolvedProfiles) {
-    const otherUserPieceIds = await loadUserRepertoirePieceIds(supabase, profile.id)
+  for (const otherUserPieceIds of otherUserPieceIdSets) {
     mutualPieceIds = intersectSets(mutualPieceIds, otherUserPieceIds)
   }
 

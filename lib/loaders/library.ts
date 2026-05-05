@@ -97,25 +97,19 @@ export async function loadLibraryData({
     piecesQuery = piecesQuery.limit(visibleCount)
   }
 
-  const { data: pieces, error: piecesError } = await piecesQuery
-
-  if (piecesError) {
-    throw new Error(piecesError.message)
-  }
-
   let filterOptionPiecesQuery = supabase.from("pieces").select(`
-      key,
-      style,
-      time_signature,
-      piece_styles (
-        style_id,
-        styles (
-          id,
-          slug,
-          label
-        )
+    key,
+    style,
+    time_signature,
+    piece_styles (
+      style_id,
+      styles (
+        id,
+        slug,
+        label
       )
-    `)
+    )
+  `)
 
   if (trimmedSearchQuery) {
     filterOptionPiecesQuery = filterOptionPiecesQuery.ilike(
@@ -124,24 +118,42 @@ export async function loadLibraryData({
     )
   }
 
-  const { data: filterOptionPiecesRows, error: filterOptionPiecesError } =
-    await filterOptionPiecesQuery
+  const [
+    { data: pieces, error: piecesError },
+    { data: filterOptionPiecesRows, error: filterOptionPiecesError },
+    { data: learningLists, error: learningListsError },
+    { data: styleRows, error: stylesError },
+  ] = await Promise.all([
+    piecesQuery,
+
+    filterOptionPiecesQuery,
+
+    supabase
+      .from("learning_lists")
+      .select("id, name, description")
+      .eq("user_id", user.id)
+      .order("name"),
+
+    supabase
+      .from("styles")
+      .select("id, slug, label")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
+  ])
+
+  if (piecesError) {
+    throw new Error(piecesError.message)
+  }
 
   if (filterOptionPiecesError) {
     throw new Error(filterOptionPiecesError.message)
   }
 
-  const displayPieceIds = (pieces ?? []).map((piece) => piece.id)
-
-  const { data: learningLists, error: learningListsError } = await supabase
-    .from("learning_lists")
-    .select("id, name, description")
-    .eq("user_id", user.id)
-    .order("name")
-
   if (learningListsError) {
     throw new Error(learningListsError.message)
   }
+
+  const displayPieceIds = (pieces ?? []).map((piece) => piece.id)
 
   let userPieces: {
     id: number
@@ -152,47 +164,49 @@ export async function loadLibraryData({
   }[] = []
 
   let userKnownPieces: UserKnownPiece[] = []
-
   let learningListItems: LearningListItemMembership[] = []
 
   if (displayPieceIds.length > 0) {
-    const { data: userPiecesRows, error: userPiecesError } = await supabase
-      .from("user_pieces")
-      .select("id, piece_id, status, next_review_due, stage")
-      .eq("user_id", user.id)
-      .in("piece_id", displayPieceIds)
+    const [
+      { data: userPiecesRows, error: userPiecesError },
+      { data: userKnownPiecesRows, error: userKnownPiecesError },
+      { data: learningListItemsRows, error: learningListItemsError },
+    ] = await Promise.all([
+      supabase
+        .from("user_pieces")
+        .select("id, piece_id, status, next_review_due, stage")
+        .eq("user_id", user.id)
+        .in("piece_id", displayPieceIds),
 
-    if (userPiecesError) {
-      throw new Error(userPiecesError.message)
-    }
-
-    userPieces = userPiecesRows ?? []
-
-    const { data: userKnownPiecesRows, error: userKnownPiecesError } =
-      await supabase
+      supabase
         .from("user_known_pieces")
         .select("id, piece_id")
         .eq("user_id", user.id)
-        .in("piece_id", displayPieceIds)
+        .in("piece_id", displayPieceIds),
 
-    if (userKnownPiecesError) {
-      throw new Error(userKnownPiecesError.message)
-    }
-
-    userKnownPieces = (userKnownPiecesRows ?? []) as UserKnownPiece[]
-
-    const { data: learningListItemsRows, error: learningListItemsError } =
-      await supabase
+      supabase
         .from("learning_list_items")
         .select(
           "piece_id, learning_list_id, learning_lists!inner(id, name, user_id)"
         )
         .eq("learning_lists.user_id", user.id)
-        .in("piece_id", displayPieceIds)
+        .in("piece_id", displayPieceIds),
+    ])
+
+    if (userPiecesError) {
+      throw new Error(userPiecesError.message)
+    }
+
+    if (userKnownPiecesError) {
+      throw new Error(userKnownPiecesError.message)
+    }
 
     if (learningListItemsError) {
       throw new Error(learningListItemsError.message)
     }
+
+    userPieces = userPiecesRows ?? []
+    userKnownPieces = (userKnownPiecesRows ?? []) as UserKnownPiece[]
 
     learningListItems = ((learningListItemsRows ?? []) as LearningListItemRow[])
       .map(normaliseLearningListItem)
@@ -200,12 +214,6 @@ export async function loadLibraryData({
         (item): item is LearningListItemMembership => item !== null
       )
   }
-
-  const { data: styleRows, error: stylesError } = await supabase
-    .from("styles")
-    .select("id, slug, label")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true })
 
   const styleOptions: StyleOption[] = stylesError ? [] : styleRows ?? []
 

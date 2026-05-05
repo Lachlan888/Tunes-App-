@@ -14,9 +14,7 @@ import type {
   HomeListPreview,
   HomeSummaryData,
   HomeTunePreview,
-  LearningList,
   StreakSummary,
-  UserKnownPiece,
   UserPiece,
 } from "@/lib/types"
 
@@ -32,7 +30,9 @@ type HomepageProfileRow = {
   display_name: string | null
 }
 
-type HomePracticeRow = UserPiece & {
+type HomePracticeSummaryRow = UserPiece
+
+type HomePracticePreviewRow = UserPiece & {
   pieces:
     | {
         id: number
@@ -58,11 +58,13 @@ function getJoinedPieceTitle(
     | null
 ) {
   if (!pieces) return "Untitled tune"
+
   const piece = Array.isArray(pieces) ? pieces[0] ?? null : pieces
+
   return piece?.title ?? "Untitled tune"
 }
 
-function toHomeTunePreview(row: HomePracticeRow): HomeTunePreview {
+function toHomeTunePreview(row: HomePracticePreviewRow): HomeTunePreview {
   return {
     user_piece_id: row.id,
     piece_id: row.piece_id,
@@ -71,7 +73,27 @@ function toHomeTunePreview(row: HomePracticeRow): HomeTunePreview {
   }
 }
 
-function sortPracticePreviewRows(a: HomePracticeRow, b: HomePracticeRow) {
+function sortPracticeSummaryRows(
+  a: HomePracticeSummaryRow,
+  b: HomePracticeSummaryRow
+) {
+  const aDue = a.next_review_due ?? "9999-12-31"
+  const bDue = b.next_review_due ?? "9999-12-31"
+
+  if (aDue !== bDue) {
+    return aDue.localeCompare(bDue)
+  }
+
+  const aStage = a.stage ?? 999
+  const bStage = b.stage ?? 999
+
+  return aStage - bStage
+}
+
+function sortPracticePreviewRows(
+  a: HomePracticePreviewRow,
+  b: HomePracticePreviewRow
+) {
   const aStage = a.stage ?? 999
   const bStage = b.stage ?? 999
 
@@ -88,16 +110,16 @@ function sortPracticePreviewRows(a: HomePracticeRow, b: HomePracticeRow) {
 function buildGettingStartedState(options: {
   profile: HomepageProfileRow | null
   instrumentCount: number
-  userPieces: UserPiece[]
-  userKnownPieces: UserKnownPiece[]
-  learningLists: LearningList[]
-  dueToday: UserPiece[]
+  practiceCount: number
+  knownCount: number
+  listCount: number
+  dueTodayCount: number
   reviewEventCount: number
 }): GettingStartedState {
-  const totalInPractice = options.userPieces.length
-  const totalKnown = options.userKnownPieces.length
+  const totalInPractice = options.practiceCount
+  const totalKnown = options.knownCount
   const totalUserTunes = totalInPractice + totalKnown
-  const totalLists = options.learningLists.length
+  const totalLists = options.listCount
 
   const hasCompleteProfile = Boolean(
     options.profile?.username &&
@@ -110,7 +132,7 @@ function buildGettingStartedState(options: {
   const hasPracticeTunes = totalInPractice > 0
   const hasLists = totalLists > 0
   const hasCompletedReview = options.reviewEventCount > 0
-  const hasFinishedToday = hasPracticeTunes && options.dueToday.length === 0
+  const hasFinishedToday = hasPracticeTunes && options.dueTodayCount === 0
 
   const tasks: GettingStartedTask[] = [
     {
@@ -210,6 +232,10 @@ function buildGettingStartedState(options: {
   }
 }
 
+function getPreviewIds(rows: HomePracticeSummaryRow[], limit: number) {
+  return rows.slice(0, limit).map((row) => row.id)
+}
+
 export async function loadHomepageData() {
   const supabase = await createClient()
 
@@ -229,9 +255,10 @@ export async function loadHomepageData() {
   const [
     { data: profile, error: profileError },
     { count: instrumentCount, error: instrumentCountError },
-    { data: learningLists, error: learningListsError },
-    { data: userPieces, error: userPiecesError },
-    { data: userKnownPieces, error: userKnownPiecesError },
+    { count: listCount, error: listCountError },
+    { data: listPreviewRows, error: listPreviewError },
+    { count: knownCount, error: knownCountError },
+    { data: practiceSummaryRows, error: practiceSummaryError },
     { data: connectionRows, error: connectionError },
   ] = await Promise.all([
     supabase
@@ -247,29 +274,26 @@ export async function loadHomepageData() {
 
     supabase
       .from("learning_lists")
-      .select("id, name, description, visibility, is_imported")
-      .eq("user_id", user.id)
-      .order("id", { ascending: false }),
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id),
 
     supabase
-      .from("user_pieces")
-      .select(`
-        id,
-        piece_id,
-        status,
-        next_review_due,
-        stage,
-        pieces (
-          id,
-          title
-        )
-      `)
-      .eq("user_id", user.id),
+      .from("learning_lists")
+      .select("id, name")
+      .eq("user_id", user.id)
+      .order("id", { ascending: false })
+      .limit(3),
 
     supabase
       .from("user_known_pieces")
-      .select("id, piece_id")
+      .select("id", { count: "exact", head: true })
       .eq("user_id", user.id),
+
+    supabase
+      .from("user_pieces")
+      .select("id, piece_id, status, next_review_due, stage")
+      .eq("user_id", user.id)
+      .eq("status", "learning"),
 
     supabase
       .from("connections")
@@ -285,75 +309,56 @@ export async function loadHomepageData() {
     throw new Error(instrumentCountError.message)
   }
 
-  if (learningListsError) {
-    throw new Error(learningListsError.message)
+  if (listCountError) {
+    throw new Error(listCountError.message)
   }
 
-  if (userPiecesError) {
-    throw new Error(userPiecesError.message)
+  if (listPreviewError) {
+    throw new Error(listPreviewError.message)
   }
 
-  if (userKnownPiecesError) {
-    throw new Error(userKnownPiecesError.message)
+  if (knownCountError) {
+    throw new Error(knownCountError.message)
+  }
+
+  if (practiceSummaryError) {
+    throw new Error(practiceSummaryError.message)
   }
 
   if (connectionError) {
     throw new Error(connectionError.message)
   }
 
-  const typedLearningLists = (learningLists ?? []) as LearningList[]
-  const typedUserPieceRows = (userPieces ?? []) as HomePracticeRow[]
-  const typedUserKnownPieces = (userKnownPieces ?? []) as UserKnownPiece[]
+  const typedPracticeSummaryRows =
+    (practiceSummaryRows ?? []) as HomePracticeSummaryRow[]
 
-  const typedUserPieces: UserPiece[] = typedUserPieceRows.map((userPiece) => ({
-    id: userPiece.id,
-    piece_id: userPiece.piece_id,
-    status: userPiece.status,
-    next_review_due: userPiece.next_review_due,
-    stage: userPiece.stage,
-  }))
+  const practiceCount = typedPracticeSummaryRows.length
 
-  const dueToday = typedUserPieces.filter((userPiece) =>
-    isDueExactlyToday(userPiece.next_review_due)
-  )
-
-  const dueTodayPreview = typedUserPieceRows
+  const dueTodayRows = typedPracticeSummaryRows
     .filter((userPiece) => isDueExactlyToday(userPiece.next_review_due))
-    .sort(sortPracticePreviewRows)
-    .slice(0, 3)
-    .map(toHomeTunePreview)
+    .sort(sortPracticeSummaryRows)
 
-  const inPracticePreview = [...typedUserPieceRows]
-    .sort(sortPracticePreviewRows)
-    .slice(0, 3)
-    .map(toHomeTunePreview)
-
-  const listPreview: HomeListPreview[] = typedLearningLists
-    .slice(0, 3)
-    .map((list) => ({
-      id: list.id,
-      name: list.name,
-    }))
+  const dueTodayCount = dueTodayRows.length
 
   const backlogSummary: BacklogGroupSummary[] = [
     {
       tier: "due_now",
       label: getBacklogTierLabel("due_now"),
-      count: typedUserPieces.filter(
+      count: typedPracticeSummaryRows.filter(
         (userPiece) => getBacklogTier(userPiece.next_review_due) === "due_now"
       ).length,
     },
     {
       tier: "overdue",
       label: getBacklogTierLabel("overdue"),
-      count: typedUserPieces.filter(
+      count: typedPracticeSummaryRows.filter(
         (userPiece) => getBacklogTier(userPiece.next_review_due) === "overdue"
       ).length,
     },
     {
       tier: "overdue_longest",
       label: getBacklogTierLabel("overdue_longest"),
-      count: typedUserPieces.filter(
+      count: typedPracticeSummaryRows.filter(
         (userPiece) =>
           getBacklogTier(userPiece.next_review_due) === "overdue_longest"
       ).length,
@@ -365,52 +370,113 @@ export async function loadHomepageData() {
     0
   )
 
+  const sortedPracticeRows = [...typedPracticeSummaryRows].sort(
+    sortPracticeSummaryRows
+  )
+
+  const previewUserPieceIds = Array.from(
+    new Set([
+      ...getPreviewIds(dueTodayRows, 3),
+      ...getPreviewIds(sortedPracticeRows, 3),
+    ])
+  )
+
+  let previewRows: HomePracticePreviewRow[] = []
+
+  if (previewUserPieceIds.length > 0) {
+    const { data: previewData, error: previewError } = await supabase
+      .from("user_pieces")
+      .select(`
+        id,
+        piece_id,
+        status,
+        next_review_due,
+        stage,
+        pieces (
+          id,
+          title
+        )
+      `)
+      .eq("user_id", user.id)
+      .in("id", previewUserPieceIds)
+
+    if (previewError) {
+      throw new Error(previewError.message)
+    }
+
+    previewRows = (previewData ?? []) as HomePracticePreviewRow[]
+  }
+
+  const previewRowsById = new Map(
+    previewRows.map((row) => [row.id, row])
+  )
+
+  const dueTodayPreview = dueTodayRows
+    .slice(0, 3)
+    .map((row) => previewRowsById.get(row.id))
+    .filter((row): row is HomePracticePreviewRow => Boolean(row))
+    .sort(sortPracticePreviewRows)
+    .map(toHomeTunePreview)
+
+  const inPracticePreview = sortedPracticeRows
+    .slice(0, 3)
+    .map((row) => previewRowsById.get(row.id))
+    .filter((row): row is HomePracticePreviewRow => Boolean(row))
+    .sort(sortPracticePreviewRows)
+    .map(toHomeTunePreview)
+
+  const listPreview: HomeListPreview[] = (listPreviewRows ?? []).map(
+    (list) => ({
+      id: list.id,
+      name: list.name,
+    })
+  )
+
   const acceptedFriendIds = ((connectionRows ?? []) as ConnectionRow[])
     .filter((row) => row.status === "accepted")
     .map((row) =>
       row.requester_id === user.id ? row.addressee_id : row.requester_id
     )
 
-  const recentFriendActivity = await loadRecentFriendActivity(
-    supabase,
-    acceptedFriendIds,
-    user.id,
-    5
-  )
+  const [recentFriendActivity, reviewEventResult] = await Promise.all([
+    loadRecentFriendActivity(supabase, acceptedFriendIds, user.id, 5),
 
-  const userPieceIds = typedUserPieces.map((userPiece) => userPiece.id)
+    typedPracticeSummaryRows.length > 0
+      ? supabase
+          .from("review_events")
+          .select("id", { count: "exact", head: true })
+          .in(
+            "user_piece_id",
+            typedPracticeSummaryRows.map((userPiece) => userPiece.id)
+          )
+      : Promise.resolve({ count: 0, error: null }),
+  ])
 
-  let reviewEventCount = 0
-
-  if (userPieceIds.length > 0) {
-    const { count, error: reviewEventCountError } = await supabase
-      .from("review_events")
-      .select("id", { count: "exact", head: true })
-      .in("user_piece_id", userPieceIds)
-
-    if (reviewEventCountError) {
-      throw new Error(reviewEventCountError.message)
-    }
-
-    reviewEventCount = count ?? 0
+  if (reviewEventResult.error) {
+    throw new Error(reviewEventResult.error.message)
   }
+
+  const reviewEventCount = reviewEventResult.count ?? 0
+
+  const safeKnownCount = knownCount ?? 0
+  const safeListCount = listCount ?? 0
 
   const gettingStartedState = buildGettingStartedState({
     profile: (profile ?? null) as HomepageProfileRow | null,
     instrumentCount: instrumentCount ?? 0,
-    userPieces: typedUserPieces,
-    userKnownPieces: typedUserKnownPieces,
-    learningLists: typedLearningLists,
-    dueToday,
+    practiceCount,
+    knownCount: safeKnownCount,
+    listCount: safeListCount,
+    dueTodayCount,
     reviewEventCount,
   })
 
   const summary: HomeSummaryData = {
-    knownCount: typedUserKnownPieces.length,
-    practiceCount: typedUserPieces.length,
-    dueTodayCount: dueToday.length,
+    knownCount: safeKnownCount,
+    practiceCount,
+    dueTodayCount,
     needsAttentionCount,
-    listCount: typedLearningLists.length,
+    listCount: safeListCount,
     dueTodayPreview,
     inPracticePreview,
     listPreview,

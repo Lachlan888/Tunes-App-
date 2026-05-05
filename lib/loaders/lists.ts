@@ -57,78 +57,106 @@ export async function loadListsData() {
     redirect("/login")
   }
 
-  const { data: learningLists, error } = await supabase
-    .from("learning_lists")
-    .select("id, name, description, visibility, is_imported")
-    .eq("user_id", user.id)
-    .order("id", { ascending: false })
+  const [
+    { data: learningLists, error: learningListsError },
+    { data: userPieces, error: userPiecesError },
+    { data: userKnownPieces, error: userKnownPiecesError },
+    { data: learningListMemberships, error: learningListMembershipsError },
+    {
+      data: learningListItemsWithPieces,
+      error: learningListItemsWithPiecesError,
+    },
+  ] = await Promise.all([
+    supabase
+      .from("learning_lists")
+      .select("id, name, description, visibility, is_imported")
+      .eq("user_id", user.id)
+      .order("id", { ascending: false }),
 
-  if (error) {
-    throw new Error(error.message)
+    supabase
+      .from("user_pieces")
+      .select(`
+        id,
+        piece_id,
+        stage,
+        pieces (
+          id,
+          title
+        )
+      `)
+      .eq("user_id", user.id),
+
+    supabase
+      .from("user_known_pieces")
+      .select(`
+        id,
+        piece_id,
+        pieces (
+          id,
+          title
+        )
+      `)
+      .eq("user_id", user.id),
+
+    supabase
+      .from("learning_list_items")
+      .select("piece_id, learning_lists!inner(user_id)")
+      .eq("learning_lists.user_id", user.id),
+
+    supabase
+      .from("learning_list_items")
+      .select(`
+        learning_list_id,
+        pieces (
+          id,
+          title,
+          key,
+          style,
+          time_signature,
+          reference_url,
+          piece_styles (
+            style_id,
+            styles (
+              id,
+              slug,
+              label
+            )
+          )
+        ),
+        learning_lists!inner(user_id)
+      `)
+      .eq("learning_lists.user_id", user.id)
+      .order("position", { ascending: true }),
+  ])
+
+  if (learningListsError) {
+    throw new Error(learningListsError.message)
   }
 
-  const { data: userPieces } = await supabase
-    .from("user_pieces")
-    .select(`
-      id,
-      piece_id,
-      stage,
-      pieces (
-        id,
-        title
-      )
-    `)
-    .eq("user_id", user.id)
+  if (userPiecesError) {
+    throw new Error(userPiecesError.message)
+  }
 
-  const { data: userKnownPieces } = await supabase
-    .from("user_known_pieces")
-    .select(`
-      id,
-      piece_id,
-      pieces (
-        id,
-        title
-      )
-    `)
-    .eq("user_id", user.id)
+  if (userKnownPiecesError) {
+    throw new Error(userKnownPiecesError.message)
+  }
 
-  const { data: learningListMemberships } = await supabase
-    .from("learning_list_items")
-    .select("piece_id, learning_lists!inner(user_id)")
-    .eq("learning_lists.user_id", user.id)
+  if (learningListMembershipsError) {
+    throw new Error(learningListMembershipsError.message)
+  }
 
-  const { data: learningListItemsWithPieces } = await supabase
-    .from("learning_list_items")
-    .select(`
-      learning_list_id,
-      pieces (
-        id,
-        title,
-        key,
-        style,
-        time_signature,
-        reference_url,
-        piece_styles (
-          style_id,
-          styles (
-            id,
-            slug,
-            label
-          )
-        )
-      ),
-      learning_lists!inner(user_id)
-    `)
-    .eq("learning_lists.user_id", user.id)
-    .order("position", { ascending: true })
+  if (learningListItemsWithPiecesError) {
+    throw new Error(learningListItemsWithPiecesError.message)
+  }
 
   const typedLearningLists = (learningLists ?? []) as LearningList[]
   const typedUserPieces = (userPieces ?? []) as UserPieceWithPiece[]
-  const typedUserKnownPieces = (userKnownPieces ?? []) as UserKnownPieceWithPiece[]
-  const typedLearningListMemberships =
-    (learningListMemberships ?? []) as LearningListMembershipRow[]
-  const typedLearningListItemsWithPieces =
-    (learningListItemsWithPieces ?? []) as LearningListItemWithPieceRow[]
+  const typedUserKnownPieces = (userKnownPieces ??
+    []) as UserKnownPieceWithPiece[]
+  const typedLearningListMemberships = (learningListMemberships ??
+    []) as LearningListMembershipRow[]
+  const typedLearningListItemsWithPieces = (learningListItemsWithPieces ??
+    []) as LearningListItemWithPieceRow[]
 
   const listedPieceIds = new Set(
     typedLearningListMemberships.map((item) => item.piece_id)
@@ -187,24 +215,26 @@ export async function loadListsData() {
     tunesByListId.set(item.learning_list_id, existingTunes)
   }
 
-  const listOverviews: FilterableLearningList[] = typedLearningLists.map((list) => {
-    const tunes = tunesByListId.get(list.id) ?? []
-    const stylesPresent = Array.from(
-      new Set(tunes.flatMap((tune) => getStyleLabelsFromPiece(tune)))
-    ).sort()
+  const listOverviews: FilterableLearningList[] = typedLearningLists.map(
+    (list) => {
+      const tunes = tunesByListId.get(list.id) ?? []
+      const stylesPresent = Array.from(
+        new Set(tunes.flatMap((tune) => getStyleLabelsFromPiece(tune)))
+      ).sort()
 
-    return {
-      id: list.id,
-      name: list.name,
-      description: list.description,
-      visibility: list.visibility ?? "private",
-      is_imported: Boolean(list.is_imported),
-      tunes,
-      tuneCount: tunes.length,
-      stylesPresent,
-      source: list.is_imported ? "imported" : "mine",
+      return {
+        id: list.id,
+        name: list.name,
+        description: list.description,
+        visibility: list.visibility ?? "private",
+        is_imported: Boolean(list.is_imported),
+        tunes,
+        tuneCount: tunes.length,
+        stylesPresent,
+        source: list.is_imported ? "imported" : "mine",
+      }
     }
-  })
+  )
 
   return {
     user,
