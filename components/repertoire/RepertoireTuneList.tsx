@@ -6,10 +6,7 @@ import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeBu
 import RemoveTuneButton from "@/components/RemoveTuneButton"
 import TuneCard from "@/components/TuneCard"
 import { APP_TIME_ZONE } from "@/lib/review"
-import type {
-  LearningList,
-  Piece,
-} from "@/lib/types"
+import type { LearningList, Piece } from "@/lib/types"
 import type {
   PracticeTuneItem,
   RepertoireLearningListItem,
@@ -36,6 +33,15 @@ function formatDueDate(dateValue: string | null | undefined) {
     timeZone: APP_TIME_ZONE,
   })
 }
+
+const secondaryButtonClass =
+  "inline-flex min-w-[140px] items-center justify-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
+const removeButtonClass =
+  "inline-flex min-w-[180px] items-center justify-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
+const destructiveButtonClass =
+  "inline-flex min-w-[140px] items-center justify-center rounded-full border border-destructive bg-transparent px-4 py-2 text-sm font-medium text-destructive shadow-sm transition hover:-translate-y-0.5 hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 export default function RepertoireTuneList({
   mode,
@@ -64,7 +70,7 @@ export default function RepertoireTuneList({
 
   if (items.length === 0) {
     return (
-      <p className="rounded border p-4 text-sm text-gray-600">
+      <p className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground shadow-sm">
         {mode === "known"
           ? "No known tunes yet."
           : "No tunes in practice yet."}
@@ -97,15 +103,30 @@ export default function RepertoireTuneList({
                 listNames={listNames}
               >
                 {mode === "practice" && practiceItem && (
-                  <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
-                    <span>Stage {practiceItem.stage ?? 1}</span>
-                    <span>Due: {formatDueDate(practiceItem.next_review_due)}</span>
+                  <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card/70 px-4 py-3 text-sm font-medium text-muted-foreground">
+                    <span>
+                      Stage{" "}
+                      <span className="font-semibold text-foreground">
+                        {practiceItem.stage ?? 1}
+                      </span>
+                    </span>
+
+                    <span aria-hidden="true" className="text-border">
+                      |
+                    </span>
+
+                    <span>
+                      Due{" "}
+                      <span className="font-semibold text-foreground">
+                        {formatDueDate(practiceItem.next_review_due)}
+                      </span>
+                    </span>
                   </div>
                 )}
 
                 <button
                   type="button"
-                  className="border px-3 py-1 text-sm"
+                  className={secondaryButtonClass}
                   onClick={() => {
                     setSelectedPiece(piece)
                     setSelectedListId("")
@@ -118,14 +139,14 @@ export default function RepertoireTuneList({
                   <RemoveFromPracticeButton
                     userPieceId={practiceItem.id}
                     redirectTo={redirectTo}
-                    className="border px-3 py-1 text-sm"
+                    className={removeButtonClass}
                   />
                 ) : (
                   <RemoveTuneButton
                     pieceId={piece.id}
                     redirectTo={redirectTo}
                     confirmMessage={`Remove "${piece.title}" from your known tunes, practice, and all your lists?`}
-                    className="border px-3 py-1 text-sm"
+                    className={destructiveButtonClass}
                   />
                 )}
               </TuneCard>
