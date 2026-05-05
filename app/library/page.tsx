@@ -35,6 +35,7 @@ type LibraryPageProps = {
     already_in_list?: SearchParamValue
     uploaded_list_id?: SearchParamValue
     remove_tune?: SearchParamValue
+    scroll_piece?: SearchParamValue
   }>
 }
 
@@ -70,6 +71,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   const selectedStyles = toArray(resolvedSearchParams?.style)
   const selectedTimeSignatures = toArray(resolvedSearchParams?.time_signature)
   const visibleCount = parseVisibleCount(resolvedSearchParams?.visible)
+  const scrollPieceId = firstParam(resolvedSearchParams?.scroll_piece)
 
   const {
     user,
@@ -227,6 +229,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
         addToLearningList={addToLearningList}
         removeTuneFromMyApp={removeTuneFromMyApp}
         redirectTo={redirectTo}
+        scrollPieceId={scrollPieceId}
         hasActiveFilters={hasActiveFilters}
       />
     </main>

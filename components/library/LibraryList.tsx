@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
 import EmptyState from "@/components/EmptyState"
 import SubmitButton from "@/components/SubmitButton"
@@ -24,20 +24,26 @@ type LibraryListProps = {
   addToLearningList: (formData: FormData) => Promise<void>
   removeTuneFromMyApp: (formData: FormData) => Promise<void>
   redirectTo: string
+  scrollPieceId: string
   hasActiveFilters: boolean
 }
 
 const primaryButtonClass =
-  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "inline-flex min-w-[140px] items-center justify-center rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 const secondaryButtonClass =
-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "inline-flex min-w-[140px] items-center justify-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 const destructiveButtonClass =
-  "rounded-full border border-destructive bg-transparent px-4 py-2 text-sm font-medium text-destructive shadow-sm transition hover:-translate-y-0.5 hover:bg-[#f2dfd6] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "inline-flex min-w-[140px] items-center justify-center rounded-full border border-destructive bg-transparent px-4 py-2 text-sm font-medium text-destructive shadow-sm transition hover:-translate-y-0.5 hover:bg-[#f2dfd6] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 const statePillClass =
-  "rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground"
+  "inline-flex min-w-[140px] items-center justify-center rounded-full border border-border bg-muted px-4 py-2 text-sm font-semibold leading-5 text-muted-foreground"
+
+function buildPieceRedirectTo(redirectTo: string, pieceId: number) {
+  const separator = redirectTo.includes("?") ? "&" : "?"
+  return `${redirectTo}${separator}scroll_piece=${pieceId}`
+}
 
 export default function LibraryList({
   pieces,
@@ -49,12 +55,27 @@ export default function LibraryList({
   addToLearningList,
   removeTuneFromMyApp,
   redirectTo,
+  scrollPieceId,
   hasActiveFilters,
 }: LibraryListProps) {
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
   const [selectedListId, setSelectedListId] = useState("")
 
   const allPieces = pieces ?? []
+
+  useEffect(() => {
+    if (!scrollPieceId) return
+
+    const element = document.getElementById(`piece-${scrollPieceId}`)
+
+    if (!element) return
+
+    requestAnimationFrame(() => {
+      element.scrollIntoView({
+        block: "center",
+      })
+    })
+  }, [scrollPieceId])
 
   if (allPieces.length === 0) {
     return hasActiveFilters ? (
@@ -76,6 +97,8 @@ export default function LibraryList({
     <>
       <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {allPieces.map((piece) => {
+          const pieceRedirectTo = buildPieceRedirectTo(redirectTo, piece.id)
+
           const isAlreadyInPractice = (userPieces ?? []).some(
             (userPiece) => userPiece.piece_id === piece.id
           )
@@ -93,7 +116,11 @@ export default function LibraryList({
           )
 
           return (
-            <li key={piece.id}>
+            <li
+              key={piece.id}
+              id={`piece-${piece.id}`}
+              className="scroll-mt-28"
+            >
               <TuneCard
                 id={piece.id}
                 title={piece.title}
@@ -104,11 +131,15 @@ export default function LibraryList({
                 listNames={listNames}
               >
                 {isAlreadyInPractice ? (
-                  <p className={statePillClass}>Already in practice</p>
+                  <span className={statePillClass}>Already in practice</span>
                 ) : (
                   <form action={startLearning}>
                     <input type="hidden" name="piece_id" value={piece.id} />
-                    <input type="hidden" name="redirect_to" value={redirectTo} />
+                    <input
+                      type="hidden"
+                      name="redirect_to"
+                      value={pieceRedirectTo}
+                    />
                     <SubmitButton
                       label="Start Practice"
                       pendingLabel="Starting..."
@@ -118,14 +149,14 @@ export default function LibraryList({
                 )}
 
                 {isKnown ? (
-                  <p className={statePillClass}>Known</p>
+                  <span className={statePillClass}>Known</span>
                 ) : (
                   <form action={markAsKnown}>
                     <input type="hidden" name="piece_id" value={piece.id} />
                     <input
                       type="hidden"
                       name="redirect_to"
-                      value={redirectTo}
+                      value={pieceRedirectTo}
                     />
                     <SubmitButton
                       label={
@@ -161,7 +192,11 @@ export default function LibraryList({
                   }}
                 >
                   <input type="hidden" name="piece_id" value={piece.id} />
-                  <input type="hidden" name="redirect_to" value={redirectTo} />
+                  <input
+                    type="hidden"
+                    name="redirect_to"
+                    value={pieceRedirectTo}
+                  />
                   <SubmitButton
                     label="Remove Tune"
                     pendingLabel="Removing..."
@@ -186,7 +221,7 @@ export default function LibraryList({
                 .map((item) => item.learning_list_id)
             )
           )}
-          redirectTo={redirectTo}
+          redirectTo={buildPieceRedirectTo(redirectTo, selectedPiece.id)}
           addToLearningList={addToLearningList}
           onChangeSelectedListId={setSelectedListId}
           onClose={() => {
