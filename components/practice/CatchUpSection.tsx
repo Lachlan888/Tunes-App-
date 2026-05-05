@@ -12,13 +12,13 @@ type CatchUpSectionProps = {
 function getStatusBadgeClasses(label: string | null) {
   switch (label) {
     case "Due now":
-      return "bg-[#f1e7bf] text-[#675622] border border-[#c5ad67]"
+      return "border border-warning bg-warning/30 text-warning-foreground"
     case "Overdue":
-      return "bg-[#ead0c5] text-[#6f3f36] border border-[#b98576]"
+      return "border border-destructive/40 bg-destructive/15 text-destructive"
     case "Overdue (longest)":
-      return "bg-[#e2c5bf] text-[#633833] border border-[#a8746d]"
+      return "border border-destructive bg-destructive/20 text-destructive"
     default:
-      return "bg-[#edf2e4] text-[#435336] border border-[#b0bc8c]"
+      return "border border-border bg-muted text-muted-foreground"
   }
 }
 
@@ -31,36 +31,40 @@ export default function CatchUpSection({
   return (
     <section
       id="catch-up"
-      className="mt-8 rounded-2xl border border-[#b0bc8c] bg-[#e4ead8] p-5 shadow-sm"
+      className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-sm"
     >
       <details open={defaultOpen}>
-        <summary className="cursor-pointer text-sm font-semibold uppercase tracking-[0.16em] text-[#596650]">
+        <summary className="cursor-pointer text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Catch up ({catchUpQueue.length})
         </summary>
 
-        <p className="mt-3 text-sm text-[#596650]">
+        <p className="mt-3 text-sm leading-6 text-muted-foreground">
           Catch up on overdue tunes.
         </p>
 
         {catchUpQueue.length === 0 ? (
-          <p className="mt-4 text-sm text-[#596650]">
+          <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
             Nothing overdue right now.
           </p>
         ) : (
           <>
-            <ul className="mt-4 space-y-2">
+            <ul className="mt-5 grid gap-3 md:grid-cols-3">
               {backlogSummary.map((group) => (
                 <li
                   key={group.tier}
-                  className="flex items-center justify-between rounded-xl border border-[#b0bc8c] bg-[#f3f7ea]/70 px-3 py-2"
+                  className="flex items-center justify-between rounded-2xl border border-border bg-background/70 px-4 py-3"
                 >
-                  <span className="text-sm font-medium">{group.label}</span>
-                  <span className="text-sm text-[#596650]">{group.count}</span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {group.label}
+                  </span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {group.count}
+                  </span>
                 </li>
               ))}
             </ul>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {catchUpQueue.map((userPiece) => (
                 <PracticeReviewCard
                   key={userPiece.id}
@@ -68,7 +72,7 @@ export default function CatchUpSection({
                   redirectTo={redirectTo}
                   badgeLabel={userPiece.backlog_label ?? "Overdue"}
                   badgeClassName={getStatusBadgeClasses(
-                    userPiece.backlog_label,
+                    userPiece.backlog_label
                   )}
                 />
               ))}

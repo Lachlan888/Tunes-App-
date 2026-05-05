@@ -26,6 +26,21 @@ type PieceCommentRow = {
   user_id: string
 }
 
+type ActivityReplyRow = {
+  id: number
+  activity_event_id: number
+  user_id: string
+  piece_comment_id: number | null
+  user_activity_events:
+    | {
+        piece_id: number | null
+      }
+    | {
+        piece_id: number | null
+      }[]
+    | null
+}
+
 function cleanRedirectTo(value: FormDataEntryValue | null, fallback: string) {
   const raw = value?.toString() || fallback
 
@@ -39,6 +54,24 @@ function cleanRedirectTo(value: FormDataEntryValue | null, fallback: string) {
 function previewBody(body: string) {
   const cleaned = body.replace(/\s+/g, " ").trim()
   return cleaned.length > 180 ? `${cleaned.slice(0, 180).trim()}…` : cleaned
+}
+
+function appendActivityReplyStatus(redirectTo: string, status: string) {
+  const separator = redirectTo.includes("?") ? "&" : "?"
+  return `${redirectTo}${separator}activity_reply=${status}`
+}
+
+function normaliseJoinedActivityEvent(
+  value:
+    | {
+        piece_id: number | null
+      }
+    | {
+        piece_id: number | null
+      }[]
+    | null
+) {
+  return Array.isArray(value) ? value[0] ?? null : value
 }
 
 async function loadActivityEvent(
@@ -326,6 +359,196 @@ export async function addActivityReply(formData: FormData) {
   }
 
   if (activityEvent.piece_id) {
+    revalidatePath(`/library/${activityEvent.piece_id}`)
+  }
+
+  revalidatePath("/")
+  revalidatePath("/friends")
+  revalidatePath("/inbox")
+  revalidatePath(redirectTo)
+}
+
+export async function updateActivityReply(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return
+  }
+
+  const replyId = Number(formData.get("activity_reply_id"))
+  const redirectTo = cleanRedirectTo(formData.get("redirect_to"), "/friends")
+  const body = formData.get("body")?.toString().trim() || ""
+
+  if (!Number.isInteger(replyId) || replyId <= 0) {
+    return
+  }
+
+  if (!body) {
+    return
+  }
+
+  const { data: reply, error: replyError } = await supabase
+    .from("activity_replies")
+    .select(
+      `
+        id,
+        activity_event_id,
+        user_id,
+        piece_comment_id,
+        user_activity_events (
+          piece_id
+        )
+      `
+    )
+    .eq("id", replyId)
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (replyError) {
+    throw new Error(replyError.message)
+  }
+
+  const typedReply = (reply as ActivityReplyRow | null) ?? null
+
+  if (!typedReply) {
+    return
+  }
+
+  const { error: updateReplyError } = await supabase
+    .from("activity_replies")
+    .update({ body })
+    .eq("id", typedReply.id)
+    .eq("user_id", user.id)
+
+  if (updateReplyError) {
+    throw new Error(updateReplyError.message)
+  }
+
+  if (typedReply.piece_comment_id) {
+    const { error: updatePieceCommentError } = await supabase
+      .from("piece_comments")
+      .update({ body })
+      .eq("id", typedReply.piece_comment_id)
+      .eq("user_id", user.id)
+
+    if (updatePieceCommentError) {
+      throw new Error(updatePieceCommentError.message)
+    }
+  }
+
+  const { error: notificationUpdateError } = await supabase
+    .from("user_notifications")
+    .update({ body_preview: previewBody(body) })
+    .eq("activity_reply_id", typedReply.id)
+    .eq("actor_user_id", user.id)
+
+  if (notificationUpdateError) {
+    throw new Error(notificationUpdateError.message)
+  }
+
+  const activityEvent = normaliseJoinedActivityEvent(
+    typedReply.user_activity_events
+  )
+
+  if (activityEvent?.piece_id) {
+    revalidatePath(`/library/${activityEvent.piece_id}`)
+  }
+
+  revalidatePath("/")
+  revalidatePath("/friends")
+  revalidatePath("/inbox")
+  revalidatePath(redirectTo)
+}
+
+export async function deleteActivityReply(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return
+  }
+
+  const replyId = Number(formData.get("activity_reply_id"))
+  const redirectTo = cleanRedirectTo(formData.get("redirect_to"), "/friends")
+
+  if (!Number.isInteger(replyId) || replyId <= 0) {
+    return
+  }
+
+  const { data: reply, error: replyError } = await supabase
+    .from("activity_replies")
+    .select(
+      `
+        id,
+        activity_event_id,
+        user_id,
+        piece_comment_id,
+        user_activity_events (
+          piece_id
+        )
+      `
+    )
+    .eq("id", replyId)
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (replyError) {
+    throw new Error(replyError.message)
+  }
+
+  const typedReply = (reply as ActivityReplyRow | null) ?? null
+
+  if (!typedReply) {
+    return
+  }
+
+  const { error: notificationArchiveError } = await supabase
+    .from("user_notifications")
+    .update({
+      archived_at: new Date().toISOString(),
+      read_at: new Date().toISOString(),
+    })
+    .eq("activity_reply_id", typedReply.id)
+    .eq("actor_user_id", user.id)
+
+  if (notificationArchiveError) {
+    throw new Error(notificationArchiveError.message)
+  }
+
+  const { error: deleteReplyError } = await supabase
+    .from("activity_replies")
+    .delete()
+    .eq("id", typedReply.id)
+    .eq("user_id", user.id)
+
+  if (deleteReplyError) {
+    throw new Error(deleteReplyError.message)
+  }
+
+  if (typedReply.piece_comment_id) {
+    const { error: deletePieceCommentError } = await supabase
+      .from("piece_comments")
+      .delete()
+      .eq("id", typedReply.piece_comment_id)
+      .eq("user_id", user.id)
+
+    if (deletePieceCommentError) {
+      throw new Error(deletePieceCommentError.message)
+    }
+  }
+
+  const activityEvent = normaliseJoinedActivityEvent(
+    typedReply.user_activity_events
+  )
+
+  if (activityEvent?.piece_id) {
     revalidatePath(`/library/${activityEvent.piece_id}`)
   }
 

@@ -11,28 +11,30 @@ export default function DueTodaySection({
   redirectTo,
 }: DueTodaySectionProps) {
   return (
-    <section className="mt-8 rounded-2xl border border-[#b0bc8c] bg-[#e4ead8] p-5 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#596650]">
+    <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         Due next
       </h2>
 
       {dueTodayPieces.length === 0 ? (
-        <p className="mt-4 text-sm text-[#596650]">No tunes due today.</p>
+        <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+          No tunes due today.
+        </p>
       ) : (
         <>
-          <p className="mt-4 text-sm text-[#596650]">
+          <p className="mt-4 text-sm leading-6 text-muted-foreground">
             {dueTodayPieces.length} tune
-            {dueTodayPieces.length === 1 ? "" : "s"} due today
+            {dueTodayPieces.length === 1 ? "" : "s"} due today.
           </p>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {dueTodayPieces.map((userPiece) => (
               <PracticeReviewCard
                 key={userPiece.id}
                 userPiece={userPiece}
                 redirectTo={redirectTo}
                 badgeLabel="Due today"
-                badgeClassName="bg-[#edf2e4] text-[#435336] border border-[#b0bc8c]"
+                badgeClassName="border border-accent bg-accent/20 text-accent-foreground"
               />
             ))}
           </div>
