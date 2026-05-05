@@ -11,31 +11,32 @@ export default function PublicProfileHeader({
 }: PublicProfileHeaderProps) {
   const title = profile.show_identity
     ? profile.display_name || profile.username
-    : "User profile"
+    : "Tunes App user"
 
   return (
-    <header className="rounded border p-6">
-      <h1 className="text-3xl font-bold">{title}</h1>
+    <header className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+        {title}
+      </h1>
 
-      {profile.show_identity && (
-        <p className="mt-2 text-gray-600">@{profile.username}</p>
-      )}
-
-      {profile.show_identity && profile.bio && (
-        <p className="mt-4 whitespace-pre-wrap text-gray-700">{profile.bio}</p>
-      )}
-
-      {isOwnProfile && (
-        <p className="mt-4 text-sm text-gray-600">
-          This is your public profile as other users see it.
+      {profile.show_identity && profile.bio ? (
+        <p className="mt-5 max-w-3xl whitespace-pre-wrap text-sm leading-7 text-muted-foreground">
+          {profile.bio}
         </p>
-      )}
+      ) : null}
 
-      {!profile.show_identity && (
-        <p className="mt-4 text-sm text-gray-600">
-          This profile is using limited public identity visibility.
-        </p>
-      )}
+      {isOwnProfile ? (
+        <div className="mt-6 rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+          This is your public profile as other musicians see it. Visibility
+          settings on your Profile page control what appears here.
+        </div>
+      ) : null}
+
+      {!profile.show_identity ? (
+        <div className="mt-6 rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+          This musician has chosen limited public identity visibility.
+        </div>
+      ) : null}
     </header>
   )
 }

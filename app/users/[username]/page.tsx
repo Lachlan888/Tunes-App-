@@ -1,13 +1,96 @@
-import DirectMessageThreadList from "@/components/inbox/DirectMessageThreadList"
-import InboxItemList from "@/components/inbox/InboxItemList"
-import SubmitButton from "@/components/SubmitButton"
-import { markAllNotificationsRead } from "@/lib/actions/activity-interactions"
-import { loadInboxData } from "@/lib/loaders/inbox"
+import { notFound } from "next/navigation"
+import PublicProfileActions from "@/components/profile/PublicProfileActions"
+import PublicProfileHeader from "@/components/profile/PublicProfileHeader"
+import PublicProfileOverview from "@/components/profile/PublicProfileOverview"
+import { loadPublicProfileData } from "@/lib/loaders/profile-public"
 
-type InboxPageProps = {
+type PublicProfilePageProps = {
+  params: Promise<{
+    username: string
+  }>
   searchParams?: Promise<{
+    friend_request?: string
+    friend_accept?: string
     direct_message?: string
   }>
+}
+
+function getFriendRequestMessage(status?: string) {
+  if (status === "sent") {
+    return {
+      tone: "success" as const,
+      text: "Friend request sent.",
+    }
+  }
+
+  if (status === "missing_user") {
+    return {
+      tone: "warning" as const,
+      text: "Could not tell which user to send the request to.",
+    }
+  }
+
+  if (status === "self") {
+    return {
+      tone: "warning" as const,
+      text: "You cannot send a friend request to yourself.",
+    }
+  }
+
+  if (status === "not_found") {
+    return {
+      tone: "error" as const,
+      text: "That user could not be found.",
+    }
+  }
+
+  if (status === "duplicate") {
+    return {
+      tone: "neutral" as const,
+      text: "A pending or accepted connection already exists with that user.",
+    }
+  }
+
+  return null
+}
+
+function getFriendAcceptMessage(status?: string) {
+  if (status === "accepted") {
+    return {
+      tone: "success" as const,
+      text: "Friend request accepted.",
+    }
+  }
+
+  if (status === "missing_connection") {
+    return {
+      tone: "warning" as const,
+      text: "Could not tell which friend request to accept.",
+    }
+  }
+
+  if (status === "not_found") {
+    return {
+      tone: "error" as const,
+      text: "That friend request could not be found.",
+    }
+  }
+
+  if (status === "forbidden") {
+    return {
+      tone: "error" as const,
+      text: "You are not allowed to accept that request.",
+    }
+  }
+
+  if (status === "invalid_status") {
+    return {
+      tone: "warning" as const,
+      text: "That request is no longer pending.",
+    }
+  }
+
+  return null
 }
 
 function getDirectMessageMessage(status?: string) {
@@ -15,20 +98,6 @@ function getDirectMessageMessage(status?: string) {
     return {
       tone: "success" as const,
       text: "Message sent.",
-    }
-  }
-
-  if (status === "edited") {
-    return {
-      tone: "success" as const,
-      text: "Message edited.",
-    }
-  }
-
-  if (status === "deleted") {
-    return {
-      tone: "success" as const,
-      text: "Message deleted.",
     }
   }
 
@@ -43,13 +112,6 @@ function getDirectMessageMessage(status?: string) {
     return {
       tone: "warning" as const,
       text: "Write a message before sending.",
-    }
-  }
-
-  if (status === "missing_message") {
-    return {
-      tone: "warning" as const,
-      text: "Could not tell which message to update.",
     }
   }
 
@@ -88,106 +150,96 @@ function getMessageClasses(
   return "mb-6 rounded-2xl border border-border bg-muted p-4 text-sm font-medium text-muted-foreground shadow-sm"
 }
 
-export default async function InboxPage({ searchParams }: InboxPageProps) {
+export default async function PublicProfilePage({
+  params,
+  searchParams,
+}: PublicProfilePageProps) {
+  const { username } = await params
   const resolvedSearchParams = searchParams ? await searchParams : undefined
+
+  const {
+    viewerId,
+    profile,
+    instruments,
+    publicLists,
+    repertoireSummary,
+    isOwnProfile,
+    isAcceptedFriend,
+    hasPendingOutgoingRequest,
+    hasPendingIncomingRequest,
+    pendingIncomingConnectionId,
+    canCompare,
+    compareBlockedByFriendship,
+  } = await loadPublicProfileData(username)
+
+  if (!profile) {
+    notFound()
+  }
+
+  const redirectTo = `/users/${encodeURIComponent(profile.username)}`
+
+  const friendRequestMessage = getFriendRequestMessage(
+    resolvedSearchParams?.friend_request
+  )
+
+  const friendAcceptMessage = getFriendAcceptMessage(
+    resolvedSearchParams?.friend_accept
+  )
+
   const directMessageMessage = getDirectMessageMessage(
     resolvedSearchParams?.direct_message
   )
 
-  const {
-    notificationItems,
-    messageThreads,
-    unreadNotificationCount,
-    unreadMessageCount,
-    unreadCount,
-  } = await loadInboxData()
-
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+      {friendRequestMessage ? (
+        <div className={getMessageClasses(friendRequestMessage.tone)}>
+          {friendRequestMessage.text}
+        </div>
+      ) : null}
+
+      {friendAcceptMessage ? (
+        <div className={getMessageClasses(friendAcceptMessage.tone)}>
+          {friendAcceptMessage.text}
+        </div>
+      ) : null}
+
       {directMessageMessage ? (
         <div className={getMessageClasses(directMessageMessage.tone)}>
           {directMessageMessage.text}
         </div>
       ) : null}
 
-      <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Inbox
-            </p>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <div className="space-y-6">
+          <PublicProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
 
-            <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
-              Messages and notifications
-            </h1>
-
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-              Threaded direct messages, activity replies, tune-comment replies,
-              and Good craic! reactions from other musicians.
-            </p>
-          </div>
-
-          <div className="grid gap-3 text-sm sm:grid-cols-3">
-            <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
-              <p className="font-semibold text-foreground">{unreadCount}</p>
-              <p className="text-muted-foreground">Unread total</p>
-            </div>
-
-            <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
-              <p className="font-semibold text-foreground">
-                {unreadMessageCount}
-              </p>
-              <p className="text-muted-foreground">Messages</p>
-            </div>
-
-            <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
-              <p className="font-semibold text-foreground">
-                {unreadNotificationCount}
-              </p>
-              <p className="text-muted-foreground">Notifications</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {unreadCount > 0 ? (
-        <form action={markAllNotificationsRead} className="mb-5">
-          <SubmitButton
-            label="Mark all read"
-            pendingLabel="Saving..."
-            className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          <PublicProfileOverview
+            profile={profile}
+            instruments={instruments}
+            publicLists={publicLists}
+            repertoireSummary={repertoireSummary}
+            isOwnProfile={isOwnProfile}
           />
-        </form>
-      ) : null}
-
-      <section className="mb-8">
-        <div className="mb-4">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Messages
-          </h2>
-
-          <p className="mt-2 text-sm text-muted-foreground">
-            Direct messages are threaded by musician. Both incoming and outgoing
-            messages appear here. You can edit or delete messages you sent.
-          </p>
         </div>
 
-        <DirectMessageThreadList threads={messageThreads} />
-      </section>
-
-      <section>
-        <div className="mb-4">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Notifications
-          </h2>
-
-          <p className="mt-2 text-sm text-muted-foreground">
-            Good craic! reactions and replies to your activity appear here.
-          </p>
-        </div>
-
-        <InboxItemList items={notificationItems} />
-      </section>
+        <aside className="xl:sticky xl:top-24 xl:self-start">
+          <PublicProfileActions
+            viewerId={viewerId}
+            username={profile.username}
+            profileUserId={profile.id}
+            redirectTo={redirectTo}
+            isOwnProfile={isOwnProfile}
+            isAcceptedFriend={isAcceptedFriend}
+            hasPendingOutgoingRequest={hasPendingOutgoingRequest}
+            hasPendingIncomingRequest={hasPendingIncomingRequest}
+            pendingIncomingConnectionId={pendingIncomingConnectionId}
+            canCompare={canCompare}
+            compareBlockedByFriendship={compareBlockedByFriendship}
+            showCompareDiscoverability={profile.show_compare_discoverability}
+          />
+        </aside>
+      </div>
     </main>
   )
 }

@@ -41,7 +41,10 @@ type ActivityReplyRow = {
     | null
 }
 
-function cleanRedirectTo(value: FormDataEntryValue | null, fallback: string) {
+function cleanRedirectTo(
+  value: string | FormDataEntryValue | null,
+  fallback: string
+) {
   const raw = value?.toString() || fallback
 
   if (!raw.startsWith("/")) {
@@ -132,7 +135,31 @@ async function ensureCanInteractWithActivity(options: {
   )
 }
 
-export async function toggleActivityReaction(formData: FormData) {
+async function getActivityReactionCount(options: {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  activityEventId: number
+  reactionType: string
+}) {
+  const { count, error } = await options.supabase
+    .from("activity_reactions")
+    .select("id", { count: "exact", head: true })
+    .eq("activity_event_id", options.activityEventId)
+    .eq("reaction_type", options.reactionType)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return count ?? 0
+}
+
+async function toggleActivityReactionByValues(options: {
+  activityEventId: number
+  reactionType: string
+  redirectTo: string
+  revalidateCurrentPath: boolean
+  returnFreshCount: boolean
+}) {
   const supabase = await createClient()
 
   const {
@@ -140,25 +167,44 @@ export async function toggleActivityReaction(formData: FormData) {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return
+    return {
+      ok: false,
+      message: "You need to be signed in to react.",
+      isActive: false,
+      count: null,
+    }
   }
 
-  const activityEventId = Number(formData.get("activity_event_id"))
-  const reactionType = formData.get("reaction_type")?.toString() || ""
-  const redirectTo = cleanRedirectTo(formData.get("redirect_to"), "/friends")
-
-  if (!Number.isInteger(activityEventId) || activityEventId <= 0) {
-    return
+  if (
+    !Number.isInteger(options.activityEventId) ||
+    options.activityEventId <= 0
+  ) {
+    return {
+      ok: false,
+      message: "That activity could not be found.",
+      isActive: false,
+      count: null,
+    }
   }
 
-  if (!ALLOWED_REACTIONS.has(reactionType)) {
-    return
+  if (!ALLOWED_REACTIONS.has(options.reactionType)) {
+    return {
+      ok: false,
+      message: "That reaction is not available.",
+      isActive: false,
+      count: null,
+    }
   }
 
-  const activityEvent = await loadActivityEvent(supabase, activityEventId)
+  const activityEvent = await loadActivityEvent(supabase, options.activityEventId)
 
   if (!activityEvent) {
-    return
+    return {
+      ok: false,
+      message: "That activity could not be found.",
+      isActive: false,
+      count: null,
+    }
   }
 
   const canInteract = await ensureCanInteractWithActivity({
@@ -168,16 +214,22 @@ export async function toggleActivityReaction(formData: FormData) {
   })
 
   if (!canInteract) {
-    return
+    return {
+      ok: false,
+      message: "You cannot react to this activity.",
+      isActive: false,
+      count: null,
+    }
   }
 
-  const { data: existingReaction, error: existingReactionError } = await supabase
-    .from("activity_reactions")
-    .select("id")
-    .eq("activity_event_id", activityEventId)
-    .eq("user_id", user.id)
-    .eq("reaction_type", reactionType)
-    .maybeSingle()
+  const { data: existingReaction, error: existingReactionError } =
+    await supabase
+      .from("activity_reactions")
+      .select("id")
+      .eq("activity_event_id", options.activityEventId)
+      .eq("user_id", user.id)
+      .eq("reaction_type", options.reactionType)
+      .maybeSingle()
 
   if (existingReactionError) {
     throw new Error(existingReactionError.message)
@@ -194,19 +246,32 @@ export async function toggleActivityReaction(formData: FormData) {
       throw new Error(deleteError.message)
     }
 
-    revalidatePath("/")
-    revalidatePath("/friends")
-    revalidatePath("/inbox")
-    revalidatePath(redirectTo)
-    return
+    const count = options.returnFreshCount
+      ? await getActivityReactionCount({
+          supabase,
+          activityEventId: options.activityEventId,
+          reactionType: options.reactionType,
+        })
+      : null
+
+    if (options.revalidateCurrentPath) {
+      revalidatePath(options.redirectTo)
+    }
+
+    return {
+      ok: true,
+      message: null,
+      isActive: false,
+      count,
+    }
   }
 
   const { data: insertedReaction, error: insertError } = await supabase
     .from("activity_reactions")
     .insert({
-      activity_event_id: activityEventId,
+      activity_event_id: options.activityEventId,
       user_id: user.id,
-      reaction_type: reactionType,
+      reaction_type: options.reactionType,
     })
     .select("id")
     .single()
@@ -214,6 +279,8 @@ export async function toggleActivityReaction(formData: FormData) {
   if (insertError) {
     throw new Error(insertError.message)
   }
+
+  let createdNotification = false
 
   if (activityEvent.user_id !== user.id) {
     const { error: notificationError } = await supabase
@@ -227,18 +294,68 @@ export async function toggleActivityReaction(formData: FormData) {
         piece_id: activityEvent.piece_id,
         learning_list_id: activityEvent.learning_list_id,
         comment_id: activityEvent.comment_id,
-        body_preview: reactionType,
+        body_preview: options.reactionType,
       })
 
     if (notificationError) {
       throw new Error(notificationError.message)
     }
+
+    createdNotification = true
   }
 
-  revalidatePath("/")
-  revalidatePath("/friends")
-  revalidatePath("/inbox")
-  revalidatePath(redirectTo)
+  const count = options.returnFreshCount
+    ? await getActivityReactionCount({
+        supabase,
+        activityEventId: options.activityEventId,
+        reactionType: options.reactionType,
+      })
+    : null
+
+  if (options.revalidateCurrentPath) {
+    revalidatePath(options.redirectTo)
+  }
+
+  if (createdNotification) {
+    revalidatePath("/inbox")
+  }
+
+  return {
+    ok: true,
+    message: null,
+    isActive: true,
+    count,
+  }
+}
+
+export async function toggleActivityReaction(formData: FormData) {
+  const activityEventId = Number(formData.get("activity_event_id"))
+  const reactionType = formData.get("reaction_type")?.toString() || ""
+  const redirectTo = cleanRedirectTo(formData.get("redirect_to"), "/friends")
+
+  await toggleActivityReactionByValues({
+    activityEventId,
+    reactionType,
+    redirectTo,
+    revalidateCurrentPath: true,
+    returnFreshCount: true,
+  })
+}
+
+export async function toggleActivityReactionFromClient(input: {
+  activityEventId: number
+  reactionType: string
+  redirectTo?: string
+}) {
+  const redirectTo = cleanRedirectTo(input.redirectTo ?? null, "/friends")
+
+  return toggleActivityReactionByValues({
+    activityEventId: input.activityEventId,
+    reactionType: input.reactionType,
+    redirectTo,
+    revalidateCurrentPath: false,
+    returnFreshCount: false,
+  })
 }
 
 export async function addActivityReply(formData: FormData) {

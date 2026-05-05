@@ -1,3 +1,4 @@
+import { AutoGrowMessageTextarea } from "@/components/profile/AutoGrowMessageTextarea"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import SubmitButton from "@/components/SubmitButton"
 import { acceptFriendRequest, sendFriendRequest } from "@/lib/actions/friends"
@@ -24,8 +25,8 @@ const primaryButtonClass =
 const secondaryButtonClass =
   "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
-const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+const textareaClassName =
+  "max-h-[22rem] min-h-28 w-full resize-none overflow-hidden rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm leading-6 text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function PublicProfileActions({
   viewerId,
@@ -43,19 +44,22 @@ export default function PublicProfileActions({
 }: PublicProfileActionsProps) {
   if (isOwnProfile) {
     return (
-      <section className="mt-6 rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Your profile
         </h2>
+
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          This is your public profile as other users would see it.
+          Edit your name, bio, instruments, visibility, and public repertoire
+          settings from your private profile page.
         </p>
-        <div className="mt-4">
+
+        <div className="mt-5">
           <PendingLinkButton
             href="/dashboard"
             label="Edit profile"
             pendingLabel="Opening..."
-            className={secondaryButtonClass}
+            className={primaryButtonClass}
           />
         </div>
       </section>
@@ -64,14 +68,17 @@ export default function PublicProfileActions({
 
   if (!viewerId) {
     return (
-      <section className="mt-6 rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Connect
         </h2>
+
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Log in to send a message, connect, or compare repertoire.
+          Log in to message this musician, send a friend request, or compare
+          repertoire.
         </p>
-        <div className="mt-4">
+
+        <div className="mt-5">
           <PendingLinkButton
             href="/login"
             label="Log in"
@@ -84,20 +91,20 @@ export default function PublicProfileActions({
   }
 
   return (
-    <section className="mt-6 rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
       <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         Connect
       </h2>
 
-      <div className="mt-4 flex flex-wrap gap-3">
-        {canCompare && (
+      <div className="mt-5 flex flex-wrap gap-3">
+        {canCompare ? (
           <PendingLinkButton
             href={`/compare?user=${encodeURIComponent(username)}`}
-            label="Compare"
+            label="Compare repertoire"
             pendingLabel="Opening..."
             className={secondaryButtonClass}
           />
-        )}
+        ) : null}
 
         {isAcceptedFriend ? (
           <span className="inline-flex items-center rounded-full border border-success bg-muted px-4 py-2 text-sm font-medium text-foreground">
@@ -134,20 +141,32 @@ export default function PublicProfileActions({
         )}
       </div>
 
-      <details className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
-        <summary className="cursor-pointer text-sm font-medium text-foreground">
-          Message this user
-        </summary>
+      {compareBlockedByFriendship ? (
+        <p className="mt-4 rounded-2xl border border-border bg-background/70 p-3 text-sm leading-6 text-muted-foreground">
+          Comparison is available once you are friends.
+        </p>
+      ) : null}
+
+      {!showCompareDiscoverability ? (
+        <p className="mt-4 rounded-2xl border border-border bg-background/70 p-3 text-sm leading-6 text-muted-foreground">
+          This user is not discoverable through compare.
+        </p>
+      ) : null}
+
+      <div className="mt-6 border-t border-border pt-5">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Message
+        </h3>
 
         <form action={sendDirectMessage} className="mt-4 space-y-3">
           <input type="hidden" name="recipient_user_id" value={profileUserId} />
           <input type="hidden" name="redirect_to" value={redirectTo} />
 
-          <textarea
+          <AutoGrowMessageTextarea
             name="body"
             rows={4}
-            placeholder="Write a direct message"
-            className={inputClassName}
+            placeholder="Write a direct message..."
+            className={textareaClassName}
             required
           />
 
@@ -157,19 +176,7 @@ export default function PublicProfileActions({
             className={primaryButtonClass}
           />
         </form>
-      </details>
-
-      {compareBlockedByFriendship && (
-        <p className="mt-4 text-sm text-muted-foreground">
-          Comparison is available once you are friends.
-        </p>
-      )}
-
-      {!showCompareDiscoverability && (
-        <p className="mt-4 text-sm text-muted-foreground">
-          This user is not discoverable through compare.
-        </p>
-      )}
+      </div>
     </section>
   )
 }
