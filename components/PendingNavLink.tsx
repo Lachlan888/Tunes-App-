@@ -6,9 +6,24 @@ import { usePathname, useRouter } from "next/navigation"
 type PendingNavLinkProps = {
   href: string
   label: string
+  badgeCount?: number
 }
 
-export default function PendingNavLink({ href, label }: PendingNavLinkProps) {
+function NavBadge({ count }: { count: number }) {
+  if (count <= 0) return null
+
+  return (
+    <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 py-0.5 text-xs font-semibold leading-none text-destructive-foreground">
+      {count > 99 ? "99+" : count}
+    </span>
+  )
+}
+
+export default function PendingNavLink({
+  href,
+  label,
+  badgeCount = 0,
+}: PendingNavLinkProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
@@ -28,13 +43,14 @@ export default function PendingNavLink({ href, label }: PendingNavLinkProps) {
           router.push(href)
         })
       }}
-      className={`rounded-full border px-3 py-1.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70 ${
+      className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70 ${
         isActive
           ? "border-primary bg-primary text-primary-foreground shadow-sm"
           : "border-transparent text-foreground hover:border-border hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
       }`}
     >
-      {isPending ? "Loading..." : label}
+      <span>{isPending ? "Loading..." : label}</span>
+      <NavBadge count={badgeCount} />
     </button>
   )
 }
