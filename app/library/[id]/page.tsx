@@ -89,14 +89,6 @@ export default async function PiecePage({ params }: PiecePageProps) {
     profileMap,
   } = tuneDetail
 
-  const metadataItems = [
-    typedPiece.key ? `Key: ${typedPiece.key}` : "Key: —",
-    typedPiece.style ? `Style: ${typedPiece.style}` : "Style: —",
-    typedPiece.time_signature
-      ? `Time: ${typedPiece.time_signature}`
-      : "Time: —",
-  ]
-
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
       <div className="mb-5">
@@ -112,31 +104,9 @@ export default async function PiecePage({ params }: PiecePageProps) {
         <h1 className="max-w-5xl font-serif text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
           {typedPiece.title}
         </h1>
-
-        <div className="mt-5 flex flex-wrap gap-3 text-sm font-medium text-muted-foreground">
-          {metadataItems.map((item) => (
-            <span
-              key={item}
-              className="rounded-full border border-border bg-background/70 px-3 py-1"
-            >
-              {item}
-            </span>
-          ))}
-
-          {typedPiece.reference_url ? (
-            <a
-              href={typedPiece.reference_url}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full border border-border bg-background/70 px-3 py-1 underline underline-offset-4 hover:bg-muted hover:text-foreground"
-            >
-              Reference
-            </a>
-          ) : null}
-        </div>
       </section>
 
-      <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(380px,560px)]">
+      <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-2 2xl:grid-cols-3">
         <div className="space-y-8">
           <TuneDetailActions
             piece={typedPiece}
@@ -154,18 +124,9 @@ export default async function PiecePage({ params }: PiecePageProps) {
             redirectTo={redirectTo}
             styleOptions={styleOptions}
           />
-
-          <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-            <PieceLoreSection
-              pieceId={pieceId}
-              loreEntries={typedPieceLoreEntries}
-              profileMap={profileMap}
-              currentUserId={user.id}
-            />
-          </section>
         </div>
 
-        <aside className="space-y-8">
+        <div className="space-y-8">
           <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               My notes
@@ -258,6 +219,17 @@ export default async function PiecePage({ params }: PiecePageProps) {
               </p>
             )}
           </section>
+        </div>
+
+        <div className="space-y-8 xl:col-span-2 2xl:col-span-1">
+          <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <PieceLoreSection
+              pieceId={pieceId}
+              loreEntries={typedPieceLoreEntries}
+              profileMap={profileMap}
+              currentUserId={user.id}
+            />
+          </section>
 
           <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
             <PieceCommentsSection
@@ -267,7 +239,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
               currentUserId={user.id}
             />
           </section>
-        </aside>
+        </div>
       </div>
     </main>
   )
