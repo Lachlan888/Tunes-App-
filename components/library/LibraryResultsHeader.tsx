@@ -81,6 +81,15 @@ function getPageItems(currentPage: number, totalPages: number): PageItem[] {
   return items
 }
 
+const paginationButtonClass =
+  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+
+const disabledPaginationButtonClass =
+  "rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground opacity-60"
+
+const activeButtonClass =
+  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+
 export default function LibraryResultsHeader({
   displayedCount,
   totalCount,
@@ -127,11 +136,11 @@ export default function LibraryResultsHeader({
     <section
       className={
         isBottom
-          ? "mt-8 flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm"
-          : "mb-5 flex flex-col gap-4"
+          ? "mt-8 rounded-2xl border border-border bg-card p-5 shadow-sm"
+          : "mb-5"
       }
     >
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div>
           {!isBottom && (
             <>
@@ -153,113 +162,101 @@ export default function LibraryResultsHeader({
           >
             Showing {displayedCount} of {totalCount} tune
             {totalCount === 1 ? "" : "s"}
-            {!isAll && totalCount > 0 ? `, page ${currentPage} of ${totalPages}` : ""}
+            {!isAll && totalCount > 0
+              ? `, page ${currentPage} of ${totalPages}`
+              : ""}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="mr-1 text-sm font-medium text-muted-foreground">
-            Per page
-          </span>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {hasMultiplePages ? (
+            <nav
+              aria-label="Tune catalogue pages"
+              className="flex flex-wrap items-center gap-2"
+            >
+              {previousPageHref ? (
+                <a href={previousPageHref} className={paginationButtonClass}>
+                  Previous
+                </a>
+              ) : (
+                <span className={disabledPaginationButtonClass}>Previous</span>
+              )}
 
-          {([20, 50, 100, "all"] as const).map((countOption) => {
-            const isActive = visibleCount === countOption
-            const href = buildLibraryHref({
-              searchQuery,
-              selectedKeys,
-              selectedStyles,
-              selectedTimeSignatures,
-              visibleCount: countOption,
-              page: 1,
-            })
+              {pageItems.map((pageItem, index) => {
+                if (pageItem === "ellipsis") {
+                  return (
+                    <span
+                      key={`ellipsis-${index}`}
+                      className="px-2 text-sm text-muted-foreground"
+                    >
+                      …
+                    </span>
+                  )
+                }
 
-            return (
-              <a
-                key={String(countOption)}
-                href={href}
-                className={`rounded-full border px-4 py-2 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] ${
-                  isActive
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {countOption === "all" ? "All" : countOption}
-              </a>
-            )
-          })}
+                const isActive = pageItem === currentPage
+                const href = buildLibraryHref({
+                  searchQuery,
+                  selectedKeys,
+                  selectedStyles,
+                  selectedTimeSignatures,
+                  visibleCount,
+                  page: pageItem,
+                })
+
+                return (
+                  <a
+                    key={pageItem}
+                    href={href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={isActive ? activeButtonClass : paginationButtonClass}
+                  >
+                    {pageItem}
+                  </a>
+                )
+              })}
+
+              {nextPageHref ? (
+                <a href={nextPageHref} className={paginationButtonClass}>
+                  Next
+                </a>
+              ) : (
+                <span className={disabledPaginationButtonClass}>Next</span>
+              )}
+            </nav>
+          ) : (
+            <div />
+          )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-sm font-medium text-muted-foreground">
+              Per page
+            </span>
+
+            {([20, 50, 100, "all"] as const).map((countOption) => {
+              const isActive = visibleCount === countOption
+              const href = buildLibraryHref({
+                searchQuery,
+                selectedKeys,
+                selectedStyles,
+                selectedTimeSignatures,
+                visibleCount: countOption,
+                page: 1,
+              })
+
+              return (
+                <a
+                  key={String(countOption)}
+                  href={href}
+                  className={isActive ? activeButtonClass : paginationButtonClass}
+                >
+                  {countOption === "all" ? "All" : countOption}
+                </a>
+              )
+            })}
+          </div>
         </div>
       </div>
-
-      {hasMultiplePages && (
-        <nav
-          aria-label="Tune catalogue pages"
-          className="flex flex-wrap items-center gap-2"
-        >
-          {previousPageHref ? (
-            <a
-              href={previousPageHref}
-              className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-            >
-              Previous
-            </a>
-          ) : (
-            <span className="rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground opacity-60">
-              Previous
-            </span>
-          )}
-
-          {pageItems.map((pageItem, index) => {
-            if (pageItem === "ellipsis") {
-              return (
-                <span
-                  key={`ellipsis-${index}`}
-                  className="px-2 text-sm text-muted-foreground"
-                >
-                  …
-                </span>
-              )
-            }
-
-            const isActive = pageItem === currentPage
-            const href = buildLibraryHref({
-              searchQuery,
-              selectedKeys,
-              selectedStyles,
-              selectedTimeSignatures,
-              visibleCount,
-              page: pageItem,
-            })
-
-            return (
-              <a
-                key={pageItem}
-                href={href}
-                aria-current={isActive ? "page" : undefined}
-                className={`rounded-full border px-4 py-2 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] ${
-                  isActive
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {pageItem}
-              </a>
-            )
-          })}
-
-          {nextPageHref ? (
-            <a
-              href={nextPageHref}
-              className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-            >
-              Next
-            </a>
-          ) : (
-            <span className="rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground opacity-60">
-              Next
-            </span>
-          )}
-        </nav>
-      )}
     </section>
   )
 }
