@@ -1,3 +1,5 @@
+import Link from "next/link"
+import type { ReactNode } from "react"
 import EditListModal from "@/components/lists/EditListModal"
 import RemoveTuneButton from "@/components/RemoveTuneButton"
 import SubmitButton from "@/components/SubmitButton"
@@ -25,6 +27,36 @@ function extractPiece(piece: Piece | Piece[] | null): Piece | null {
   return Array.isArray(piece) ? piece[0] ?? null : piece
 }
 
+function getStatusClasses(tone: "success" | "warning" | "error") {
+  if (tone === "success") {
+    return "border-success text-success"
+  }
+
+  if (tone === "warning") {
+    return "border-warning-strong text-warning-foreground"
+  }
+
+  return "border-destructive text-destructive"
+}
+
+function StatusMessage({
+  tone,
+  children,
+}: {
+  tone: "success" | "warning" | "error"
+  children: ReactNode
+}) {
+  return (
+    <div
+      className={`mt-6 rounded-2xl border bg-background/70 p-4 text-sm shadow-sm ${getStatusClasses(
+        tone
+      )}`}
+    >
+      {children}
+    </div>
+  )
+}
+
 export default async function LearningListDetailPage({
   params,
   searchParams,
@@ -45,122 +77,152 @@ export default async function LearningListDetailPage({
   } = await loadLearningListDetailData(id)
 
   return (
-    <main className="mx-auto max-w-4xl p-6">
-      <div className="mb-2 flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">{typedList.name}</h1>
-
-        <EditListModal
-          listId={typedList.id}
-          name={typedList.name}
-          description={typedList.description}
-          visibility={typedList.visibility}
-          redirectTo={redirectTo}
-          tunes={tunes}
-          updateList={updateList}
-          removeTuneFromList={removeTuneFromList}
-          deleteList={deleteList}
-          triggerLabel="Manage List"
-        />
+    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+      <div className="mb-5">
+        <Link
+          href="/learning-lists"
+          className="text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
+        >
+          Back to Lists
+        </Link>
       </div>
 
-      <div className="mb-4 flex gap-3 text-sm text-gray-600">
-        <span>{typedList.visibility === "public" ? "Public" : "Private"}</span>
-        {typedList.is_imported && <span>Imported</span>}
-      </div>
+      <header className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 flex-1">
+            <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+              {typedList.name}
+            </h1>
 
-      {typedList.description && (
-        <p className="mb-6 text-sm">{typedList.description}</p>
-      )}
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-muted-foreground">
+              <span>
+                {typedList.visibility === "public" ? "Public" : "Private"}
+              </span>
+
+              <span aria-hidden="true">•</span>
+
+              <span>
+                {typedItems.length} tune{typedItems.length === 1 ? "" : "s"}
+              </span>
+
+              {typedList.is_imported && (
+                <>
+                  <span aria-hidden="true">•</span>
+                  <span className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold text-muted-foreground">
+                    Imported
+                  </span>
+                </>
+              )}
+            </div>
+
+            {typedList.description ? (
+              <p className="mt-5 max-w-3xl text-base leading-7 text-foreground">
+                {typedList.description}
+              </p>
+            ) : (
+              <p className="mt-5 text-base text-muted-foreground">
+                No description yet.
+              </p>
+            )}
+          </div>
+
+          <EditListModal
+            listId={typedList.id}
+            name={typedList.name}
+            description={typedList.description}
+            visibility={typedList.visibility}
+            redirectTo={redirectTo}
+            tunes={tunes}
+            updateList={updateList}
+            removeTuneFromList={removeTuneFromList}
+            deleteList={deleteList}
+            triggerLabel="Manage List"
+          />
+        </div>
+      </header>
 
       {removeTuneStatus === "success" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
-          Tune removed from your app.
-        </div>
+        <StatusMessage tone="success">Tune removed from your app.</StatusMessage>
       )}
 
       {removeTuneStatus === "missing_piece" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+        <StatusMessage tone="warning">
           Could not tell which tune to remove.
-        </div>
+        </StatusMessage>
       )}
 
       {removeTuneStatus === "error" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
-          Could not remove tune.
-        </div>
+        <StatusMessage tone="error">Could not remove tune.</StatusMessage>
       )}
 
       {editListStatus === "success" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
-          List updated.
-        </div>
+        <StatusMessage tone="success">List updated.</StatusMessage>
       )}
 
       {editListStatus === "removed_tune" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+        <StatusMessage tone="success">
           Tune removed from this list.
-        </div>
+        </StatusMessage>
       )}
 
       {editListStatus === "deleted" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
-          List deleted.
-        </div>
+        <StatusMessage tone="success">List deleted.</StatusMessage>
       )}
 
       {editListStatus === "missing_list" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+        <StatusMessage tone="warning">
           Could not tell which list to edit.
-        </div>
+        </StatusMessage>
       )}
 
       {editListStatus === "missing_name" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+        <StatusMessage tone="warning">
           Please enter a list name.
-        </div>
+        </StatusMessage>
       )}
 
       {editListStatus === "missing_item" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+        <StatusMessage tone="warning">
           Could not tell which tune to remove from the list.
-        </div>
+        </StatusMessage>
       )}
 
       {editListStatus === "invalid_visibility" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
-          Invalid list visibility.
-        </div>
+        <StatusMessage tone="warning">Invalid list visibility.</StatusMessage>
       )}
 
       {editListStatus === "not_found" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+        <StatusMessage tone="error">
           List not found or you do not own it.
-        </div>
+        </StatusMessage>
       )}
 
       {editListStatus === "error" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
-          Could not update list.
-        </div>
+        <StatusMessage tone="error">Could not update list.</StatusMessage>
       )}
 
-      <h2 className="mb-3 text-lg font-semibold">Tunes</h2>
+      <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Tunes
+        </h2>
 
-      {typedItems.length === 0 ? (
-        <p>This list has no tunes yet.</p>
-      ) : (
-        <div className="space-y-3">
-          {typedItems.map((item) => {
-            const piece = extractPiece(item.pieces)
+        {typedItems.length === 0 ? (
+          <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+            This list has no tunes yet.
+          </p>
+        ) : (
+          <div className="mt-5 space-y-4">
+            {typedItems.map((item) => {
+              const piece = extractPiece(item.pieces)
 
-            if (!piece) return null
+              if (!piece) return null
 
-            const isAlreadyInPractice = activePieceIds.has(piece.id)
-            const isKnown = knownPieceIds.has(piece.id)
+              const isAlreadyInPractice = activePieceIds.has(piece.id)
+              const isKnown = knownPieceIds.has(piece.id)
 
-            return (
-              <div key={item.id}>
+              return (
                 <TuneCard
+                  key={item.id}
                   id={piece.id}
                   title={piece.title}
                   keyValue={piece.key}
@@ -171,7 +233,9 @@ export default async function LearningListDetailPage({
                   listNames={[]}
                 >
                   {isAlreadyInPractice ? (
-                    <p className="text-sm text-gray-600">Already in practice</p>
+                    <span className="rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm">
+                      Already in practice
+                    </span>
                   ) : (
                     <form action={startLearning}>
                       <input type="hidden" name="piece_id" value={piece.id} />
@@ -183,13 +247,15 @@ export default async function LearningListDetailPage({
                       <SubmitButton
                         label="Start Practice"
                         pendingLabel="Starting..."
-                        className="bg-black px-3 py-1 text-sm text-white"
+                        className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       />
                     </form>
                   )}
 
                   {isKnown ? (
-                    <p className="text-sm text-gray-600">Known</p>
+                    <span className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm">
+                      Known
+                    </span>
                   ) : (
                     <form action={markAsKnown}>
                       <input type="hidden" name="piece_id" value={piece.id} />
@@ -203,7 +269,7 @@ export default async function LearningListDetailPage({
                           isAlreadyInPractice ? "Set as known" : "Mark as known"
                         }
                         pendingLabel="Saving..."
-                        className="border px-3 py-1 text-sm"
+                        className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       />
                     </form>
                   )}
@@ -213,11 +279,11 @@ export default async function LearningListDetailPage({
                     redirectTo={redirectTo}
                   />
                 </TuneCard>
-              </div>
-            )
-          })}
-        </div>
-      )}
+              )
+            })}
+          </div>
+        )}
+      </section>
     </main>
   )
 }

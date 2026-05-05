@@ -24,6 +24,9 @@ type PieceCommentsSectionProps = {
   currentUserId: string
 }
 
+const inputClassName =
+  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+
 export default function PieceCommentsSection({
   pieceId,
   comments,
@@ -31,38 +34,39 @@ export default function PieceCommentsSection({
   currentUserId,
 }: PieceCommentsSectionProps) {
   return (
-    <section>
-      <div className="mb-5 flex items-end justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold">Comments</h2>
-          <p className="mt-1 text-sm text-gray-600">
-            Conversation about this tune. Comments are social and may appear in
-            friends’ activity feeds.
-          </p>
-        </div>
+    <div>
+      <div>
+        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Comments
+        </h2>
+
+        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+          Conversation about this tune. Comments are social and may appear in
+          friends’ activity feeds.
+        </p>
       </div>
 
-      <form action={addPieceComment} className="mb-8 max-w-2xl space-y-3">
+      <form action={addPieceComment} className="mt-5 space-y-3">
         <input type="hidden" name="piece_id" value={pieceId} />
         <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
 
         <textarea
           name="body"
-          rows={4}
+          rows={5}
           placeholder="Ask a question, add a playing note, or continue the conversation"
-          className="w-full rounded border p-3"
+          className={inputClassName}
           required
         />
 
         <SubmitButton
           label="Post comment"
           pendingLabel="Posting..."
-          className="border px-4 py-2 text-sm"
+          className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
         />
       </form>
 
       {comments.length > 0 ? (
-        <ul className="space-y-4">
+        <ul className="mt-6 space-y-3">
           {comments.map((comment) => {
             const author = profileMap[comment.user_id] ?? {
               displayName: "Unknown user",
@@ -72,19 +76,13 @@ export default function PieceCommentsSection({
             const isOwnComment = comment.user_id === currentUserId
 
             return (
-              <li key={comment.id} className="rounded border p-4">
-                <div className="mb-2 flex items-start justify-between gap-4">
-                  <p className="text-sm text-gray-600">
-                    {author.username ? (
-                      <Link
-                        href={`/users/${author.username}`}
-                        className="underline hover:no-underline"
-                      >
-                        {author.displayName}
-                      </Link>
-                    ) : (
-                      author.displayName
-                    )}
+              <li
+                key={comment.id}
+                className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <p className="whitespace-pre-wrap text-sm leading-6 text-foreground">
+                    {comment.body}
                   </p>
 
                   {isOwnComment ? (
@@ -104,22 +102,34 @@ export default function PieceCommentsSection({
                       <SubmitButton
                         label="Delete"
                         pendingLabel="Deleting..."
-                        className="border px-3 py-1 text-xs"
+                        className="rounded-full border border-destructive bg-background/70 px-3 py-1 text-xs font-medium text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       />
                     </form>
                   ) : null}
                 </div>
 
-                <p className="whitespace-pre-wrap text-gray-800">
-                  {comment.body}
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Posted by{" "}
+                  {author.username ? (
+                    <Link
+                      href={`/users/${author.username}`}
+                      className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
+                    >
+                      {author.displayName}
+                    </Link>
+                  ) : (
+                    author.displayName
+                  )}
                 </p>
               </li>
             )
           })}
         </ul>
       ) : (
-        <p className="text-gray-700">No comments yet.</p>
+        <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+          No comments yet.
+        </p>
       )}
-    </section>
+    </div>
   )
 }

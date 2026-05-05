@@ -1,4 +1,5 @@
 import Link from "next/link"
+import type { ReactNode } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
 import {
@@ -27,23 +28,50 @@ function renderOwnerLabel(owner: PublicListOwnerProfile | null) {
     return <span>Unknown user</span>
   }
 
+  const ownerLabel = owner.display_name || owner.username || "Unknown user"
+
   if (owner.username) {
     return (
       <Link
         href={`/users/${owner.username}`}
-        className="underline hover:no-underline"
+        className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
       >
-        {owner.display_name || owner.username}
-        {owner.display_name ? ` (@${owner.username})` : ""}
+        {ownerLabel}
       </Link>
     )
   }
 
-  if (owner.display_name) {
-    return <span>{owner.display_name}</span>
+  return <span>{ownerLabel}</span>
+}
+
+function getStatusClasses(tone: "success" | "warning" | "error") {
+  if (tone === "success") {
+    return "border-success text-success"
   }
 
-  return <span>Unknown user</span>
+  if (tone === "warning") {
+    return "border-warning-strong text-warning-foreground"
+  }
+
+  return "border-destructive text-destructive"
+}
+
+function StatusMessage({
+  tone,
+  children,
+}: {
+  tone: "success" | "warning" | "error"
+  children: ReactNode
+}) {
+  return (
+    <div
+      className={`mt-6 rounded-2xl border bg-background/70 p-4 text-sm shadow-sm ${getStatusClasses(
+        tone
+      )}`}
+    >
+      {children}
+    </div>
+  )
 }
 
 export default async function PublicListDetailPage({
@@ -76,49 +104,74 @@ export default async function PublicListDetailPage({
       : null
 
   return (
-    <main className="mx-auto max-w-5xl p-6">
-      <div className="mb-6">
-        <Link href="/public-lists" className="text-sm underline">
+    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+      <div className="mb-5">
+        <Link
+          href="/public-lists"
+          className="text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
+        >
           Back to Shared
         </Link>
       </div>
 
-      <header className="rounded-lg border bg-white p-5 shadow-sm">
-        <h1 className="mb-2 text-2xl font-bold">{typedList.name}</h1>
+      <header className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 flex-1">
+            <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+              {typedList.name}
+            </h1>
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
-          <span>By {renderOwnerLabel(owner)}</span>
-          <span>
-            {typedItems.length} tune{typedItems.length === 1 ? "" : "s"}
-          </span>
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-muted-foreground">
+              <span>By {renderOwnerLabel(owner)}</span>
+              <span aria-hidden="true">•</span>
+              <span>
+                {typedItems.length} tune{typedItems.length === 1 ? "" : "s"}
+              </span>
+
+              {isViewingOwnPublicList && (
+                <span className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold text-muted-foreground">
+                  Your public list
+                </span>
+              )}
+            </div>
+
+            {typedList.description ? (
+              <p className="mt-5 max-w-3xl text-base leading-7 text-foreground">
+                {typedList.description}
+              </p>
+            ) : (
+              <p className="mt-5 text-base text-muted-foreground">
+                No description yet.
+              </p>
+            )}
+          </div>
+
           {isViewingOwnPublicList && (
-            <span className="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
-              Your public list
-            </span>
+            <Link
+              href={`/learning-lists/${typedList.id}`}
+              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            >
+              Open editable list
+            </Link>
           )}
         </div>
 
-        {typedList.description ? (
-          <p className="mt-4 text-sm text-gray-800">{typedList.description}</p>
-        ) : (
-          <p className="mt-4 text-sm text-gray-500">No description yet.</p>
-        )}
-
-        <p className="mt-4 max-w-2xl text-sm text-gray-600">
+        <p className="mt-6 rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
           Public lists are for discovery and import. Importing adds tunes into
-          your own private lists first. Starting practice still stays deliberate.
+          your own private lists first. Starting practice still stays
+          deliberate.
         </p>
       </header>
 
       {importStatus === "imported_all" && (
-        <div className="mt-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+        <StatusMessage tone="success">
           Imported the full list into
           {importedList ? (
             <>
               {" "}
               <Link
                 href={`/learning-lists/${importedList.id}`}
-                className="underline"
+                className="font-medium underline underline-offset-4"
               >
                 {importedList.name}
               </Link>
@@ -127,11 +180,11 @@ export default async function PublicListDetailPage({
           ) : (
             " a new private list."
           )}
-        </div>
+        </StatusMessage>
       )}
 
       {importStatus === "imported_selected" && (
-        <div className="mt-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+        <StatusMessage tone="success">
           {addedCount > 0 ? (
             <>
               Imported {addedCount} selected tune{addedCount === 1 ? "" : "s"}
@@ -141,7 +194,7 @@ export default async function PublicListDetailPage({
                   into{" "}
                   <Link
                     href={`/learning-lists/${importedList.id}`}
-                    className="underline"
+                    className="font-medium underline underline-offset-4"
                   >
                     {importedList.name}
                   </Link>
@@ -160,72 +213,63 @@ export default async function PublicListDetailPage({
               {duplicateCount === 1 ? "" : "s"}.
             </span>
           )}
-        </div>
+        </StatusMessage>
       )}
 
       {importStatus === "no_selection" && (
-        <div className="mt-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+        <StatusMessage tone="warning">
           Select at least one tune to import.
-        </div>
+        </StatusMessage>
       )}
 
       {importStatus === "missing_target_list" && (
-        <div className="mt-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+        <StatusMessage tone="warning">
           Choose one of your lists before importing selected tunes.
-        </div>
+        </StatusMessage>
       )}
 
       {importStatus === "source_not_found" && (
-        <div className="mt-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+        <StatusMessage tone="error">
           That public list could not be found.
-        </div>
+        </StatusMessage>
       )}
 
       {importStatus === "error" && (
-        <div className="mt-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+        <StatusMessage tone="error">
           Could not complete that import.
-        </div>
+        </StatusMessage>
       )}
 
       {!user ? (
-        <section className="mt-6 rounded-lg border bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold">Import and practice</h2>
-          <p className="mt-2 text-sm text-gray-600">
+        <section className="mt-6 rounded-3xl border border-border bg-card p-6 shadow-sm">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Import and practice
+          </h2>
+          <p className="mt-3 text-sm text-muted-foreground md:text-base">
             Log in to import this list into your own account, start practice, or
             mark tunes as known.
           </p>
         </section>
-      ) : isViewingOwnPublicList ? (
-        <section className="mt-6 rounded-lg border bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold">Manage your list</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            This is your public list. To edit it or manage its tunes, go to your
-            owned list page.
-          </p>
-          <div className="mt-4">
-            <Link
-              href={`/learning-lists/${typedList.id}`}
-              className="inline-block rounded border px-3 py-2 text-sm font-medium"
-            >
-              Open editable list
-            </Link>
-          </div>
-        </section>
-      ) : (
-        <section className="mt-6 rounded-lg border bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold">Import this list</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Import the whole list as a new private list, or select specific tunes
-            below and add them to one of your existing lists.
+      ) : isViewingOwnPublicList ? null : (
+        <section className="mt-6 rounded-3xl border border-border bg-card p-6 shadow-sm">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Import this list
+          </h2>
+          <p className="mt-3 max-w-3xl text-sm text-muted-foreground md:text-base">
+            Import the whole list as a new private list, or select specific
+            tunes below and add them to one of your existing lists.
           </p>
 
-          <div className="mt-5 flex flex-col gap-6 lg:flex-row">
-            <form action={importPublicList} className="rounded border p-4 lg:w-80">
+          <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
+            <form
+              action={importPublicList}
+              className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm"
+            >
               <input type="hidden" name="source_list_id" value={typedList.id} />
               <input type="hidden" name="redirect_to" value={redirectTo} />
 
-              <h3 className="text-sm font-semibold">Import all</h3>
-              <p className="mt-2 text-sm text-gray-600">
+              <h3 className="font-semibold text-foreground">Import all</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 Create a new private imported copy of this public list.
               </p>
 
@@ -233,20 +277,25 @@ export default async function PublicListDetailPage({
                 <SubmitButton
                   label="Import whole list"
                   pendingLabel="Importing..."
-                  className="rounded border px-4 py-2 text-sm font-medium"
+                  className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                 />
               </div>
             </form>
 
-            <div className="min-w-0 flex-1 rounded border p-4">
-              <form id="selected-import-form" action={importSelectedPublicListItems}>
+            <div className="min-w-0 rounded-2xl border border-border bg-background/70 p-5 shadow-sm">
+              <form
+                id="selected-import-form"
+                action={importSelectedPublicListItems}
+              >
                 <input type="hidden" name="source_list_id" value={typedList.id} />
                 <input type="hidden" name="redirect_to" value={redirectTo} />
 
-                <h3 className="text-sm font-semibold">Import selected tunes</h3>
+                <h3 className="font-semibold text-foreground">
+                  Import selected tunes
+                </h3>
 
                 {ownedLists.length === 0 ? (
-                  <p className="mt-2 text-sm text-gray-600">
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
                     You do not have any lists yet. Create one on the Lists page,
                     then come back here to import selected tunes.
                   </p>
@@ -254,7 +303,7 @@ export default async function PublicListDetailPage({
                   <>
                     <label
                       htmlFor="target_learning_list_id"
-                      className="mt-3 block text-sm font-medium"
+                      className="mt-3 block text-sm font-medium text-foreground"
                     >
                       Add selected tunes to
                     </label>
@@ -263,7 +312,7 @@ export default async function PublicListDetailPage({
                       id="target_learning_list_id"
                       name="target_learning_list_id"
                       defaultValue=""
-                      className="mt-2 w-full rounded border px-3 py-2 text-sm"
+                      className="mt-2 w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
                     >
                       <option value="" disabled>
                         Choose one of your lists
@@ -279,7 +328,7 @@ export default async function PublicListDetailPage({
                       <SubmitButton
                         label="Import selected tunes"
                         pendingLabel="Importing..."
-                        className="rounded border px-4 py-2 text-sm font-medium"
+                        className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       />
                     </div>
                   </>
@@ -290,42 +339,49 @@ export default async function PublicListDetailPage({
         </section>
       )}
 
-      <section className="mt-8">
-        <h2 className="mb-3 text-lg font-semibold">Tunes</h2>
+      <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Tunes
+        </h2>
 
         {typedItems.length === 0 ? (
-          <p>This list has no tunes yet.</p>
+          <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+            This list has no tunes yet.
+          </p>
         ) : (
-          <div className="space-y-3">
+          <div className="mt-5 space-y-4">
             {typedItems.map((item) => {
-              const piece = Array.isArray(item.pieces) ? item.pieces[0] : item.pieces
+              const piece = Array.isArray(item.pieces)
+                ? item.pieces[0]
+                : item.pieces
 
               if (!piece) return null
 
-              const isAlreadyInPractice = user ? activePieceIds.has(piece.id) : false
+              const isAlreadyInPractice = user
+                ? activePieceIds.has(piece.id)
+                : false
               const isKnown = user ? knownPieceIds.has(piece.id) : false
               const canSelectForImport =
-                Boolean(user) && !isViewingOwnPublicList && ownedLists.length > 0
+                Boolean(user) &&
+                !isViewingOwnPublicList &&
+                ownedLists.length > 0
 
               return (
-                <div
-                  key={item.id}
-                  className="rounded-lg border bg-white p-3 shadow-sm"
-                >
+                <div key={item.id} className="relative">
                   {canSelectForImport && (
                     <label
                       htmlFor={`select-piece-${piece.id}`}
-                      className="mb-3 flex items-center gap-2 text-sm font-medium"
+                      className="absolute right-5 top-5 z-10 flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground"
                     >
+                      <span>Select for import</span>
                       <input
                         id={`select-piece-${piece.id}`}
                         type="checkbox"
                         name="piece_ids"
                         value={piece.id}
                         form="selected-import-form"
-                        className="h-4 w-4"
+                        className="h-4 w-4 accent-primary"
                       />
-                      Select for import
                     </label>
                   )}
 
@@ -339,18 +395,22 @@ export default async function PublicListDetailPage({
                     listNames={[]}
                   >
                     {!user ? (
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         Log in to start practice or mark known.
                       </p>
                     ) : (
                       <>
                         {isAlreadyInPractice ? (
-                          <p className="text-sm text-gray-600">
+                          <span className="rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm">
                             Already in practice
-                          </p>
+                          </span>
                         ) : (
                           <form action={startLearning}>
-                            <input type="hidden" name="piece_id" value={piece.id} />
+                            <input
+                              type="hidden"
+                              name="piece_id"
+                              value={piece.id}
+                            />
                             <input
                               type="hidden"
                               name="redirect_to"
@@ -359,14 +419,16 @@ export default async function PublicListDetailPage({
                             <SubmitButton
                               label="Start Practice"
                               pendingLabel="Starting..."
-                              className="bg-black px-3 py-1 text-sm text-white"
+                              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                             />
                           </form>
                         )}
 
                         {!isAlreadyInPractice &&
                           (isKnown ? (
-                            <p className="text-sm text-gray-600">Known</p>
+                            <span className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm">
+                              Known
+                            </span>
                           ) : (
                             <form action={markAsKnown}>
                               <input
@@ -382,7 +444,7 @@ export default async function PublicListDetailPage({
                               <SubmitButton
                                 label="Mark as known"
                                 pendingLabel="Saving..."
-                                className="border px-3 py-1 text-sm"
+                                className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                               />
                             </form>
                           ))}

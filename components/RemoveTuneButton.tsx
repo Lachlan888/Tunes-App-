@@ -18,7 +18,7 @@ export default function RemoveTuneButton({
   confirmMessage = "Remove this tune from your practice, known tunes, and all your lists?",
   label = "Remove Tune",
   pendingLabel = "Removing...",
-  className = "w-full border px-3 py-2 text-sm",
+  className = "rounded-full border border-destructive bg-background/70 px-4 py-2 text-sm font-medium text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
 }: RemoveTuneButtonProps) {
   return (
     <form

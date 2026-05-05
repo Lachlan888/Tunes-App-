@@ -1,4 +1,5 @@
 import Link from "next/link"
+import type { ReactNode } from "react"
 import PieceCommentsSection from "@/components/library/PieceCommentsSection"
 import PieceLoreSection from "@/components/library/PieceLoreSection"
 import PieceMediaLinksSection from "@/components/library/PieceMediaLinksSection"
@@ -20,37 +21,53 @@ type PiecePageProps = {
   }>
 }
 
+function DetailErrorShell({
+  title,
+  children,
+}: {
+  title: string
+  children: ReactNode
+}) {
+  return (
+    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+      <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+          {title}
+        </h1>
+        <div className="mt-4 text-sm text-muted-foreground">{children}</div>
+        <div className="mt-5">
+          <Link
+            href="/library"
+            className="text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
+          >
+            Back to Tunes
+          </Link>
+        </div>
+      </section>
+    </main>
+  )
+}
+
+const inputClassName =
+  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+
 export default async function PiecePage({ params }: PiecePageProps) {
   const { id } = await params
   const tuneDetail = await loadTuneDetailData(id)
 
   if (tuneDetail.status === "load_error") {
     return (
-      <main className="p-8">
-        <h1 className="mb-4 text-3xl font-bold">Tune</h1>
-        <p className="text-red-600">Could not load tune.</p>
-        <div className="mt-4">
-          <Link href="/library" className="underline">
-            Back to Tunes
-          </Link>
-        </div>
-      </main>
+      <DetailErrorShell title="Tune">
+        <p className="text-destructive">Could not load tune.</p>
+      </DetailErrorShell>
     )
   }
 
   if (tuneDetail.status === "not_found") {
     return (
-      <main className="p-8">
-        <h1 className="mb-4 text-3xl font-bold">Tune not found</h1>
-        <p className="text-gray-600">
-          No tune exists at id {tuneDetail.pieceId}.
-        </p>
-        <div className="mt-4">
-          <Link href="/library" className="underline">
-            Back to Tunes
-          </Link>
-        </div>
-      </main>
+      <DetailErrorShell title="Tune not found">
+        <p>No tune exists at id {tuneDetail.pieceId}.</p>
+      </DetailErrorShell>
     )
   }
 
@@ -72,41 +89,55 @@ export default async function PiecePage({ params }: PiecePageProps) {
     profileMap,
   } = tuneDetail
 
+  const metadataItems = [
+    typedPiece.key ? `Key: ${typedPiece.key}` : "Key: —",
+    typedPiece.style ? `Style: ${typedPiece.style}` : "Style: —",
+    typedPiece.time_signature
+      ? `Time: ${typedPiece.time_signature}`
+      : "Time: —",
+  ]
+
   return (
-    <main className="p-8">
-      <div className="mb-6">
-        <Link href="/library" className="text-sm underline">
+    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+      <div className="mb-5">
+        <Link
+          href="/library"
+          className="text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
+        >
           Back to Tunes
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+      <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <h1 className="max-w-5xl font-serif text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
+          {typedPiece.title}
+        </h1>
+
+        <div className="mt-5 flex flex-wrap gap-3 text-sm font-medium text-muted-foreground">
+          {metadataItems.map((item) => (
+            <span
+              key={item}
+              className="rounded-full border border-border bg-background/70 px-3 py-1"
+            >
+              {item}
+            </span>
+          ))}
+
+          {typedPiece.reference_url ? (
+            <a
+              href={typedPiece.reference_url}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full border border-border bg-background/70 px-3 py-1 underline underline-offset-4 hover:bg-muted hover:text-foreground"
+            >
+              Reference
+            </a>
+          ) : null}
+        </div>
+      </section>
+
+      <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(380px,560px)]">
         <div className="space-y-8">
-          <section className="rounded border p-4">
-            <h1 className="mb-4 text-3xl font-bold">{typedPiece.title}</h1>
-
-            <div className="space-y-2 text-gray-700">
-              <p>Key: {typedPiece.key || "—"}</p>
-              <p>Style: {typedPiece.style || "—"}</p>
-              <p>Time signature: {typedPiece.time_signature || "—"}</p>
-              <p>
-                Reference{" "}
-                {typedPiece.reference_url ? (
-                  <a
-                    href={typedPiece.reference_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="underline"
-                  >
-                    Open reference
-                  </a>
-                ) : (
-                  "—"
-                )}
-              </p>
-            </div>
-          </section>
-
           <TuneDetailActions
             piece={typedPiece}
             userPiece={typedUserPiece}
@@ -123,13 +154,24 @@ export default async function PiecePage({ params }: PiecePageProps) {
             redirectTo={redirectTo}
             styleOptions={styleOptions}
           />
+
+          <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <PieceLoreSection
+              pieceId={pieceId}
+              loreEntries={typedPieceLoreEntries}
+              profileMap={profileMap}
+              currentUserId={user.id}
+            />
+          </section>
         </div>
 
-        <div className="space-y-8">
-          <section className="rounded border p-4">
-            <h2 className="mb-2 text-xl font-semibold">My notes</h2>
+        <aside className="space-y-8">
+          <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              My notes
+            </h2>
 
-            <form action={upsertUserPieceNotes} className="space-y-3">
+            <form action={upsertUserPieceNotes} className="mt-5 space-y-3">
               <input type="hidden" name="piece_id" value={pieceId} />
               <input type="hidden" name="redirect_to" value={redirectTo} />
 
@@ -138,13 +180,13 @@ export default async function PiecePage({ params }: PiecePageProps) {
                 defaultValue={typedUserPieceMetadata?.notes || ""}
                 rows={8}
                 placeholder="Add your private notes for this tune"
-                className="w-full border p-3"
+                className={inputClassName}
               />
 
               <SubmitButton
                 label="Save notes"
                 pendingLabel="Saving..."
-                className="border px-4 py-2"
+                className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               />
             </form>
           </section>
@@ -158,17 +200,19 @@ export default async function PiecePage({ params }: PiecePageProps) {
             addPieceMediaLink={addPieceMediaLink}
           />
 
-          <section className="rounded border p-4">
-            <h2 className="mb-2 text-xl font-semibold">Sheet music / tab</h2>
+          <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Sheet music / tab
+            </h2>
 
-            <form action={addPieceSheetMusicLink} className="mb-6 space-y-3">
+            <form action={addPieceSheetMusicLink} className="mt-5 space-y-3">
               <input type="hidden" name="piece_id" value={pieceId} />
               <input type="hidden" name="redirect_to" value={redirectTo} />
 
               <input
                 name="label"
                 placeholder="Label, eg Mandolin tab"
-                className="w-full border p-2"
+                className={inputClassName}
                 required
               />
 
@@ -176,27 +220,32 @@ export default async function PiecePage({ params }: PiecePageProps) {
                 name="url"
                 type="url"
                 placeholder="https://..."
-                className="w-full border p-2"
+                className={inputClassName}
                 required
               />
 
               <SubmitButton
                 label="Add sheet music link"
                 pendingLabel="Adding..."
-                className="border px-4 py-2"
+                className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               />
             </form>
 
             {typedSheetMusicLinks.length > 0 ? (
-              <ul className="space-y-3">
+              <ul className="mt-6 space-y-3">
                 {typedSheetMusicLinks.map((link) => (
-                  <li key={link.id} className="border p-3">
-                    <p className="mb-1 text-sm text-gray-600">{link.label}</p>
+                  <li
+                    key={link.id}
+                    className="rounded-2xl border border-border bg-background/70 p-4"
+                  >
+                    <p className="text-sm font-medium text-foreground">
+                      {link.label}
+                    </p>
                     <a
                       href={link.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="break-all underline"
+                      className="mt-2 block break-all text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
                     >
                       {link.url}
                     </a>
@@ -204,29 +253,22 @@ export default async function PiecePage({ params }: PiecePageProps) {
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-700">No sheet music links yet.</p>
+              <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+                No sheet music links yet.
+              </p>
             )}
           </section>
-        </div>
+
+          <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <PieceCommentsSection
+              pieceId={pieceId}
+              comments={typedPieceComments}
+              profileMap={profileMap}
+              currentUserId={user.id}
+            />
+          </section>
+        </aside>
       </div>
-
-      <section className="mt-8">
-        <PieceLoreSection
-          pieceId={pieceId}
-          loreEntries={typedPieceLoreEntries}
-          profileMap={profileMap}
-          currentUserId={user.id}
-        />
-      </section>
-
-      <section className="mt-8 rounded border p-4">
-        <PieceCommentsSection
-          pieceId={pieceId}
-          comments={typedPieceComments}
-          profileMap={profileMap}
-          currentUserId={user.id}
-        />
-      </section>
     </main>
   )
 }

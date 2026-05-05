@@ -12,17 +12,23 @@ export default async function PublicListsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl p-6">
+    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
       <SharedListsHeader />
 
       {publicListsData.sharedLists.length === 0 ? (
         <SharedListsEmptyState />
       ) : (
-        <div className="space-y-4">
-          {publicListsData.sharedLists.map((list) => (
-            <SharedListCard key={list.id} list={list} />
-          ))}
-        </div>
+        <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Public lists
+          </h2>
+
+          <div className="mt-5 grid gap-4 xl:grid-cols-2">
+            {publicListsData.sharedLists.map((list) => (
+              <SharedListCard key={list.id} list={list} />
+            ))}
+          </div>
+        </section>
       )}
     </main>
   )

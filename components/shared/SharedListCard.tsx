@@ -7,40 +7,49 @@ type SharedListCardProps = {
 
 export default function SharedListCard({ list }: SharedListCardProps) {
   return (
-    <div className="rounded-lg border bg-white p-4 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h2 className="text-lg font-semibold">{list.name}</h2>
-
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
-            <span>By {list.ownerLabel}</span>
-            <span>
-              {list.tuneCount} tune{list.tuneCount === 1 ? "" : "s"}
-            </span>
+    <article className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:shadow-md">
+      <div className="flex h-full flex-col gap-5">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <h2 className="font-serif text-2xl font-bold leading-tight text-foreground">
+              {list.name}
+            </h2>
 
             {list.isOwnedByCurrentUser && (
-              <span className="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+              <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-muted-foreground">
                 Your public list
               </span>
             )}
           </div>
 
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium text-muted-foreground">
+            <span>By {list.ownerLabel}</span>
+            <span aria-hidden="true">•</span>
+            <span>
+              {list.tuneCount} tune{list.tuneCount === 1 ? "" : "s"}
+            </span>
+          </div>
+
           {list.description ? (
-            <p className="mt-3 text-sm text-gray-800">{list.description}</p>
+            <p className="mt-4 text-sm leading-6 text-foreground">
+              {list.description}
+            </p>
           ) : (
-            <p className="mt-3 text-sm text-gray-500">No description yet.</p>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">
+              No description yet.
+            </p>
           )}
         </div>
 
-        <div className="shrink-0">
+        <div>
           <PendingLinkButton
             href={`/public-lists/${list.id}`}
             label="Browse and import"
-            pendingLabel="Loading..."
-            className="inline-block rounded border px-3 py-2 text-sm font-medium"
+            pendingLabel="Opening..."
+            className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
         </div>
       </div>
-    </div>
+    </article>
   )
 }

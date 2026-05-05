@@ -21,6 +21,12 @@ type TuneDetailActionsProps = {
   addToLearningList: (formData: FormData) => Promise<void>
 }
 
+const primaryButtonClassName =
+  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+
+const secondaryButtonClassName =
+  "rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+
 export default function TuneDetailActions({
   piece,
   userPiece,
@@ -38,35 +44,59 @@ export default function TuneDetailActions({
     new Set((learningListItems ?? []).map((item) => item.learning_list_id))
   ).length
 
-  const buttonClassName = "w-full border px-3 py-2 text-sm"
-
   return (
-    <section className="rounded border p-4">
-      <h2 className="mb-4 text-xl font-semibold">Tune state</h2>
+    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        Tune state
+      </h2>
 
-      <div className="space-y-2 text-sm text-gray-700">
-        <p>In practice: {isAlreadyInPractice ? "Yes" : "No"}</p>
-        <p>Known: {isKnown ? "Yes" : "No"}</p>
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-border bg-background/70 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Practice
+          </p>
+          <p className="mt-2 text-lg font-semibold text-foreground">
+            {isAlreadyInPractice ? "In practice" : "Not in practice"}
+          </p>
+        </div>
 
-        {isAlreadyInPractice && currentStage ? (
-          <PracticeProgress stage={currentStage} className="pt-1" />
-        ) : null}
+        <div className="rounded-2xl border border-border bg-background/70 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Known
+          </p>
+          <p className="mt-2 text-lg font-semibold text-foreground">
+            {isKnown ? "Known" : "Not known"}
+          </p>
+        </div>
 
-        <p>Lists containing this tune: {existingListCount}</p>
+        <div className="rounded-2xl border border-border bg-background/70 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Lists
+          </p>
+          <p className="mt-2 text-lg font-semibold text-foreground">
+            {existingListCount}
+          </p>
+        </div>
       </div>
 
-      <div className="mt-5 space-y-2">
+      {isAlreadyInPractice && currentStage ? (
+        <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
+          <PracticeProgress stage={currentStage} />
+        </div>
+      ) : null}
+
+      <div className="mt-5 flex flex-wrap items-center gap-3">
         {!isAlreadyInPractice ? (
           <StartPracticeButton
             pieceId={piece.id}
             redirectTo={redirectTo}
             startLearning={startLearning}
-            className={buttonClassName}
+            className={primaryButtonClassName}
           />
         ) : (
-          <p className="border px-3 py-2 text-sm text-gray-600">
+          <span className="rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm">
             Already in practice
-          </p>
+          </span>
         )}
 
         {isAlreadyInPractice ? (
@@ -74,15 +104,17 @@ export default function TuneDetailActions({
             pieceId={piece.id}
             redirectTo={redirectTo}
             label="Set as known"
-            className={buttonClassName}
+            className={secondaryButtonClassName}
           />
         ) : isKnown ? (
-          <p className="border px-3 py-2 text-sm text-gray-600">Known</p>
+          <span className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm">
+            Known
+          </span>
         ) : (
           <MarkAsKnownButton
             pieceId={piece.id}
             redirectTo={redirectTo}
-            className={buttonClassName}
+            className={secondaryButtonClassName}
           />
         )}
 
@@ -92,14 +124,10 @@ export default function TuneDetailActions({
           learningListItems={learningListItems}
           redirectTo={redirectTo}
           addToLearningList={addToLearningList}
-          buttonClassName={buttonClassName}
+          buttonClassName={secondaryButtonClassName}
         />
 
-        <RemoveTuneButton
-          pieceId={piece.id}
-          redirectTo={redirectTo}
-          className={buttonClassName}
-        />
+        <RemoveTuneButton pieceId={piece.id} redirectTo={redirectTo} />
       </div>
     </section>
   )

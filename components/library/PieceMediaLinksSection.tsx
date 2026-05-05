@@ -21,6 +21,9 @@ type PieceMediaLinksSectionProps = {
   addPieceMediaLink: (formData: FormData) => Promise<void>
 }
 
+const inputClassName =
+  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+
 export default function PieceMediaLinksSection({
   pieceId,
   redirectTo,
@@ -32,9 +35,9 @@ export default function PieceMediaLinksSection({
   const [openMediaId, setOpenMediaId] = useState<number | null>(null)
 
   return (
-    <section className="rounded border p-4">
+    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
       {referenceUrl ? (
-        <div className="mb-8">
+        <div className="mb-6 overflow-hidden rounded-2xl border border-border bg-background/70 p-4">
           <ReferenceMediaEmbed
             referenceUrl={referenceUrl}
             title={referenceTitle}
@@ -42,16 +45,18 @@ export default function PieceMediaLinksSection({
         </div>
       ) : null}
 
-      <h2 className="mb-2 text-xl font-semibold">Media</h2>
+      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        Media
+      </h2>
 
-      <form action={addPieceMediaLink} className="mb-6 space-y-3">
+      <form action={addPieceMediaLink} className="mt-5 space-y-3">
         <input type="hidden" name="piece_id" value={pieceId} />
         <input type="hidden" name="redirect_to" value={redirectTo} />
 
         <input
           name="label"
           placeholder="Label, eg Session video"
-          className="w-full border p-2"
+          className={inputClassName}
           required
         />
 
@@ -59,27 +64,30 @@ export default function PieceMediaLinksSection({
           name="url"
           type="url"
           placeholder="https://..."
-          className="w-full border p-2"
+          className={inputClassName}
           required
         />
 
         <SubmitButton
           label="Add media link"
           pendingLabel="Adding..."
-          className="border px-4 py-2"
+          className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
         />
       </form>
 
       {mediaLinks.length > 0 ? (
-        <ul className="space-y-3">
+        <ul className="mt-6 space-y-3">
           {mediaLinks.map((link) => {
             const embedUrl = getYouTubeEmbedUrl(link.url)
             const isOpen = openMediaId === link.id
 
             return (
-              <li key={link.id} className="border p-3">
+              <li
+                key={link.id}
+                className="rounded-2xl border border-border bg-background/70 p-4"
+              >
                 <div className="space-y-3">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm font-medium text-foreground">
                     {link.label || "Untitled media link"}
                   </p>
 
@@ -92,7 +100,7 @@ export default function PieceMediaLinksSection({
                             current === link.id ? null : link.id
                           )
                         }
-                        className="underline"
+                        className="font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
                       >
                         {isOpen ? "Hide inline media" : "Watch inline"}
                       </button>
@@ -102,14 +110,14 @@ export default function PieceMediaLinksSection({
                       href={link.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="underline"
+                      className="font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
                     >
                       Open in new tab
                     </a>
                   </div>
 
                   {embedUrl && isOpen ? (
-                    <div className="aspect-video w-full overflow-hidden rounded border">
+                    <div className="aspect-video w-full overflow-hidden rounded-2xl border border-border">
                       <iframe
                         src={embedUrl}
                         title={`${link.label || "Media"} player`}
@@ -126,7 +134,9 @@ export default function PieceMediaLinksSection({
           })}
         </ul>
       ) : (
-        <p className="text-gray-700">No media links yet.</p>
+        <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+          No media links yet.
+        </p>
       )}
     </section>
   )
