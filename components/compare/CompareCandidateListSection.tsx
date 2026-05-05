@@ -1,13 +1,8 @@
-import Link from "next/link"
 import SubmitButton from "@/components/SubmitButton"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import { sendFriendRequest } from "@/lib/actions/friends"
 import type { ProfileSearchRow, RankedProfileMatch } from "@/lib/profile-search"
-import {
-  buildCompareHref,
-  removeUserOnce,
-  renderProfileLink,
-} from "@/lib/compare-page"
+import { buildCompareHref, removeUserOnce } from "@/lib/compare-page"
 
 type CompareCandidateProfile = ProfileSearchRow | RankedProfileMatch
 
@@ -18,6 +13,10 @@ type CompareCandidateListSectionProps = {
   primarySearchValue: string
   filterPreservedUsers: string[]
   redirectTo: string
+}
+
+function getCandidateDisplayName(profile: CompareCandidateProfile) {
+  return profile.display_name || profile.username || "Unnamed player"
 }
 
 export default function CompareCandidateListSection({
@@ -33,51 +32,41 @@ export default function CompareCandidateListSection({
   }
 
   return (
-    <section className="mb-8 rounded border p-4">
-      <h2 className="text-xl font-semibold">{title}</h2>
-      <p className="mt-1 text-sm text-gray-600">{description}</p>
+    <section className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        {title}
+      </h2>
 
-      <div className="mt-4 space-y-3">
+      <p className="mt-3 text-sm text-muted-foreground md:text-base">
+        {description}
+      </p>
+
+      <div className="mt-5 space-y-3">
         {profiles.map((profile) => {
           const nextUsers = [
             ...removeUserOnce(filterPreservedUsers, primarySearchValue),
             profile.username ?? "",
           ].filter(Boolean)
 
-          const label = profile.display_name || profile.username || "Unnamed user"
-
           return (
             <div
               key={profile.id}
-              className="flex items-center justify-between rounded border p-3"
+              className="flex flex-col gap-4 rounded-2xl border border-border bg-background/70 p-4 shadow-sm md:flex-row md:items-center md:justify-between"
             >
-              <div>
-                <p className="font-medium">
-                  {renderProfileLink(profile.username, label)}
-                </p>
+              <p className="text-base font-semibold text-foreground">
+                {getCandidateDisplayName(profile)}
+              </p>
 
-                {profile.username && (
-                  <p className="text-sm text-gray-600">
-                    <Link
-                      href={`/users/${profile.username}`}
-                      className="underline hover:no-underline"
-                    >
-                      @{profile.username}
-                    </Link>
-                  </p>
-                )}
-              </div>
-
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {profile.username ? (
                   <PendingLinkButton
                     href={buildCompareHref(nextUsers)}
                     label="Add to compare"
                     pendingLabel="Loading..."
-                    className="rounded bg-black px-3 py-2 text-sm text-white"
+                    className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                   />
                 ) : (
-                  <span className="text-sm text-gray-500">
+                  <span className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm text-muted-foreground">
                     No username available
                   </span>
                 )}
@@ -88,7 +77,7 @@ export default function CompareCandidateListSection({
                   <SubmitButton
                     label="Send request"
                     pendingLabel="Sending..."
-                    className="rounded border px-3 py-2 text-sm"
+                    className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                   />
                 </form>
               </div>

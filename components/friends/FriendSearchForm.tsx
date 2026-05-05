@@ -29,18 +29,20 @@ export default function FriendSearchForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4 flex gap-3">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:flex-row">
       <input
         name="q"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder="Search by name or username"
-        className="w-full rounded border p-2"
+        className="w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        aria-busy={isPending}
       />
+
       <button
         type="submit"
         disabled={isPending}
-        className="rounded bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isPending ? "Searching..." : "Search"}
       </button>

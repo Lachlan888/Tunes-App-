@@ -27,7 +27,7 @@ export default function LogoutButton() {
       type="button"
       disabled={isPending}
       onClick={handleLogout}
-      className="underline disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-full border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
     >
       {isPending ? "Logging out..." : "Logout"}
     </button>

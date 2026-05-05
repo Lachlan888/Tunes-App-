@@ -50,39 +50,45 @@ export default function LibraryResultsHeader({
   selectedTimeSignatures,
 }: LibraryResultsHeaderProps) {
   return (
-    <>
-      <h2 className="mb-4 text-2xl font-semibold">All tunes</h2>
-
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-gray-600">
+    <section className="mb-5 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Catalogue
+        </p>
+        <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
+          All tunes
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
           Showing {filteredCount} tune{filteredCount === 1 ? "" : "s"}
         </p>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {([20, 50, 100, "all"] as const).map((countOption) => {
-            const isActive = visibleCount === countOption
-            const href = buildLibraryHref({
-              searchQuery,
-              selectedKeys,
-              selectedStyles,
-              selectedTimeSignatures,
-              visibleCount: countOption,
-            })
-
-            return (
-              <a
-                key={String(countOption)}
-                href={href}
-                className={`rounded border px-3 py-1 text-sm ${
-                  isActive ? "bg-black text-white" : "bg-white text-black"
-                }`}
-              >
-                {countOption === "all" ? "All" : countOption}
-              </a>
-            )
-          })}
-        </div>
       </div>
-    </>
+
+      <div className="flex flex-wrap items-center gap-2">
+        {([20, 50, 100, "all"] as const).map((countOption) => {
+          const isActive = visibleCount === countOption
+          const href = buildLibraryHref({
+            searchQuery,
+            selectedKeys,
+            selectedStyles,
+            selectedTimeSignatures,
+            visibleCount: countOption,
+          })
+
+          return (
+            <a
+              key={String(countOption)}
+              href={href}
+              className={`rounded-full border px-4 py-2 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] ${
+                isActive
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              {countOption === "all" ? "All" : countOption}
+            </a>
+          )
+        })}
+      </div>
+    </section>
   )
 }

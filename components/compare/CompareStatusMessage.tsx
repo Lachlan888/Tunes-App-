@@ -7,18 +7,18 @@ type CompareStatusMessageProps = {
 
 function getClasses(tone: CompareStatusTone) {
   if (tone === "success") {
-    return "mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800"
+    return "mb-6 rounded-2xl border border-success bg-[#e6edd6] p-4 text-sm font-medium text-[#435336] shadow-sm"
   }
 
   if (tone === "warning") {
-    return "mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800"
+    return "mb-6 rounded-2xl border border-[#c5ad67] bg-[#f1e7bf] p-4 text-sm font-medium text-[#675622] shadow-sm"
   }
 
   if (tone === "error") {
-    return "mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800"
+    return "mb-6 rounded-2xl border border-destructive bg-[#f2dfd6] p-4 text-sm font-medium text-[#6f3f36] shadow-sm"
   }
 
-  return "mb-6 rounded border border-gray-400 bg-gray-50 p-3 text-sm text-gray-800"
+  return "mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-muted-foreground shadow-sm"
 }
 
 export default function CompareStatusMessage({

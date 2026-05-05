@@ -18,6 +18,18 @@ type EditListModalProps = {
   triggerLabel?: string
 }
 
+const primaryButtonClass =
+  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
+const secondaryButtonClass =
+  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
+const destructiveButtonClass =
+  "rounded-full border border-destructive bg-transparent px-4 py-2 text-sm font-medium text-destructive shadow-sm transition hover:-translate-y-0.5 hover:bg-[#f2dfd6] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
+const inputClass =
+  "w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
 export default function EditListModal({
   listId,
   name,
@@ -40,11 +52,7 @@ export default function EditListModal({
 
   if (!isOpen) {
     return (
-      <button
-        type="button"
-        className="cursor-pointer rounded border px-3 py-1 text-sm"
-        onClick={() => setIsOpen(true)}
-      >
+      <button type="button" className={secondaryButtonClass} onClick={() => setIsOpen(true)}>
         {triggerLabel}
       </button>
     )
@@ -52,18 +60,26 @@ export default function EditListModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#20271c]/55 p-4"
       onClick={closeModal}
     >
       <div
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded bg-white p-6 shadow-lg"
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-lg"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Manage List</h2>
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Lists
+            </p>
+            <h2 className="mt-2 font-serif text-3xl font-bold text-foreground">
+              Manage List
+            </h2>
+          </div>
+
           <button
             type="button"
-            className="cursor-pointer rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            className={secondaryButtonClass}
             onClick={closeModal}
             disabled={isBusy}
           >
@@ -73,50 +89,52 @@ export default function EditListModal({
 
         <div className="space-y-8">
           <section>
-            <h3 className="mb-3 text-lg font-semibold">List details</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              List details
+            </h3>
 
             <form
               action={async (formData: FormData) => {
                 setIsBusy(true)
                 await updateList(formData)
               }}
-              className="space-y-3"
+              className="mt-4 space-y-4"
             >
               <input type="hidden" name="learning_list_id" value={listId} />
               <input type="hidden" name="redirect_to" value={redirectTo} />
 
               <div>
-                <label className="mb-1 block text-sm font-medium">Name</label>
+                <label className="mb-2 block text-sm font-medium">Name</label>
                 <input
                   name="name"
                   defaultValue={name}
-                  className="w-full rounded border p-2"
+                  className={inputClass}
                   required
                   disabled={isBusy}
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium">
+                <label className="mb-2 block text-sm font-medium">
                   Description
                 </label>
                 <textarea
                   name="description"
                   defaultValue={description ?? ""}
-                  className="w-full rounded border p-2"
+                  className={inputClass}
                   rows={3}
                   disabled={isBusy}
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium">
+                <label className="mb-2 block text-sm font-medium">
                   Visibility
                 </label>
                 <select
                   name="visibility"
                   defaultValue={visibility}
-                  className="w-full rounded border p-2"
+                  className={inputClass}
                   disabled={isBusy}
                 >
                   <option value="private">Private</option>
@@ -127,22 +145,26 @@ export default function EditListModal({
               <SubmitButton
                 label="Save List Details"
                 pendingLabel="Saving..."
-                className="rounded bg-black px-4 py-2 text-sm text-white"
+                className={primaryButtonClass}
               />
             </form>
           </section>
 
           <section>
-            <h3 className="mb-3 text-lg font-semibold">Tunes in this list</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Tunes in this list
+            </h3>
 
             {tunes.length === 0 ? (
-              <p className="text-sm text-gray-600">This list has no tunes.</p>
+              <p className="mt-4 text-sm text-muted-foreground">
+                This list has no tunes.
+              </p>
             ) : (
-              <div className="space-y-2">
+              <div className="mt-4 space-y-2">
                 {tunes.map((tune) => (
                   <div
                     key={tune.id}
-                    className="flex items-center justify-between gap-3 rounded border p-3"
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background/70 p-4"
                   >
                     <div className="min-w-0 text-sm">
                       <PendingLinkButton
@@ -151,7 +173,7 @@ export default function EditListModal({
                         pendingLabel={`Opening ${tune.title}...`}
                         className="cursor-pointer text-left font-medium underline underline-offset-4"
                       />
-                      <div className="text-gray-600">
+                      <div className="mt-1 text-muted-foreground">
                         {[
                           tune.key ? `Key ${tune.key}` : null,
                           tune.style,
@@ -182,7 +204,7 @@ export default function EditListModal({
                       <SubmitButton
                         label="Remove from List"
                         pendingLabel="Removing..."
-                        className="rounded border px-3 py-1 text-sm"
+                        className={secondaryButtonClass}
                       />
                     </form>
                   </div>
@@ -191,10 +213,14 @@ export default function EditListModal({
             )}
           </section>
 
-          <section>
-            <h3 className="mb-3 text-lg font-semibold text-red-700">
+          <section className="rounded-2xl border border-destructive bg-[#f2dfd6] p-4">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#6f3f36]">
               Danger zone
             </h3>
+            <p className="mt-2 text-sm leading-6 text-[#6f3f36]">
+              Delete this list container. This will not delete the tunes from
+              your app.
+            </p>
 
             <form
               action={async (formData: FormData) => {
@@ -207,13 +233,14 @@ export default function EditListModal({
                 setIsBusy(true)
                 await deleteList(formData)
               }}
+              className="mt-4"
             >
               <input type="hidden" name="learning_list_id" value={listId} />
               <input type="hidden" name="redirect_to" value="/learning-lists" />
               <SubmitButton
                 label="Delete List"
                 pendingLabel="Deleting..."
-                className="rounded border border-red-600 px-3 py-1 text-sm text-red-700"
+                className={destructiveButtonClass}
               />
             </form>
           </section>

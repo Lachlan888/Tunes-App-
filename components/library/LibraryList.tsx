@@ -27,6 +27,18 @@ type LibraryListProps = {
   hasActiveFilters: boolean
 }
 
+const primaryButtonClass =
+  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
+const secondaryButtonClass =
+  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
+const destructiveButtonClass =
+  "rounded-full border border-destructive bg-transparent px-4 py-2 text-sm font-medium text-destructive shadow-sm transition hover:-translate-y-0.5 hover:bg-[#f2dfd6] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
+const statePillClass =
+  "rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground"
+
 export default function LibraryList({
   pieces,
   userPieces,
@@ -92,7 +104,7 @@ export default function LibraryList({
                 listNames={listNames}
               >
                 {isAlreadyInPractice ? (
-                  <p className="text-sm text-gray-600">Already in practice</p>
+                  <p className={statePillClass}>Already in practice</p>
                 ) : (
                   <form action={startLearning}>
                     <input type="hidden" name="piece_id" value={piece.id} />
@@ -100,13 +112,13 @@ export default function LibraryList({
                     <SubmitButton
                       label="Start Practice"
                       pendingLabel="Starting..."
-                      className="bg-black px-3 py-1 text-sm text-white"
+                      className={primaryButtonClass}
                     />
                   </form>
                 )}
 
                 {isKnown ? (
-                  <p className="text-sm text-gray-600">Known</p>
+                  <p className={statePillClass}>Known</p>
                 ) : (
                   <form action={markAsKnown}>
                     <input type="hidden" name="piece_id" value={piece.id} />
@@ -120,14 +132,14 @@ export default function LibraryList({
                         isAlreadyInPractice ? "Set as known" : "Mark as known"
                       }
                       pendingLabel="Saving..."
-                      className="border px-3 py-1 text-sm"
+                      className={secondaryButtonClass}
                     />
                   </form>
                 )}
 
                 <button
                   type="button"
-                  className="border px-3 py-1 text-sm"
+                  className={secondaryButtonClass}
                   onClick={() => {
                     setSelectedPiece(piece)
                     setSelectedListId("")
@@ -153,7 +165,7 @@ export default function LibraryList({
                   <SubmitButton
                     label="Remove Tune"
                     pendingLabel="Removing..."
-                    className="border px-3 py-1 text-sm"
+                    className={destructiveButtonClass}
                   />
                 </form>
               </TuneCard>

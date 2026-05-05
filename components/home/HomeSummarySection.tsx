@@ -21,29 +21,137 @@ type HomeSummarySectionProps = {
   streakSummary: StreakSummary
 }
 
+type StatCardTone = "success" | "practice" | "due" | "warning" | "neutral"
+
 type OverviewCardProps = {
   href: string
   label: string
   value: number
   helper: string
+  tone?: StatCardTone
 }
 
-function OverviewCard({ href, label, value, helper }: OverviewCardProps) {
+function getToneClasses(tone: StatCardTone = "neutral") {
+  switch (tone) {
+    case "success":
+      return "border-l-success"
+    case "practice":
+      return "border-l-primary"
+    case "due":
+      return "border-l-accent"
+    case "warning":
+      return "border-l-warning-strong"
+    case "neutral":
+    default:
+      return "border-l-border"
+  }
+}
+
+function OverviewCard({
+  href,
+  label,
+  value,
+  helper,
+  tone = "neutral",
+}: OverviewCardProps) {
   return (
     <Link
       href={href}
-      className="group block rounded-lg border p-4 transition hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black/10"
+      className={`group block rounded-2xl border border-border border-l-8 bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-card-strong hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] ${getToneClasses(
+        tone
+      )}`}
+    >
+      <div className="flex h-full flex-col justify-between gap-5">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            {label}
+          </p>
+          <p className="mt-3 font-serif text-5xl font-bold leading-none text-foreground">
+            {value}
+          </p>
+        </div>
+
+        <div className="flex items-end justify-between gap-3">
+          <p className="max-w-52 text-sm text-muted-foreground">{helper}</p>
+          <span
+            aria-hidden="true"
+            className="text-lg text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground"
+          >
+            →
+          </span>
+        </div>
+      </div>
+    </Link>
+  )
+}
+
+type PreviewPanelProps = {
+  title: string
+  href: string
+  linkLabel: string
+  children: React.ReactNode
+}
+
+function PreviewPanel({
+  title,
+  href,
+  linkLabel,
+  children,
+}: PreviewPanelProps) {
+  return (
+    <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            {title}
+          </p>
+        </div>
+
+        <Link
+          href={href}
+          className="rounded-full border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        >
+          {linkLabel}
+        </Link>
+      </div>
+
+      {children}
+    </section>
+  )
+}
+
+function EmptyPreview({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="rounded-xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+      {children}
+    </p>
+  )
+}
+
+function PreviewLink({
+  href,
+  title,
+  meta,
+}: {
+  href: string
+  title: string
+  meta?: string
+}) {
+  return (
+    <Link
+      href={href}
+      className="group block rounded-xl border border-border bg-background/70 p-4 transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-gray-600">{label}</p>
-          <p className="mt-1 text-3xl font-bold">{value}</p>
-          <p className="mt-2 text-sm text-gray-600">{helper}</p>
+          <p className="font-semibold underline-offset-4 group-hover:underline">
+            {title}
+          </p>
+          {meta && <p className="mt-1 text-sm text-muted-foreground">{meta}</p>}
         </div>
-
         <span
           aria-hidden="true"
-          className="text-sm text-gray-400 transition group-hover:text-gray-600"
+          className="text-sm text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground"
         >
           →
         </span>
@@ -86,187 +194,121 @@ export default function HomeSummarySection({
 
   return (
     <section className="space-y-8">
+      <section>
+        <div className="mb-4">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Repertoire state
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <OverviewCard
+            href="/library/known"
+            label="Known"
+            value={totalKnown}
+            helper="Tunes already in your hands."
+            tone="success"
+          />
+
+          <OverviewCard
+            href="/library/practice"
+            label="Practice"
+            value={totalInPractice}
+            helper="Tunes inside the review system."
+            tone="practice"
+          />
+
+          <OverviewCard
+            href="/review#due-today"
+            label="Due today"
+            value={dueTodayCount}
+            helper="Scheduled reviews for today."
+            tone="due"
+          />
+
+          <OverviewCard
+            href="/review?mode=catch-up#catch-up"
+            label="Attention"
+            value={needsAttentionCount}
+            helper="Overdue tunes waiting for catch-up."
+            tone="warning"
+          />
+
+          <OverviewCard
+            href="/learning-lists"
+            label="Lists"
+            value={totalLists}
+            helper="Collections, plans, and repertoire shelves."
+            tone="neutral"
+          />
+        </div>
+      </section>
+
       <StreakSummarySection streakSummary={streakSummary} />
 
-      <section>
-        <h2 className="mb-4 text-2xl font-semibold">Overview</h2>
-
-        <div className="grid gap-4 lg:grid-cols-3">
-          <section className="rounded-lg border p-4">
-            <h3 className="mb-3 text-lg font-semibold">Your repertoire</h3>
-
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-              <OverviewCard
-                href="/library/known"
-                label="Known tunes"
-                value={totalKnown}
-                helper="Tunes you have marked as already known."
-              />
-
-              <OverviewCard
-                href="/library/practice"
-                label="In practice"
-                value={totalInPractice}
-                helper="Tunes currently in your review system."
-              />
-            </div>
-          </section>
-
-          <section className="rounded-lg border p-4">
-            <h3 className="mb-3 text-lg font-semibold">Practice status</h3>
-
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-              <OverviewCard
-                href="/review#due-today"
-                label="Due today"
-                value={dueTodayCount}
-                helper="Reviews scheduled for today."
-              />
-
-              <OverviewCard
-                href="/review?mode=catch-up#catch-up"
-                label="Needs attention"
-                value={needsAttentionCount}
-                helper="Overdue tunes waiting for catch-up."
-              />
-            </div>
-          </section>
-
-          <section className="rounded-lg border p-4">
-            <h3 className="mb-3 text-lg font-semibold">Organisation</h3>
-
-            <OverviewCard
-              href="/learning-lists"
-              label="Lists"
-              value={totalLists}
-              helper="Your tune collections and planning lists."
-            />
-          </section>
-        </div>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-lg border p-4">
-          <div className="mb-3 flex items-center justify-between gap-4">
-            <h3 className="text-lg font-semibold">Due next</h3>
-            <Link href="/review#due-today" className="text-sm underline">
-              View all
-            </Link>
-          </div>
-
+      <section className="grid gap-4 xl:grid-cols-2">
+        <PreviewPanel title="Due next" href="/review#due-today" linkLabel="View all">
           {dueTodayPreview.length === 0 ? (
-            <p className="text-sm text-gray-600">Nothing due today.</p>
+            <EmptyPreview>Nothing due today.</EmptyPreview>
           ) : (
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {dueTodayPreview.map((userPiece) => (
                 <li key={userPiece.id}>
-                  <Link
+                  <PreviewLink
                     href={`/library/${userPiece.piece_id}`}
-                    className="group block rounded border p-3 transition hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black/10"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium underline-offset-4 group-hover:underline">
-                          {pieceTitleById.get(userPiece.piece_id) ??
-                            "Untitled tune"}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Stage {userPiece.stage ?? 1}
-                        </p>
-                      </div>
-                      <span
-                        aria-hidden="true"
-                        className="text-sm text-gray-400 transition group-hover:text-gray-600"
-                      >
-                        →
-                      </span>
-                    </div>
-                  </Link>
+                    title={
+                      pieceTitleById.get(userPiece.piece_id) ?? "Untitled tune"
+                    }
+                    meta={`Stage ${userPiece.stage ?? 1}`}
+                  />
                 </li>
               ))}
             </ul>
           )}
-        </div>
+        </PreviewPanel>
 
-        <div className="rounded-lg border p-4">
-          <div className="mb-3 flex items-center justify-between gap-4">
-            <h3 className="text-lg font-semibold">Currently in practice</h3>
-            <Link href="/library/practice" className="text-sm underline">
-              View all
-            </Link>
-          </div>
-
+        <PreviewPanel
+          title="Currently in practice"
+          href="/library/practice"
+          linkLabel="View all"
+        >
           {inPracticePreview.length === 0 ? (
-            <p className="text-sm text-gray-600">No tunes in practice yet.</p>
+            <EmptyPreview>No tunes in practice yet.</EmptyPreview>
           ) : (
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {inPracticePreview.map((userPiece) => (
                 <li key={userPiece.id}>
-                  <Link
+                  <PreviewLink
                     href={`/library/${userPiece.piece_id}`}
-                    className="group block rounded border p-3 transition hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black/10"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium underline-offset-4 group-hover:underline">
-                          {pieceTitleById.get(userPiece.piece_id) ??
-                            "Untitled tune"}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Stage {userPiece.stage ?? 1}
-                        </p>
-                      </div>
-                      <span
-                        aria-hidden="true"
-                        className="text-sm text-gray-400 transition group-hover:text-gray-600"
-                      >
-                        →
-                      </span>
-                    </div>
-                  </Link>
+                    title={
+                      pieceTitleById.get(userPiece.piece_id) ?? "Untitled tune"
+                    }
+                    meta={`Stage ${userPiece.stage ?? 1}`}
+                  />
                 </li>
               ))}
             </ul>
           )}
-        </div>
+        </PreviewPanel>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
-        <section className="rounded-lg border p-4">
-          <div className="mb-3 flex items-center justify-between gap-4">
-            <h3 className="text-lg font-semibold">Your lists</h3>
-            <Link href="/learning-lists" className="text-sm underline">
-              View all
-            </Link>
-          </div>
-
+      <section className="grid gap-4 xl:grid-cols-2">
+        <PreviewPanel title="Your lists" href="/learning-lists" linkLabel="View all">
           {listPreview.length === 0 ? (
-            <p className="text-sm text-gray-600">No lists yet.</p>
+            <EmptyPreview>No lists yet.</EmptyPreview>
           ) : (
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {listPreview.map((learningList) => (
                 <li key={learningList.id}>
-                  <Link
+                  <PreviewLink
                     href={`/learning-lists/${learningList.id}`}
-                    className="group block rounded border p-3 transition hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black/10"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="font-medium underline-offset-4 group-hover:underline">
-                        {learningList.name}
-                      </p>
-                      <span
-                        aria-hidden="true"
-                        className="text-sm text-gray-400 transition group-hover:text-gray-600"
-                      >
-                        →
-                      </span>
-                    </div>
-                  </Link>
+                    title={learningList.name}
+                  />
                 </li>
               ))}
             </ul>
           )}
-        </section>
+        </PreviewPanel>
 
         <HomeFriendsActivityBox items={recentFriendActivity} />
       </section>

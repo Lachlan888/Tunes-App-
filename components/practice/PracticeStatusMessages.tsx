@@ -11,13 +11,15 @@ function StatusBox({
   children: React.ReactNode
 }) {
   const classes = {
-    success: "border-green-600 bg-green-50 text-green-800",
-    warning: "border-yellow-600 bg-yellow-50 text-yellow-800",
-    error: "border-red-600 bg-red-50 text-red-800",
+    success: "border-[#9dad7a] bg-[#e6edd6] text-[#435336]",
+    warning: "border-[#c5ad67] bg-[#f1e7bf] text-[#675622]",
+    error: "border-[#b98576] bg-[#f2dfd6] text-[#6f3f36]",
   }
 
   return (
-    <div className={`mb-6 mt-4 rounded border p-3 text-sm ${classes[tone]}`}>
+    <div
+      className={`mb-6 mt-4 rounded-xl border p-3 text-sm font-medium ${classes[tone]}`}
+    >
       {children}
     </div>
   )

@@ -22,51 +22,63 @@ function formatDueDate(dateValue: string | null) {
   })
 }
 
+const reviewButtonBase =
+  "rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+
 export default function PracticeReviewCard({
   userPiece,
   redirectTo,
   badgeLabel,
   badgeClassName,
 }: PracticeReviewCardProps) {
-  return (
-    <div className="rounded-lg border p-6">
-      <div className="flex items-start justify-between gap-4">
-        <h2 className="text-2xl font-semibold">
-          {userPiece.piece ? (
-            <Link
-              href={`/library/${userPiece.piece.id}`}
-              className="hover:underline"
-            >
-              {userPiece.piece.title}
-            </Link>
-          ) : (
-            "Untitled piece"
-          )}
-        </h2>
+  const title = userPiece.piece?.title ?? "Untitled piece"
 
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${badgeClassName}`}>
+  return (
+    <article className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:bg-muted/70">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <h2 className="font-serif text-3xl font-bold leading-tight tracking-tight text-foreground">
+            {userPiece.piece ? (
+              <Link
+                href={`/library/${userPiece.piece.id}`}
+                className="decoration-primary decoration-2 underline-offset-4 hover:underline"
+              >
+                {title}
+              </Link>
+            ) : (
+              title
+            )}
+          </h2>
+
+          <p className="mt-3 text-sm font-medium leading-6 text-muted-foreground">
+            Key: {userPiece.piece?.key ?? "Unknown"}{" "}
+            <span aria-hidden="true">|</span> Style:{" "}
+            {userPiece.piece?.style ?? "Unknown"}{" "}
+            <span aria-hidden="true">|</span> Time:{" "}
+            {userPiece.piece?.time_signature ?? "Unknown"}{" "}
+            <span aria-hidden="true">|</span> Due:{" "}
+            {formatDueDate(userPiece.next_review_due)}
+          </p>
+        </div>
+
+        <span
+          className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${badgeClassName}`}
+        >
           {badgeLabel}
         </span>
       </div>
 
-      <p className="mt-2 text-sm text-gray-600">
-        Key: {userPiece.piece?.key ?? "Unknown"} | Style:{" "}
-        {userPiece.piece?.style ?? "Unknown"} | Time:{" "}
-        {userPiece.piece?.time_signature ?? "Unknown"}
-      </p>
-
       {userPiece.piece?.reference_url && userPiece.piece?.title && (
-        <ReferenceMediaLink
-          referenceUrl={userPiece.piece.reference_url}
-          title={userPiece.piece.title}
-        />
+        <div className="mt-4 w-full">
+          <ReferenceMediaLink
+            referenceUrl={userPiece.piece.reference_url}
+            title={userPiece.piece.title}
+            className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+          />
+        </div>
       )}
 
-      <p className="mt-2 text-sm text-gray-600">
-        Due: {formatDueDate(userPiece.next_review_due)}
-      </p>
-
-      <PracticeProgress stage={userPiece.stage} className="mt-3" />
+      <PracticeProgress stage={userPiece.stage} className="mt-5" />
 
       <div className="mt-6 flex flex-wrap gap-3">
         <form action={markFailed}>
@@ -75,7 +87,7 @@ export default function PracticeReviewCard({
           <SubmitButton
             label="Rough"
             pendingLabel="Saving..."
-            className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+            className={`${reviewButtonBase} border-[#b98576] bg-[#f2dfd6] text-[#6f3f36] hover:bg-[#ead0c5]`}
           />
         </form>
 
@@ -85,7 +97,7 @@ export default function PracticeReviewCard({
           <SubmitButton
             label="Shaky"
             pendingLabel="Saving..."
-            className="rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-600"
+            className={`${reviewButtonBase} border-[#c5ad67] bg-[#f1e7bf] text-[#675622] hover:bg-[#e8dca9]`}
           />
         </form>
 
@@ -95,16 +107,16 @@ export default function PracticeReviewCard({
           <SubmitButton
             label="Solid"
             pendingLabel="Saving..."
-            className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+            className={`${reviewButtonBase} border-[#7b8a50] bg-[#9aaa72] text-[#f8faef] hover:bg-[#8d9d64]`}
           />
         </form>
 
         <RemoveFromPracticeButton
           userPieceId={userPiece.id}
           redirectTo={redirectTo}
-          className="rounded-md border px-4 py-2 text-sm font-medium"
+          className="rounded-full border border-[#b8bcae] bg-[#d9ddd0] px-4 py-2 text-sm font-medium text-[#596056] shadow-sm transition hover:bg-[#cfd4c5] hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
         />
       </div>
-    </div>
+    </article>
   )
 }

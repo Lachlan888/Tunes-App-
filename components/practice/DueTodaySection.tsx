@@ -11,12 +11,16 @@ export default function DueTodaySection({
   redirectTo,
 }: DueTodaySectionProps) {
   return (
-    <section className="mt-8">
+    <section className="mt-8 rounded-2xl border border-[#b0bc8c] bg-[#e4ead8] p-5 shadow-sm">
+      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#596650]">
+        Due next
+      </h2>
+
       {dueTodayPieces.length === 0 ? (
-        <p className="text-gray-600">No tunes due today.</p>
+        <p className="mt-4 text-sm text-[#596650]">No tunes due today.</p>
       ) : (
         <>
-          <p className="mt-4 text-sm text-gray-600">
+          <p className="mt-4 text-sm text-[#596650]">
             {dueTodayPieces.length} tune
             {dueTodayPieces.length === 1 ? "" : "s"} due today
           </p>
@@ -28,7 +32,7 @@ export default function DueTodaySection({
                 userPiece={userPiece}
                 redirectTo={redirectTo}
                 badgeLabel="Due today"
-                badgeClassName="bg-blue-100 text-blue-700"
+                badgeClassName="bg-[#edf2e4] text-[#435336] border border-[#b0bc8c]"
               />
             ))}
           </div>

@@ -37,12 +37,24 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   }
 
   return (
-    <main className="p-8">
-      <h1 className="text-3xl font-bold">Practice</h1>
+    <main className="mx-auto max-w-[1500px] px-6 py-8 text-[#20271c]">
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <section className="rounded-3xl border border-[#b0bc8c] bg-[#e4ead8] p-6 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#596650]">
+            Practice
+          </p>
 
-      <div className="mt-8">
+          <h1 className="mt-2 font-serif text-4xl font-bold">
+            Review your tunes
+          </h1>
+
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-[#596650]">
+            Review tunes and rate recall.
+          </p>
+        </section>
+
         <StreakSummarySection streakSummary={streakSummary} />
-      </div>
+      </section>
 
       <PracticeStatusMessages
         practiceUpdate={practiceUpdate}

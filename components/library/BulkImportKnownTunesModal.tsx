@@ -5,6 +5,12 @@ import { useSearchParams } from "next/navigation"
 import SubmitButton from "@/components/SubmitButton"
 import { uploadKnownTunesCsv } from "@/lib/actions/bulk-import"
 
+const primaryButtonClass =
+  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
+const secondaryButtonClass =
+  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
 export default function BulkImportKnownTunesModal() {
   const searchParams = useSearchParams()
 
@@ -60,37 +66,43 @@ export default function BulkImportKnownTunesModal() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="rounded bg-black px-4 py-2 text-white"
+        className={secondaryButtonClass}
       >
         Bulk Import Known Tunes
       </button>
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4"
+          className="fixed inset-0 z-50 overflow-y-auto bg-[#20271c]/55 p-4"
           onClick={closeModal}
         >
           <div className="flex min-h-full items-start justify-center py-8">
             <div
-              className="w-full max-w-xl rounded-lg bg-white p-6 shadow-lg"
+              className="w-full max-w-xl rounded-3xl border border-border bg-card p-6 shadow-lg"
               onClick={(event) => event.stopPropagation()}
             >
-              <div className="mb-4 flex items-center justify-between gap-4">
-                <h2 className="text-2xl font-semibold">
-                  Bulk Import Known Tunes
-                </h2>
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Import
+                  </p>
+                  <h2 className="mt-2 font-serif text-3xl font-bold text-foreground">
+                    Bulk Import Known Tunes
+                  </h2>
+                </div>
+
                 <button
                   type="button"
                   onClick={closeModal}
                   disabled={isSubmitting}
-                  className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                  className={secondaryButtonClass}
                 >
                   Close
                 </button>
               </div>
 
               <div className="space-y-4">
-                <div className="space-y-2 text-sm text-gray-600">
+                <div className="space-y-2 text-sm leading-6 text-muted-foreground">
                   <p>
                     Upload a CSV of tunes you already know. We’ll add them to
                     your known tunes and place them in your Uploaded Tunes list.
@@ -102,9 +114,9 @@ export default function BulkImportKnownTunesModal() {
                   </p>
                 </div>
 
-                <div className="rounded border bg-gray-50 p-3 text-sm">
+                <div className="rounded-2xl border border-border bg-background/70 p-4 text-sm">
                   <p className="font-medium">CSV template</p>
-                  <p className="mt-1 text-gray-700">
+                  <p className="mt-1 text-muted-foreground">
                     Use these columns in this exact order: title, key, style,
                     time_signature, reference_url
                   </p>
@@ -116,7 +128,7 @@ export default function BulkImportKnownTunesModal() {
                     download
                     onClick={handleTemplateDownloadClick}
                     aria-disabled={isSubmitting}
-                    className={`rounded bg-black px-4 py-2 text-sm text-white ${
+                    className={`${primaryButtonClass} ${
                       isSubmitting ? "pointer-events-none opacity-50" : ""
                     }`}
                   >
@@ -157,7 +169,7 @@ export default function BulkImportKnownTunesModal() {
                     <label
                       htmlFor="csv_file"
                       aria-disabled={isSubmitting}
-                      className={`inline-block rounded bg-black px-4 py-2 text-sm text-white ${
+                      className={`inline-block ${secondaryButtonClass} ${
                         isSubmitting
                           ? "pointer-events-none opacity-50"
                           : "cursor-pointer"
@@ -168,7 +180,7 @@ export default function BulkImportKnownTunesModal() {
                   </div>
 
                   {selectedFileName && (
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Selected file: {selectedFileName}
                     </p>
                   )}
@@ -176,11 +188,11 @@ export default function BulkImportKnownTunesModal() {
                   <SubmitButton
                     label="Import Known Tunes"
                     pendingLabel="Importing tunes..."
-                    className="rounded border px-4 py-2 text-sm disabled:opacity-50"
+                    className={primaryButtonClass}
                   />
                 </form>
 
-                <p className="text-sm text-gray-500">
+                <p className="text-sm leading-6 text-muted-foreground">
                   We’ll check the file format, match existing tunes where
                   possible, create missing tunes, add them to your known tunes,
                   and place them in Uploaded Tunes.

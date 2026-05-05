@@ -48,14 +48,14 @@ export default function CreateTuneModal({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="rounded bg-black px-4 py-2 text-white"
+        className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
       >
         Create Tune
       </button>
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#20271c]/55 p-4"
           onClick={() => {
             if (!isSubmitting) {
               setIsOpen(false)
@@ -63,13 +63,18 @@ export default function CreateTuneModal({
           }}
         >
           <div
-            className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-lg"
+            className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-lg"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex shrink-0 items-start justify-between gap-4 border-b px-6 py-4">
+            <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border px-6 py-5">
               <div>
-                <h2 className="text-2xl font-semibold">Create Tune</h2>
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  Catalogue
+                </p>
+                <h2 className="mt-2 font-serif text-3xl font-bold text-foreground">
+                  Create Tune
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                   Add a tune to the shared catalogue, then optionally place it
                   straight into your own repertoire workflow.
                 </p>
@@ -79,7 +84,7 @@ export default function CreateTuneModal({
                 type="button"
                 onClick={() => setIsOpen(false)}
                 disabled={isSubmitting}
-                className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Close
               </button>

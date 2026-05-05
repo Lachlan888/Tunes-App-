@@ -12,13 +12,13 @@ type CatchUpSectionProps = {
 function getStatusBadgeClasses(label: string | null) {
   switch (label) {
     case "Due now":
-      return "bg-amber-100 text-amber-800"
+      return "bg-[#f1e7bf] text-[#675622] border border-[#c5ad67]"
     case "Overdue":
-      return "bg-orange-100 text-orange-800"
+      return "bg-[#ead0c5] text-[#6f3f36] border border-[#b98576]"
     case "Overdue (longest)":
-      return "bg-rose-100 text-rose-800"
+      return "bg-[#e2c5bf] text-[#633833] border border-[#a8746d]"
     default:
-      return "bg-blue-100 text-blue-700"
+      return "bg-[#edf2e4] text-[#435336] border border-[#b0bc8c]"
   }
 }
 
@@ -29,19 +29,21 @@ export default function CatchUpSection({
   defaultOpen = false,
 }: CatchUpSectionProps) {
   return (
-    <section id="catch-up" className="mt-8 rounded-lg border p-4">
+    <section
+      id="catch-up"
+      className="mt-8 rounded-2xl border border-[#b0bc8c] bg-[#e4ead8] p-5 shadow-sm"
+    >
       <details open={defaultOpen}>
-        <summary className="cursor-pointer text-lg font-semibold">
+        <summary className="cursor-pointer text-sm font-semibold uppercase tracking-[0.16em] text-[#596650]">
           Catch up ({catchUpQueue.length})
         </summary>
 
-        <p className="mt-2 text-sm text-gray-600">
-          Work through overdue tunes in order, starting with the ones that have
-          waited longest.
+        <p className="mt-3 text-sm text-[#596650]">
+          Catch up on overdue tunes.
         </p>
 
         {catchUpQueue.length === 0 ? (
-          <p className="mt-4 text-sm text-gray-600">
+          <p className="mt-4 text-sm text-[#596650]">
             Nothing overdue right now.
           </p>
         ) : (
@@ -50,10 +52,10 @@ export default function CatchUpSection({
               {backlogSummary.map((group) => (
                 <li
                   key={group.tier}
-                  className="flex items-center justify-between rounded border px-3 py-2"
+                  className="flex items-center justify-between rounded-xl border border-[#b0bc8c] bg-[#f3f7ea]/70 px-3 py-2"
                 >
                   <span className="text-sm font-medium">{group.label}</span>
-                  <span className="text-sm text-gray-600">{group.count}</span>
+                  <span className="text-sm text-[#596650]">{group.count}</span>
                 </li>
               ))}
             </ul>
@@ -65,7 +67,9 @@ export default function CatchUpSection({
                   userPiece={userPiece}
                   redirectTo={redirectTo}
                   badgeLabel={userPiece.backlog_label ?? "Overdue"}
-                  badgeClassName={getStatusBadgeClasses(userPiece.backlog_label)}
+                  badgeClassName={getStatusBadgeClasses(
+                    userPiece.backlog_label,
+                  )}
                 />
               ))}
             </div>

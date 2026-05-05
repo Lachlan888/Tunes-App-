@@ -17,22 +17,28 @@ export default function ListOverviewCard({
   removeTuneFromList,
   deleteList,
 }: ListOverviewCardProps) {
+  const visibilityLabel = list.visibility === "public" ? "Public" : "Private"
+
   return (
-    <section className="rounded border p-4">
+    <section className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:bg-muted/70">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="text-xl font-semibold">{list.name}</h2>
+          <h2 className="font-serif text-2xl font-bold leading-tight text-foreground">
+            {list.name}
+          </h2>
 
           {list.description && (
-            <p className="mt-2 text-gray-600">{list.description}</p>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+              {list.description}
+            </p>
           )}
 
-          <div className="mt-3 flex flex-wrap items-center gap-3">
+          <div className="mt-4 flex flex-wrap items-center gap-3">
             <PendingLinkButton
               href={`/learning-lists/${list.id}`}
               label="View List"
               pendingLabel="Loading..."
-              className="text-sm underline"
+              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             />
 
             <EditListModal
@@ -50,29 +56,33 @@ export default function ListOverviewCard({
           </div>
 
           {list.stylesPresent.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {list.stylesPresent.map((style) => (
-                <span
-                  key={style}
-                  className="rounded-full border px-2 py-1 text-xs text-gray-700"
-                >
-                  {style}
-                </span>
-              ))}
+            <div className="mt-5">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Styles included
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                {list.stylesPresent.map((style) => (
+                  <span
+                    key={style}
+                    className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground"
+                  >
+                    {style}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
         </div>
 
-        <div className="shrink-0 text-right">
-          <div className="text-sm text-gray-500">
-            {list.visibility === "public" ? "Public" : "Private"}
+        <div className="shrink-0 text-right text-sm text-muted-foreground">
+          <div className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium">
+            {visibilityLabel}
           </div>
 
-          {list.is_imported && (
-            <div className="mt-1 text-sm text-gray-500">Imported</div>
-          )}
+          {list.is_imported && <div className="mt-2">Imported</div>}
 
-          <div className="mt-1 text-sm text-gray-500">
+          <div className="mt-2">
             {list.tuneCount} tune{list.tuneCount === 1 ? "" : "s"}
           </div>
         </div>

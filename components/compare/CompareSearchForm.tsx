@@ -48,24 +48,31 @@ export default function CompareSearchForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-8 rounded border p-4">
-      <label htmlFor="user" className="mb-2 block text-sm font-medium">
+    <form
+      onSubmit={handleSubmit}
+      className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm"
+    >
+      <label
+        htmlFor="user"
+        className="block text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground"
+      >
         Add user to compare
       </label>
 
-      <div className="flex gap-3">
+      <div className="mt-4 flex gap-3">
         <input
           id="user"
           name="user"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          className="w-full rounded border p-2"
+          className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
           placeholder="Search by username or display name"
         />
+
         <button
           type="submit"
           disabled={isPending}
-          className="rounded bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isPending ? "Adding..." : "Add"}
         </button>

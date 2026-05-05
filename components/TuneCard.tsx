@@ -44,38 +44,51 @@ export default function TuneCard({
     piece_styles: pieceStyles ?? null,
   })
 
-  const styleText = styleLabels.length > 0 ? styleLabels.join(", ") : null
+  const metadataParts = [
+    keyValue ? `Key: ${keyValue}` : null,
+    styleLabels.length > 0 ? `Style: ${styleLabels.join(", ")}` : null,
+    timeSignature ? `Time: ${timeSignature}` : null,
+  ].filter(Boolean)
 
   return (
-    <div className="rounded border p-3">
-      <div>
-        <PendingLinkButton
-          href={`/library/${id}`}
-          label={title}
-          pendingLabel="Loading..."
-          className="inline underline"
-        />
-        {keyValue ? `, key ${keyValue}` : ""}
-        {styleText ? `, ${styleText}` : ""}
-        {timeSignature ? `, ${timeSignature}` : ""}
+    <article className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:bg-muted/70">
+      <div className="min-w-0">
+        <h3 className="font-serif text-2xl font-bold leading-tight tracking-tight text-foreground">
+          <PendingLinkButton
+            href={`/library/${id}`}
+            label={title}
+            pendingLabel="Loading..."
+            className="decoration-primary decoration-2 underline-offset-4 hover:underline"
+          />
+        </h3>
+
+        {metadataParts.length > 0 && (
+          <p className="mt-2 text-sm font-medium leading-6 text-muted-foreground">
+            {metadataParts.join(" | ")}
+          </p>
+        )}
       </div>
 
       {referenceUrl && (
-        <ReferenceMediaLink
-          referenceUrl={referenceUrl}
-          title={title}
-          className="text-sm underline"
-        />
+        <div className="mt-4">
+          <ReferenceMediaLink
+            referenceUrl={referenceUrl}
+            title={title}
+            className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+          />
+        </div>
       )}
 
       {listNames.length > 0 && (
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-3 text-sm text-muted-foreground">
           In: {visibleListNames.join(", ")}
           {remainingListCount > 0 ? ` +${remainingListCount} more` : ""}
         </p>
       )}
 
-      {children && <div className="mt-2 flex items-center gap-2">{children}</div>}
-    </div>
+      {children && (
+        <div className="mt-5 flex flex-wrap items-center gap-3">{children}</div>
+      )}
+    </article>
   )
 }

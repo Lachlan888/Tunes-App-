@@ -42,12 +42,15 @@ type UnlistedPracticeTunesModalProps = {
   summaryClassName?: string
 }
 
+const secondaryButtonClass =
+  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
 export default function UnlistedPracticeTunesModal({
   unlistedPracticeTunes,
   learningLists,
   addToLearningList,
   redirectTo,
-  summaryClassName = "rounded border p-4",
+  summaryClassName = "rounded-2xl border border-border bg-card p-5 shadow-sm",
 }: UnlistedPracticeTunesModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
@@ -76,19 +79,24 @@ export default function UnlistedPracticeTunesModal({
   return (
     <>
       <section className={summaryClassName}>
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold">In practice, not in a list</h2>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Practice
+            </p>
+            <h2 className="mt-2 font-serif text-2xl font-bold text-foreground">
+              In practice, not in a list
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
               {unlistedPracticeTunes.length} tune
-              {unlistedPracticeTunes.length === 1 ? "" : "s"} ready to organise
+              {unlistedPracticeTunes.length === 1 ? "" : "s"} ready to organise.
             </p>
           </div>
 
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className="cursor-pointer rounded border px-3 py-1 text-sm"
+            className={secondaryButtonClass}
           >
             Review tunes
           </button>
@@ -97,22 +105,28 @@ export default function UnlistedPracticeTunesModal({
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4"
+          className="fixed inset-0 z-50 overflow-y-auto bg-[#20271c]/55 p-4"
           onClick={() => setIsOpen(false)}
         >
           <div className="flex min-h-full items-start justify-center py-8">
             <div
-              className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-lg"
+              className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-lg"
               onClick={(event) => event.stopPropagation()}
             >
-              <div className="mb-4 flex items-center justify-between gap-4">
-                <h2 className="text-2xl font-semibold">
-                  In practice, not in a list
-                </h2>
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Practice
+                  </p>
+                  <h2 className="mt-2 font-serif text-3xl font-bold text-foreground">
+                    In practice, not in a list
+                  </h2>
+                </div>
+
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="cursor-pointer rounded border px-3 py-1 text-sm"
+                  className={secondaryButtonClass}
                 >
                   Close
                 </button>
@@ -127,7 +141,10 @@ export default function UnlistedPracticeTunesModal({
                   const pieceTitle = piece?.title ?? "Untitled tune"
 
                   return (
-                    <li key={userPiece.id} className="rounded border p-3">
+                    <li
+                      key={userPiece.id}
+                      className="rounded-2xl border border-border bg-background/70 p-4"
+                    >
                       <div className="flex items-center justify-between gap-4">
                         <div>
                           <PendingLinkButton
@@ -136,14 +153,14 @@ export default function UnlistedPracticeTunesModal({
                             pendingLabel={`Opening ${pieceTitle}...`}
                             className="cursor-pointer text-left font-medium underline underline-offset-4"
                           />
-                          <p className="text-sm text-gray-600">
+                          <p className="mt-1 text-sm text-muted-foreground">
                             Stage {userPiece.stage}
                           </p>
                         </div>
 
                         <button
                           type="button"
-                          className="cursor-pointer rounded border px-3 py-1 text-sm"
+                          className={secondaryButtonClass}
                           onClick={() => {
                             setSelectedPiece({
                               id: userPiece.piece_id,

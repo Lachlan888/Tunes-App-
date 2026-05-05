@@ -19,10 +19,10 @@ function TaskStatusIcon({ isComplete }: { isComplete: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-sm ${
+      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${
         isComplete
-          ? "border-green-700 bg-green-50 text-green-800"
-          : "border-gray-300 bg-white text-gray-500"
+          ? "border-success bg-success text-success-foreground"
+          : "border-border bg-background text-muted-foreground"
       }`}
     >
       {isComplete ? "✓" : "○"}
@@ -32,14 +32,16 @@ function TaskStatusIcon({ isComplete }: { isComplete: boolean }) {
 
 function TaskRow({ task }: { task: GettingStartedTask }) {
   return (
-    <li className="flex gap-3 rounded border bg-white p-3">
+    <li className="flex gap-3 rounded-2xl border border-border bg-background/70 p-4">
       <TaskStatusIcon isComplete={task.isComplete} />
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="font-medium">{task.label}</p>
-            <p className="mt-1 text-sm text-gray-600">{task.description}</p>
+            <p className="font-semibold text-foreground">{task.label}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {task.description}
+            </p>
           </div>
 
           {!task.isComplete && (
@@ -47,7 +49,7 @@ function TaskRow({ task }: { task: GettingStartedTask }) {
               href={task.href}
               label={task.actionLabel}
               pendingLabel={task.pendingLabel}
-              className="rounded border px-3 py-1 text-sm"
+              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             />
           )}
         </div>
@@ -64,34 +66,41 @@ export default function GettingStartedSection({
   }
 
   return (
-    <section className="mb-8 rounded-lg border bg-gray-50 p-5">
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+    <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-5">
         <div>
-          <h2 className="text-2xl font-semibold">Get started</h2>
-          <p className="mt-2 max-w-2xl text-gray-700">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            First session
+          </p>
+          <h2 className="mt-1 font-serif text-3xl font-bold">Get started</h2>
+          <p className="mt-3 max-w-2xl text-muted-foreground">
             Set up enough of the app that it can start acting like your
-            repertoire memory system. These steps use the real app, so Home will
-            update as soon as you add tunes, start practice, create lists, or
+            repertoire memory system. These steps use the real app, so Home
+            updates as soon as you add tunes, start practice, create lists, or
             review.
           </p>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-3 text-sm font-medium text-muted-foreground">
             Progress: {state.completedCount} of {state.totalCount} complete
           </p>
         </div>
 
         {state.nextTask && (
-          <div className="w-full rounded border bg-white p-4 sm:w-72">
-            <p className="text-sm font-medium text-gray-600">Next step</p>
-            <p className="mt-1 font-semibold">{state.nextTask.label}</p>
-            <p className="mt-1 text-sm text-gray-600">
+          <div className="w-full rounded-2xl border border-border bg-background/70 p-5 sm:w-80">
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Next step
+            </p>
+            <p className="mt-2 font-serif text-xl font-bold">
+              {state.nextTask.label}
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
               {state.nextTask.description}
             </p>
-            <div className="mt-3">
+            <div className="mt-4">
               <PendingLinkButton
                 href={state.nextTask.href}
                 label={state.nextTask.actionLabel}
                 pendingLabel={state.nextTask.pendingLabel}
-                className="rounded bg-black px-4 py-2 text-sm text-white"
+                className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               />
             </div>
           </div>
@@ -104,7 +113,7 @@ export default function GettingStartedSection({
 
           return (
             <section key={group}>
-              <h3 className="mb-3 text-lg font-semibold">{group}</h3>
+              <h3 className="mb-3 font-serif text-xl font-bold">{group}</h3>
               <ul className="space-y-3">
                 {tasks.map((task) => (
                   <TaskRow key={task.id} task={task} />

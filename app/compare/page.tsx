@@ -106,133 +106,163 @@ export default async function ComparePage({
   const filterPreservedUsers =
     stableSelectedUsernames.length > 0 ? stableSelectedUsernames : selectedUsers
 
+  const canShowResults =
+    selectedProfiles.length > 0 && error === null && canCompare
+
   return (
-    <main className="p-8">
-      <h1 className="mb-2 text-3xl font-bold">Compare Tunes</h1>
-      <p className="mb-6 text-gray-600">
-        Build a group, then see the tunes common to everyone in it.
-      </p>
+    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+      <section className="mb-6 rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+          Compare Tunes
+        </h1>
 
-      <CompareSearchForm initialQuery="" selectedUsers={filterPreservedUsers} />
+        <p className="mt-3 max-w-3xl text-lg text-muted-foreground">
+          Build a group, then see the tunes common to everyone in it.
+        </p>
+      </section>
 
-      {filterPreservedUsers.length > 0 && (
-        <CurrentCompareGroupSection
-          selectedProfiles={selectedProfiles}
-          filterPreservedUsers={filterPreservedUsers}
-          titleQuery={titleQuery}
-          selectedKeys={selectedKeys}
-          selectedStyles={selectedStyles}
-          selectedTimeSignatures={selectedTimeSignatures}
-        />
-      )}
-
-      {friendRequestStatus === "sent" && (
-        <CompareStatusMessage tone="success">
-          Friend request sent.
-        </CompareStatusMessage>
-      )}
-
-      {friendRequestStatus === "missing_user" && (
-        <CompareStatusMessage tone="warning">
-          Please choose a valid user.
-        </CompareStatusMessage>
-      )}
-
-      {friendRequestStatus === "self" && (
-        <CompareStatusMessage tone="warning">
-          You cannot send a friend request to yourself.
-        </CompareStatusMessage>
-      )}
-
-      {friendRequestStatus === "not_found" && (
-        <CompareStatusMessage tone="error">
-          That user could not be found.
-        </CompareStatusMessage>
-      )}
-
-      {friendRequestStatus === "duplicate" && (
-        <CompareStatusMessage tone="neutral">
-          A pending or accepted connection already exists with that user.
-        </CompareStatusMessage>
-      )}
-
-      <CompareSuggestionsSection
-        compareSuggestions={compareSuggestions}
-        filterPreservedUsers={filterPreservedUsers}
-      />
-
-      {error === "missing_search" && (
-        <CompareStatusMessage tone="neutral">
-          Add at least one username or display name to start comparing.
-        </CompareStatusMessage>
-      )}
-
-      {error === "user_not_found" && (
-        <CompareStatusMessage tone="error">
-          No user found for “{primarySearchValue}”.
-        </CompareStatusMessage>
-      )}
-
-      {error === "self_compare" && (
-        <CompareStatusMessage tone="warning">
-          You cannot add your own profile to the compare group.
-        </CompareStatusMessage>
-      )}
-
-      {error === "multiple_matches" && (
-        <CompareCandidateListSection
-          title="Choose a user"
-          description={`More than one user matched “${primarySearchValue}”.`}
-          profiles={matchingProfiles}
-          primarySearchValue={primarySearchValue}
-          filterPreservedUsers={filterPreservedUsers}
-          redirectTo={redirectTo}
-        />
-      )}
-
-      {error === null && !matchedProfile && searchMatches.length > 0 && (
-        <CompareCandidateListSection
-          title="Choose a user"
-          description="Select the person you want to add to this compare group."
-          profiles={searchMatches}
-          primarySearchValue={primarySearchValue}
-          filterPreservedUsers={filterPreservedUsers}
-          redirectTo={redirectTo}
-        />
-      )}
-
-      {matchedProfile && error === null && !canCompare && (
-        <CompareBlockedSection
-          matchedProfile={matchedProfile}
-          isAcceptedFriend={isAcceptedFriend}
-          redirectTo={redirectTo}
-        />
-      )}
-
-      {selectedProfiles.length > 0 && error === null && canCompare && (
-        <>
-          <CompareResultsHeader
-            compareHeading={compareHeading}
-            selectedProfiles={selectedProfiles}
-            mutualPiecesCount={mutualPieces.length}
-            isAcceptedFriend={isAcceptedFriend}
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,520px)] lg:items-stretch">
+        <section className="min-w-0">
+          <CompareSearchForm
+            initialQuery=""
+            selectedUsers={filterPreservedUsers}
           />
 
-          <CompareMutualPiecesSection
-            filteredPieces={filteredPieces}
-            mutualPiecesCount={mutualPieces.length}
-            titleQuery={titleQuery}
-            selectedKeys={selectedKeys}
-            selectedStyles={selectedStyles}
-            selectedTimeSignatures={selectedTimeSignatures}
-            availableKeys={availableKeys}
-            availableStyles={availableStyles}
-            availableTimeSignatures={availableTimeSignatures}
-            hasActiveFilters={hasActiveFilters}
+          {filterPreservedUsers.length > 0 && (
+            <CurrentCompareGroupSection
+              selectedProfiles={selectedProfiles}
+              filterPreservedUsers={filterPreservedUsers}
+              titleQuery={titleQuery}
+              selectedKeys={selectedKeys}
+              selectedStyles={selectedStyles}
+              selectedTimeSignatures={selectedTimeSignatures}
+            />
+          )}
+
+          {friendRequestStatus === "sent" && (
+            <CompareStatusMessage tone="success">
+              Friend request sent.
+            </CompareStatusMessage>
+          )}
+
+          {friendRequestStatus === "missing_user" && (
+            <CompareStatusMessage tone="warning">
+              Please choose a valid user.
+            </CompareStatusMessage>
+          )}
+
+          {friendRequestStatus === "self" && (
+            <CompareStatusMessage tone="warning">
+              You cannot send a friend request to yourself.
+            </CompareStatusMessage>
+          )}
+
+          {friendRequestStatus === "not_found" && (
+            <CompareStatusMessage tone="error">
+              That user could not be found.
+            </CompareStatusMessage>
+          )}
+
+          {friendRequestStatus === "duplicate" && (
+            <CompareStatusMessage tone="neutral">
+              A pending or accepted connection already exists with that user.
+            </CompareStatusMessage>
+          )}
+
+          <CompareSuggestionsSection
+            compareSuggestions={compareSuggestions}
             filterPreservedUsers={filterPreservedUsers}
           />
-        </>
-      )}
+
+          {error === "missing_search" && (
+            <CompareStatusMessage tone="neutral">
+              Add at least one username or display name to start comparing.
+            </CompareStatusMessage>
+          )}
+
+          {error === "user_not_found" && (
+            <CompareStatusMessage tone="error">
+              No user found for “{primarySearchValue}”.
+            </CompareStatusMessage>
+          )}
+
+          {error === "self_compare" && (
+            <CompareStatusMessage tone="warning">
+              You cannot add your own profile to the compare group.
+            </CompareStatusMessage>
+          )}
+
+          {error === "multiple_matches" && (
+            <CompareCandidateListSection
+              title="Choose a user"
+              description={`More than one user matched “${primarySearchValue}”.`}
+              profiles={matchingProfiles}
+              primarySearchValue={primarySearchValue}
+              filterPreservedUsers={filterPreservedUsers}
+              redirectTo={redirectTo}
+            />
+          )}
+
+          {error === null && !matchedProfile && searchMatches.length > 0 && (
+            <CompareCandidateListSection
+              title="Choose a user"
+              description="Select the person you want to add to this compare group."
+              profiles={searchMatches}
+              primarySearchValue={primarySearchValue}
+              filterPreservedUsers={filterPreservedUsers}
+              redirectTo={redirectTo}
+            />
+          )}
+
+          {matchedProfile && error === null && !canCompare && (
+            <CompareBlockedSection
+              matchedProfile={matchedProfile}
+              isAcceptedFriend={isAcceptedFriend}
+              redirectTo={redirectTo}
+            />
+          )}
+        </section>
+
+        <aside className="min-w-0 lg:sticky lg:top-8 lg:h-full">
+          <section className="flex h-full min-h-0 flex-col rounded-3xl border border-border bg-card p-5 shadow-sm">
+            {canShowResults ? (
+              <>
+                <CompareResultsHeader
+                  compareHeading={compareHeading}
+                  selectedProfiles={selectedProfiles}
+                  mutualPiecesCount={mutualPieces.length}
+                  isAcceptedFriend={isAcceptedFriend}
+                />
+
+                <CompareMutualPiecesSection
+                  filteredPieces={filteredPieces}
+                  mutualPiecesCount={mutualPieces.length}
+                  titleQuery={titleQuery}
+                  selectedKeys={selectedKeys}
+                  selectedStyles={selectedStyles}
+                  selectedTimeSignatures={selectedTimeSignatures}
+                  availableKeys={availableKeys}
+                  availableStyles={availableStyles}
+                  availableTimeSignatures={availableTimeSignatures}
+                  hasActiveFilters={hasActiveFilters}
+                  filterPreservedUsers={filterPreservedUsers}
+                />
+              </>
+            ) : (
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  Common tunes
+                </h2>
+
+                <p className="mt-3 text-sm text-muted-foreground md:text-base">
+                  Add one or more players on the left. Tunes shared by everyone
+                  in the group will appear here.
+                </p>
+              </div>
+            )}
+          </section>
+        </aside>
+      </div>
     </main>
   )
 }

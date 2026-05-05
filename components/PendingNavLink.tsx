@@ -8,10 +8,7 @@ type PendingNavLinkProps = {
   label: string
 }
 
-export default function PendingNavLink({
-  href,
-  label,
-}: PendingNavLinkProps) {
+export default function PendingNavLink({ href, label }: PendingNavLinkProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
@@ -31,8 +28,10 @@ export default function PendingNavLink({
           router.push(href)
         })
       }}
-      className={`disabled:cursor-not-allowed disabled:opacity-60 ${
-        isActive ? "font-semibold underline" : "underline"
+      className={`rounded-full border px-3 py-1.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70 ${
+        isActive
+          ? "border-primary bg-primary text-primary-foreground shadow-sm"
+          : "border-transparent text-foreground hover:border-border hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
       }`}
     >
       {isPending ? "Loading..." : label}

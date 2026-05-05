@@ -13,22 +13,37 @@ export default function HomeFriendsActivityBox({
   items,
 }: HomeFriendsActivityBoxProps) {
   return (
-    <section className="rounded-lg border p-4">
-      <div className="mb-3 flex items-center justify-between gap-4">
-        <h3 className="text-lg font-semibold">Friend activity</h3>
-        <Link href="/friends" className="text-sm underline">
-          View all friend activity
+    <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Friend activity
+          </p>
+        </div>
+
+        <Link
+          href="/friends"
+          className="rounded-full border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        >
+          View all
         </Link>
       </div>
 
       {items.length === 0 ? (
-        <p className="text-sm text-gray-600">No recent friend activity yet.</p>
+        <p className="rounded-xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+          No recent friend activity yet.
+        </p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {items.map((item) => (
-            <li key={item.id} className="rounded border p-3">
-              <p className="text-sm">{renderFriendActivityText(item)}</p>
-              <p className="mt-1 text-xs text-gray-500">
+            <li
+              key={item.id}
+              className="rounded-xl border border-border bg-background/70 p-4"
+            >
+              <p className="max-h-12 overflow-hidden text-sm text-foreground">
+                {renderFriendActivityText(item)}
+              </p>
+              <p className="mt-2 text-xs font-medium text-muted-foreground">
                 {formatFriendActivityRelativeTime(item.created_at)}
               </p>
             </li>

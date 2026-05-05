@@ -1,5 +1,5 @@
+import Link from "next/link"
 import EmptyState from "@/components/EmptyState"
-import TuneCard from "@/components/TuneCard"
 import PieceSearchFilters from "@/components/library/PieceSearchFilters"
 import type { Piece } from "@/lib/types"
 
@@ -43,55 +43,60 @@ export default function CompareMutualPiecesSection({
   filterPreservedUsers,
 }: CompareMutualPiecesSectionProps) {
   return (
-    <>
-      <PieceSearchFilters
-        basePath="/compare"
-        searchLabel="Search by title"
-        searchPlaceholder="Search mutual tunes"
-        searchValue={titleQuery}
-        selectedKeys={selectedKeys}
-        selectedStyles={selectedStyles}
-        selectedTimeSignatures={selectedTimeSignatures}
-        availableKeys={availableKeys}
-        availableStyles={availableStyles}
-        availableTimeSignatures={availableTimeSignatures}
-        hasActiveFilters={hasActiveFilters}
-        preservedParams={{ user: filterPreservedUsers }}
-      />
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="shrink-0">
+        <PieceSearchFilters
+          basePath="/compare"
+          searchLabel="Search by title"
+          searchPlaceholder="Search mutual tunes"
+          searchValue={titleQuery}
+          selectedKeys={selectedKeys}
+          selectedStyles={selectedStyles}
+          selectedTimeSignatures={selectedTimeSignatures}
+          availableKeys={availableKeys}
+          availableStyles={availableStyles}
+          availableTimeSignatures={availableTimeSignatures}
+          hasActiveFilters={hasActiveFilters}
+          preservedParams={{ user: filterPreservedUsers }}
+        />
+      </div>
 
       {filteredPieces.length === 0 ? (
-        mutualPiecesCount > 0 ? (
-          <EmptyState
-            title="No common tunes match these filters"
-            description="You may still have tunes in common. Clear the filters to see the full overlap."
-            primaryActionHref={buildCompareClearFiltersHref(filterPreservedUsers)}
-            primaryActionLabel="Clear filters"
-          />
-        ) : (
-          <EmptyState
-            title="No common tunes yet"
-            description="You and this player or group do not currently have overlapping known or practice tunes."
-            secondaryActionHref="/friends"
-            secondaryActionLabel="Find friends"
-          />
-        )
-      ) : (
-        <div className="space-y-3">
-          {filteredPieces.map((piece) => (
-            <TuneCard
-              key={piece.id}
-              id={piece.id}
-              title={piece.title}
-              keyValue={piece.key}
-              style={piece.style}
-              pieceStyles={piece.piece_styles}
-              timeSignature={piece.time_signature}
-              referenceUrl={piece.reference_url}
-              listNames={[]}
+        <div className="mt-3">
+          {mutualPiecesCount > 0 ? (
+            <EmptyState
+              title="No common tunes match these filters"
+              description="You may still have tunes in common. Clear the filters to see the full overlap."
+              primaryActionHref={buildCompareClearFiltersHref(
+                filterPreservedUsers
+              )}
+              primaryActionLabel="Clear filters"
             />
-          ))}
+          ) : (
+            <EmptyState
+              title="No common tunes yet"
+              description="You and this player or group do not currently have overlapping known or practice tunes."
+              secondaryActionHref="/friends"
+              secondaryActionLabel="Find friends"
+            />
+          )}
+        </div>
+      ) : (
+        <div className="mt-3 min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-background/70">
+          <ul className="h-full divide-y divide-border overflow-y-auto">
+            {filteredPieces.map((piece) => (
+              <li key={piece.id}>
+                <Link
+                  href={`/library/${piece.id}`}
+                  className="block px-4 py-3 font-medium text-foreground underline-offset-4 transition hover:bg-muted hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                >
+                  {piece.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
-    </>
+    </div>
   )
 }

@@ -46,6 +46,15 @@ type AddToListModalProps = {
   onClose: () => void
 }
 
+const primaryButtonClass =
+  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
+const secondaryButtonClass =
+  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
+const inputClass =
+  "w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
 export default function AddToListModal({
   selectedPiece,
   selectedListId,
@@ -126,7 +135,7 @@ export default function AddToListModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#20271c]/55 p-4"
       onClick={() => {
         if (!isClosingDisabled) {
           onClose()
@@ -134,17 +143,25 @@ export default function AddToListModal({
       }}
     >
       <div
-        className="w-full max-w-md rounded bg-white p-6 shadow-lg"
+        className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-lg"
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 className="mb-2 text-xl font-semibold">Add to List</h2>
-        <p className="mb-4 text-sm text-gray-600">{selectedPiece.title}</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Lists
+        </p>
+        <h2 className="mt-2 font-serif text-3xl font-bold text-foreground">
+          Add to List
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {selectedPiece.title}
+        </p>
 
         <form
           action={async (formData: FormData) => {
             setIsAddPending(true)
             await addToLearningList(formData)
           }}
+          className="mt-5"
         >
           <input type="hidden" name="piece_id" value={selectedPiece.id} />
           <input type="hidden" name="redirect_to" value={redirectTo} />
@@ -161,7 +178,7 @@ export default function AddToListModal({
             name="learning_list_id"
             value={selectedListId}
             onChange={(event) => onChangeSelectedListId(event.target.value)}
-            className="mb-4 w-full border p-2"
+            className={inputClass}
             disabled={isClosingDisabled || !hasLists}
           >
             <option value="">Select a list</option>
@@ -183,25 +200,27 @@ export default function AddToListModal({
           </select>
 
           {!hasLists && (
-            <p className="mb-4 text-sm text-gray-600">
+            <p className="mt-3 text-sm text-muted-foreground">
               You do not have any lists yet.
             </p>
           )}
 
           {createSuccessMessage && (
-            <p className="mb-4 text-sm text-green-700">{createSuccessMessage}</p>
+            <p className="mt-3 rounded-xl border border-success bg-[#e6edd6] p-3 text-sm text-[#435336]">
+              {createSuccessMessage}
+            </p>
           )}
 
           {isSelectedListAlreadyAdded && (
-            <p className="mb-4 text-sm text-gray-600">
+            <p className="mt-3 text-sm text-muted-foreground">
               This tune is already in the selected list.
             </p>
           )}
 
-          <div className="flex gap-2">
+          <div className="mt-5 flex gap-2">
             <button
               type="button"
-              className="border px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+              className={secondaryButtonClass}
               onClick={onClose}
               disabled={isClosingDisabled}
             >
@@ -211,16 +230,16 @@ export default function AddToListModal({
             <SubmitButton
               label="Add"
               pendingLabel="Adding..."
-              className="bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
+              className={primaryButtonClass}
             />
           </div>
         </form>
 
-        <div className="mt-6 border-t pt-4">
+        <div className="mt-6 border-t border-border pt-5">
           {!showCreateForm ? (
             <button
               type="button"
-              className="text-sm underline underline-offset-2"
+              className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
               onClick={() => {
                 setShowCreateForm(true)
                 setCreateSuccessMessage("")
@@ -242,7 +261,7 @@ export default function AddToListModal({
                   id="new_list_name"
                   name="name"
                   type="text"
-                  className="w-full border p-2 text-sm"
+                  className={inputClass}
                   placeholder="e.g. Session tunes"
                   disabled={isClosingDisabled}
                 />
@@ -252,19 +271,21 @@ export default function AddToListModal({
               <input type="hidden" name="visibility" value="private" />
 
               {createState.status === "error" && createState.error && (
-                <p className="text-sm text-red-700">{createState.error}</p>
+                <p className="rounded-xl border border-destructive bg-[#f2dfd6] p-3 text-sm text-[#6f3f36]">
+                  {createState.error}
+                </p>
               )}
 
               <div className="flex gap-2">
                 <SubmitButton
                   label="Create list"
                   pendingLabel="Creating..."
-                  className="border px-4 py-2 text-sm"
+                  className={primaryButtonClass}
                 />
 
                 <button
                   type="button"
-                  className="border px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                  className={secondaryButtonClass}
                   onClick={() => {
                     setShowCreateForm(false)
                   }}

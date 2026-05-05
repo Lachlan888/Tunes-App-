@@ -1,26 +1,102 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f3f7ea;
+  --foreground: #20271c;
+
+  --card: #e4ead8;
+  --card-strong: #d7e0c5;
+  --card-foreground: #20271c;
+
+  --muted: #edf2e4;
+  --muted-foreground: #596650;
+
+  --border: #b0bc8c;
+
+  --primary: #7b8a50;
+  --primary-foreground: #fbfcf5;
+  --primary-hover: #6f7e48;
+
+  --accent: #98a869;
+  --accent-foreground: #20271c;
+
+  --success: #7b8a50;
+  --success-foreground: #fbfcf5;
+
+  --warning: #98a869;
+  --warning-foreground: #20271c;
+  --warning-strong: #87975d;
+
+  --destructive: #7a4b45;
+  --destructive-foreground: #fbfcf5;
+
+  --focus-ring: rgba(123, 138, 80, 0.28);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-card: var(--card);
+  --color-card-strong: var(--card-strong);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-border: var(--border);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-strong: var(--warning-strong);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
 }
 
 body {
-  background: var(--background);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(176, 188, 140, 0.18), transparent 34rem),
+    var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+::selection {
+  background: rgba(152, 168, 105, 0.35);
+  color: var(--foreground);
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }

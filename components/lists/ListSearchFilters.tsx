@@ -1,6 +1,13 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState, useTransition, type FormEvent } from "react"
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+  type FormEvent,
+} from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 
 type ListSearchFiltersProps = {
@@ -55,6 +62,9 @@ const VISIBILITY_OPTIONS = [
   { value: "public", label: "Public" },
   { value: "private", label: "Private" },
 ] as const
+
+const buttonBase =
+  "rounded-full border px-4 py-2 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 export default function ListSearchFilters({
   basePath,
@@ -255,8 +265,8 @@ export default function ListSearchFilters({
               id: `size:${selectedSize}`,
               group: "size" as const,
               label:
-                SIZE_OPTIONS.find((option) => option.value === selectedSize)?.label ??
-                selectedSize,
+                SIZE_OPTIONS.find((option) => option.value === selectedSize)
+                  ?.label ?? selectedSize,
             },
           ]
         : []),
@@ -272,8 +282,8 @@ export default function ListSearchFilters({
               id: `source:${selectedSource}`,
               group: "source" as const,
               label:
-                SOURCE_OPTIONS.find((option) => option.value === selectedSource)?.label ??
-                selectedSource,
+                SOURCE_OPTIONS.find((option) => option.value === selectedSource)
+                  ?.label ?? selectedSource,
             },
           ]
         : []),
@@ -296,14 +306,20 @@ export default function ListSearchFilters({
   return (
     <div
       ref={panelRef}
-      className={`relative mb-6 transition-opacity ${
+      className={`relative mb-8 transition-opacity ${
         isPending ? "opacity-80" : "opacity-100"
       }`}
     >
-      <form onSubmit={handleSearchSubmit} className="rounded-xl border bg-white p-4">
+      <form
+        onSubmit={handleSearchSubmit}
+        className="rounded-2xl border border-border bg-card p-5 shadow-sm"
+      >
         <div className="flex flex-col gap-3 md:flex-row md:items-end">
           <div className="min-w-0 flex-1">
-            <label htmlFor="q" className="mb-2 block text-sm font-medium">
+            <label
+              htmlFor="q"
+              className="mb-2 block text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground"
+            >
               {searchLabel}
             </label>
             <input
@@ -312,7 +328,7 @@ export default function ListSearchFilters({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={searchPlaceholder}
-              className="w-full rounded-lg border px-3 py-2"
+              className="w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               aria-busy={isPending}
             />
           </div>
@@ -320,7 +336,7 @@ export default function ListSearchFilters({
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="submit"
-              className="rounded-lg bg-black px-4 py-2 text-white disabled:opacity-60"
+              className={`${buttonBase} border-primary bg-primary text-primary-foreground hover:bg-primary-hover`}
               disabled={isPending}
             >
               {isPending ? "Searching..." : "Search"}
@@ -329,7 +345,7 @@ export default function ListSearchFilters({
             <button
               type="button"
               onClick={() => setIsPanelOpen((current) => !current)}
-              className="rounded-lg border px-4 py-2 text-sm disabled:opacity-60"
+              className={`${buttonBase} border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground`}
               disabled={isPending}
               aria-expanded={isPanelOpen}
               aria-controls="list-filter-panel"
@@ -337,15 +353,15 @@ export default function ListSearchFilters({
               {isPending
                 ? "Updating..."
                 : activeFilterCount > 0
-                ? `Filters (${activeFilterCount})`
-                : "Filters"}
+                  ? `Filters (${activeFilterCount})`
+                  : "Filters"}
             </button>
 
             {hasActiveFilters && (
               <button
                 type="button"
                 onClick={handleClearAll}
-                className="text-sm underline"
+                className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
                 disabled={isPending}
               >
                 Clear filters
@@ -355,7 +371,9 @@ export default function ListSearchFilters({
         </div>
 
         {isPending && (
-          <p className="mt-3 text-sm text-gray-600">Updating filters...</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Updating filters...
+          </p>
         )}
 
         {activeChips.length > 0 && (
@@ -365,7 +383,7 @@ export default function ListSearchFilters({
                 key={chip.id}
                 type="button"
                 onClick={() => handleRemoveChip(chip)}
-                className="rounded-full border px-3 py-1 text-sm"
+                className="rounded-full border border-border bg-background/70 px-3 py-1 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
                 disabled={isPending}
               >
                 {chip.label} ×
@@ -378,12 +396,14 @@ export default function ListSearchFilters({
       {isPanelOpen && (
         <div
           id="list-filter-panel"
-          className="absolute left-0 right-0 z-20 mt-2 rounded-2xl border bg-white p-4 shadow-lg"
+          className="absolute left-0 right-0 z-20 mt-2 rounded-3xl border border-border bg-card p-5 shadow-lg"
         >
-          <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <h3 className="text-base font-semibold">Filter lists</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-serif text-2xl font-bold text-foreground">
+                Filter lists
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
                 Narrow your list overview by size, style, source, or visibility.
               </p>
             </div>
@@ -393,7 +413,7 @@ export default function ListSearchFilters({
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="rounded-lg border px-3 py-2 text-sm"
+                  className={`${buttonBase} border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground`}
                   disabled={isPending}
                 >
                   Clear all
@@ -403,7 +423,7 @@ export default function ListSearchFilters({
               <button
                 type="button"
                 onClick={() => setIsPanelOpen(false)}
-                className="rounded-lg border px-3 py-2 text-sm"
+                className={`${buttonBase} border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground`}
               >
                 Close
               </button>
@@ -411,19 +431,24 @@ export default function ListSearchFilters({
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <fieldset className="min-w-0 rounded-xl border p-3" disabled={isPending}>
-              <legend className="px-1 text-sm font-medium">
+            <fieldset
+              className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
+              disabled={isPending}
+            >
+              <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Size {selectedSize ? "(1)" : "(0)"}
               </legend>
-              <div className="mt-2 space-y-2">
+              <div className="mt-3 space-y-2">
                 {SIZE_OPTIONS.map((option) => (
-                  <label key={option.value} className="flex items-center gap-2">
+                  <label key={option.value} className="flex items-center gap-2 text-sm">
                     <input
                       type="radio"
                       name="size"
                       value={option.value}
                       checked={selectedSize === option.value}
-                      onChange={() => handleSingleSelectChange("size", option.value)}
+                      onChange={() =>
+                        handleSingleSelectChange("size", option.value)
+                      }
                     />
                     <span>{option.label}</span>
                   </label>
@@ -431,16 +456,21 @@ export default function ListSearchFilters({
               </div>
             </fieldset>
 
-            <fieldset className="min-w-0 rounded-xl border p-3" disabled={isPending}>
-              <legend className="px-1 text-sm font-medium">
+            <fieldset
+              className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
+              disabled={isPending}
+            >
+              <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Style ({selectedStyles.length})
               </legend>
-              <div className="mt-2 max-h-64 space-y-2 overflow-y-auto pr-1">
+              <div className="mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
                 {availableStyles.length === 0 ? (
-                  <p className="text-sm text-gray-500">No styles available.</p>
+                  <p className="text-sm text-muted-foreground">
+                    No styles available.
+                  </p>
                 ) : (
                   availableStyles.map((style) => (
-                    <label key={style} className="flex items-center gap-2">
+                    <label key={style} className="flex items-center gap-2 text-sm">
                       <input
                         type="checkbox"
                         name="style"
@@ -457,19 +487,24 @@ export default function ListSearchFilters({
               </div>
             </fieldset>
 
-            <fieldset className="min-w-0 rounded-xl border p-3" disabled={isPending}>
-              <legend className="px-1 text-sm font-medium">
+            <fieldset
+              className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
+              disabled={isPending}
+            >
+              <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Source {selectedSource ? "(1)" : "(0)"}
               </legend>
-              <div className="mt-2 space-y-2">
+              <div className="mt-3 space-y-2">
                 {SOURCE_OPTIONS.map((option) => (
-                  <label key={option.value} className="flex items-center gap-2">
+                  <label key={option.value} className="flex items-center gap-2 text-sm">
                     <input
                       type="radio"
                       name="source"
                       value={option.value}
                       checked={selectedSource === option.value}
-                      onChange={() => handleSingleSelectChange("source", option.value)}
+                      onChange={() =>
+                        handleSingleSelectChange("source", option.value)
+                      }
                     />
                     <span>{option.label}</span>
                   </label>
@@ -477,13 +512,16 @@ export default function ListSearchFilters({
               </div>
             </fieldset>
 
-            <fieldset className="min-w-0 rounded-xl border p-3" disabled={isPending}>
-              <legend className="px-1 text-sm font-medium">
+            <fieldset
+              className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
+              disabled={isPending}
+            >
+              <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Visibility {selectedVisibility ? "(1)" : "(0)"}
               </legend>
-              <div className="mt-2 space-y-2">
+              <div className="mt-3 space-y-2">
                 {VISIBILITY_OPTIONS.map((option) => (
-                  <label key={option.value} className="flex items-center gap-2">
+                  <label key={option.value} className="flex items-center gap-2 text-sm">
                     <input
                       type="radio"
                       name="visibility"

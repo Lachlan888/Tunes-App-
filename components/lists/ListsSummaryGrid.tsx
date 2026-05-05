@@ -30,6 +30,9 @@ function getSummaryGridClass(visibleSummaryCount: number) {
   return "mb-8 grid gap-4 lg:grid-cols-3"
 }
 
+const summaryCardClass =
+  "h-full rounded-2xl border border-border bg-card p-5 shadow-sm"
+
 export default function ListsSummaryGrid({
   myTunes,
   unlistedPracticeTunes,
@@ -45,16 +48,21 @@ export default function ListsSummaryGrid({
 
   return (
     <div className={getSummaryGridClass(visibleSummaryCount)}>
-      <section className="rounded border p-4">
+      <section className={summaryCardClass}>
         <div>
-          <h2 className="text-xl font-semibold">My Tunes</h2>
-          <p className="mt-2 text-gray-600">Known and active learning tunes</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Repertoire
+          </p>
+          <h2 className="mt-2 font-serif text-2xl font-bold text-foreground">
+            My Tunes
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Known and active practice tunes.
+          </p>
 
-          <div className="mt-3">
-            <span className="text-sm text-gray-500">
-              {myTunes.length} tune{myTunes.length === 1 ? "" : "s"}
-            </span>
-          </div>
+          <p className="mt-3 text-sm font-medium text-muted-foreground">
+            {myTunes.length} tune{myTunes.length === 1 ? "" : "s"}
+          </p>
         </div>
 
         {myTunes.length === 0 ? (
@@ -66,7 +74,7 @@ export default function ListsSummaryGrid({
             className="mt-4"
           />
         ) : (
-          <div className="mt-4">
+          <div className="mt-5">
             <MyTunesModal myTunes={myTunes} />
           </div>
         )}
@@ -77,7 +85,7 @@ export default function ListsSummaryGrid({
         learningLists={learningLists}
         addToLearningList={addToLearningList}
         redirectTo={redirectTo}
-        summaryClassName="rounded border p-4 h-full"
+        summaryClassName={summaryCardClass}
       />
 
       <UnlistedKnownTunesModal
@@ -85,7 +93,7 @@ export default function ListsSummaryGrid({
         learningLists={learningLists}
         addToLearningList={addToLearningList}
         redirectTo={redirectTo}
-        summaryClassName="rounded border p-4 h-full"
+        summaryClassName={summaryCardClass}
       />
     </div>
   )

@@ -124,11 +124,26 @@ export default async function LearningListsPage({
   })
 
   return (
-    <main className="p-8">
-      <h1 className="mb-2 text-3xl font-bold">Lists</h1>
-      <p className="mb-4 text-gray-600">Logged in as {user.email}</p>
+    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+      <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Lists
+        </p>
+        <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
+          Organise your tunes
+        </h1>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+          Keep repertoire, practice queues, session sets, and imported
+          collections in clear working lists.
+        </p>
+        <p className="mt-4 text-sm text-muted-foreground">
+          Logged in as {user.email}
+        </p>
+      </section>
 
-      <CreateListModal />
+      <div className="mb-8">
+        <CreateListModal />
+      </div>
 
       <ListsStatusMessages
         createListStatus={createListStatus}

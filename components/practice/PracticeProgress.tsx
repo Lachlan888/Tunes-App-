@@ -14,16 +14,16 @@ export default function PracticeProgress({
   return (
     <div className={className}>
       <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="text-gray-600">Progress</span>
-        <span className="font-medium">{progress}%</span>
+        <span className="font-medium text-muted-foreground">PROGRESS</span>
+        <span className="font-semibold text-foreground">{progress}%</span>
       </div>
 
       <div
-        className="mt-1 h-2 w-full overflow-hidden rounded-full bg-gray-200"
+        className="mt-2 h-3 w-full overflow-hidden rounded-full border border-border bg-background/80 shadow-inner"
         aria-hidden="true"
       >
         <div
-          className="h-full rounded-full bg-black transition-all"
+          className="h-full rounded-full bg-primary transition-all"
           style={{ width: `${progress}%` }}
         />
       </div>

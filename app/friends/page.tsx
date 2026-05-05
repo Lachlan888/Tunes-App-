@@ -27,8 +27,48 @@ function renderUserLink(username: string | null, displayName: string | null) {
   }
 
   return (
-    <Link href={`/users/${username}`} className="underline hover:no-underline">
+    <Link
+      href={`/users/${username}`}
+      className="decoration-primary decoration-2 underline-offset-4 hover:underline"
+    >
       {label}
+    </Link>
+  )
+}
+
+function StatusBanner({
+  tone,
+  children,
+}: {
+  tone: "success" | "warning" | "error" | "neutral"
+  children: React.ReactNode
+}) {
+  const toneClassNames = {
+    success: "border-success bg-[#e6edd6] text-[#435336]",
+    warning: "border-[#c5ad67] bg-[#f1e7bf] text-[#675622]",
+    error: "border-destructive bg-[#f2dfd6] text-[#6f3f36]",
+    neutral: "border-border bg-muted text-muted-foreground",
+  }
+
+  return (
+    <div
+      className={`mb-6 rounded-2xl border p-4 text-sm font-medium shadow-sm ${toneClassNames[tone]}`}
+    >
+      {children}
+    </div>
+  )
+}
+
+const primaryButtonClass =
+  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
+function UserHandleLink({ username }: { username: string }) {
+  return (
+    <Link
+      href={`/users/${username}`}
+      className="text-sm text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+    >
+      @{username}
     </Link>
   )
 }
@@ -49,79 +89,87 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
   } = await loadFriendsPageData(searchQuery)
 
   return (
-    <main className="p-8">
-      <h1 className="mb-2 text-3xl font-bold">Friends</h1>
-      <p className="mb-6 text-gray-600">
-        Search for new musicians, send friend requests, and manage your music
-        connections.
-      </p>
+    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+      <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Friends
+        </p>
+        <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
+          Find musicians
+        </h1>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+          Search for musicians, send friend requests, compare repertoire, and
+          see relevant activity from people you are connected with.
+        </p>
+      </section>
 
       {friendRequestStatus === "sent" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
-          Friend request sent.
-        </div>
+        <StatusBanner tone="success">Friend request sent.</StatusBanner>
       )}
 
       {friendRequestStatus === "missing_user" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+        <StatusBanner tone="warning">
           Please choose a user from the search results.
-        </div>
+        </StatusBanner>
       )}
 
       {friendRequestStatus === "self" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+        <StatusBanner tone="warning">
           You cannot send a friend request to yourself.
-        </div>
+        </StatusBanner>
       )}
 
       {friendRequestStatus === "not_found" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
-          That user could not be found.
-        </div>
+        <StatusBanner tone="error">That user could not be found.</StatusBanner>
       )}
 
       {friendRequestStatus === "duplicate" && (
-        <div className="mb-6 rounded border border-gray-400 bg-gray-50 p-3 text-sm text-gray-800">
+        <StatusBanner tone="neutral">
           A pending or accepted connection already exists with that user.
-        </div>
+        </StatusBanner>
       )}
 
       {friendAcceptStatus === "accepted" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
-          Friend request accepted.
-        </div>
+        <StatusBanner tone="success">Friend request accepted.</StatusBanner>
       )}
 
       {friendAcceptStatus === "missing_connection" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+        <StatusBanner tone="warning">
           Could not tell which friend request to accept.
-        </div>
+        </StatusBanner>
       )}
 
       {friendAcceptStatus === "not_found" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+        <StatusBanner tone="error">
           That friend request could not be found.
-        </div>
+        </StatusBanner>
       )}
 
       {friendAcceptStatus === "forbidden" && (
-        <div className="mb-6 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+        <StatusBanner tone="error">
           You are not allowed to accept that request.
-        </div>
+        </StatusBanner>
       )}
 
       {friendAcceptStatus === "invalid_status" && (
-        <div className="mb-6 rounded border border-yellow-600 bg-yellow-50 p-3 text-sm text-yellow-800">
+        <StatusBanner tone="warning">
           That request is no longer pending.
-        </div>
+        </StatusBanner>
       )}
 
-      <section className="mb-10 rounded border p-4">
-        <h2 className="mb-2 text-xl font-semibold">Find new friends</h2>
-        <p className="mb-4 text-sm text-gray-600">
-          Search returns users you are not already connected with. Existing
-          friends and pending requests appear in the sections below.
-        </p>
+      <section className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <div className="mb-5">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Search
+          </p>
+          <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
+            Find new friends
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+            Search returns users you are not already connected with. Existing
+            friends and pending requests appear in the sections below.
+          </p>
+        </div>
 
         <FriendSearchForm initialQuery={searchQuery} />
 
@@ -142,24 +190,19 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
         )}
 
         {searchMatches.length > 0 && (
-          <div className="space-y-3">
+          <div className="mt-5 space-y-3">
             {searchMatches.map((match) => (
-              <div
+              <article
                 key={match.id}
-                className="flex items-center justify-between rounded border p-3"
+                className="flex flex-col gap-4 rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:bg-muted/70 md:flex-row md:items-center md:justify-between"
               >
                 <div>
-                  <p className="font-medium">
+                  <p className="font-medium text-foreground">
                     {renderUserLink(match.username, match.display_name)}
                   </p>
                   {match.username && (
-                    <p className="text-sm text-gray-600">
-                      <Link
-                        href={`/users/${match.username}`}
-                        className="underline hover:no-underline"
-                      >
-                        @{match.username}
-                      </Link>
+                    <p className="mt-1">
+                      <UserHandleLink username={match.username} />
                     </p>
                   )}
                 </div>
@@ -174,17 +217,27 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
                   <SubmitButton
                     label="Send request"
                     pendingLabel="Sending..."
-                    className="rounded border px-3 py-2 text-sm"
+                    className={primaryButtonClass}
                   />
                 </form>
-              </div>
+              </article>
             ))}
           </div>
         )}
       </section>
 
-      <section className="mb-10 rounded border p-4">
-        <h2 className="mb-4 text-xl font-semibold">Incoming requests</h2>
+      <section className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <div className="mb-5">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Requests
+          </p>
+          <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
+            Incoming requests
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Accept requests from musicians who want to connect with you.
+          </p>
+        </div>
 
         {pendingIncomingRequests.length === 0 ? (
           <EmptyState
@@ -194,22 +247,17 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
         ) : (
           <div className="space-y-3">
             {pendingIncomingRequests.map((request) => (
-              <div
+              <article
                 key={request.connection_id}
-                className="flex items-center justify-between rounded border p-3"
+                className="flex flex-col gap-4 rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:bg-muted/70 md:flex-row md:items-center md:justify-between"
               >
                 <div>
-                  <p className="font-medium">
+                  <p className="font-medium text-foreground">
                     {renderUserLink(request.username, request.display_name)}
                   </p>
                   {request.username && (
-                    <p className="text-sm text-gray-600">
-                      <Link
-                        href={`/users/${request.username}`}
-                        className="underline hover:no-underline"
-                      >
-                        @{request.username}
-                      </Link>
+                    <p className="mt-1">
+                      <UserHandleLink username={request.username} />
                     </p>
                   )}
                 </div>
@@ -224,10 +272,10 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
                   <SubmitButton
                     label="Accept"
                     pendingLabel="Accepting..."
-                    className="rounded border px-3 py-2 text-sm"
+                    className={primaryButtonClass}
                   />
                 </form>
-              </div>
+              </article>
             ))}
           </div>
         )}

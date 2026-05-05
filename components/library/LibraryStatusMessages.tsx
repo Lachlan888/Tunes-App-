@@ -23,18 +23,26 @@ function StatusBanner({
   children: React.ReactNode
 }) {
   const toneClassNames = {
-    success: "border-green-600 bg-green-50 text-green-800",
-    warning: "border-yellow-600 bg-yellow-50 text-yellow-800",
-    error: "border-red-600 bg-red-50 text-red-800",
-    neutral: "border-gray-400 bg-gray-50 text-gray-800",
+    success: "border-success bg-[#e6edd6] text-[#435336]",
+    warning: "border-[#c5ad67] bg-[#f1e7bf] text-[#675622]",
+    error: "border-destructive bg-[#f2dfd6] text-[#6f3f36]",
+    neutral: "border-border bg-muted text-muted-foreground",
   }
 
   return (
-    <div className={`mb-6 rounded border p-3 text-sm ${toneClassNames[tone]}`}>
+    <div
+      className={`mb-6 rounded-2xl border p-4 text-sm font-medium shadow-sm ${toneClassNames[tone]}`}
+    >
       {children}
     </div>
   )
 }
+
+const primaryLinkClass =
+  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+
+const secondaryLinkClass =
+  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function LibraryStatusMessages({
   createTuneStatus,
@@ -123,9 +131,9 @@ export default function LibraryStatusMessages({
       )}
 
       {bulkUploadStatus === "imported" && (
-        <div className="mb-6 rounded border border-green-600 bg-green-50 p-4 text-sm text-green-800">
-          <p className="font-medium">Bulk import completed.</p>
-          <p className="mt-1">
+        <div className="mb-6 rounded-2xl border border-success bg-[#e6edd6] p-5 text-sm text-[#435336] shadow-sm">
+          <p className="font-semibold">Bulk import completed.</p>
+          <p className="mt-2">
             Created pieces: {createdPiecesCount}. Reused existing pieces:{" "}
             {reusedPiecesCount}.
           </p>
@@ -142,23 +150,17 @@ export default function LibraryStatusMessages({
             {uploadedListId && (
               <Link
                 href={`/learning-lists/${uploadedListId}`}
-                className="rounded bg-green-800 px-3 py-2 text-sm font-medium text-white"
+                className={primaryLinkClass}
               >
                 View Uploaded Tunes
               </Link>
             )}
 
-            <Link
-              href="/library/known"
-              className="rounded border border-green-700 bg-white px-3 py-2 text-sm font-medium text-green-900"
-            >
+            <Link href="/library/known" className={secondaryLinkClass}>
               View Known Tunes
             </Link>
 
-            <Link
-              href="/library"
-              className="rounded border border-green-700 bg-white px-3 py-2 text-sm font-medium text-green-900"
-            >
+            <Link href="/library" className={secondaryLinkClass}>
               Start Practice
             </Link>
           </div>

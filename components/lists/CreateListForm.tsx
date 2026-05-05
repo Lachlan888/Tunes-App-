@@ -6,6 +6,9 @@ type CreateListFormProps = {
   onSubmitStart?: () => void
 }
 
+const inputClass =
+  "w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+
 export default function CreateListForm({
   createList,
   redirectTo = "/learning-lists",
@@ -17,26 +20,42 @@ export default function CreateListForm({
         onSubmitStart?.()
         await createList(formData)
       }}
+      className="space-y-4"
     >
       <input type="hidden" name="redirect_to" value={redirectTo} />
 
-      <input
-        name="name"
-        placeholder="List name"
-        className="mb-2 w-full border p-2"
-        required
-      />
+      <div>
+        <label htmlFor="list_name" className="mb-2 block text-sm font-medium">
+          Name
+        </label>
+        <input
+          id="list_name"
+          name="name"
+          placeholder="e.g. Session tunes"
+          className={inputClass}
+          required
+        />
+      </div>
 
-      <input
-        name="description"
-        placeholder="Description"
-        className="mb-4 w-full border p-2"
-      />
+      <div>
+        <label
+          htmlFor="list_description"
+          className="mb-2 block text-sm font-medium"
+        >
+          Description
+        </label>
+        <input
+          id="list_description"
+          name="description"
+          placeholder="Optional description"
+          className={inputClass}
+        />
+      </div>
 
       <SubmitButton
         label="Create"
         pendingLabel="Creating..."
-        className="bg-black px-4 py-2 text-white"
+        className="rounded-full border border-primary bg-primary px-5 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
       />
     </form>
   )
