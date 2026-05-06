@@ -30,6 +30,16 @@ type HomepageProfileRow = {
   display_name: string | null
 }
 
+type RepertoireSummaryRpcRow = {
+  known_count: number | null
+  practice_count: number | null
+  due_today_count: number | null
+  needs_attention_count: number | null
+  list_count: number | null
+  instrument_count: number | null
+  review_event_count: number | null
+}
+
 type HomePracticeSummaryRow = UserPiece
 
 type HomePracticePreviewRow = UserPiece & {
@@ -236,6 +246,13 @@ function getPreviewIds(rows: HomePracticeSummaryRow[], limit: number) {
   return rows.slice(0, limit).map((row) => row.id)
 }
 
+function getRepertoireSummaryRow(
+  rows: RepertoireSummaryRpcRow[] | RepertoireSummaryRpcRow | null
+): RepertoireSummaryRpcRow | null {
+  if (!rows) return null
+  return Array.isArray(rows) ? rows[0] ?? null : rows
+}
+
 export async function loadHomepageData() {
   const supabase = await createClient()
 
@@ -254,10 +271,8 @@ export async function loadHomepageData() {
 
   const [
     { data: profile, error: profileError },
-    { count: instrumentCount, error: instrumentCountError },
-    { count: listCount, error: listCountError },
+    { data: repertoireSummaryRows, error: repertoireSummaryError },
     { data: listPreviewRows, error: listPreviewError },
-    { count: knownCount, error: knownCountError },
     { data: practiceSummaryRows, error: practiceSummaryError },
     { data: connectionRows, error: connectionError },
   ] = await Promise.all([
@@ -267,15 +282,7 @@ export async function loadHomepageData() {
       .eq("id", user.id)
       .maybeSingle(),
 
-    supabase
-      .from("user_instruments")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id),
-
-    supabase
-      .from("learning_lists")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id),
+    supabase.rpc("get_my_repertoire_summary"),
 
     supabase
       .from("learning_lists")
@@ -283,11 +290,6 @@ export async function loadHomepageData() {
       .eq("user_id", user.id)
       .order("id", { ascending: false })
       .limit(3),
-
-    supabase
-      .from("user_known_pieces")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id),
 
     supabase
       .from("user_pieces")
@@ -305,20 +307,12 @@ export async function loadHomepageData() {
     throw new Error(profileError.message)
   }
 
-  if (instrumentCountError) {
-    throw new Error(instrumentCountError.message)
-  }
-
-  if (listCountError) {
-    throw new Error(listCountError.message)
+  if (repertoireSummaryError) {
+    throw new Error(repertoireSummaryError.message)
   }
 
   if (listPreviewError) {
     throw new Error(listPreviewError.message)
-  }
-
-  if (knownCountError) {
-    throw new Error(knownCountError.message)
   }
 
   if (practiceSummaryError) {
@@ -329,16 +323,30 @@ export async function loadHomepageData() {
     throw new Error(connectionError.message)
   }
 
+  const repertoireSummary = getRepertoireSummaryRow(
+    repertoireSummaryRows as
+      | RepertoireSummaryRpcRow[]
+      | RepertoireSummaryRpcRow
+      | null
+  )
+
+  const safeKnownCount = repertoireSummary?.known_count ?? 0
+  const safeListCount = repertoireSummary?.list_count ?? 0
+  const safeInstrumentCount = repertoireSummary?.instrument_count ?? 0
+  const safeReviewEventCount = repertoireSummary?.review_event_count ?? 0
+
   const typedPracticeSummaryRows =
     (practiceSummaryRows ?? []) as HomePracticeSummaryRow[]
 
-  const practiceCount = typedPracticeSummaryRows.length
+  const practiceCount =
+    repertoireSummary?.practice_count ?? typedPracticeSummaryRows.length
 
   const dueTodayRows = typedPracticeSummaryRows
     .filter((userPiece) => isDueExactlyToday(userPiece.next_review_due))
     .sort(sortPracticeSummaryRows)
 
-  const dueTodayCount = dueTodayRows.length
+  const dueTodayCount =
+    repertoireSummary?.due_today_count ?? dueTodayRows.length
 
   const backlogSummary: BacklogGroupSummary[] = [
     {
@@ -365,10 +373,9 @@ export async function loadHomepageData() {
     },
   ]
 
-  const needsAttentionCount = backlogSummary.reduce(
-    (sum, group) => sum + group.count,
-    0
-  )
+  const needsAttentionCount =
+    repertoireSummary?.needs_attention_count ??
+    backlogSummary.reduce((sum, group) => sum + group.count, 0)
 
   const sortedPracticeRows = [...typedPracticeSummaryRows].sort(
     sortPracticeSummaryRows
@@ -407,9 +414,7 @@ export async function loadHomepageData() {
     previewRows = (previewData ?? []) as HomePracticePreviewRow[]
   }
 
-  const previewRowsById = new Map(
-    previewRows.map((row) => [row.id, row])
-  )
+  const previewRowsById = new Map(previewRows.map((row) => [row.id, row]))
 
   const dueTodayPreview = dueTodayRows
     .slice(0, 3)
@@ -456,14 +461,12 @@ export async function loadHomepageData() {
     throw new Error(reviewEventResult.error.message)
   }
 
-  const reviewEventCount = reviewEventResult.count ?? 0
-
-  const safeKnownCount = knownCount ?? 0
-  const safeListCount = listCount ?? 0
+  const reviewEventCount =
+    safeReviewEventCount || reviewEventResult.count || 0
 
   const gettingStartedState = buildGettingStartedState({
     profile: (profile ?? null) as HomepageProfileRow | null,
-    instrumentCount: instrumentCount ?? 0,
+    instrumentCount: safeInstrumentCount,
     practiceCount,
     knownCount: safeKnownCount,
     listCount: safeListCount,
