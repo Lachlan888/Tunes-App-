@@ -5,6 +5,7 @@ import { buildCompareHref } from "@/lib/compare-page"
 type CompareSuggestionsSectionProps = {
   compareSuggestions: CompareSuggestion[]
   filterPreservedUsers: string[]
+  includePractice: boolean
 }
 
 function getFriendDisplayName(friend: CompareSuggestion) {
@@ -14,6 +15,7 @@ function getFriendDisplayName(friend: CompareSuggestion) {
 export default function CompareSuggestionsSection({
   compareSuggestions,
   filterPreservedUsers,
+  includePractice,
 }: CompareSuggestionsSectionProps) {
   if (compareSuggestions.length === 0) {
     return null
@@ -50,7 +52,7 @@ export default function CompareSuggestionsSection({
                 </p>
 
                 <PendingLinkButton
-                  href={buildCompareHref(nextUsers)}
+                  href={buildCompareHref(nextUsers, { includePractice })}
                   label={alreadySelected ? "Already added" : "Add to compare"}
                   pendingLabel="Loading..."
                   className={

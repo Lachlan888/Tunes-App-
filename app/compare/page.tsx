@@ -10,7 +10,11 @@ import {
   getPieceFilterOptions,
   pieceMatchesFilters,
 } from "@/lib/search-filters"
-import { buildCompareHref, toArray } from "@/lib/compare-page"
+import {
+  buildCompareHref,
+  getIncludePracticeFromParam,
+  toArray,
+} from "@/lib/compare-page"
 import { loadCompareData } from "@/lib/loaders/compare"
 import type { Piece } from "@/lib/types"
 
@@ -21,6 +25,7 @@ type ComparePageProps = {
     key?: string | string[]
     style?: string | string[]
     time_signature?: string | string[]
+    include_practice?: string | string[]
     friend_request?: string
   }>
 }
@@ -36,6 +41,10 @@ export default async function ComparePage({
   const titleQuery = Array.isArray(resolvedSearchParams?.q)
     ? resolvedSearchParams?.q[0] ?? ""
     : resolvedSearchParams?.q ?? ""
+
+  const includePractice = getIncludePracticeFromParam(
+    resolvedSearchParams?.include_practice
+  )
 
   const friendRequestStatus = resolvedSearchParams?.friend_request ?? ""
 
@@ -53,7 +62,7 @@ export default async function ComparePage({
     canCompare,
     error,
     selectedProfiles,
-  } = await loadCompareData(selectedUsers)
+  } = await loadCompareData(selectedUsers, { includePractice })
 
   const {
     keys: availableKeys,
@@ -76,7 +85,7 @@ export default async function ComparePage({
     selectedStyles.length > 0 ||
     selectedTimeSignatures.length > 0
 
-  const redirectTo = buildCompareHref(selectedUsers)
+  const redirectTo = buildCompareHref(selectedUsers, { includePractice })
 
   const unresolvedUsers =
     error === "multiple_matches" ||
@@ -126,6 +135,7 @@ export default async function ComparePage({
           <CompareSearchForm
             initialQuery=""
             selectedUsers={filterPreservedUsers}
+            includePractice={includePractice}
           />
 
           {filterPreservedUsers.length > 0 && (
@@ -136,6 +146,7 @@ export default async function ComparePage({
               selectedKeys={selectedKeys}
               selectedStyles={selectedStyles}
               selectedTimeSignatures={selectedTimeSignatures}
+              includePractice={includePractice}
             />
           )}
 
@@ -172,6 +183,7 @@ export default async function ComparePage({
           <CompareSuggestionsSection
             compareSuggestions={compareSuggestions}
             filterPreservedUsers={filterPreservedUsers}
+            includePractice={includePractice}
           />
 
           {error === "missing_search" && (
@@ -246,6 +258,7 @@ export default async function ComparePage({
                   availableTimeSignatures={availableTimeSignatures}
                   hasActiveFilters={hasActiveFilters}
                   filterPreservedUsers={filterPreservedUsers}
+                  includePractice={includePractice}
                 />
               </>
             ) : (

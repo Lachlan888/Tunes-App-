@@ -6,11 +6,13 @@ import { useRouter } from "next/navigation"
 type CompareSearchFormProps = {
   initialQuery?: string
   selectedUsers?: string[]
+  includePractice?: boolean
 }
 
 export default function CompareSearchForm({
   initialQuery = "",
   selectedUsers = [],
+  includePractice = false,
 }: CompareSearchFormProps) {
   const router = useRouter()
   const [query, setQuery] = useState(initialQuery)
@@ -20,21 +22,16 @@ export default function CompareSearchForm({
     event.preventDefault()
 
     const trimmedQuery = query.trim()
+    const existingUsers = selectedUsers.filter(Boolean)
 
     startTransition(() => {
-      if (!trimmedQuery) {
-        router.push("/compare")
-        return
-      }
-
-      const existingUsers = selectedUsers.filter(Boolean)
-      const alreadySelected = existingUsers.some(
-        (user) => user.toLowerCase() === trimmedQuery.toLowerCase()
-      )
-
-      const nextUsers = alreadySelected
-        ? existingUsers
-        : [...existingUsers, trimmedQuery]
+      const nextUsers = trimmedQuery
+        ? existingUsers.some(
+            (user) => user.toLowerCase() === trimmedQuery.toLowerCase()
+          )
+          ? existingUsers
+          : [...existingUsers, trimmedQuery]
+        : existingUsers
 
       const params = new URLSearchParams()
 
@@ -42,7 +39,13 @@ export default function CompareSearchForm({
         params.append("user", user)
       })
 
-      router.push(`/compare?${params.toString()}`)
+      if (includePractice) {
+        params.set("include_practice", "1")
+      }
+
+      const nextHref = params.toString() ? `/compare?${params.toString()}` : "/compare"
+
+      router.push(nextHref)
       setQuery("")
     })
   }

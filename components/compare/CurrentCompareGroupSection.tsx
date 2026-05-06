@@ -1,4 +1,5 @@
 import PendingLinkButton from "@/components/PendingLinkButton"
+import CompareScopeToggle from "@/components/compare/CompareScopeToggle"
 import type { ProfileSearchRow } from "@/lib/profile-search"
 import { buildCompareHref, removeUserOnce } from "@/lib/compare-page"
 
@@ -9,6 +10,7 @@ type CurrentCompareGroupSectionProps = {
   selectedKeys: string[]
   selectedStyles: string[]
   selectedTimeSignatures: string[]
+  includePractice: boolean
 }
 
 function getProfileDisplayName(profile: ProfileSearchRow) {
@@ -22,6 +24,7 @@ export default function CurrentCompareGroupSection({
   selectedKeys,
   selectedStyles,
   selectedTimeSignatures,
+  includePractice,
 }: CurrentCompareGroupSectionProps) {
   return (
     <section className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
@@ -33,6 +36,15 @@ export default function CurrentCompareGroupSection({
         You are always included. Add other players to find tunes common to the
         whole group.
       </p>
+
+      <CompareScopeToggle
+        includePractice={includePractice}
+        filterPreservedUsers={filterPreservedUsers}
+        titleQuery={titleQuery}
+        selectedKeys={selectedKeys}
+        selectedStyles={selectedStyles}
+        selectedTimeSignatures={selectedTimeSignatures}
+      />
 
       {selectedProfiles.length > 0 ? (
         <div className="mt-5 flex flex-wrap gap-3">
@@ -59,6 +71,7 @@ export default function CurrentCompareGroupSection({
                       key: selectedKeys,
                       style: selectedStyles,
                       time_signature: selectedTimeSignatures,
+                      includePractice,
                     })}
                     label="Remove"
                     pendingLabel="Removing..."

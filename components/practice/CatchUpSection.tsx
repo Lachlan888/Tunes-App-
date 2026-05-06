@@ -28,11 +28,11 @@ function getStatusBadgeClasses(label: string | null) {
 function getSummaryFilterLabel(tier: BacklogTier) {
   switch (tier) {
     case "due_now":
-      return "Due now (1–7 days late)"
+      return "1–7 days late"
     case "overdue":
-      return "Overdue (8–21 days late)"
+      return "8–21 days late"
     case "overdue_longest":
-      return "Overdue (22+ days late)"
+      return "22+ days late"
   }
 }
 

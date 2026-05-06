@@ -46,6 +46,10 @@ type CompareLoaderResult = {
   selectedProfiles: ProfileSearchRow[]
 }
 
+type CompareLoaderOptions = {
+  includePractice?: boolean
+}
+
 async function loadCompareSuggestions(
   supabase: Awaited<ReturnType<typeof createClient>>,
   currentUserId: string
@@ -235,34 +239,39 @@ async function resolveSelectedProfile(
 
 async function loadUserRepertoirePieceIds(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  userId: string
+  userId: string,
+  options: { includePractice: boolean }
 ): Promise<Set<number>> {
-  const [
-    { data: practiceRows, error: practiceError },
-    { data: knownRows, error: knownError },
-  ] = await Promise.all([
-    supabase
-      .from("user_pieces")
-      .select("piece_id")
-      .eq("user_id", userId),
-
-    supabase
-      .from("user_known_pieces")
-      .select("piece_id")
-      .eq("user_id", userId),
-  ])
-
-  if (practiceError) {
-    throw new Error(practiceError.message)
-  }
+  const { data: knownRows, error: knownError } = await supabase
+    .from("user_known_pieces")
+    .select("piece_id")
+    .eq("user_id", userId)
 
   if (knownError) {
     throw new Error(knownError.message)
   }
 
+  const knownPieceIds = ((knownRows ?? []) as PieceIdRow[]).map(
+    (row) => row.piece_id
+  )
+
+  if (!options.includePractice) {
+    return new Set<number>(knownPieceIds)
+  }
+
+  const { data: practiceRows, error: practiceError } = await supabase
+    .from("user_pieces")
+    .select("piece_id")
+    .eq("user_id", userId)
+    .eq("status", "learning")
+
+  if (practiceError) {
+    throw new Error(practiceError.message)
+  }
+
   return new Set<number>([
+    ...knownPieceIds,
     ...((practiceRows ?? []) as PieceIdRow[]).map((row) => row.piece_id),
-    ...((knownRows ?? []) as PieceIdRow[]).map((row) => row.piece_id),
   ])
 }
 
@@ -271,8 +280,10 @@ function intersectSets(base: Set<number>, other: Set<number>) {
 }
 
 export async function loadCompareData(
-  rawSearchValues: string[]
+  rawSearchValues: string[],
+  options: CompareLoaderOptions = {}
 ): Promise<CompareLoaderResult> {
+  const includePractice = options.includePractice ?? false
   const supabase = await createClient()
 
   const {
@@ -404,9 +415,9 @@ export async function loadCompareData(
   }
 
   const repertoireSets = await Promise.all([
-    loadUserRepertoirePieceIds(supabase, user.id),
+    loadUserRepertoirePieceIds(supabase, user.id, { includePractice }),
     ...resolvedProfiles.map((profile) =>
-      loadUserRepertoirePieceIds(supabase, profile.id)
+      loadUserRepertoirePieceIds(supabase, profile.id, { includePractice })
     ),
   ])
 

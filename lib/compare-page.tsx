@@ -5,6 +5,13 @@ export function toArray(value: string | string[] | undefined) {
   return Array.isArray(value) ? value.filter(Boolean) : [value]
 }
 
+export function getIncludePracticeFromParam(
+  value: string | string[] | undefined
+) {
+  const firstValue = Array.isArray(value) ? value[0] : value
+  return firstValue === "1" || firstValue === "true"
+}
+
 export function buildCompareHref(
   users: string[],
   extraParams?: {
@@ -12,6 +19,7 @@ export function buildCompareHref(
     key?: string[]
     style?: string[]
     time_signature?: string[]
+    includePractice?: boolean
   }
 ) {
   const params = new URLSearchParams()
@@ -19,6 +27,10 @@ export function buildCompareHref(
   users.forEach((user) => {
     params.append("user", user)
   })
+
+  if (extraParams?.includePractice) {
+    params.set("include_practice", "1")
+  }
 
   if (extraParams?.q) {
     params.set("q", extraParams.q)

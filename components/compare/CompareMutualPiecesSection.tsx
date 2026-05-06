@@ -15,15 +15,23 @@ type CompareMutualPiecesSectionProps = {
   availableTimeSignatures: string[]
   hasActiveFilters: boolean
   filterPreservedUsers: string[]
+  includePractice: boolean
 }
 
-function buildCompareClearFiltersHref(filterPreservedUsers: string[]) {
+function buildCompareClearFiltersHref(
+  filterPreservedUsers: string[],
+  includePractice: boolean
+) {
   const params = new URLSearchParams()
 
   for (const username of filterPreservedUsers) {
     if (username) {
       params.append("user", username)
     }
+  }
+
+  if (includePractice) {
+    params.set("include_practice", "1")
   }
 
   return params.toString() ? `/compare?${params.toString()}` : "/compare"
@@ -41,7 +49,12 @@ export default function CompareMutualPiecesSection({
   availableTimeSignatures,
   hasActiveFilters,
   filterPreservedUsers,
+  includePractice,
 }: CompareMutualPiecesSectionProps) {
+  const emptyDescription = includePractice
+    ? "You and this player or group do not currently have overlapping known or practice tunes."
+    : "You and this player or group do not currently have overlapping known tunes."
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="shrink-0">
@@ -57,7 +70,10 @@ export default function CompareMutualPiecesSection({
           availableStyles={availableStyles}
           availableTimeSignatures={availableTimeSignatures}
           hasActiveFilters={hasActiveFilters}
-          preservedParams={{ user: filterPreservedUsers }}
+          preservedParams={{
+            user: filterPreservedUsers,
+            ...(includePractice ? { include_practice: "1" } : {}),
+          }}
         />
       </div>
 
@@ -68,14 +84,15 @@ export default function CompareMutualPiecesSection({
               title="No common tunes match these filters"
               description="You may still have tunes in common. Clear the filters to see the full overlap."
               primaryActionHref={buildCompareClearFiltersHref(
-                filterPreservedUsers
+                filterPreservedUsers,
+                includePractice
               )}
               primaryActionLabel="Clear filters"
             />
           ) : (
             <EmptyState
               title="No common tunes yet"
-              description="You and this player or group do not currently have overlapping known or practice tunes."
+              description={emptyDescription}
               secondaryActionHref="/friends"
               secondaryActionLabel="Find friends"
             />
