@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation"
+import { getCurrentUserRole } from "@/lib/auth/roles"
 import { createClient } from "@/lib/supabase/server"
 import type {
   LearningList,
@@ -6,6 +7,7 @@ import type {
   StyleOption,
   UserKnownPiece,
   UserPiece,
+  UserRole,
 } from "@/lib/types"
 
 export type UserPieceMetadata = {
@@ -30,6 +32,7 @@ export type PieceCommentRow = {
   created_at: string
   user_id: string
   parent_comment_id: number | null
+  moderation_status: "visible" | "hidden"
 }
 
 export type PieceLoreCategory =
@@ -71,6 +74,7 @@ export type TuneDetailLoadResult =
         id: string
         email?: string | null
       }
+      currentUserRole: UserRole
       pieceId: number
       redirectTo: string
       typedPiece: Piece
@@ -114,6 +118,10 @@ export async function loadTuneDetailData(
     redirect("/login")
   }
 
+  const currentUserRole = await getCurrentUserRole(supabase, user.id)
+  const canSeeHiddenComments =
+    currentUserRole === "moderator" || currentUserRole === "admin"
+
   const { data: piece, error } = await supabase
     .from("pieces")
     .select("id, title, key, style, time_signature, reference_url")
@@ -140,6 +148,18 @@ export async function loadTuneDetailData(
     .eq("user_id", user.id)
 
   const ownedListIds = (ownedLists ?? []).map((list) => list.id)
+
+  let commentsQuery = supabase
+    .from("piece_comments")
+    .select(
+      "id, body, created_at, user_id, parent_comment_id, moderation_status"
+    )
+    .eq("piece_id", pieceId)
+    .order("created_at", { ascending: true })
+
+  if (!canSeeHiddenComments) {
+    commentsQuery = commentsQuery.eq("moderation_status", "visible")
+  }
 
   const [
     userPieceMetadataResult,
@@ -169,11 +189,7 @@ export async function loadTuneDetailData(
       .select("id, url, label")
       .eq("piece_id", pieceId)
       .order("created_at", { ascending: true }),
-    supabase
-      .from("piece_comments")
-      .select("id, body, created_at, user_id, parent_comment_id")
-      .eq("piece_id", pieceId)
-      .order("created_at", { ascending: true }),
+    commentsQuery,
     supabase
       .from("piece_lore_entries")
       .select("id, category, entry_text, created_at, user_id")
@@ -264,6 +280,7 @@ export async function loadTuneDetailData(
   return {
     status: "loaded",
     user,
+    currentUserRole,
     pieceId,
     redirectTo,
     typedPiece,

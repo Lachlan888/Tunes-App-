@@ -143,11 +143,25 @@ export default async function DashboardPage({
   )
 
   return (
-    <main className="p-8">
-      <h1 className="mb-2 text-3xl font-bold">Profile</h1>
-      <p className="mb-6 text-gray-600">
-        Manage your public identity, instruments, and profile visibility.
-      </p>
+    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+      <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Profile
+        </p>
+
+        <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight md:text-5xl">
+          Manage your profile
+        </h1>
+
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground md:text-base">
+          Control your public identity, instruments, visibility, and comparison
+          settings.
+        </p>
+
+        <p className="mt-4 text-sm text-muted-foreground">
+          Logged in as {user.email ?? "Unknown"}
+        </p>
+      </section>
 
       <ProfileEditor
         email={user.email}

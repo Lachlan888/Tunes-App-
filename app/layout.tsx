@@ -2,7 +2,7 @@ import "./globals.css"
 import LogoutButton from "@/components/LogoutButton"
 import NavDropdown from "@/components/NavDropdown"
 import PendingNavLink from "@/components/PendingNavLink"
-import { loadNavCounts } from "@/lib/loaders/nav"
+import { emptyNavContext, loadNavContext } from "@/lib/loaders/nav"
 import { createClient } from "@/lib/supabase/server"
 
 export const dynamic = "force-dynamic"
@@ -18,14 +18,9 @@ export default async function RootLayout({
     data: { user },
   } = await supabase.auth.getUser()
 
-  const navCounts = user
-    ? await loadNavCounts(supabase, user.id)
-    : {
-        unreadNotificationCount: 0,
-        unreadMessageCount: 0,
-        unreadTotalCount: 0,
-        overduePracticeCount: 0,
-      }
+  const navContext = user
+    ? await loadNavContext(supabase, user.id)
+    : emptyNavContext
 
   return (
     <html lang="en">
@@ -49,7 +44,7 @@ export default async function RootLayout({
                   <PendingNavLink
                     href="/review"
                     label="Practice"
-                    badgeCount={navCounts.overduePracticeCount}
+                    badgeCount={navContext.overduePracticeCount}
                   />
 
                   <PendingNavLink href="/library" label="Tunes" />
@@ -57,7 +52,7 @@ export default async function RootLayout({
 
                   <NavDropdown
                     label="Social"
-                    badgeCount={navCounts.unreadTotalCount}
+                    badgeCount={navContext.unreadTotalCount}
                     items={[
                       {
                         href: "/friends",
@@ -66,7 +61,7 @@ export default async function RootLayout({
                       {
                         href: "/inbox",
                         label: "Inbox",
-                        badgeCount: navCounts.unreadTotalCount,
+                        badgeCount: navContext.unreadTotalCount,
                       },
                       {
                         href: "/compare",
@@ -80,6 +75,15 @@ export default async function RootLayout({
                   />
 
                   <PendingNavLink href="/trends" label="Trends" />
+
+                  {navContext.canModerate ? (
+                    <PendingNavLink
+                      href="/moderator"
+                      label="Moderator"
+                      badgeCount={navContext.pendingModerationCount}
+                    />
+                  ) : null}
+
                   <PendingNavLink href="/dashboard" label="Profile" />
                   <LogoutButton />
                 </>

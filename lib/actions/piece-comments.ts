@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { recordCommentAddedEvent } from "@/lib/services/activity-events"
 
@@ -8,6 +9,27 @@ type ParentCommentRow = {
   id: number
   piece_id: number
   user_id: string
+}
+
+const VALID_REPORT_REASONS = [
+  "spam",
+  "abuse_or_harassment",
+  "hateful_content",
+  "sexual_content",
+  "misleading_or_bad_faith",
+  "other",
+] as const
+
+type CommentReportReason = (typeof VALID_REPORT_REASONS)[number]
+
+function isValidReportReason(value: string): value is CommentReportReason {
+  return VALID_REPORT_REASONS.includes(value as CommentReportReason)
+}
+
+function appendQueryParam(url: string, key: string, value: string) {
+  return url.includes("?")
+    ? `${url}&${key}=${encodeURIComponent(value)}`
+    : `${url}?${key}=${encodeURIComponent(value)}`
 }
 
 function previewBody(body: string) {
@@ -49,6 +71,7 @@ export async function addPieceComment(formData: FormData) {
       .select("id, piece_id, user_id")
       .eq("id", parentCommentId)
       .eq("piece_id", pieceId)
+      .eq("moderation_status", "visible")
       .maybeSingle()
 
     if (error) {
@@ -66,6 +89,7 @@ export async function addPieceComment(formData: FormData) {
       user_id: user.id,
       body,
       parent_comment_id: parentComment?.id ?? null,
+      moderation_status: "visible",
     })
     .select("id")
     .single()
@@ -136,4 +160,69 @@ export async function deletePieceComment(formData: FormData) {
 
   revalidatePath(`/library/${pieceId}`)
   revalidatePath(redirectTo)
+}
+
+export async function reportPieceComment(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const pieceId = Number(formData.get("piece_id"))
+  const commentId = Number(formData.get("comment_id"))
+  const redirectTo =
+    formData.get("redirect_to")?.toString() || `/library/${pieceId}`
+  const reason = formData.get("reason")?.toString() || ""
+  const details = formData.get("details")?.toString().trim() || null
+
+  if (!pieceId || Number.isNaN(pieceId)) {
+    redirect(appendQueryParam(redirectTo, "comment_report", "missing_piece"))
+  }
+
+  if (!commentId || Number.isNaN(commentId)) {
+    redirect(appendQueryParam(redirectTo, "comment_report", "missing_comment"))
+  }
+
+  if (!isValidReportReason(reason)) {
+    redirect(appendQueryParam(redirectTo, "comment_report", "invalid_reason"))
+  }
+
+  const { data: comment, error: commentError } = await supabase
+    .from("piece_comments")
+    .select("id, user_id, piece_id, moderation_status")
+    .eq("id", commentId)
+    .eq("piece_id", pieceId)
+    .maybeSingle()
+
+  if (commentError || !comment) {
+    redirect(appendQueryParam(redirectTo, "comment_report", "comment_not_found"))
+  }
+
+  if (comment.user_id === user.id) {
+    redirect(appendQueryParam(redirectTo, "comment_report", "own_comment"))
+  }
+
+  if (comment.moderation_status === "hidden") {
+    redirect(appendQueryParam(redirectTo, "comment_report", "already_hidden"))
+  }
+
+  const { error } = await supabase.from("comment_reports").insert({
+    comment_id: commentId,
+    reported_by: user.id,
+    reason,
+    details,
+  })
+
+  if (error) {
+    console.error("Error reporting comment:", error)
+    redirect(appendQueryParam(redirectTo, "comment_report", "error"))
+  }
+
+  revalidatePath(`/library/${pieceId}`)
+  redirect(appendQueryParam(redirectTo, "comment_report", "success"))
 }

@@ -1,0 +1,67 @@
+Tunes App caching policy
+
+Core rule
+
+Cache stable shared data.
+Keep volatile authenticated user state fresh.
+
+This app is mostly authenticated and user-specific, so broad page-level caching is dangerous.
+
+Safe caching candidates:
+- active style options
+- canonical tune metadata that changes rarely
+- canonical piece filter options derived from shared catalogue data
+- public list browse data, only if split away from current-user ownership state
+- public profile base data, only if split away from viewer relationship state
+- static design or marketing text
+
+Dangerous caching candidates:
+- Home summary
+- Practice queue
+- due today
+- backlog state
+- streak state
+- current user list contents
+- known/practice state
+- nav counts
+- comments immediately after posting
+- compare results based on user repertoire
+- list contents after editing
+- any loader that calls streak reconciliation
+- any loader that returns user-specific state derived from user.id
+
+Implementation rule
+
+Do not cache an entire authenticated page loader unless every value returned by that loader is safe to be stale.
+
+Preferred pattern:
+- extract stable shared reads into small cached helper functions
+- keep user-specific loaders fresh
+- compose cached shared data with fresh user-specific data at the page-loader level
+
+Examples
+
+Good:
+- loadActiveStyleOptions()
+- loadCanonicalPieceFilterOptions()
+
+Bad:
+- cache loadHomepageData()
+- cache loadReviewPageData()
+- cache loadListsData()
+- cache loadCompareData() as a whole
+- cache loadTuneDetailData() as a whole
+
+Product reasoning
+
+Tunes App is a repertoire memory tool. If practice state, streaks, list edits, known/practice transitions, or comments appear stale, the product feels untrustworthy.
+
+Latency can be softened with route loading states and pending buttons.
+Caching should be used only where stale data does not damage user trust.
+
+Technical note
+
+The normal server Supabase client in lib/supabase/server.ts reads request cookies.
+Do not put that client inside persistent cached helpers.
+
+For stable shared reference data, use a separate anon Supabase client that does not depend on request cookies.

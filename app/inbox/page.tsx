@@ -1,7 +1,10 @@
 import DirectMessageThreadList from "@/components/inbox/DirectMessageThreadList"
 import InboxItemList from "@/components/inbox/InboxItemList"
 import SubmitButton from "@/components/SubmitButton"
-import { markAllNotificationsRead } from "@/lib/actions/activity-interactions"
+import {
+  archiveAllInboxItems,
+  markAllNotificationsRead,
+} from "@/lib/actions/activity-interactions"
 import { loadInboxData } from "@/lib/loaders/inbox"
 
 type InboxPageProps = {
@@ -109,6 +112,9 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
     unreadCount,
   } = await loadInboxData()
 
+  const hasInboxItems =
+    notificationItems.length > 0 || messageThreads.length > 0
+
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
       {directMessageMessage ? (
@@ -130,42 +136,61 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
 
             <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
               Threaded direct messages, activity replies, tune-comment replies,
-              and Good craic! reactions from other musicians.
+              moderation outcomes, and Good craic! reactions from other
+              musicians.
             </p>
           </div>
 
-          <div className="grid gap-3 text-sm sm:grid-cols-3">
-            <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
-              <p className="font-semibold text-foreground">{unreadCount}</p>
-              <p className="text-muted-foreground">Unread total</p>
+          <div className="flex flex-col gap-3 md:items-end">
+            <div className="grid gap-3 text-sm sm:grid-cols-3">
+              <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
+                <p className="font-semibold text-foreground">{unreadCount}</p>
+                <p className="text-muted-foreground">Unread total</p>
+              </div>
+
+              <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
+                <p className="font-semibold text-foreground">
+                  {unreadMessageCount}
+                </p>
+                <p className="text-muted-foreground">Messages</p>
+              </div>
+
+              <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
+                <p className="font-semibold text-foreground">
+                  {unreadNotificationCount}
+                </p>
+                <p className="text-muted-foreground">Notifications</p>
+              </div>
             </div>
 
-            <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
-              <p className="font-semibold text-foreground">
-                {unreadMessageCount}
-              </p>
-              <p className="text-muted-foreground">Messages</p>
-            </div>
+            <div className="flex flex-wrap gap-2 md:justify-end">
+              {unreadCount > 0 ? (
+                <form action={markAllNotificationsRead}>
+                  <SubmitButton
+                    label="Mark all read"
+                    pendingLabel="Marking read..."
+                    className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  />
+                </form>
+              ) : (
+                <p className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  All caught up
+                </p>
+              )}
 
-            <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
-              <p className="font-semibold text-foreground">
-                {unreadNotificationCount}
-              </p>
-              <p className="text-muted-foreground">Notifications</p>
+              {hasInboxItems ? (
+                <form action={archiveAllInboxItems}>
+                  <SubmitButton
+                    label="Archive all"
+                    pendingLabel="Archiving..."
+                    className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  />
+                </form>
+              ) : null}
             </div>
           </div>
         </div>
       </section>
-
-      {unreadCount > 0 ? (
-        <form action={markAllNotificationsRead} className="mb-5">
-          <SubmitButton
-            label="Mark all read"
-            pendingLabel="Saving..."
-            className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-          />
-        </form>
-      ) : null}
 
       <section className="mb-8">
         <div className="mb-4">
@@ -184,7 +209,8 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
           </h2>
 
           <p className="mt-2 text-sm text-muted-foreground">
-            Good craic! reactions and replies to your activity appear here.
+            Good craic! reactions, replies, and moderation outcomes appear
+            here.
           </p>
         </div>
 

@@ -1,17 +1,24 @@
-import SubmitButton from "@/components/SubmitButton"
-import { updateMissingPieceDetails } from "@/lib/actions/pieces"
-import type { Piece } from "@/lib/types"
+"use client"
 
-type StyleOption = {
-  id: number
-  slug: string
-  label: string
-}
+import { useState } from "react"
+import RequestTuneEditForm from "@/components/library/RequestTuneEditForm"
+import SubmitButton from "@/components/SubmitButton"
+import { directModeratorUpdatePiece } from "@/lib/actions/moderation"
+import { updateMissingPieceDetails } from "@/lib/actions/pieces"
+import { VALID_KEYS } from "@/lib/music/keys"
+import type { Piece, StyleOption, UserRole } from "@/lib/types"
 
 type TuneCanonicalDetailsCardProps = {
   piece: Piece
   redirectTo: string
   styleOptions: StyleOption[]
+  currentUserRole: UserRole
+}
+
+type ModalMode = "missing" | "request" | "moderator" | null
+
+function canUseModeratorTools(role: UserRole) {
+  return role === "moderator" || role === "admin"
 }
 
 function DetailRow({
@@ -33,14 +40,65 @@ function DetailRow({
   )
 }
 
+function ModalShell({
+  title,
+  description,
+  children,
+  onClose,
+}: {
+  title: string
+  description: string
+  children: React.ReactNode
+  onClose: () => void
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/35 px-4 py-8 backdrop-blur-sm">
+      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-xl">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Tune details
+            </p>
+            <h3 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
+              {title}
+            </h3>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+              {description}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="mt-6">{children}</div>
+      </div>
+    </div>
+  )
+}
+
 const inputClassName =
   "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+
+const primaryButtonClass =
+  "w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+
+const secondaryButtonClass =
+  "w-full rounded-full border border-border bg-background/70 px-4 py-3 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function TuneCanonicalDetailsCard({
   piece,
   redirectTo,
   styleOptions,
+  currentUserRole,
 }: TuneCanonicalDetailsCardProps) {
+  const [modalMode, setModalMode] = useState<ModalMode>(null)
+
   const missingFields = [
     !piece.key,
     !piece.style,
@@ -48,81 +106,234 @@ export default function TuneCanonicalDetailsCard({
     !piece.reference_url,
   ].filter(Boolean).length
 
+  const isModerator = canUseModeratorTools(currentUserRole)
+
   return (
     <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        Tune details
-      </h2>
+      <div>
+        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Tune details
+        </h2>
 
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-        You can add missing canonical information here. Existing canonical
-        details stay fixed. If you need a different key or version, create a
-        separate tune entry.
-      </p>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+          These are shared canonical details for this tune. Normal users can
+          request corrections. Moderators can directly edit shared tune data.
+        </p>
+      </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <DetailRow label="Title" value={piece.title} />
         <DetailRow label="Key" value={piece.key} />
         <DetailRow label="Style" value={piece.style} />
         <DetailRow label="Time signature" value={piece.time_signature} />
         <DetailRow label="Reference URL" value={piece.reference_url} />
       </div>
 
-      {missingFields === 0 ? (
-        <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-          No canonical details are missing for this tune.
+      {!isModerator && missingFields > 0 ? (
+        <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+          {missingFields} shared detail{missingFields === 1 ? "" : "s"} still{" "}
+          {missingFields === 1 ? "needs" : "need"} filling in.
         </p>
-      ) : (
-        <form action={updateMissingPieceDetails} className="mt-5 space-y-3">
-          <input type="hidden" name="piece_id" value={piece.id} />
-          <input type="hidden" name="redirect_to" value={redirectTo} />
+      ) : null}
 
-          {!piece.key && (
+      <div className="mt-5 grid gap-2">
+        {isModerator ? (
+          <button
+            type="button"
+            onClick={() => setModalMode("moderator")}
+            className={primaryButtonClass}
+          >
+            Edit canonical details
+          </button>
+        ) : (
+          <>
+            {missingFields > 0 ? (
+              <button
+                type="button"
+                onClick={() => setModalMode("missing")}
+                className={primaryButtonClass}
+              >
+                Add missing details
+              </button>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => setModalMode("request")}
+              className={secondaryButtonClass}
+            >
+              Request correction
+            </button>
+          </>
+        )}
+      </div>
+
+      {modalMode === "missing" ? (
+        <ModalShell
+          title="Add missing details"
+          description="Add canonical information that is currently missing. Existing details should be changed through a correction request."
+          onClose={() => setModalMode(null)}
+        >
+          <form action={updateMissingPieceDetails} className="space-y-3">
+            <input type="hidden" name="piece_id" value={piece.id} />
+            <input type="hidden" name="redirect_to" value={redirectTo} />
+
+            {!piece.key ? (
+              <select name="key" defaultValue="" className={inputClassName}>
+                <option value="">Choose key</option>
+                {VALID_KEYS.map((key) => (
+                  <option key={key} value={key}>
+                    {key}
+                  </option>
+                ))}
+              </select>
+            ) : null}
+
+            {!piece.style ? (
+              <select name="style_id" defaultValue="" className={inputClassName}>
+                <option value="">Choose style</option>
+                {styleOptions.map((style) => (
+                  <option key={style.id} value={style.id}>
+                    {style.label}
+                  </option>
+                ))}
+              </select>
+            ) : null}
+
+            {!piece.time_signature ? (
+              <input
+                name="time_signature"
+                placeholder='Add time signature, eg "4/4"'
+                className={inputClassName}
+              />
+            ) : null}
+
+            {!piece.reference_url ? (
+              <input
+                name="reference_url"
+                type="url"
+                placeholder="Add reference URL"
+                className={inputClassName}
+              />
+            ) : null}
+
+            <div className="grid gap-2 pt-2">
+              <SubmitButton
+                label="Save missing details"
+                pendingLabel="Saving..."
+                className={primaryButtonClass}
+              />
+
+              <button
+                type="button"
+                onClick={() => setModalMode(null)}
+                className={secondaryButtonClass}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </ModalShell>
+      ) : null}
+
+      {modalMode === "request" ? (
+        <ModalShell
+          title="Request a correction"
+          description="Suggest corrections to the shared tune record. To add background, source notes, alternate titles, or folklore, use the Lore section instead."
+          onClose={() => setModalMode(null)}
+        >
+          <RequestTuneEditForm
+            piece={piece}
+            redirectTo={redirectTo}
+            styleOptions={styleOptions}
+          />
+        </ModalShell>
+      ) : null}
+
+      {modalMode === "moderator" ? (
+        <ModalShell
+          title="Edit canonical details"
+          description="Update shared tune data directly. This affects the canonical tune record and creates an audit log entry."
+          onClose={() => setModalMode(null)}
+        >
+          <form action={directModeratorUpdatePiece} className="space-y-3">
+            <input type="hidden" name="piece_id" value={piece.id} />
+            <input type="hidden" name="redirect_to" value={redirectTo} />
+
             <input
-              name="key"
-              placeholder='Add key, eg "D", "Dm" or "D Modal"'
+              name="title"
+              defaultValue={piece.title}
+              placeholder="Title"
               className={inputClassName}
+              required
             />
-          )}
 
-          {!piece.style && (
             <select
-              name="style_id"
-              defaultValue=""
+              name="key"
+              defaultValue={piece.key || ""}
               className={inputClassName}
             >
-              <option value="">Choose style</option>
+              <option value="">No key</option>
+              {VALID_KEYS.map((key) => (
+                <option key={key} value={key}>
+                  {key}
+                </option>
+              ))}
+            </select>
+
+            <select
+              name="style"
+              defaultValue={piece.style || ""}
+              className={inputClassName}
+            >
+              <option value="">No style</option>
               {styleOptions.map((style) => (
-                <option key={style.id} value={style.id}>
+                <option key={style.id} value={style.label}>
                   {style.label}
                 </option>
               ))}
             </select>
-          )}
 
-          {!piece.time_signature && (
             <input
               name="time_signature"
-              placeholder='Add time signature, eg "4/4"'
+              defaultValue={piece.time_signature || ""}
+              placeholder='Time signature, eg "4/4"'
               className={inputClassName}
             />
-          )}
 
-          {!piece.reference_url && (
             <input
               name="reference_url"
               type="url"
-              placeholder="Add reference URL"
+              defaultValue={piece.reference_url || ""}
+              placeholder="Reference URL"
               className={inputClassName}
             />
-          )}
 
-          <SubmitButton
-            label="Save missing details"
-            pendingLabel="Saving..."
-            className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-          />
-        </form>
-      )}
+            <textarea
+              name="moderator_comment"
+              rows={4}
+              placeholder="Optional audit note explaining the edit"
+              className={inputClassName}
+            />
+
+            <div className="grid gap-2 pt-2">
+              <SubmitButton
+                label="Save canonical details"
+                pendingLabel="Saving..."
+                className={primaryButtonClass}
+              />
+
+              <button
+                type="button"
+                onClick={() => setModalMode(null)}
+                className={secondaryButtonClass}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </ModalShell>
+      ) : null}
     </section>
   )
 }

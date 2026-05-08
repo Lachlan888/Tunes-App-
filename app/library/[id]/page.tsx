@@ -19,6 +19,13 @@ type PiecePageProps = {
   params: Promise<{
     id: string
   }>
+  searchParams?: Promise<{
+    edit_request?: string | string[]
+    comment_report?: string | string[]
+    lore_report?: string | string[]
+    lore?: string | string[]
+    moderator_edit?: string | string[]
+  }>
 }
 
 function DetailErrorShell({
@@ -54,8 +61,61 @@ const inputClassName =
 const primaryButtonClass =
   "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
-export default async function PiecePage({ params }: PiecePageProps) {
+function getSingleValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? ""
+}
+
+function getStatusMessage({
+  editRequest,
+  commentReport,
+  loreReport,
+  lore,
+  moderatorEdit,
+}: {
+  editRequest: string
+  commentReport: string
+  loreReport: string
+  lore: string
+  moderatorEdit: string
+}) {
+  if (editRequest === "success") return "Edit request submitted."
+  if (editRequest === "empty") return "Add at least one proposed change."
+  if (editRequest === "invalid_key") return "That key is not valid."
+  if (editRequest === "invalid_url") return "That reference URL is not valid."
+  if (editRequest === "error") return "Could not submit edit request."
+
+  if (commentReport === "success") return "Comment report submitted."
+  if (commentReport === "invalid_reason") return "Choose a report reason."
+  if (commentReport === "own_comment") return "You cannot report your own comment."
+  if (commentReport === "already_hidden") return "That comment is already hidden."
+  if (commentReport === "error") return "Could not submit comment report."
+
+  if (loreReport === "success") return "Lore report submitted."
+  if (loreReport === "invalid_reason") return "Choose a lore report reason."
+  if (loreReport === "own_entry") return "You cannot report your own lore entry."
+  if (loreReport === "entry_not_found") return "That lore entry could not be found."
+  if (loreReport === "error") return "Could not submit lore report."
+
+  if (lore === "updated") return "Lore entry updated."
+  if (lore === "invalid_category") return "Choose a valid lore category."
+  if (lore === "missing_text") return "Lore entry text is required."
+  if (lore === "error") return "Could not update lore entry."
+
+  if (moderatorEdit === "success") return "Canonical tune details updated."
+  if (moderatorEdit === "missing_title") return "Title is required."
+  if (moderatorEdit === "invalid_key") return "That key is not valid."
+  if (moderatorEdit === "invalid_url") return "That reference URL is not valid."
+  if (moderatorEdit === "error") return "Could not save canonical details."
+
+  return null
+}
+
+export default async function PiecePage({
+  params,
+  searchParams,
+}: PiecePageProps) {
   const { id } = await params
+  const resolvedSearchParams = searchParams ? await searchParams : undefined
   const tuneDetail = await loadTuneDetailData(id)
 
   if (tuneDetail.status === "load_error") {
@@ -76,6 +136,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
 
   const {
     user,
+    currentUserRole,
     pieceId,
     redirectTo,
     typedPiece,
@@ -92,6 +153,14 @@ export default async function PiecePage({ params }: PiecePageProps) {
     profileMap,
   } = tuneDetail
 
+  const statusMessage = getStatusMessage({
+    editRequest: getSingleValue(resolvedSearchParams?.edit_request),
+    commentReport: getSingleValue(resolvedSearchParams?.comment_report),
+    loreReport: getSingleValue(resolvedSearchParams?.lore_report),
+    lore: getSingleValue(resolvedSearchParams?.lore),
+    moderatorEdit: getSingleValue(resolvedSearchParams?.moderator_edit),
+  })
+
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
       <div className="mb-5">
@@ -102,6 +171,12 @@ export default async function PiecePage({ params }: PiecePageProps) {
           Back to Tunes
         </Link>
       </div>
+
+      {statusMessage ? (
+        <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+          {statusMessage}
+        </div>
+      ) : null}
 
       <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
         <h1 className="max-w-5xl font-serif text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
@@ -126,6 +201,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
             piece={typedPiece}
             redirectTo={redirectTo}
             styleOptions={styleOptions}
+            currentUserRole={currentUserRole}
           />
         </div>
 
@@ -231,6 +307,7 @@ export default async function PiecePage({ params }: PiecePageProps) {
               loreEntries={typedPieceLoreEntries}
               profileMap={profileMap}
               currentUserId={user.id}
+              currentUserRole={currentUserRole}
             />
           </section>
 

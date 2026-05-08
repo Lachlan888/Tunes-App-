@@ -25,6 +25,15 @@ type UserInstrumentsSectionProps = {
   profileDraft: ProfileDraft
 }
 
+const inputClassName =
+  "flex-1 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+
+const primaryButtonClassName =
+  "rounded-full border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70"
+
+const secondaryButtonClassName =
+  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70"
+
 function ProfileDraftHiddenInputs({
   profileDraft,
 }: {
@@ -32,7 +41,11 @@ function ProfileDraftHiddenInputs({
 }) {
   return (
     <>
-      <input type="hidden" name="profile_username" value={profileDraft.username} />
+      <input
+        type="hidden"
+        name="profile_username"
+        value={profileDraft.username}
+      />
       <input
         type="hidden"
         name="profile_display_name"
@@ -81,70 +94,87 @@ export default function UserInstrumentsSection({
   profileDraft,
 }: UserInstrumentsSectionProps) {
   return (
-    <section className="rounded border p-6">
-      <h2 className="text-xl font-semibold">Instruments</h2>
-      <p className="mt-1 text-sm text-gray-600">
+    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        Instruments
+      </h2>
+
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
         Add the instruments you play so your public profile is more useful to
         other musicians.
       </p>
 
       {instrumentSaved && (
-        <p className="mt-4 rounded border border-green-300 bg-green-50 p-3 text-green-700">
+        <p className="mt-5 rounded-2xl border border-success bg-muted p-4 text-sm font-medium text-foreground shadow-sm">
           Instrument added.
         </p>
       )}
 
       {instrumentRemoved && (
-        <p className="mt-4 rounded border border-green-300 bg-green-50 p-3 text-green-700">
+        <p className="mt-5 rounded-2xl border border-success bg-muted p-4 text-sm font-medium text-foreground shadow-sm">
           Instrument removed.
         </p>
       )}
 
       {instrumentErrorMessage && (
-        <p className="mt-4 rounded border border-red-300 bg-red-50 p-3 text-red-700">
+        <p className="mt-5 rounded-2xl border border-destructive bg-muted p-4 text-sm font-medium text-destructive shadow-sm">
           {instrumentErrorMessage}
         </p>
       )}
 
-      <form action={addUserInstrument} className="mt-4 flex gap-2">
+      <form
+        action={addUserInstrument}
+        className="mt-5 flex flex-col gap-3 sm:flex-row"
+      >
         <input type="hidden" name="redirect_to" value="/dashboard" />
         <ProfileDraftHiddenInputs profileDraft={profileDraft} />
+
         <input
           name="instrument_name"
           placeholder="Add an instrument"
-          className="flex-1 rounded border p-2"
+          className={inputClassName}
         />
+
         <SubmitButton
           label="Add"
           pendingLabel="Adding..."
-          className="rounded bg-black px-4 py-2 text-white"
+          className={primaryButtonClassName}
         />
       </form>
 
       {instruments.length > 0 ? (
-        <ul className="mt-4 space-y-2 text-gray-700">
+        <ul className="mt-6 space-y-3">
           {instruments.map((instrument) => (
             <li
               key={instrument.id}
-              className="flex items-center justify-between rounded border p-3"
+              className="flex flex-col gap-3 rounded-2xl border border-border bg-background/70 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
             >
-              <span>{instrument.instrument_name}</span>
+              <span className="text-sm font-medium text-foreground">
+                {instrument.instrument_name}
+              </span>
 
               <form action={removeUserInstrument}>
-                <input type="hidden" name="instrument_id" value={instrument.id} />
+                <input
+                  type="hidden"
+                  name="instrument_id"
+                  value={instrument.id}
+                />
                 <input type="hidden" name="redirect_to" value="/dashboard" />
                 <ProfileDraftHiddenInputs profileDraft={profileDraft} />
+
                 <SubmitButton
                   label="Remove"
                   pendingLabel="Removing..."
-                  className="rounded border px-3 py-1 text-sm"
+                  className={secondaryButtonClassName}
                 />
               </form>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="mt-4 text-gray-600">No instruments added yet.</p>
+        <p className="mt-6 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+          No instruments added yet.
+        </p>
       )}
     </section>
   )

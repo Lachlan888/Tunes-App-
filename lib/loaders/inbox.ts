@@ -6,6 +6,8 @@ export type InboxNotificationType =
   | "activity_reply"
   | "comment_reply"
   | "direct_message"
+  | "piece_edit_request_approved"
+  | "piece_edit_request_rejected"
 
 type NotificationRow = {
   id: number

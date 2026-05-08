@@ -1,23 +1,125 @@
+import { canModerate } from "@/lib/auth/roles"
 import { getToday, normaliseStoredDate } from "@/lib/review"
-import type { createClient } from "@/lib/supabase/server"
+import type { SupabaseServerClient } from "@/lib/auth/session"
+import type { UserRole } from "@/lib/types"
 
-type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
-
-export type NavCounts = {
+export type NavContext = {
+  role: UserRole
+  canModerate: boolean
   unreadNotificationCount: number
   unreadMessageCount: number
   unreadTotalCount: number
   overduePracticeCount: number
+  pendingModerationCount: number
 }
 
-export async function loadNavCounts(
+export const emptyNavContext: NavContext = {
+  role: "user",
+  canModerate: false,
+  unreadNotificationCount: 0,
+  unreadMessageCount: 0,
+  unreadTotalCount: 0,
+  overduePracticeCount: 0,
+  pendingModerationCount: 0,
+}
+
+function normaliseRole(role: string | null | undefined): UserRole {
+  if (role === "moderator" || role === "admin") {
+    return role
+  }
+
+  return "user"
+}
+
+async function loadRole(
   supabase: SupabaseServerClient,
   userId: string
-): Promise<NavCounts> {
+): Promise<UserRole> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle()
+
+  if (error) {
+    console.error("Error loading nav role:", error)
+    return "user"
+  }
+
+  return normaliseRole(data?.role)
+}
+
+async function loadPendingModerationCount(supabase: SupabaseServerClient) {
+  const [
+    { count: pendingPieceEditRequestCount, error: pieceEditRequestError },
+    { count: pendingCommentReportCount, error: commentReportError },
+    { count: pendingLoreReportCount, error: loreReportError },
+  ] = await Promise.all([
+    supabase
+      .from("piece_edit_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
+
+    supabase
+      .from("comment_reports")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
+
+    supabase
+      .from("piece_lore_reports")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
+  ])
+
+  if (pieceEditRequestError) {
+    console.error(
+      "Error loading pending piece edit request count:",
+      pieceEditRequestError
+    )
+  }
+
+  if (commentReportError) {
+    console.error("Error loading pending comment report count:", commentReportError)
+  }
+
+  if (loreReportError) {
+    console.error("Error loading pending lore report count:", loreReportError)
+  }
+
+  const safePendingPieceEditRequestCount =
+    pieceEditRequestError || pendingPieceEditRequestCount === null
+      ? 0
+      : pendingPieceEditRequestCount
+
+  const safePendingCommentReportCount =
+    commentReportError || pendingCommentReportCount === null
+      ? 0
+      : pendingCommentReportCount
+
+  const safePendingLoreReportCount =
+    loreReportError || pendingLoreReportCount === null
+      ? 0
+      : pendingLoreReportCount
+
+  return (
+    safePendingPieceEditRequestCount +
+    safePendingCommentReportCount +
+    safePendingLoreReportCount
+  )
+}
+
+export async function loadNavContext(
+  supabase: SupabaseServerClient,
+  userId: string
+): Promise<NavContext> {
+  const role = await loadRole(supabase, userId)
+  const userCanModerate = canModerate(role)
+
   const [
     { count: unreadNotificationCount, error: notificationError },
     { count: unreadMessageCount, error: messageError },
     { data: practiceRows, error: practiceError },
+    pendingModerationCount,
   ] = await Promise.all([
     supabase
       .from("user_notifications")
@@ -40,6 +142,8 @@ export async function loadNavCounts(
       .eq("user_id", userId)
       .eq("status", "learning")
       .not("next_review_due", "is", null),
+
+    userCanModerate ? loadPendingModerationCount(supabase) : Promise.resolve(0),
   ])
 
   if (notificationError) {
@@ -72,9 +176,12 @@ export async function loadNavCounts(
       }).length
 
   return {
+    role,
+    canModerate: userCanModerate,
     unreadNotificationCount: safeUnreadNotificationCount,
     unreadMessageCount: safeUnreadMessageCount,
     unreadTotalCount: safeUnreadNotificationCount + safeUnreadMessageCount,
     overduePracticeCount,
+    pendingModerationCount,
   }
 }

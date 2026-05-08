@@ -18,6 +18,46 @@ type ProfileVisibilitySectionProps = {
   setCompareRequiresFriend: (value: boolean) => void
 }
 
+type VisibilityToggleProps = {
+  name: string
+  checked: boolean
+  onChange: (value: boolean) => void
+  title: string
+  description: string
+}
+
+function VisibilityToggle({
+  name,
+  checked,
+  onChange,
+  title,
+  description,
+}: VisibilityToggleProps) {
+  return (
+    <label className="block rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:bg-muted">
+      <span className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          name={name}
+          checked={checked}
+          onChange={(event) => onChange(event.target.checked)}
+          className="mt-1 h-4 w-4 accent-primary"
+        />
+
+        <span>
+          <span className="block text-sm font-semibold text-foreground">
+            {title}
+          </span>
+
+          <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+            {description}
+          </span>
+        </span>
+      </span>
+    </label>
+  )
+}
+
 export default function ProfileVisibilitySection({
   profile,
   showIdentity,
@@ -34,115 +74,68 @@ export default function ProfileVisibilitySection({
   setCompareRequiresFriend,
 }: ProfileVisibilitySectionProps) {
   return (
-    <div className="rounded border p-4">
-      <h3 className="text-lg font-semibold">Public profile settings</h3>
-      <p className="mt-1 text-sm text-gray-600">
-        Control what other users can see on your public profile and whether they
-        can compare with you.
+    <div className="rounded-3xl border border-border bg-muted p-5 shadow-sm">
+      <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        Public profile settings
+      </h3>
+
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+        Control what other users can see on your public profile and whether
+        they can compare with you.
       </p>
 
-      <div className="mt-4 space-y-4">
-        <label className="block rounded border p-3">
-          <span className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="show_identity"
-              checked={showIdentity}
-              onChange={(event) => setShowIdentity(event.target.checked)}
-            />
-            <span className="font-medium">Show identity</span>
-          </span>
-          <p className="mt-1 text-sm text-gray-600">
-            Show your display name, username, and bio on your public profile.
-          </p>
-        </label>
+      <div className="mt-5 grid gap-3 lg:grid-cols-2">
+        <VisibilityToggle
+          name="show_identity"
+          checked={showIdentity}
+          onChange={setShowIdentity}
+          title="Show identity"
+          description="Show your display name, username, and bio on your public profile."
+        />
 
-        <label className="block rounded border p-3">
-          <span className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="show_instruments"
-              checked={showInstruments}
-              onChange={(event) => setShowInstruments(event.target.checked)}
-            />
-            <span className="font-medium">Show instruments</span>
-          </span>
-          <p className="mt-1 text-sm text-gray-600">
-            Let other users see the instruments listed on your profile.
-          </p>
-        </label>
+        <VisibilityToggle
+          name="show_instruments"
+          checked={showInstruments}
+          onChange={setShowInstruments}
+          title="Show instruments"
+          description="Let other users see the instruments listed on your profile."
+        />
 
-        <label className="block rounded border p-3">
-          <span className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="show_public_lists_on_profile"
-              checked={showPublicListsOnProfile}
-              onChange={(event) =>
-                setShowPublicListsOnProfile(event.target.checked)
-              }
-            />
-            <span className="font-medium">Show public lists</span>
-          </span>
-          <p className="mt-1 text-sm text-gray-600">
-            Display your public tune lists on your profile page.
-          </p>
-        </label>
+        <VisibilityToggle
+          name="show_public_lists_on_profile"
+          checked={showPublicListsOnProfile}
+          onChange={setShowPublicListsOnProfile}
+          title="Show public lists"
+          description="Display your public tune lists on your profile page."
+        />
 
-        <label className="block rounded border p-3">
-          <span className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="show_repertoire_summary"
-              checked={showRepertoireSummary}
-              onChange={(event) =>
-                setShowRepertoireSummary(event.target.checked)
-              }
-            />
-            <span className="font-medium">Show repertoire summary</span>
-          </span>
-          <p className="mt-1 text-sm text-gray-600">
-            Show counts for known tunes and tunes currently in practice.
-          </p>
-        </label>
+        <VisibilityToggle
+          name="show_repertoire_summary"
+          checked={showRepertoireSummary}
+          onChange={setShowRepertoireSummary}
+          title="Show repertoire summary"
+          description="Show counts for known tunes and tunes currently in practice."
+        />
 
-        <label className="block rounded border p-3">
-          <span className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="show_compare_discoverability"
-              checked={showCompareDiscoverability}
-              onChange={(event) =>
-                setShowCompareDiscoverability(event.target.checked)
-              }
-            />
-            <span className="font-medium">Allow compare discovery</span>
-          </span>
-          <p className="mt-1 text-sm text-gray-600">
-            Let other users find and compare with your profile.
-          </p>
-        </label>
+        <VisibilityToggle
+          name="show_compare_discoverability"
+          checked={showCompareDiscoverability}
+          onChange={setShowCompareDiscoverability}
+          title="Allow compare discovery"
+          description="Let other users find and compare with your profile."
+        />
 
-        <label className="block rounded border p-3">
-          <span className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="compare_requires_friend"
-              checked={compareRequiresFriend}
-              onChange={(event) =>
-                setCompareRequiresFriend(event.target.checked)
-              }
-            />
-            <span className="font-medium">Require friendship for compare</span>
-          </span>
-          <p className="mt-1 text-sm text-gray-600">
-            If enabled, users must be friends with you before they can compare.
-          </p>
-        </label>
+        <VisibilityToggle
+          name="compare_requires_friend"
+          checked={compareRequiresFriend}
+          onChange={setCompareRequiresFriend}
+          title="Require friendship for compare"
+          description="If enabled, users must be friends with you before they can compare."
+        />
       </div>
 
       {profile === null && (
-        <p className="mt-3 text-sm text-gray-600">
+        <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
           These settings will be saved when you save your profile.
         </p>
       )}

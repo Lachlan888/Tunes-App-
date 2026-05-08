@@ -44,6 +44,24 @@ function notificationTitle(item: InboxItem) {
     return <>{actorLink(item)} replied to your tune comment.</>
   }
 
+  if (item.notification_type === "piece_edit_request_approved") {
+    return (
+      <>
+        Your edit request
+        {item.piece ? <> for {item.piece.title}</> : null} was approved.
+      </>
+    )
+  }
+
+  if (item.notification_type === "piece_edit_request_rejected") {
+    return (
+      <>
+        Your edit request
+        {item.piece ? <> for {item.piece.title}</> : null} was rejected.
+      </>
+    )
+  }
+
   return <>{actorLink(item)} sent you a message.</>
 }
 
@@ -83,7 +101,8 @@ export default function InboxItemList({ items }: InboxItemListProps) {
   if (items.length === 0) {
     return (
       <p className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground shadow-sm">
-        No notifications yet. Reactions and activity replies will appear here.
+        No notifications yet. Reactions, replies, and moderation outcomes will
+        appear here.
       </p>
     )
   }

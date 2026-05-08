@@ -1,17 +1,8 @@
-import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
+import { requireUserContext } from "@/lib/auth/session"
 import type { OwnProfileData, Profile, UserInstrument } from "@/lib/types"
 
 export async function loadOwnProfileData(): Promise<OwnProfileData> {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect("/login")
-  }
+  const { supabase, user } = await requireUserContext()
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
@@ -21,6 +12,7 @@ export async function loadOwnProfileData(): Promise<OwnProfileData> {
         username,
         display_name,
         bio,
+        role,
         show_identity,
         show_instruments,
         show_public_lists_on_profile,
