@@ -1,3 +1,4 @@
+import { getCurrentUserRole } from "@/lib/auth/roles"
 import { getStyleLabelsFromPiece } from "@/lib/search-filters"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
@@ -81,6 +82,7 @@ export async function loadLibraryData({
     redirect("/login")
   }
 
+  const currentUserRole = await getCurrentUserRole(supabase, user.id)
   const trimmedSearchQuery = (searchQuery ?? "").trim()
   const requestedPage = normalisePage(page)
 
@@ -345,6 +347,7 @@ export async function loadLibraryData({
 
   return {
     user,
+    currentUserRole,
     pieces,
     filterOptionPieces: (filterOptionPiecesRows ?? []) as PieceFilterOption[],
     totalPieceCount,

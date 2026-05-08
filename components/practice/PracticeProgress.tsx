@@ -14,7 +14,9 @@ export default function PracticeProgress({
   return (
     <div className={className}>
       <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="font-medium text-muted-foreground">PROGRESS</span>
+        <span className="font-medium text-muted-foreground">
+          REVIEW PROGRESS
+        </span>
         <span className="font-semibold text-foreground">{progress}%</span>
       </div>
 

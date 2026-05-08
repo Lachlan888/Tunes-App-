@@ -4,7 +4,10 @@ import { useState } from "react"
 import RequestTuneEditForm from "@/components/library/RequestTuneEditForm"
 import SubmitButton from "@/components/SubmitButton"
 import { directModeratorUpdatePiece } from "@/lib/actions/moderation"
-import { updateMissingPieceDetails } from "@/lib/actions/pieces"
+import {
+  deleteCanonicalTuneAsModerator,
+  updateMissingPieceDetails,
+} from "@/lib/actions/pieces"
 import { VALID_KEYS } from "@/lib/music/keys"
 import type { Piece, StyleOption, UserRole } from "@/lib/types"
 
@@ -15,7 +18,7 @@ type TuneCanonicalDetailsCardProps = {
   currentUserRole: UserRole
 }
 
-type ModalMode = "missing" | "request" | "moderator" | null
+type ModalMode = "missing" | "request" | "moderator" | "delete" | null
 
 function canUseModeratorTools(role: UserRole) {
   return role === "moderator" || role === "admin"
@@ -45,18 +48,28 @@ function ModalShell({
   description,
   children,
   onClose,
+  destructive = false,
 }: {
   title: string
   description: string
   children: React.ReactNode
   onClose: () => void
+  destructive?: boolean
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/35 px-4 py-8 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-xl">
+      <div
+        className={`max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl border bg-card p-6 shadow-xl ${
+          destructive ? "border-destructive" : "border-border"
+        }`}
+      >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <p
+              className={`text-sm font-semibold uppercase tracking-[0.16em] ${
+                destructive ? "text-destructive" : "text-muted-foreground"
+              }`}
+            >
               Tune details
             </p>
             <h3 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
@@ -91,6 +104,9 @@ const primaryButtonClass =
 const secondaryButtonClass =
   "w-full rounded-full border border-border bg-background/70 px-4 py-3 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
+const destructiveButtonClass =
+  "w-full rounded-full border border-destructive bg-background/70 px-4 py-3 text-sm font-medium text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+
 export default function TuneCanonicalDetailsCard({
   piece,
   redirectTo,
@@ -107,6 +123,7 @@ export default function TuneCanonicalDetailsCard({
   ].filter(Boolean).length
 
   const isModerator = canUseModeratorTools(currentUserRole)
+  const deleteConfirmation = `DELETE ${piece.title}`
 
   return (
     <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
@@ -138,13 +155,23 @@ export default function TuneCanonicalDetailsCard({
 
       <div className="mt-5 grid gap-2">
         {isModerator ? (
-          <button
-            type="button"
-            onClick={() => setModalMode("moderator")}
-            className={primaryButtonClass}
-          >
-            Edit canonical details
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={() => setModalMode("moderator")}
+              className={primaryButtonClass}
+            >
+              Edit canonical details
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setModalMode("delete")}
+              className={destructiveButtonClass}
+            >
+              Delete canonical tune
+            </button>
+          </>
         ) : (
           <>
             {missingFields > 0 ? (
@@ -321,6 +348,57 @@ export default function TuneCanonicalDetailsCard({
                 label="Save canonical details"
                 pendingLabel="Saving..."
                 className={primaryButtonClass}
+              />
+
+              <button
+                type="button"
+                onClick={() => setModalMode(null)}
+                className={secondaryButtonClass}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </ModalShell>
+      ) : null}
+
+      {modalMode === "delete" ? (
+        <ModalShell
+          title="Delete canonical tune"
+          description="This permanently removes this tune from the shared catalogue for everyone. It may also remove connected practice state, known status, list entries, comments, lore, media links, moderation requests, and notifications."
+          destructive
+          onClose={() => setModalMode(null)}
+        >
+          <div className="rounded-2xl border border-border bg-background/70 p-4">
+            <p className="text-sm text-muted-foreground">
+              To confirm, type this exactly:
+            </p>
+            <p className="mt-2 break-words font-mono text-sm font-semibold text-foreground">
+              {deleteConfirmation}
+            </p>
+          </div>
+
+          <form action={deleteCanonicalTuneAsModerator} className="mt-5 space-y-3">
+            <input type="hidden" name="piece_id" value={piece.id} />
+            <input
+              type="hidden"
+              name="redirect_to"
+              value="/library"
+            />
+
+            <input
+              name="confirmation"
+              placeholder={deleteConfirmation}
+              className={inputClassName}
+              autoComplete="off"
+              required
+            />
+
+            <div className="grid gap-2 pt-2">
+              <SubmitButton
+                label="Delete canonical tune"
+                pendingLabel="Deleting..."
+                className="w-full rounded-full border border-destructive bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               />
 
               <button

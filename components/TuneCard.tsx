@@ -14,6 +14,7 @@ type TuneCardProps = {
   referenceUrl?: Piece["reference_url"]
   pieceStyles?: Piece["piece_styles"]
   listNames?: string[]
+  topRightAction?: React.ReactNode
   children?: React.ReactNode
 }
 
@@ -26,6 +27,7 @@ export default function TuneCard({
   referenceUrl,
   pieceStyles,
   listNames = [],
+  topRightAction,
   children,
 }: TuneCardProps) {
   const visibleListNames = listNames.slice(0, 3)
@@ -52,21 +54,29 @@ export default function TuneCard({
 
   return (
     <article className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:bg-muted/70">
-      <div className="min-w-0">
-        <h3 className="font-serif text-2xl font-bold leading-tight tracking-tight text-foreground">
-          <PendingLinkButton
-            href={`/library/${id}`}
-            label={title}
-            pendingLabel="Loading..."
-            className="decoration-primary decoration-2 underline-offset-4 hover:underline"
-          />
-        </h3>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h3 className="font-serif text-2xl font-bold leading-tight tracking-tight text-foreground">
+            <PendingLinkButton
+              href={`/library/${id}`}
+              label={title}
+              pendingLabel="Loading..."
+              className="decoration-primary decoration-2 underline-offset-4 hover:underline"
+            />
+          </h3>
 
-        {metadataParts.length > 0 && (
-          <p className="mt-2 text-sm font-medium leading-6 text-muted-foreground">
-            {metadataParts.join(" | ")}
-          </p>
-        )}
+          {metadataParts.length > 0 && (
+            <p className="mt-2 text-sm font-medium leading-6 text-muted-foreground">
+              {metadataParts.join(" | ")}
+            </p>
+          )}
+        </div>
+
+        {topRightAction ? (
+          <div className="flex flex-shrink-0 items-start">
+            {topRightAction}
+          </div>
+        ) : null}
       </div>
 
       {referenceUrl && (

@@ -4,6 +4,8 @@ type LibraryStatusMessagesProps = {
   createTuneStatus: string
   listAddStatus: string
   removeTuneStatus: string
+  removeFromPracticeStatus: string
+  deleteTuneStatus: string
   bulkUploadStatus: string
   bulkUploadRow: string
   uploadedListId: string
@@ -48,6 +50,8 @@ export default function LibraryStatusMessages({
   createTuneStatus,
   listAddStatus,
   removeTuneStatus,
+  removeFromPracticeStatus,
+  deleteTuneStatus,
   bulkUploadStatus,
   bulkUploadRow,
   uploadedListId,
@@ -109,6 +113,64 @@ export default function LibraryStatusMessages({
 
       {removeTuneStatus === "error" && (
         <StatusBanner tone="error">Could not remove tune.</StatusBanner>
+      )}
+
+      {removeFromPracticeStatus === "success" && (
+        <StatusBanner tone="success">
+          Tune removed from active practice.
+        </StatusBanner>
+      )}
+
+      {removeFromPracticeStatus === "missing_user_piece" && (
+        <StatusBanner tone="warning">
+          Could not tell which practice item to remove.
+        </StatusBanner>
+      )}
+
+      {removeFromPracticeStatus === "not_found" && (
+        <StatusBanner tone="warning">
+          That tune is no longer in active practice.
+        </StatusBanner>
+      )}
+
+      {removeFromPracticeStatus === "error" && (
+        <StatusBanner tone="error">
+          Could not remove tune from practice.
+        </StatusBanner>
+      )}
+
+      {deleteTuneStatus === "success" && (
+        <StatusBanner tone="success">Canonical tune deleted.</StatusBanner>
+      )}
+
+      {deleteTuneStatus === "missing_piece" && (
+        <StatusBanner tone="warning">
+          Could not tell which canonical tune to delete.
+        </StatusBanner>
+      )}
+
+      {deleteTuneStatus === "not_allowed" && (
+        <StatusBanner tone="error">
+          Only moderators can delete canonical tunes.
+        </StatusBanner>
+      )}
+
+      {deleteTuneStatus === "not_found" && (
+        <StatusBanner tone="warning">
+          That tune could not be found. It may already have been deleted.
+        </StatusBanner>
+      )}
+
+      {deleteTuneStatus === "confirmation_mismatch" && (
+        <StatusBanner tone="error">
+          Typed confirmation did not match. The canonical tune was not deleted.
+        </StatusBanner>
+      )}
+
+      {deleteTuneStatus === "error" && (
+        <StatusBanner tone="error">
+          Could not delete canonical tune.
+        </StatusBanner>
       )}
 
       {bulkUploadStatus === "received" && (

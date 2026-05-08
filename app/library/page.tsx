@@ -4,7 +4,10 @@ import LibraryResultsHeader from "@/components/library/LibraryResultsHeader"
 import LibraryStatusMessages from "@/components/library/LibraryStatusMessages"
 import PieceSearchFilters from "@/components/library/PieceSearchFilters"
 import { addToLearningList } from "@/lib/actions/lists"
-import { removeTuneFromMyApp } from "@/lib/actions/pieces"
+import {
+  deleteCanonicalTuneAsModerator,
+  removeTuneFromMyApp,
+} from "@/lib/actions/pieces"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadLibraryData } from "@/lib/loaders/library"
 import { getPieceFilterOptions } from "@/lib/search-filters"
@@ -33,6 +36,8 @@ type LibraryPageProps = {
     already_in_list?: SearchParamValue
     uploaded_list_id?: SearchParamValue
     remove_tune?: SearchParamValue
+    remove_from_practice?: SearchParamValue
+    delete_tune?: SearchParamValue
     scroll_piece?: SearchParamValue
   }>
 }
@@ -84,6 +89,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
   const {
     user,
+    currentUserRole,
     pieces,
     filterOptionPieces,
     totalPieceCount,
@@ -107,6 +113,10 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   const bulkUploadStatus = firstParam(resolvedSearchParams?.bulk_upload)
   const bulkUploadRow = firstParam(resolvedSearchParams?.row)
   const removeTuneStatus = firstParam(resolvedSearchParams?.remove_tune)
+  const removeFromPracticeStatus = firstParam(
+    resolvedSearchParams?.remove_from_practice
+  )
+  const deleteTuneStatus = firstParam(resolvedSearchParams?.delete_tune)
   const uploadedListId = firstParam(resolvedSearchParams?.uploaded_list_id)
 
   const createdPiecesCount = numberParam(resolvedSearchParams?.created_pieces)
@@ -204,6 +214,8 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
         createTuneStatus={createTuneStatus}
         listAddStatus={listAddStatus}
         removeTuneStatus={removeTuneStatus}
+        removeFromPracticeStatus={removeFromPracticeStatus}
+        deleteTuneStatus={deleteTuneStatus}
         bulkUploadStatus={bulkUploadStatus}
         bulkUploadRow={bulkUploadRow}
         uploadedListId={uploadedListId}
@@ -240,9 +252,11 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
         userKnownPieces={userKnownPieces as UserKnownPiece[]}
         learningLists={learningLists as LearningList[] | null}
         learningListItems={learningListItems as any}
+        currentUserRole={currentUserRole}
         startLearning={startLearning}
         addToLearningList={addToLearningList}
         removeTuneFromMyApp={removeTuneFromMyApp}
+        deleteCanonicalTuneAsModerator={deleteCanonicalTuneAsModerator}
         redirectTo={redirectTo}
         scrollPieceId={scrollPieceId}
         hasActiveFilters={hasActiveFilters}

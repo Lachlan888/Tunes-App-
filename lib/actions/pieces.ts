@@ -2,17 +2,31 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { normaliseTuneTitle } from "@/lib/normalise"
+import { canModerate, getCurrentUserRole } from "@/lib/auth/roles"
 import { normaliseKey } from "@/lib/music/keys"
+import { normaliseTuneTitle } from "@/lib/normalise"
 import { createClient } from "@/lib/supabase/server"
-import { startPracticeForUser } from "@/lib/actions/user-pieces"
-import { markPieceKnownForUser } from "@/lib/actions/known-pieces"
 import { addPieceToLearningListForUser } from "@/lib/actions/lists"
+import { markPieceKnownForUser } from "@/lib/actions/known-pieces"
+import { startPracticeForUser } from "@/lib/actions/user-pieces"
 
 function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")
     ? `${url}&${key}=${encodeURIComponent(value)}`
     : `${url}?${key}=${encodeURIComponent(value)}`
+}
+
+function cleanRedirectTo(
+  value: string | FormDataEntryValue | null,
+  fallback: string
+) {
+  const raw = value?.toString() || fallback
+
+  if (!raw.startsWith("/")) {
+    return fallback
+  }
+
+  return raw
 }
 
 function normaliseForDuplicateMatch(value: string | null) {
@@ -189,7 +203,7 @@ export async function removeTuneFromMyApp(formData: FormData) {
   }
 
   const pieceId = Number(formData.get("piece_id"))
-  const redirectTo = String(formData.get("redirect_to") ?? "/library")
+  const redirectTo = cleanRedirectTo(formData.get("redirect_to"), "/library")
 
   if (!pieceId) {
     redirect(appendQueryParam(redirectTo, "remove_tune", "missing_piece"))
@@ -239,6 +253,69 @@ export async function removeTuneFromMyApp(formData: FormData) {
   }
 
   redirect(appendQueryParam(redirectTo, "remove_tune", "success"))
+}
+
+export async function deleteCanonicalTuneAsModerator(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const redirectTo = cleanRedirectTo(formData.get("redirect_to"), "/library")
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const role = await getCurrentUserRole(supabase, user.id)
+
+  if (!canModerate(role)) {
+    redirect(appendQueryParam(redirectTo, "delete_tune", "not_allowed"))
+  }
+
+  const pieceId = Number(formData.get("piece_id"))
+  const confirmation = formData.get("confirmation")?.toString() ?? ""
+
+  if (!pieceId || Number.isNaN(pieceId)) {
+    redirect(appendQueryParam(redirectTo, "delete_tune", "missing_piece"))
+  }
+
+  const { data: piece, error: pieceError } = await supabase
+    .from("pieces")
+    .select("id, title")
+    .eq("id", pieceId)
+    .maybeSingle()
+
+  if (pieceError) {
+    console.error("Error loading piece before canonical delete:", pieceError)
+    redirect(appendQueryParam(redirectTo, "delete_tune", "error"))
+  }
+
+  if (!piece) {
+    redirect(appendQueryParam(redirectTo, "delete_tune", "not_found"))
+  }
+
+  const expectedConfirmation = `DELETE ${piece.title}`
+
+  if (confirmation !== expectedConfirmation) {
+    redirect(
+      appendQueryParam(redirectTo, "delete_tune", "confirmation_mismatch")
+    )
+  }
+
+  const { error: deleteError } = await supabase
+    .from("pieces")
+    .delete()
+    .eq("id", piece.id)
+
+  if (deleteError) {
+    console.error("Error deleting canonical tune:", deleteError)
+    redirect(appendQueryParam(redirectTo, "delete_tune", "error"))
+  }
+
+  revalidatePath("/library")
+  redirect(appendQueryParam(redirectTo, "delete_tune", "success"))
 }
 
 export async function updateMissingPieceDetails(formData: FormData) {
