@@ -188,6 +188,8 @@ export default async function LearningListsPage({
           description="Lists are where you organise tunes for learning, repertoire, sessions, or publishing. Use Create List above to start one."
           secondaryActionHref="/library"
           secondaryActionLabel="Browse Tunes"
+          className="bg-card p-5"
+          titleClassName="font-serif text-2xl font-bold text-foreground"
         />
       ) : filteredListOverviews.length === 0 ? (
         <EmptyState
