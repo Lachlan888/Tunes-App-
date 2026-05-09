@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import PublicProfileActions from "@/components/profile/PublicProfileActions"
+import PublicProfileBadgesSection from "@/components/profile/PublicProfileBadgesSection"
 import PublicProfileHeader from "@/components/profile/PublicProfileHeader"
 import PublicProfileOverview from "@/components/profile/PublicProfileOverview"
 import PublicProfileRepertoireSection from "@/components/profile/PublicProfileRepertoireSection"
@@ -171,6 +172,13 @@ function getMessageClasses(
   return "mb-6 rounded-2xl border border-border bg-muted p-4 text-sm font-medium text-muted-foreground shadow-sm"
 }
 
+function profileDisplayName(profile: {
+  username: string
+  display_name: string | null
+}) {
+  return profile.display_name || profile.username
+}
+
 export default async function PublicProfilePage({
   params,
   searchParams,
@@ -186,6 +194,8 @@ export default async function PublicProfilePage({
     repertoireSummary,
     profileRepertoireTunes,
     viewerLearningLists,
+    createdBadges,
+    receivedBadges,
     isOwnProfile,
     isAcceptedFriend,
     hasPendingOutgoingRequest,
@@ -252,6 +262,13 @@ export default async function PublicProfilePage({
             publicLists={publicLists}
             repertoireSummary={repertoireSummary}
             isOwnProfile={isOwnProfile}
+          />
+
+          <PublicProfileBadgesSection
+            createdBadges={createdBadges}
+            receivedBadges={receivedBadges}
+            isOwnProfile={isOwnProfile}
+            displayName={profileDisplayName(profile)}
           />
 
           <PublicProfileRepertoireSection

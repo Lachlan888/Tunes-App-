@@ -1,10 +1,14 @@
 import { createClient } from "@/lib/supabase/server"
 import type {
+  BadgeCategory,
+  BadgeOwnerProfile,
   LearningList,
   Piece,
   Profile,
+  PublicProfileCreatedBadge,
   PublicProfileData,
   PublicProfileList,
+  PublicProfileReceivedBadge,
   PublicProfileRepertoireTune,
   RepertoireSummary,
   UserInstrument,
@@ -40,6 +44,25 @@ type ViewerListMembershipRow = {
     | null
 }
 
+type PublicProfileBadgeRow = {
+  id: number
+  name: string
+  slug: string
+  category: BadgeCategory
+  description: string | null
+  owner_user_id: string
+  created_at: string
+}
+
+type PublicProfileBadgeAwardRow = {
+  id: number
+  badge_id: number
+  recipient_user_id: string
+  awarded_by_user_id: string
+  awarded_at: string
+  badges: PublicProfileBadgeRow | PublicProfileBadgeRow[] | null
+}
+
 function asSingleList(
   value:
     | {
@@ -51,6 +74,12 @@ function asSingleList(
         name: string
       }[]
     | null
+) {
+  return Array.isArray(value) ? value[0] ?? null : value
+}
+
+function asSingleBadge(
+  value: PublicProfileBadgeRow | PublicProfileBadgeRow[] | null
 ) {
   return Array.isArray(value) ? value[0] ?? null : value
 }
@@ -70,6 +99,160 @@ async function loadViewerLearningLists(
   }
 
   return (listRows ?? []) as LearningList[]
+}
+
+async function loadBadgeProfilesByUserId(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userIds: string[]
+) {
+  const uniqueUserIds = Array.from(new Set(userIds)).filter(Boolean)
+
+  if (uniqueUserIds.length === 0) {
+    return new Map<string, BadgeOwnerProfile>()
+  }
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, username, display_name")
+    .in("id", uniqueUserIds)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return new Map(
+    ((data ?? []) as BadgeOwnerProfile[]).map((profile) => [
+      profile.id,
+      profile,
+    ])
+  )
+}
+
+async function loadProfileBadges({
+  supabase,
+  profileUserId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  profileUserId: string
+}): Promise<{
+  createdBadges: PublicProfileCreatedBadge[]
+  receivedBadges: PublicProfileReceivedBadge[]
+}> {
+  const [
+    { data: createdBadgeRows, error: createdBadgeError },
+    { data: receivedBadgeRows, error: receivedBadgeError },
+  ] = await Promise.all([
+    supabase
+      .from("badges")
+      .select("id, name, slug, category, description, owner_user_id, created_at")
+      .eq("owner_user_id", profileUserId)
+      .eq("visibility", "public")
+      .order("created_at", { ascending: false })
+      .limit(12),
+
+    supabase
+      .from("badge_awards")
+      .select(
+        `
+          id,
+          badge_id,
+          recipient_user_id,
+          awarded_by_user_id,
+          awarded_at,
+          badges (
+            id,
+            name,
+            slug,
+            category,
+            description,
+            owner_user_id,
+            created_at
+          )
+        `
+      )
+      .eq("recipient_user_id", profileUserId)
+      .order("awarded_at", { ascending: false })
+      .limit(12),
+  ])
+
+  if (createdBadgeError) {
+    throw new Error(createdBadgeError.message)
+  }
+
+  if (receivedBadgeError) {
+    throw new Error(receivedBadgeError.message)
+  }
+
+  const createdRows = (createdBadgeRows ?? []) as PublicProfileBadgeRow[]
+  const receivedRows =
+    (receivedBadgeRows ?? []) as PublicProfileBadgeAwardRow[]
+
+  const createdBadgeIds = createdRows.map((badge) => badge.id)
+  let recipientCountsByBadgeId = new Map<number, number>()
+
+  if (createdBadgeIds.length > 0) {
+    const { data: createdAwardRows, error: createdAwardError } = await supabase
+      .from("badge_awards")
+      .select("badge_id")
+      .in("badge_id", createdBadgeIds)
+
+    if (createdAwardError) {
+      throw new Error(createdAwardError.message)
+    }
+
+    recipientCountsByBadgeId = new Map<number, number>()
+
+    for (const row of (createdAwardRows ?? []) as Array<{ badge_id: number }>) {
+      recipientCountsByBadgeId.set(
+        row.badge_id,
+        (recipientCountsByBadgeId.get(row.badge_id) ?? 0) + 1
+      )
+    }
+  }
+
+  const awarderProfileMap = await loadBadgeProfilesByUserId(
+    supabase,
+    receivedRows.map((award) => award.awarded_by_user_id)
+  )
+
+  return {
+    createdBadges: createdRows.map((badge) => ({
+      id: badge.id,
+      name: badge.name,
+      slug: badge.slug,
+      category: badge.category,
+      description: badge.description,
+      created_at: badge.created_at,
+      recipient_count: recipientCountsByBadgeId.get(badge.id) ?? 0,
+    })),
+
+    receivedBadges: receivedRows
+      .map((award) => {
+        const badge = asSingleBadge(award.badges)
+
+        if (!badge) {
+          return null
+        }
+
+        return {
+          award_id: award.id,
+          awarded_at: award.awarded_at,
+          badge: {
+            id: badge.id,
+            name: badge.name,
+            slug: badge.slug,
+            category: badge.category,
+            description: badge.description,
+            owner_user_id: badge.owner_user_id,
+          },
+          awarded_by_profile:
+            awarderProfileMap.get(award.awarded_by_user_id) ?? null,
+        }
+      })
+      .filter(
+        (award): award is PublicProfileReceivedBadge => award !== null
+      ),
+  }
 }
 
 async function loadProfileRepertoireTunes({
@@ -158,6 +341,7 @@ async function loadProfileRepertoireTunes({
       )
       .in("id", repertoirePieceIds)
       .order("title", { ascending: true }),
+
     viewerId
       ? supabase
           .from("user_known_pieces")
@@ -165,6 +349,7 @@ async function loadProfileRepertoireTunes({
           .eq("user_id", viewerId)
           .in("piece_id", repertoirePieceIds)
       : Promise.resolve({ data: [], error: null }),
+
     viewerId
       ? supabase
           .from("user_pieces")
@@ -173,6 +358,7 @@ async function loadProfileRepertoireTunes({
           .eq("status", "learning")
           .in("piece_id", repertoirePieceIds)
       : Promise.resolve({ data: [], error: null }),
+
     viewerId
       ? supabase
           .from("learning_list_items")
@@ -233,6 +419,7 @@ async function loadProfileRepertoireTunes({
     viewerListIdsByPieceId.set(row.piece_id, [
       ...new Set([...existingIds, row.learning_list_id]),
     ])
+
     viewerListNamesByPieceId.set(row.piece_id, [
       ...new Set([...existingNames, list.name]),
     ])
@@ -242,7 +429,8 @@ async function loadProfileRepertoireTunes({
     const viewerListIds = viewerListIdsByPieceId.get(piece.id) ?? []
     const viewerListNames = viewerListNamesByPieceId.get(piece.id) ?? []
 
-    let viewer_state: PublicProfileRepertoireTune["viewer_state"] = "new_to_me"
+    let viewer_state: PublicProfileRepertoireTune["viewer_state"] =
+      "new_to_me"
 
     if (viewerPracticePieceIds.has(piece.id)) {
       viewer_state = "in_my_practice"
@@ -316,6 +504,8 @@ export async function loadPublicProfileData(
       repertoireSummary: null,
       profileRepertoireTunes: [],
       viewerLearningLists: [],
+      createdBadges: [],
+      receivedBadges: [],
     }
   }
 
@@ -323,6 +513,7 @@ export async function loadPublicProfileData(
   const isOwnProfile = viewerId === typedProfile.id
 
   let instruments: UserInstrument[] = []
+
   if (typedProfile.show_instruments) {
     const { data: instrumentRows, error: instrumentsError } = await supabase
       .from("user_instruments")
@@ -339,6 +530,7 @@ export async function loadPublicProfileData(
   }
 
   let publicLists: PublicProfileList[] = []
+
   if (typedProfile.show_public_lists_on_profile) {
     const { data: publicListRows, error: publicListsError } = await supabase
       .from("learning_lists")
@@ -434,6 +626,7 @@ export async function loadPublicProfileData(
         .from("user_pieces")
         .select("*", { count: "exact", head: true })
         .eq("user_id", typedProfile.id),
+
       supabase
         .from("user_known_pieces")
         .select("*", { count: "exact", head: true })
@@ -458,18 +651,25 @@ export async function loadPublicProfileData(
     isOwnProfile ||
     (typedProfile.show_repertoire_to_friends && isAcceptedFriend)
 
-  const [profileRepertoireTunes, viewerLearningLists] = await Promise.all([
-    canViewFullRepertoire
-      ? loadProfileRepertoireTunes({
-          supabase,
-          profileUserId: typedProfile.id,
-          viewerId,
-        })
-      : Promise.resolve([]),
-    viewerId && canViewFullRepertoire
-      ? loadViewerLearningLists(supabase, viewerId)
-      : Promise.resolve([]),
-  ])
+  const [profileRepertoireTunes, viewerLearningLists, profileBadges] =
+    await Promise.all([
+      canViewFullRepertoire
+        ? loadProfileRepertoireTunes({
+            supabase,
+            profileUserId: typedProfile.id,
+            viewerId,
+          })
+        : Promise.resolve([]),
+
+      viewerId && canViewFullRepertoire
+        ? loadViewerLearningLists(supabase, viewerId)
+        : Promise.resolve([]),
+
+      loadProfileBadges({
+        supabase,
+        profileUserId: typedProfile.id,
+      }),
+    ])
 
   const compareBlockedByFriendship =
     typedProfile.show_compare_discoverability &&
@@ -498,5 +698,7 @@ export async function loadPublicProfileData(
     repertoireSummary,
     profileRepertoireTunes,
     viewerLearningLists,
+    createdBadges: profileBadges.createdBadges,
+    receivedBadges: profileBadges.receivedBadges,
   }
 }

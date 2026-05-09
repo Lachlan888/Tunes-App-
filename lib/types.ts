@@ -278,6 +278,8 @@ export type PublicProfileData = {
   repertoireSummary: RepertoireSummary | null
   profileRepertoireTunes: PublicProfileRepertoireTune[]
   viewerLearningLists: LearningList[]
+  createdBadges: PublicProfileCreatedBadge[]
+  receivedBadges: PublicProfileReceivedBadge[]
 }
 
 export type GettingStartedTaskId =
@@ -339,6 +341,7 @@ export type HomeSummaryData = {
   dueTodayCount: number
   needsAttentionCount: number
   listCount: number
+  badgeSummary: HomeBadgeSummary
   dueTodayPreview: HomeTunePreview[]
   inPracticePreview: HomeTunePreview[]
   listPreview: HomeListPreview[]
@@ -572,4 +575,44 @@ export type BadgeDetailData =
 export type BadgeIndexData = {
   viewerId: string | null
   badges: BadgeWithOwner[]
+}
+
+export type HomeBadgePreview = {
+  id: number
+  name: string
+  slug: string
+  category: BadgeCategory
+  created_at?: string | null
+  awarded_at?: string | null
+}
+
+export type HomeBadgeSummary = {
+  receivedCount: number
+  createdCount: number
+  recentReceivedBadges: HomeBadgePreview[]
+  recentCreatedBadges: HomeBadgePreview[]
+}
+
+export type PublicProfileCreatedBadge = {
+  id: number
+  name: string
+  slug: string
+  category: BadgeCategory
+  description: string | null
+  created_at: string
+  recipient_count: number
+}
+
+export type PublicProfileReceivedBadge = {
+  award_id: number
+  awarded_at: string
+  badge: {
+    id: number
+    name: string
+    slug: string
+    category: BadgeCategory
+    description: string | null
+    owner_user_id: string
+  }
+  awarded_by_profile: BadgeOwnerProfile | null
 }

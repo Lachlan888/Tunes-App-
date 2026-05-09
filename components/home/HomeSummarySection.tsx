@@ -1,4 +1,5 @@
 import Link from "next/link"
+import HomeBadgesPanel from "@/components/home/HomeBadgesPanel"
 import HomeFriendsActivityBox from "@/components/home/HomeFriendsActivityBox"
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import type { FriendActivityItem } from "@/lib/friend-activity"
@@ -136,8 +137,11 @@ function PreviewLink({
           <p className="font-semibold underline-offset-4 group-hover:underline">
             {title}
           </p>
-          {meta && <p className="mt-1 text-sm text-muted-foreground">{meta}</p>}
+          {meta ? (
+            <p className="mt-1 text-sm text-muted-foreground">{meta}</p>
+          ) : null}
         </div>
+
         <span
           aria-hidden="true"
           className="text-sm text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground"
@@ -206,69 +210,83 @@ export default function HomeSummarySection({
         </div>
       </section>
 
-      <StreakSummarySection streakSummary={streakSummary} />
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(22rem,1fr)]">
+        <div className="space-y-4">
+          <PreviewPanel
+            title="Due next"
+            href="/review#due-today"
+            linkLabel="View all"
+          >
+            {summary.dueTodayPreview.length === 0 ? (
+              <EmptyPreview>Nothing due today.</EmptyPreview>
+            ) : (
+              <ul className="space-y-3">
+                {summary.dueTodayPreview.map((userPiece) => (
+                  <li key={userPiece.user_piece_id}>
+                    <PreviewLink
+                      href={`/library/${userPiece.piece_id}`}
+                      title={userPiece.title}
+                      meta={`Stage ${userPiece.stage}`}
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </PreviewPanel>
 
-      <section className="grid gap-4 xl:grid-cols-2">
-        <PreviewPanel title="Due next" href="/review#due-today" linkLabel="View all">
-          {summary.dueTodayPreview.length === 0 ? (
-            <EmptyPreview>Nothing due today.</EmptyPreview>
-          ) : (
-            <ul className="space-y-3">
-              {summary.dueTodayPreview.map((userPiece) => (
-                <li key={userPiece.user_piece_id}>
-                  <PreviewLink
-                    href={`/library/${userPiece.piece_id}`}
-                    title={userPiece.title}
-                    meta={`Stage ${userPiece.stage}`}
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-        </PreviewPanel>
+          <PreviewPanel
+            title="Currently in practice"
+            href="/library/practice"
+            linkLabel="View all"
+          >
+            {summary.inPracticePreview.length === 0 ? (
+              <EmptyPreview>No tunes in practice yet.</EmptyPreview>
+            ) : (
+              <ul className="space-y-3">
+                {summary.inPracticePreview.map((userPiece) => (
+                  <li key={userPiece.user_piece_id}>
+                    <PreviewLink
+                      href={`/library/${userPiece.piece_id}`}
+                      title={userPiece.title}
+                      meta={`Stage ${userPiece.stage}`}
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </PreviewPanel>
+        </div>
 
-        <PreviewPanel
-          title="Currently in practice"
-          href="/library/practice"
-          linkLabel="View all"
-        >
-          {summary.inPracticePreview.length === 0 ? (
-            <EmptyPreview>No tunes in practice yet.</EmptyPreview>
-          ) : (
-            <ul className="space-y-3">
-              {summary.inPracticePreview.map((userPiece) => (
-                <li key={userPiece.user_piece_id}>
-                  <PreviewLink
-                    href={`/library/${userPiece.piece_id}`}
-                    title={userPiece.title}
-                    meta={`Stage ${userPiece.stage}`}
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-        </PreviewPanel>
-      </section>
+        <div className="space-y-4">
+          <StreakSummarySection streakSummary={streakSummary} />
 
-      <section className="grid gap-4 xl:grid-cols-2">
-        <PreviewPanel title="Your lists" href="/learning-lists" linkLabel="View all">
-          {summary.listPreview.length === 0 ? (
-            <EmptyPreview>No lists yet.</EmptyPreview>
-          ) : (
-            <ul className="space-y-3">
-              {summary.listPreview.map((learningList) => (
-                <li key={learningList.id}>
-                  <PreviewLink
-                    href={`/learning-lists/${learningList.id}`}
-                    title={learningList.name}
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-        </PreviewPanel>
+          <HomeBadgesPanel badgeSummary={summary.badgeSummary} />
 
-        <HomeFriendsActivityBox items={recentFriendActivity} />
+          <PreviewPanel
+            title="Your lists"
+            href="/learning-lists"
+            linkLabel="View all"
+          >
+            {summary.listPreview.length === 0 ? (
+              <EmptyPreview>No lists yet.</EmptyPreview>
+            ) : (
+              <ul className="space-y-3">
+                {summary.listPreview.map((learningList) => (
+                  <li key={learningList.id}>
+                    <PreviewLink
+                      href={`/learning-lists/${learningList.id}`}
+                      title={learningList.name}
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </PreviewPanel>
+        </div>
+
+        <div className="space-y-4">
+          <HomeFriendsActivityBox items={recentFriendActivity} />
+        </div>
       </section>
     </section>
   )
