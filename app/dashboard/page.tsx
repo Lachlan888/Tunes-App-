@@ -15,6 +15,7 @@ type DashboardPageProps = {
     show_instruments?: string | string[]
     show_public_lists_on_profile?: string | string[]
     show_repertoire_summary?: string | string[]
+    show_repertoire_to_friends?: string | string[]
     show_comment_activity?: string | string[]
     show_compare_discoverability?: string | string[]
     compare_requires_friend?: string | string[]
@@ -133,6 +134,11 @@ export default async function DashboardPage({
     profile?.show_repertoire_summary ?? false
   )
 
+  const initialShowRepertoireToFriends = getBooleanDraftValue(
+    resolvedSearchParams?.show_repertoire_to_friends,
+    profile?.show_repertoire_to_friends ?? false
+  )
+
   const initialShowCommentActivity = getBooleanDraftValue(
     resolvedSearchParams?.show_comment_activity,
     profile?.show_comment_activity ?? true
@@ -185,6 +191,7 @@ export default async function DashboardPage({
         initialShowInstruments={initialShowInstruments}
         initialShowPublicListsOnProfile={initialShowPublicListsOnProfile}
         initialShowRepertoireSummary={initialShowRepertoireSummary}
+        initialShowRepertoireToFriends={initialShowRepertoireToFriends}
         initialShowCommentActivity={initialShowCommentActivity}
         initialShowCompareDiscoverability={initialShowCompareDiscoverability}
         initialCompareRequiresFriend={initialCompareRequiresFriend}

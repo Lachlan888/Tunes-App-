@@ -12,6 +12,8 @@ type ProfileVisibilitySectionProps = {
   setShowPublicListsOnProfile: (value: boolean) => void
   showRepertoireSummary: boolean
   setShowRepertoireSummary: (value: boolean) => void
+  showRepertoireToFriends: boolean
+  setShowRepertoireToFriends: (value: boolean) => void
   showCommentActivity: boolean
   setShowCommentActivity: (value: boolean) => void
   showCompareDiscoverability: boolean
@@ -70,6 +72,8 @@ export default function ProfileVisibilitySection({
   setShowPublicListsOnProfile,
   showRepertoireSummary,
   setShowRepertoireSummary,
+  showRepertoireToFriends,
+  setShowRepertoireToFriends,
   showCommentActivity,
   setShowCommentActivity,
   showCompareDiscoverability,
@@ -117,8 +121,16 @@ export default function ProfileVisibilitySection({
           name="show_repertoire_summary"
           checked={showRepertoireSummary}
           onChange={setShowRepertoireSummary}
-          title="Show repertoire activity"
-          description="Let friends see repertoire movement such as tunes marked known, tunes started in practice, and tune reviews."
+          title="Show repertoire summary"
+          description="Show simple known and practice tune counts on your public profile."
+        />
+
+        <VisibilityToggle
+          name="show_repertoire_to_friends"
+          checked={showRepertoireToFriends}
+          onChange={setShowRepertoireToFriends}
+          title="Show repertoire to friends"
+          description="Let accepted friends browse the tunes you know or have in practice from your public profile."
         />
 
         <VisibilityToggle

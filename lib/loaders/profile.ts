@@ -17,6 +17,7 @@ export async function loadOwnProfileData(): Promise<OwnProfileData> {
         show_instruments,
         show_public_lists_on_profile,
         show_repertoire_summary,
+        show_repertoire_to_friends,
         show_comment_activity,
         show_compare_discoverability,
         compare_requires_friend

@@ -227,6 +227,7 @@ export type Profile = {
   show_instruments: boolean
   show_public_lists_on_profile: boolean
   show_repertoire_summary: boolean
+  show_repertoire_to_friends: boolean
   show_comment_activity: boolean
   show_compare_discoverability: boolean
   compare_requires_friend: boolean
@@ -243,6 +244,13 @@ export type PublicProfileList = {
 export type RepertoireSummary = {
   known_count: number
   practice_count: number
+}
+
+export type PublicProfileRepertoireTune = Piece & {
+  profile_state: "known" | "practice"
+  viewer_state: "new_to_me" | "known_by_me" | "in_my_practice" | "in_my_lists"
+  viewer_list_ids: number[]
+  viewer_list_names: string[]
 }
 
 export type OwnProfileData = {
@@ -263,10 +271,13 @@ export type PublicProfileData = {
   pendingIncomingConnectionId: number | null
   canCompare: boolean
   compareBlockedByFriendship: boolean
+  canViewFullRepertoire: boolean
   profile: Profile | null
   instruments: UserInstrument[]
   publicLists: PublicProfileList[]
   repertoireSummary: RepertoireSummary | null
+  profileRepertoireTunes: PublicProfileRepertoireTune[]
+  viewerLearningLists: LearningList[]
 }
 
 export type GettingStartedTaskId =

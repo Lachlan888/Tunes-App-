@@ -2,6 +2,8 @@ import { notFound } from "next/navigation"
 import PublicProfileActions from "@/components/profile/PublicProfileActions"
 import PublicProfileHeader from "@/components/profile/PublicProfileHeader"
 import PublicProfileOverview from "@/components/profile/PublicProfileOverview"
+import PublicProfileRepertoireSection from "@/components/profile/PublicProfileRepertoireSection"
+import { addToLearningList } from "@/lib/actions/lists"
 import { loadPublicProfileData } from "@/lib/loaders/profile-public"
 
 type PublicProfilePageProps = {
@@ -12,6 +14,7 @@ type PublicProfilePageProps = {
     friend_request?: string
     friend_accept?: string
     direct_message?: string
+    list_add?: string
   }>
 }
 
@@ -132,6 +135,24 @@ function getDirectMessageMessage(status?: string) {
   return null
 }
 
+function getListAddMessage(status?: string) {
+  if (status === "success") {
+    return {
+      tone: "success" as const,
+      text: "Tune added to your list.",
+    }
+  }
+
+  if (status === "duplicate") {
+    return {
+      tone: "neutral" as const,
+      text: "That tune is already in the selected list.",
+    }
+  }
+
+  return null
+}
+
 function getMessageClasses(
   tone: "success" | "warning" | "error" | "neutral"
 ) {
@@ -163,6 +184,8 @@ export default async function PublicProfilePage({
     instruments,
     publicLists,
     repertoireSummary,
+    profileRepertoireTunes,
+    viewerLearningLists,
     isOwnProfile,
     isAcceptedFriend,
     hasPendingOutgoingRequest,
@@ -170,6 +193,7 @@ export default async function PublicProfilePage({
     pendingIncomingConnectionId,
     canCompare,
     compareBlockedByFriendship,
+    canViewFullRepertoire,
   } = await loadPublicProfileData(username)
 
   if (!profile) {
@@ -189,6 +213,8 @@ export default async function PublicProfilePage({
   const directMessageMessage = getDirectMessageMessage(
     resolvedSearchParams?.direct_message
   )
+
+  const listAddMessage = getListAddMessage(resolvedSearchParams?.list_add)
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
@@ -210,6 +236,12 @@ export default async function PublicProfilePage({
         </div>
       ) : null}
 
+      {listAddMessage ? (
+        <div className={getMessageClasses(listAddMessage.tone)}>
+          {listAddMessage.text}
+        </div>
+      ) : null}
+
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="space-y-6">
           <PublicProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
@@ -220,6 +252,18 @@ export default async function PublicProfilePage({
             publicLists={publicLists}
             repertoireSummary={repertoireSummary}
             isOwnProfile={isOwnProfile}
+          />
+
+          <PublicProfileRepertoireSection
+            profile={profile}
+            tunes={profileRepertoireTunes}
+            viewerLearningLists={viewerLearningLists}
+            viewerId={viewerId}
+            isOwnProfile={isOwnProfile}
+            isAcceptedFriend={isAcceptedFriend}
+            canViewFullRepertoire={canViewFullRepertoire}
+            redirectTo={redirectTo}
+            addToLearningList={addToLearningList}
           />
         </div>
 

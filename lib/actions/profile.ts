@@ -37,6 +37,10 @@ function getProfileDraftParams(formData: FormData) {
     String(asBoolean(formData.get("show_repertoire_summary")))
   )
   params.set(
+    "show_repertoire_to_friends",
+    String(asBoolean(formData.get("show_repertoire_to_friends")))
+  )
+  params.set(
     "show_comment_activity",
     String(asBoolean(formData.get("show_comment_activity")))
   )
@@ -72,6 +76,9 @@ export async function updateProfile(formData: FormData) {
   )
   const show_repertoire_summary = asBoolean(
     formData.get("show_repertoire_summary")
+  )
+  const show_repertoire_to_friends = asBoolean(
+    formData.get("show_repertoire_to_friends")
   )
   const show_comment_activity = asBoolean(
     formData.get("show_comment_activity")
@@ -122,6 +129,7 @@ export async function updateProfile(formData: FormData) {
       show_instruments,
       show_public_lists_on_profile,
       show_repertoire_summary,
+      show_repertoire_to_friends,
       show_comment_activity,
       show_compare_discoverability,
       compare_requires_friend,

@@ -25,6 +25,8 @@ type ProfileDetailsSectionProps = {
   setShowPublicListsOnProfile: (value: boolean) => void
   showRepertoireSummary: boolean
   setShowRepertoireSummary: (value: boolean) => void
+  showRepertoireToFriends: boolean
+  setShowRepertoireToFriends: (value: boolean) => void
   showCommentActivity: boolean
   setShowCommentActivity: (value: boolean) => void
   showCompareDiscoverability: boolean
@@ -64,6 +66,8 @@ export default function ProfileDetailsSection({
   setShowPublicListsOnProfile,
   showRepertoireSummary,
   setShowRepertoireSummary,
+  showRepertoireToFriends,
+  setShowRepertoireToFriends,
   showCommentActivity,
   setShowCommentActivity,
   showCompareDiscoverability,
@@ -182,6 +186,8 @@ export default function ProfileDetailsSection({
           setShowPublicListsOnProfile={setShowPublicListsOnProfile}
           showRepertoireSummary={showRepertoireSummary}
           setShowRepertoireSummary={setShowRepertoireSummary}
+          showRepertoireToFriends={showRepertoireToFriends}
+          setShowRepertoireToFriends={setShowRepertoireToFriends}
           showCommentActivity={showCommentActivity}
           setShowCommentActivity={setShowCommentActivity}
           showCompareDiscoverability={showCompareDiscoverability}

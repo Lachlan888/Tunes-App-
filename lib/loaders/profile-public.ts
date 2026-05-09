@@ -1,8 +1,11 @@
 import { createClient } from "@/lib/supabase/server"
 import type {
+  LearningList,
+  Piece,
   Profile,
   PublicProfileData,
   PublicProfileList,
+  PublicProfileRepertoireTune,
   RepertoireSummary,
   UserInstrument,
 } from "@/lib/types"
@@ -16,6 +19,247 @@ type ConnectionRow = {
   status: "pending" | "accepted"
   requester_id: string
   addressee_id: string
+}
+
+type PieceIdRow = {
+  piece_id: number
+}
+
+type ViewerListMembershipRow = {
+  piece_id: number
+  learning_list_id: number
+  learning_lists:
+    | {
+        id: number
+        name: string
+      }
+    | {
+        id: number
+        name: string
+      }[]
+    | null
+}
+
+function asSingleList(
+  value:
+    | {
+        id: number
+        name: string
+      }
+    | {
+        id: number
+        name: string
+      }[]
+    | null
+) {
+  return Array.isArray(value) ? value[0] ?? null : value
+}
+
+async function loadViewerLearningLists(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  viewerId: string
+): Promise<LearningList[]> {
+  const { data: listRows, error: listRowsError } = await supabase
+    .from("learning_lists")
+    .select("id, name, description, visibility, is_imported")
+    .eq("user_id", viewerId)
+    .order("name", { ascending: true })
+
+  if (listRowsError) {
+    throw new Error(listRowsError.message)
+  }
+
+  return (listRows ?? []) as LearningList[]
+}
+
+async function loadProfileRepertoireTunes({
+  supabase,
+  profileUserId,
+  viewerId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  profileUserId: string
+  viewerId: string | null
+}): Promise<PublicProfileRepertoireTune[]> {
+  const [
+    { data: knownRows, error: knownError },
+    { data: practiceRows, error: practiceError },
+  ] = await Promise.all([
+    supabase
+      .from("user_known_pieces")
+      .select("piece_id")
+      .eq("user_id", profileUserId),
+    supabase
+      .from("user_pieces")
+      .select("piece_id")
+      .eq("user_id", profileUserId)
+      .eq("status", "learning"),
+  ])
+
+  if (knownError) {
+    throw new Error(knownError.message)
+  }
+
+  if (practiceError) {
+    throw new Error(practiceError.message)
+  }
+
+  const knownPieceIds = ((knownRows ?? []) as PieceIdRow[]).map(
+    (row) => row.piece_id
+  )
+
+  const practicePieceIds = ((practiceRows ?? []) as PieceIdRow[]).map(
+    (row) => row.piece_id
+  )
+
+  const profileStateByPieceId = new Map<number, "known" | "practice">()
+
+  for (const pieceId of knownPieceIds) {
+    profileStateByPieceId.set(pieceId, "known")
+  }
+
+  for (const pieceId of practicePieceIds) {
+    if (!profileStateByPieceId.has(pieceId)) {
+      profileStateByPieceId.set(pieceId, "practice")
+    }
+  }
+
+  const repertoirePieceIds = Array.from(profileStateByPieceId.keys())
+
+  if (repertoirePieceIds.length === 0) {
+    return []
+  }
+
+  const [
+    { data: pieceRows, error: pieceRowsError },
+    viewerKnownResult,
+    viewerPracticeResult,
+    viewerListResult,
+  ] = await Promise.all([
+    supabase
+      .from("pieces")
+      .select(
+        `
+          id,
+          title,
+          key,
+          style,
+          time_signature,
+          reference_url,
+          piece_styles (
+            style_id,
+            styles (
+              id,
+              slug,
+              label
+            )
+          )
+        `
+      )
+      .in("id", repertoirePieceIds)
+      .order("title", { ascending: true }),
+    viewerId
+      ? supabase
+          .from("user_known_pieces")
+          .select("piece_id")
+          .eq("user_id", viewerId)
+          .in("piece_id", repertoirePieceIds)
+      : Promise.resolve({ data: [], error: null }),
+    viewerId
+      ? supabase
+          .from("user_pieces")
+          .select("piece_id")
+          .eq("user_id", viewerId)
+          .eq("status", "learning")
+          .in("piece_id", repertoirePieceIds)
+      : Promise.resolve({ data: [], error: null }),
+    viewerId
+      ? supabase
+          .from("learning_list_items")
+          .select(
+            `
+              piece_id,
+              learning_list_id,
+              learning_lists!inner (
+                id,
+                name
+              )
+            `
+          )
+          .in("piece_id", repertoirePieceIds)
+          .eq("learning_lists.user_id", viewerId)
+      : Promise.resolve({ data: [], error: null }),
+  ])
+
+  if (pieceRowsError) {
+    throw new Error(pieceRowsError.message)
+  }
+
+  if (viewerKnownResult.error) {
+    throw new Error(viewerKnownResult.error.message)
+  }
+
+  if (viewerPracticeResult.error) {
+    throw new Error(viewerPracticeResult.error.message)
+  }
+
+  if (viewerListResult.error) {
+    throw new Error(viewerListResult.error.message)
+  }
+
+  const viewerKnownPieceIds = new Set(
+    ((viewerKnownResult.data ?? []) as PieceIdRow[]).map((row) => row.piece_id)
+  )
+
+  const viewerPracticePieceIds = new Set(
+    ((viewerPracticeResult.data ?? []) as PieceIdRow[]).map(
+      (row) => row.piece_id
+    )
+  )
+
+  const viewerListRows =
+    ((viewerListResult.data ?? []) as ViewerListMembershipRow[]) ?? []
+
+  const viewerListIdsByPieceId = new Map<number, number[]>()
+  const viewerListNamesByPieceId = new Map<number, string[]>()
+
+  for (const row of viewerListRows) {
+    const list = asSingleList(row.learning_lists)
+    if (!list) continue
+
+    const existingIds = viewerListIdsByPieceId.get(row.piece_id) ?? []
+    const existingNames = viewerListNamesByPieceId.get(row.piece_id) ?? []
+
+    viewerListIdsByPieceId.set(row.piece_id, [
+      ...new Set([...existingIds, row.learning_list_id]),
+    ])
+    viewerListNamesByPieceId.set(row.piece_id, [
+      ...new Set([...existingNames, list.name]),
+    ])
+  }
+
+  return ((pieceRows ?? []) as Piece[]).map((piece) => {
+    const viewerListIds = viewerListIdsByPieceId.get(piece.id) ?? []
+    const viewerListNames = viewerListNamesByPieceId.get(piece.id) ?? []
+
+    let viewer_state: PublicProfileRepertoireTune["viewer_state"] = "new_to_me"
+
+    if (viewerPracticePieceIds.has(piece.id)) {
+      viewer_state = "in_my_practice"
+    } else if (viewerKnownPieceIds.has(piece.id)) {
+      viewer_state = "known_by_me"
+    } else if (viewerListIds.length > 0) {
+      viewer_state = "in_my_lists"
+    }
+
+    return {
+      ...piece,
+      profile_state: profileStateByPieceId.get(piece.id) ?? "known",
+      viewer_state,
+      viewer_list_ids: viewerListIds,
+      viewer_list_names: viewerListNames,
+    }
+  })
 }
 
 export async function loadPublicProfileData(
@@ -42,6 +286,7 @@ export async function loadPublicProfileData(
         show_instruments,
         show_public_lists_on_profile,
         show_repertoire_summary,
+        show_repertoire_to_friends,
         show_comment_activity,
         show_compare_discoverability,
         compare_requires_friend
@@ -64,10 +309,13 @@ export async function loadPublicProfileData(
       pendingIncomingConnectionId: null,
       canCompare: false,
       compareBlockedByFriendship: false,
+      canViewFullRepertoire: false,
       profile: null,
       instruments: [],
       publicLists: [],
       repertoireSummary: null,
+      profileRepertoireTunes: [],
+      viewerLearningLists: [],
     }
   }
 
@@ -206,6 +454,23 @@ export async function loadPublicProfileData(
     }
   }
 
+  const canViewFullRepertoire =
+    isOwnProfile ||
+    (typedProfile.show_repertoire_to_friends && isAcceptedFriend)
+
+  const [profileRepertoireTunes, viewerLearningLists] = await Promise.all([
+    canViewFullRepertoire
+      ? loadProfileRepertoireTunes({
+          supabase,
+          profileUserId: typedProfile.id,
+          viewerId,
+        })
+      : Promise.resolve([]),
+    viewerId && canViewFullRepertoire
+      ? loadViewerLearningLists(supabase, viewerId)
+      : Promise.resolve([]),
+  ])
+
   const compareBlockedByFriendship =
     typedProfile.show_compare_discoverability &&
     typedProfile.compare_requires_friend &&
@@ -226,9 +491,12 @@ export async function loadPublicProfileData(
     pendingIncomingConnectionId,
     canCompare,
     compareBlockedByFriendship,
+    canViewFullRepertoire,
     profile: typedProfile,
     instruments,
     publicLists,
     repertoireSummary,
+    profileRepertoireTunes,
+    viewerLearningLists,
   }
 }
