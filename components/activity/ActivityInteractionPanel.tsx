@@ -2,6 +2,7 @@ import Link from "next/link"
 import SubmitButton from "@/components/SubmitButton"
 import ActivityReactionBar from "@/components/activity/ActivityReactionBar"
 import ActivityReplyForm from "@/components/activity/ActivityReplyForm"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import {
   deleteActivityReply,
   updateActivityReply,
@@ -61,7 +62,9 @@ export default async function ActivityInteractionPanel({
                   <p>
                     {reply.author?.username ? (
                       <Link
-                        href={`/users/${reply.author.username}`}
+                        href={`/users/${encodeURIComponent(
+                          reply.author.username
+                        )}`}
                         className="underline underline-offset-4 hover:text-foreground"
                       >
                         {getAuthorName(reply)}
@@ -105,7 +108,7 @@ export default async function ActivityInteractionPanel({
                           <SubmitButton
                             label="Save edit"
                             pendingLabel="Saving..."
-                            className="rounded-full border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                            className={buttonStyles.primary}
                           />
                         </form>
                       </details>
@@ -125,7 +128,7 @@ export default async function ActivityInteractionPanel({
                         <SubmitButton
                           label="Delete"
                           pendingLabel="Deleting..."
-                          className="rounded-full border border-destructive px-3 py-1 text-xs font-medium text-destructive transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                          className={buttonStyles.destructiveSecondary}
                         />
                       </form>
                     </div>

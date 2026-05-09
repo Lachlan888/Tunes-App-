@@ -1,4 +1,5 @@
 import PendingLinkButton from "@/components/PendingLinkButton"
+import UserIdentityLink from "@/components/UserIdentityLink"
 import CompareScopeToggle from "@/components/compare/CompareScopeToggle"
 import type { ProfileSearchRow } from "@/lib/profile-search"
 import { buildCompareHref, removeUserOnce } from "@/lib/compare-page"
@@ -11,10 +12,6 @@ type CurrentCompareGroupSectionProps = {
   selectedStyles: string[]
   selectedTimeSignatures: string[]
   includePractice: boolean
-}
-
-function getProfileDisplayName(profile: ProfileSearchRow) {
-  return profile.display_name || profile.username || "Unnamed player"
 }
 
 export default function CurrentCompareGroupSection({
@@ -49,7 +46,6 @@ export default function CurrentCompareGroupSection({
       {selectedProfiles.length > 0 ? (
         <div className="mt-5 flex flex-wrap gap-3">
           {selectedProfiles.map((profile) => {
-            const displayName = getProfileDisplayName(profile)
             const nextUsers = removeUserOnce(
               filterPreservedUsers,
               profile.username ?? ""
@@ -61,7 +57,12 @@ export default function CurrentCompareGroupSection({
                 className="flex items-center gap-3 rounded-full border border-border bg-background/70 px-4 py-2 text-sm shadow-sm"
               >
                 <span className="font-medium text-foreground">
-                  {displayName}
+                  <UserIdentityLink
+                    username={profile.username}
+                    displayName={profile.display_name}
+                    fallbackLabel="Unnamed player"
+                    className="decoration-primary decoration-2 underline-offset-4 hover:underline"
+                  />
                 </span>
 
                 {profile.username && (

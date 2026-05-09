@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import {
   addPieceLoreEntry,
   deletePieceLoreEntry,
@@ -75,15 +76,6 @@ const LORE_CATEGORY_LABELS: Record<PieceLoreCategory, string> = {
 const inputClassName =
   "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
-const primaryButtonClass =
-  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-
-const dangerButtonClass =
-  "rounded-full border border-destructive bg-background/70 px-3 py-1 text-xs font-medium text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-
-const secondaryButtonClass =
-  "rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-
 function canUseModeratorTools(role: UserRole) {
   return role === "moderator" || role === "admin"
 }
@@ -126,7 +118,7 @@ function ModalShell({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className={buttonStyles.secondary}
           >
             Close
           </button>
@@ -145,7 +137,7 @@ function AuthorLink({ author }: { author: LoreAuthor }) {
 
   return (
     <Link
-      href={`/users/${author.username}`}
+      href={`/users/${encodeURIComponent(author.username)}`}
       className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
     >
       {author.displayName}
@@ -200,7 +192,7 @@ export default function PieceLoreSection({
         <SubmitButton
           label="Add lore entry"
           pendingLabel="Adding..."
-          className={primaryButtonClass}
+          className={buttonStyles.primary}
         />
       </form>
 
@@ -248,7 +240,7 @@ export default function PieceLoreSection({
                                   entry,
                                 })
                               }
-                              className={secondaryButtonClass}
+                              className={buttonStyles.secondary}
                             >
                               Edit
                             </button>
@@ -263,14 +255,22 @@ export default function PieceLoreSection({
                                   entry,
                                 })
                               }
-                              className={secondaryButtonClass}
+                              className={buttonStyles.secondary}
                             >
                               Report
                             </button>
                           ) : null}
 
                           {canDeleteEntry ? (
-                            <form action={deletePieceLoreEntry}>
+                            <form
+                              action={deletePieceLoreEntry}
+                              onSubmit={(event) => {
+                                const confirmed = window.confirm(
+                                  "Delete this lore entry?"
+                                )
+                                if (!confirmed) event.preventDefault()
+                              }}
+                            >
                               <input
                                 type="hidden"
                                 name="piece_id"
@@ -290,7 +290,7 @@ export default function PieceLoreSection({
                               <SubmitButton
                                 label="Delete"
                                 pendingLabel="Deleting..."
-                                className={dangerButtonClass}
+                                className={buttonStyles.destructiveSecondary}
                               />
                             </form>
                           ) : null}
@@ -356,13 +356,13 @@ export default function PieceLoreSection({
               <SubmitButton
                 label="Save lore entry"
                 pendingLabel="Saving..."
-                className="w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className={`w-full ${buttonStyles.primary}`}
               />
 
               <button
                 type="button"
                 onClick={() => setModalMode(null)}
-                className="w-full rounded-full border border-border bg-background/70 px-4 py-3 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className={`w-full ${buttonStyles.secondary}`}
               >
                 Cancel
               </button>
@@ -415,13 +415,13 @@ export default function PieceLoreSection({
               <SubmitButton
                 label="Submit lore report"
                 pendingLabel="Reporting..."
-                className="w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className={`w-full ${buttonStyles.primary}`}
               />
 
               <button
                 type="button"
                 onClick={() => setModalMode(null)}
-                className="w-full rounded-full border border-border bg-background/70 px-4 py-3 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className={`w-full ${buttonStyles.secondary}`}
               >
                 Cancel
               </button>

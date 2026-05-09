@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import CreateTuneForm from "@/components/library/CreateTuneForm"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import { createTune } from "@/lib/actions/pieces"
 
 type StyleOption = {
@@ -48,14 +49,14 @@ export default function CreateTuneModal({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        className={buttonStyles.primary}
       >
         Create Tune
       </button>
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#20271c]/55 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/35 p-4 backdrop-blur-sm"
           onClick={() => {
             if (!isSubmitting) {
               setIsOpen(false)
@@ -84,7 +85,7 @@ export default function CreateTuneModal({
                 type="button"
                 onClick={() => setIsOpen(false)}
                 disabled={isSubmitting}
-                className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                className={buttonStyles.secondary}
               >
                 Close
               </button>

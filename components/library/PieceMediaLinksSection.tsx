@@ -5,6 +5,7 @@ import ReferenceMediaEmbed, {
   getYouTubeEmbedUrl,
 } from "@/components/library/ReferenceMediaEmbed"
 import SubmitButton from "@/components/SubmitButton"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 
 type PieceMediaLink = {
   id: number
@@ -71,7 +72,7 @@ export default function PieceMediaLinksSection({
         <SubmitButton
           label="Add media link"
           pendingLabel="Adding..."
-          className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          className={buttonStyles.primary}
         />
       </form>
 
@@ -100,7 +101,7 @@ export default function PieceMediaLinksSection({
                             current === link.id ? null : link.id
                           )
                         }
-                        className="font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                        className={buttonStyles.text}
                       >
                         {isOpen ? "Hide inline media" : "Watch inline"}
                       </button>

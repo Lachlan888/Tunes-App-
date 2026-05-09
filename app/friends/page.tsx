@@ -4,6 +4,8 @@ import FriendSearchForm from "@/components/friends/FriendSearchForm"
 import FriendsListSection from "@/components/friends/FriendsListSection"
 import RecentFriendActivitySection from "@/components/friends/RecentFriendActivitySection"
 import SubmitButton from "@/components/SubmitButton"
+import { buttonStyles } from "@/components/ui/buttonStyles"
+import { statusStyles, type StatusTone } from "@/components/ui/statusStyles"
 import { acceptFriendRequest, sendFriendRequest } from "@/lib/actions/friends"
 import { loadFriendsPageData } from "@/lib/loaders/friends"
 
@@ -28,7 +30,7 @@ function renderUserLink(username: string | null, displayName: string | null) {
 
   return (
     <Link
-      href={`/users/${username}`}
+      href={`/users/${encodeURIComponent(username)}`}
       className="decoration-primary decoration-2 underline-offset-4 hover:underline"
     >
       {label}
@@ -40,32 +42,22 @@ function StatusBanner({
   tone,
   children,
 }: {
-  tone: "success" | "warning" | "error" | "neutral"
+  tone: StatusTone
   children: React.ReactNode
 }) {
-  const toneClassNames = {
-    success: "border-success bg-[#e6edd6] text-[#435336]",
-    warning: "border-[#c5ad67] bg-[#f1e7bf] text-[#675622]",
-    error: "border-destructive bg-[#f2dfd6] text-[#6f3f36]",
-    neutral: "border-border bg-muted text-muted-foreground",
-  }
-
   return (
     <div
-      className={`mb-6 rounded-2xl border p-4 text-sm font-medium shadow-sm ${toneClassNames[tone]}`}
+      className={`mb-6 rounded-2xl border p-4 text-sm font-medium shadow-sm ${statusStyles[tone]}`}
     >
       {children}
     </div>
   )
 }
 
-const primaryButtonClass =
-  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
-
 function UserHandleLink({ username }: { username: string }) {
   return (
     <Link
-      href={`/users/${username}`}
+      href={`/users/${encodeURIComponent(username)}`}
       className="text-sm text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
     >
       @{username}
@@ -217,7 +209,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
                   <SubmitButton
                     label="Send request"
                     pendingLabel="Sending..."
-                    className={primaryButtonClass}
+                    className={buttonStyles.primary}
                   />
                 </form>
               </article>
@@ -272,7 +264,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
                   <SubmitButton
                     label="Accept"
                     pendingLabel="Accepting..."
-                    className={primaryButtonClass}
+                    className={buttonStyles.primary}
                   />
                 </form>
               </article>

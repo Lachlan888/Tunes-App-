@@ -1,6 +1,7 @@
 import Link from "next/link"
 import PracticeProgress from "@/components/practice/PracticeProgress"
 import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeButton"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import { APP_TIME_ZONE } from "@/lib/review"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 
@@ -20,13 +21,13 @@ function formatDueDate(dateValue: string | null) {
 function getStatusBadgeClasses(label: string | null) {
   switch (label) {
     case "Due now":
-      return "bg-[#f1e7bf] text-[#675622] border border-[#c5ad67]"
+      return "border border-warning bg-warning/30 text-warning-foreground"
     case "Overdue":
-      return "bg-[#ead0c5] text-[#6f3f36] border border-[#b98576]"
+      return "border border-destructive/40 bg-destructive/15 text-destructive"
     case "Overdue (longest)":
-      return "bg-[#e2c5bf] text-[#633833] border border-[#a8746d]"
+      return "border border-destructive bg-destructive/20 text-destructive"
     default:
-      return "bg-[#edf2e4] text-[#435336] border border-[#b0bc8c]"
+      return "border border-border bg-muted text-muted-foreground"
   }
 }
 
@@ -35,18 +36,18 @@ export default function ActivePracticeSection({
   redirectTo,
 }: ActivePracticeSectionProps) {
   return (
-    <section className="mt-10 rounded-2xl border border-[#b0bc8c] bg-[#e4ead8] p-5 shadow-sm">
+    <section className="mt-10 rounded-3xl border border-border bg-card p-6 shadow-sm">
       <details>
-        <summary className="cursor-pointer text-sm font-semibold uppercase tracking-[0.16em] text-[#596650]">
+        <summary className="cursor-pointer text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Currently in practice ({practiceItems.length})
         </summary>
 
-        <p className="mt-3 text-sm text-[#596650]">
+        <p className="mt-3 text-sm text-muted-foreground">
           Full list of tunes currently in your practice system.
         </p>
 
         {practiceItems.length === 0 ? (
-          <p className="mt-4 text-sm text-[#596650]">
+          <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
             No tunes in practice yet.
           </p>
         ) : (
@@ -59,21 +60,21 @@ export default function ActivePracticeSection({
               const badgeClassName = userPiece.backlog_label
                 ? getStatusBadgeClasses(userPiece.backlog_label)
                 : badgeLabel === "Scheduled"
-                  ? "bg-[#edf2e4] text-[#596650] border border-[#b0bc8c]"
-                  : "bg-[#edf2e4] text-[#435336] border border-[#b0bc8c]"
+                  ? "border border-border bg-muted text-muted-foreground"
+                  : "border border-border bg-background/70 text-muted-foreground"
 
               return (
                 <li
                   key={userPiece.id}
-                  className="rounded-xl border border-[#b0bc8c] bg-[#f3f7ea]/70 p-4"
+                  className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <p className="font-medium">
+                      <p className="font-medium text-foreground">
                         {userPiece.piece ? (
                           <Link
                             href={`/library/${userPiece.piece.id}`}
-                            className="decoration-[#7b8a50] underline-offset-4 hover:underline"
+                            className="decoration-primary decoration-2 underline-offset-4 hover:underline"
                           >
                             {userPiece.piece.title}
                           </Link>
@@ -82,13 +83,13 @@ export default function ActivePracticeSection({
                         )}
                       </p>
 
-                      <p className="mt-1 text-sm text-[#596650]">
+                      <p className="mt-1 text-sm text-muted-foreground">
                         Key: {userPiece.piece?.key ?? "Unknown"} | Style:{" "}
                         {userPiece.piece?.style ?? "Unknown"} | Time:{" "}
                         {userPiece.piece?.time_signature ?? "Unknown"}
                       </p>
 
-                      <p className="mt-1 text-sm text-[#596650]">
+                      <p className="mt-1 text-sm text-muted-foreground">
                         Due: {formatDueDate(userPiece.next_review_due)}
                       </p>
 
@@ -101,7 +102,9 @@ export default function ActivePracticeSection({
                         <RemoveFromPracticeButton
                           userPieceId={userPiece.id}
                           redirectTo={redirectTo}
-                          className="rounded-full border border-[#b0bc8c] px-3 py-2 text-sm font-medium text-[#596650] transition hover:bg-[#edf2e4] hover:text-[#20271c] focus:outline-none focus:ring-2 focus:ring-[rgba(123,138,80,0.28)]"
+                          label="Remove from practice"
+                          pendingLabel="Removing..."
+                          className={buttonStyles.destructiveSecondary}
                         />
                       </div>
                     </div>

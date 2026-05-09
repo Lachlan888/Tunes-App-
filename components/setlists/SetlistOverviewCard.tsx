@@ -1,4 +1,8 @@
+"use client"
+
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { cardStyles } from "@/components/ui/cardStyles"
 import type { SetlistOverview } from "@/lib/types"
 
 type SetlistOverviewCardProps = {
@@ -9,16 +13,55 @@ function pluralise(count: number, singular: string, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`
 }
 
+function clickedInsideInteractiveElement(target: EventTarget | null) {
+  if (!(target instanceof Element)) return false
+
+  return Boolean(
+    target.closest(
+      [
+        "a",
+        "button",
+        "input",
+        "select",
+        "textarea",
+        "label",
+        "summary",
+        "details",
+        "form",
+        "[role='button']",
+        "[data-card-action]",
+      ].join(", ")
+    )
+  )
+}
+
 export default function SetlistOverviewCard({
   setlist,
 }: SetlistOverviewCardProps) {
+  const router = useRouter()
+  const setlistHref = `/setlists/${setlist.id}`
+
+  function openSetlistPage(event: React.MouseEvent<HTMLElement>) {
+    if (clickedInsideInteractiveElement(event.target)) return
+    router.push(setlistHref)
+  }
+
   return (
-    <article className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:shadow-md">
+    <article
+      className={cardStyles.clickableCard}
+      onClick={openSetlistPage}
+      aria-label={`Open setlist ${setlist.name}`}
+    >
       <div className="flex flex-col gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-serif text-2xl font-bold tracking-tight text-foreground">
-              {setlist.name}
+              <Link
+                href={setlistHref}
+                className="decoration-primary decoration-2 underline-offset-4 hover:underline"
+              >
+                {setlist.name}
+              </Link>
             </h3>
 
             {setlist.isCreator ? (
@@ -57,15 +100,15 @@ export default function SetlistOverviewCard({
           </span>
         </div>
 
-        {(setlist.event_date || setlist.location) ? (
+        {setlist.event_date || setlist.location ? (
           <p className="text-sm text-muted-foreground">
             {[setlist.event_date, setlist.location].filter(Boolean).join(" · ")}
           </p>
         ) : null}
 
-        <div>
+        <div data-card-action>
           <Link
-            href={`/setlists/${setlist.id}`}
+            href={setlistHref}
             className="inline-flex rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           >
             View setlist

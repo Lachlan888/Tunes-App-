@@ -4,6 +4,7 @@ import EditSetlistModal from "@/components/setlists/EditSetlistModal"
 import InviteSetlistCollaboratorForm from "@/components/setlists/InviteSetlistCollaboratorForm"
 import SetlistStatusMessages from "@/components/setlists/SetlistStatusMessages"
 import SetlistTuneMatrix from "@/components/setlists/SetlistTuneMatrix"
+import UserIdentityLink from "@/components/UserIdentityLink"
 import { markAsKnown } from "@/lib/actions/known-pieces"
 import {
   addTuneToSetlist,
@@ -26,6 +27,10 @@ type SetlistDetailPageProps = {
   }>
 }
 
+function pluralise(count: number, singular: string, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`
+}
+
 function memberLabel(member: {
   profile: {
     username: string | null
@@ -35,8 +40,39 @@ function memberLabel(member: {
   return member.profile?.display_name || member.profile?.username || "Unknown"
 }
 
-function pluralise(count: number, singular: string, plural = `${singular}s`) {
-  return `${count} ${count === 1 ? singular : plural}`
+function MemberPill({
+  member,
+  status,
+}: {
+  member: {
+    id: number
+    profile: {
+      username: string | null
+      display_name: string | null
+    } | null
+  }
+  status: "accepted" | "pending"
+}) {
+  const className =
+    status === "accepted"
+      ? "rounded-full border border-success bg-success px-3 py-1 text-sm font-medium text-success-foreground"
+      : "rounded-full border border-border bg-background/70 px-3 py-1 text-sm font-medium text-muted-foreground"
+
+  return (
+    <span className={className}>
+      {status === "pending" ? "Pending: " : ""}
+      {member.profile?.username ? (
+        <UserIdentityLink
+          username={member.profile.username}
+          displayName={member.profile.display_name}
+          fallbackLabel="Unknown"
+          className="underline underline-offset-4 transition hover:text-foreground"
+        />
+      ) : (
+        memberLabel(member)
+      )}
+    </span>
+  )
 }
 
 export default async function SetlistDetailPage({
@@ -174,21 +210,11 @@ export default async function SetlistDetailPage({
 
             <div className="mt-4 flex flex-wrap gap-2">
               {acceptedMembers.map((member) => (
-                <span
-                  key={member.id}
-                  className="rounded-full border border-success bg-success px-3 py-1 text-sm font-medium text-success-foreground"
-                >
-                  {memberLabel(member)}
-                </span>
+                <MemberPill key={member.id} member={member} status="accepted" />
               ))}
 
               {pendingMembers.map((member) => (
-                <span
-                  key={member.id}
-                  className="rounded-full border border-border bg-background/70 px-3 py-1 text-sm font-medium text-muted-foreground"
-                >
-                  Pending: {memberLabel(member)}
-                </span>
+                <MemberPill key={member.id} member={member} status="pending" />
               ))}
             </div>
           </div>

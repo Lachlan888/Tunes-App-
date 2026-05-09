@@ -1,4 +1,6 @@
 import Link from "next/link"
+import { buttonStyles } from "@/components/ui/buttonStyles"
+import { statusStyles, type StatusTone } from "@/components/ui/statusStyles"
 
 type LibraryStatusMessagesProps = {
   createTuneStatus: string
@@ -21,30 +23,17 @@ function StatusBanner({
   tone,
   children,
 }: {
-  tone: "success" | "warning" | "error" | "neutral"
+  tone: StatusTone
   children: React.ReactNode
 }) {
-  const toneClassNames = {
-    success: "border-success bg-[#e6edd6] text-[#435336]",
-    warning: "border-[#c5ad67] bg-[#f1e7bf] text-[#675622]",
-    error: "border-destructive bg-[#f2dfd6] text-[#6f3f36]",
-    neutral: "border-border bg-muted text-muted-foreground",
-  }
-
   return (
     <div
-      className={`mb-6 rounded-2xl border p-4 text-sm font-medium shadow-sm ${toneClassNames[tone]}`}
+      className={`mb-6 rounded-2xl border p-4 text-sm font-medium shadow-sm ${statusStyles[tone]}`}
     >
       {children}
     </div>
   )
 }
-
-const primaryLinkClass =
-  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-
-const secondaryLinkClass =
-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function LibraryStatusMessages({
   createTuneStatus,
@@ -193,7 +182,9 @@ export default function LibraryStatusMessages({
       )}
 
       {bulkUploadStatus === "imported" && (
-        <div className="mb-6 rounded-2xl border border-success bg-[#e6edd6] p-5 text-sm text-[#435336] shadow-sm">
+        <div
+          className={`mb-6 rounded-2xl border p-5 text-sm shadow-sm ${statusStyles.success}`}
+        >
           <p className="font-semibold">Bulk import completed.</p>
           <p className="mt-2">
             Created pieces: {createdPiecesCount}. Reused existing pieces:{" "}
@@ -212,17 +203,17 @@ export default function LibraryStatusMessages({
             {uploadedListId && (
               <Link
                 href={`/learning-lists/${uploadedListId}`}
-                className={primaryLinkClass}
+                className={buttonStyles.primary}
               >
                 View Uploaded Tunes
               </Link>
             )}
 
-            <Link href="/library/known" className={secondaryLinkClass}>
+            <Link href="/library/known" className={buttonStyles.secondary}>
               View Known Tunes
             </Link>
 
-            <Link href="/library" className={secondaryLinkClass}>
+            <Link href="/library" className={buttonStyles.secondary}>
               Start Practice
             </Link>
           </div>

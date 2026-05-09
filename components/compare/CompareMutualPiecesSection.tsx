@@ -37,6 +37,16 @@ function buildCompareClearFiltersHref(
   return params.toString() ? `/compare?${params.toString()}` : "/compare"
 }
 
+function getPieceMeta(piece: Piece) {
+  return [
+    piece.key ? `Key: ${piece.key}` : null,
+    piece.style ? `Style: ${piece.style}` : null,
+    piece.time_signature ? `Time: ${piece.time_signature}` : null,
+  ]
+    .filter(Boolean)
+    .join(" | ")
+}
+
 export default function CompareMutualPiecesSection({
   filteredPieces,
   mutualPiecesCount,
@@ -101,16 +111,29 @@ export default function CompareMutualPiecesSection({
       ) : (
         <div className="mt-3 min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-background/70">
           <ul className="h-full divide-y divide-border overflow-y-auto">
-            {filteredPieces.map((piece) => (
-              <li key={piece.id}>
-                <Link
-                  href={`/library/${piece.id}`}
-                  className="block px-4 py-3 font-medium text-foreground underline-offset-4 transition hover:bg-muted hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                >
-                  {piece.title}
-                </Link>
-              </li>
-            ))}
+            {filteredPieces.map((piece) => {
+              const href = `/library/${piece.id}`
+              const meta = getPieceMeta(piece)
+
+              return (
+                <li key={piece.id}>
+                  <Link
+                    href={href}
+                    className="group block px-4 py-3 transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  >
+                    <span className="block font-medium text-foreground underline-offset-4 group-hover:underline">
+                      {piece.title}
+                    </span>
+
+                    {meta ? (
+                      <span className="mt-1 block text-sm text-muted-foreground">
+                        {meta}
+                      </span>
+                    ) : null}
+                  </Link>
+                </li>
+              )
+            })}
           </ul>
         </div>
       )}

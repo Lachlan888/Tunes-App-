@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
 import PendingLinkButton from "@/components/PendingLinkButton"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 
 type Piece = {
   id: number
@@ -40,9 +41,6 @@ type UnlistedKnownTunesModalProps = {
   redirectTo: string
   summaryClassName?: string
 }
-
-const secondaryButtonClass =
-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 export default function UnlistedKnownTunesModal({
   unlistedKnownTunes,
@@ -95,7 +93,7 @@ export default function UnlistedKnownTunesModal({
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className={secondaryButtonClass}
+            className={buttonStyles.secondary}
           >
             Review tunes
           </button>
@@ -104,7 +102,7 @@ export default function UnlistedKnownTunesModal({
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-[#20271c]/55 p-4"
+          className="fixed inset-0 z-50 overflow-y-auto bg-foreground/35 p-4 backdrop-blur-sm"
           onClick={() => setIsOpen(false)}
         >
           <div className="flex min-h-full items-start justify-center py-8">
@@ -125,7 +123,7 @@ export default function UnlistedKnownTunesModal({
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className={secondaryButtonClass}
+                  className={buttonStyles.secondary}
                 >
                   Close
                 </button>
@@ -156,7 +154,7 @@ export default function UnlistedKnownTunesModal({
 
                         <button
                           type="button"
-                          className={secondaryButtonClass}
+                          className={buttonStyles.secondary}
                           onClick={() => {
                             setSelectedPiece({
                               id: userKnownPiece.piece_id,

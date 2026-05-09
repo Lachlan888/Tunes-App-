@@ -1,7 +1,9 @@
+import Link from "next/link"
 import EmptyState from "@/components/EmptyState"
 import ActivityInteractionPanel from "@/components/activity/ActivityInteractionPanel"
 import {
   formatFriendActivityRelativeTime,
+  getActivityContextHref,
   renderFriendActivityText,
   type FriendActivityItem,
 } from "@/lib/friend-activity"
@@ -38,14 +40,23 @@ export default function RecentFriendActivitySection({
           {items.map((item) => (
             <article
               key={item.id}
-              className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
+              className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:bg-muted/70"
             >
               <p className="text-sm leading-6 text-foreground">
                 {renderFriendActivityText(item)}
               </p>
-              <p className="mt-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                {formatFriendActivityRelativeTime(item.created_at)}
-              </p>
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  {formatFriendActivityRelativeTime(item.created_at)}
+                </p>
+
+                <Link
+                  href={getActivityContextHref(item)}
+                  className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+                >
+                  Open context
+                </Link>
+              </div>
 
               <ActivityInteractionPanel item={item} redirectTo="/friends" />
             </article>

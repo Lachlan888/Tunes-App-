@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import type { Setlist } from "@/lib/types"
 
 type EditSetlistModalProps = {
@@ -27,7 +28,7 @@ export default function EditSetlistModal({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        className={buttonStyles.secondary}
       >
         Edit setlist
       </button>
@@ -48,7 +49,7 @@ export default function EditSetlistModal({
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="rounded-lg border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className={buttonStyles.secondary}
               >
                 Close
               </button>
@@ -110,7 +111,7 @@ export default function EditSetlistModal({
               <SubmitButton
                 label="Save setlist"
                 pendingLabel="Saving..."
-                className="w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className={`w-full ${buttonStyles.primary}`}
               />
             </form>
 
@@ -141,7 +142,7 @@ export default function EditSetlistModal({
                 <SubmitButton
                   label="Delete setlist"
                   pendingLabel="Deleting..."
-                  className="rounded-full border border-destructive bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className={buttonStyles.destructive}
                 />
               </form>
             </div>

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import TuneSearchSelect from "@/components/TuneSearchSelect"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import type { Piece } from "@/lib/types"
 
 type AddTuneToSetlistModalProps = {
@@ -33,7 +34,7 @@ export default function AddTuneToSetlistModal({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        className={buttonStyles.primary}
       >
         Add tune
       </button>
@@ -58,7 +59,7 @@ export default function AddTuneToSetlistModal({
               <button
                 type="button"
                 onClick={handleClose}
-                className="rounded-lg border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className={buttonStyles.secondary}
               >
                 Close
               </button>
@@ -82,7 +83,7 @@ export default function AddTuneToSetlistModal({
                 <SubmitButton
                   label="Add to setlist"
                   pendingLabel="Adding..."
-                  className="w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className={`w-full ${buttonStyles.primary}`}
                 />
               ) : (
                 <button

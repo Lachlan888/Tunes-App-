@@ -3,6 +3,7 @@ import MarkAsKnownButton from "@/components/MarkAsKnownButton"
 import PracticeProgress from "@/components/practice/PracticeProgress"
 import RemoveTuneButton from "@/components/RemoveTuneButton"
 import StartPracticeButton from "@/components/StartPracticeButton"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
 
 type LearningListItemRow = {
@@ -20,12 +21,6 @@ type TuneDetailActionsProps = {
   startLearning: (formData: FormData) => Promise<void>
   addToLearningList: (formData: FormData) => Promise<void>
 }
-
-const primaryButtonClassName =
-  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-
-const secondaryButtonClassName =
-  "rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function TuneDetailActions({
   piece,
@@ -56,7 +51,7 @@ export default function TuneDetailActions({
             Practice
           </p>
           <p className="mt-2 text-lg font-semibold text-foreground">
-            {isAlreadyInPractice ? "In practice" : "Not in practice"}
+            {isAlreadyInPractice ? "Already in practice" : "Not in practice"}
           </p>
         </div>
 
@@ -91,7 +86,7 @@ export default function TuneDetailActions({
             pieceId={piece.id}
             redirectTo={redirectTo}
             startLearning={startLearning}
-            className={primaryButtonClassName}
+            className={buttonStyles.primary}
           />
         ) : (
           <span className="rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm">
@@ -104,7 +99,7 @@ export default function TuneDetailActions({
             pieceId={piece.id}
             redirectTo={redirectTo}
             label="Set as known"
-            className={secondaryButtonClassName}
+            className={buttonStyles.secondary}
           />
         ) : isKnown ? (
           <span className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm">
@@ -114,7 +109,7 @@ export default function TuneDetailActions({
           <MarkAsKnownButton
             pieceId={piece.id}
             redirectTo={redirectTo}
-            className={secondaryButtonClassName}
+            className={buttonStyles.secondary}
           />
         )}
 
@@ -124,7 +119,7 @@ export default function TuneDetailActions({
           learningListItems={learningListItems}
           redirectTo={redirectTo}
           addToLearningList={addToLearningList}
-          buttonClassName={secondaryButtonClassName}
+          buttonClassName={buttonStyles.secondary}
         />
 
         <RemoveTuneButton pieceId={piece.id} redirectTo={redirectTo} />

@@ -3,6 +3,8 @@
 import { useState } from "react"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import SubmitButton from "@/components/SubmitButton"
+import { buttonStyles } from "@/components/ui/buttonStyles"
+import { statusStyles } from "@/components/ui/statusStyles"
 import type { Piece } from "@/lib/types"
 
 type EditListModalProps = {
@@ -17,15 +19,6 @@ type EditListModalProps = {
   deleteList: (formData: FormData) => Promise<void>
   triggerLabel?: string
 }
-
-const primaryButtonClass =
-  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
-
-const secondaryButtonClass =
-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
-
-const destructiveButtonClass =
-  "rounded-full border border-destructive bg-transparent px-4 py-2 text-sm font-medium text-destructive shadow-sm transition hover:-translate-y-0.5 hover:bg-[#f2dfd6] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 const inputClass =
   "w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
@@ -52,7 +45,11 @@ export default function EditListModal({
 
   if (!isOpen) {
     return (
-      <button type="button" className={secondaryButtonClass} onClick={() => setIsOpen(true)}>
+      <button
+        type="button"
+        className={buttonStyles.secondary}
+        onClick={() => setIsOpen(true)}
+      >
         {triggerLabel}
       </button>
     )
@@ -60,7 +57,7 @@ export default function EditListModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#20271c]/55 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/35 p-4 backdrop-blur-sm"
       onClick={closeModal}
     >
       <div
@@ -79,7 +76,7 @@ export default function EditListModal({
 
           <button
             type="button"
-            className={secondaryButtonClass}
+            className={buttonStyles.secondary}
             onClick={closeModal}
             disabled={isBusy}
           >
@@ -145,7 +142,7 @@ export default function EditListModal({
               <SubmitButton
                 label="Save List Details"
                 pendingLabel="Saving..."
-                className={primaryButtonClass}
+                className={buttonStyles.primary}
               />
             </form>
           </section>
@@ -204,7 +201,7 @@ export default function EditListModal({
                       <SubmitButton
                         label="Remove from List"
                         pendingLabel="Removing..."
-                        className={secondaryButtonClass}
+                        className={buttonStyles.secondary}
                       />
                     </form>
                   </div>
@@ -213,11 +210,13 @@ export default function EditListModal({
             )}
           </section>
 
-          <section className="rounded-2xl border border-destructive bg-[#f2dfd6] p-4">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#6f3f36]">
+          <section
+            className={`rounded-2xl border p-4 ${statusStyles.error}`}
+          >
+            <h3 className="text-sm font-semibold uppercase tracking-[0.16em]">
               Danger zone
             </h3>
-            <p className="mt-2 text-sm leading-6 text-[#6f3f36]">
+            <p className="mt-2 text-sm leading-6">
               Delete this list container. This will not delete the tunes from
               your app.
             </p>
@@ -240,7 +239,7 @@ export default function EditListModal({
               <SubmitButton
                 label="Delete List"
                 pendingLabel="Deleting..."
-                className={destructiveButtonClass}
+                className={buttonStyles.destructiveSecondary}
               />
             </form>
           </section>

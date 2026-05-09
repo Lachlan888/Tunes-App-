@@ -3,13 +3,8 @@
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import SubmitButton from "@/components/SubmitButton"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import { uploadKnownTunesCsv } from "@/lib/actions/bulk-import"
-
-const primaryButtonClass =
-  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
-
-const secondaryButtonClass =
-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 export default function BulkImportKnownTunesModal() {
   const searchParams = useSearchParams()
@@ -66,14 +61,14 @@ export default function BulkImportKnownTunesModal() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className={secondaryButtonClass}
+        className={buttonStyles.secondary}
       >
         Bulk Import Known Tunes
       </button>
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-[#20271c]/55 p-4"
+          className="fixed inset-0 z-50 overflow-y-auto bg-foreground/35 p-4 backdrop-blur-sm"
           onClick={closeModal}
         >
           <div className="flex min-h-full items-start justify-center py-8">
@@ -95,7 +90,7 @@ export default function BulkImportKnownTunesModal() {
                   type="button"
                   onClick={closeModal}
                   disabled={isSubmitting}
-                  className={secondaryButtonClass}
+                  className={buttonStyles.secondary}
                 >
                   Close
                 </button>
@@ -128,7 +123,7 @@ export default function BulkImportKnownTunesModal() {
                     download
                     onClick={handleTemplateDownloadClick}
                     aria-disabled={isSubmitting}
-                    className={`${primaryButtonClass} ${
+                    className={`${buttonStyles.primary} ${
                       isSubmitting ? "pointer-events-none opacity-50" : ""
                     }`}
                   >
@@ -169,7 +164,7 @@ export default function BulkImportKnownTunesModal() {
                     <label
                       htmlFor="csv_file"
                       aria-disabled={isSubmitting}
-                      className={`inline-block ${secondaryButtonClass} ${
+                      className={`inline-block ${buttonStyles.secondary} ${
                         isSubmitting
                           ? "pointer-events-none opacity-50"
                           : "cursor-pointer"
@@ -188,7 +183,7 @@ export default function BulkImportKnownTunesModal() {
                   <SubmitButton
                     label="Import Known Tunes"
                     pendingLabel="Importing tunes..."
-                    className={primaryButtonClass}
+                    className={buttonStyles.primary}
                   />
                 </form>
 

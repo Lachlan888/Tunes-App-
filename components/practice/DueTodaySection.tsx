@@ -13,7 +13,7 @@ export default function DueTodaySection({
   return (
     <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
       <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        Due Today
+        Due today
       </h2>
 
       {dueTodayPieces.length === 0 ? (

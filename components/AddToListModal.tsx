@@ -2,6 +2,8 @@
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
+import { buttonStyles } from "@/components/ui/buttonStyles"
+import { statusStyles } from "@/components/ui/statusStyles"
 import { createListInline } from "@/lib/actions/lists"
 
 type Piece = {
@@ -45,12 +47,6 @@ type AddToListModalProps = {
   onChangeSelectedListId: (value: string) => void
   onClose: () => void
 }
-
-const primaryButtonClass =
-  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
-
-const secondaryButtonClass =
-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 const inputClass =
   "w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
@@ -135,7 +131,7 @@ export default function AddToListModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#20271c]/55 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/35 p-4 backdrop-blur-sm"
       onClick={() => {
         if (!isClosingDisabled) {
           onClose()
@@ -206,7 +202,9 @@ export default function AddToListModal({
           )}
 
           {createSuccessMessage && (
-            <p className="mt-3 rounded-xl border border-success bg-[#e6edd6] p-3 text-sm text-[#435336]">
+            <p
+              className={`mt-3 rounded-xl border p-3 text-sm ${statusStyles.success}`}
+            >
               {createSuccessMessage}
             </p>
           )}
@@ -220,7 +218,7 @@ export default function AddToListModal({
           <div className="mt-5 flex gap-2">
             <button
               type="button"
-              className={secondaryButtonClass}
+              className={buttonStyles.secondary}
               onClick={onClose}
               disabled={isClosingDisabled}
             >
@@ -230,7 +228,7 @@ export default function AddToListModal({
             <SubmitButton
               label="Add"
               pendingLabel="Adding..."
-              className={primaryButtonClass}
+              className={buttonStyles.primary}
             />
           </div>
         </form>
@@ -239,7 +237,7 @@ export default function AddToListModal({
           {!showCreateForm ? (
             <button
               type="button"
-              className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+              className={buttonStyles.text}
               onClick={() => {
                 setShowCreateForm(true)
                 setCreateSuccessMessage("")
@@ -271,7 +269,9 @@ export default function AddToListModal({
               <input type="hidden" name="visibility" value="private" />
 
               {createState.status === "error" && createState.error && (
-                <p className="rounded-xl border border-destructive bg-[#f2dfd6] p-3 text-sm text-[#6f3f36]">
+                <p
+                  className={`rounded-xl border p-3 text-sm ${statusStyles.error}`}
+                >
                   {createState.error}
                 </p>
               )}
@@ -280,12 +280,12 @@ export default function AddToListModal({
                 <SubmitButton
                   label="Create list"
                   pendingLabel="Creating..."
-                  className={primaryButtonClass}
+                  className={buttonStyles.primary}
                 />
 
                 <button
                   type="button"
-                  className={secondaryButtonClass}
+                  className={buttonStyles.secondary}
                   onClick={() => {
                     setShowCreateForm(false)
                   }}

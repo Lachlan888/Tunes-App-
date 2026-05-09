@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import EmptyState from "@/components/EmptyState"
 
@@ -20,6 +21,78 @@ const DEFAULT_VISIBLE_COUNT = 4
 
 const secondaryButtonClass =
   "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
+function clickedInsideInteractiveElement(target: EventTarget | null) {
+  if (!(target instanceof Element)) return false
+
+  return Boolean(
+    target.closest(
+      [
+        "a",
+        "button",
+        "input",
+        "select",
+        "textarea",
+        "label",
+        "summary",
+        "details",
+        "form",
+        "[role='button']",
+        "[data-card-action]",
+      ].join(", ")
+    )
+  )
+}
+
+function FriendCard({ friend }: { friend: AcceptedFriend }) {
+  const router = useRouter()
+  const label = friend.display_name || friend.username || "Unnamed user"
+  const profileHref = friend.username
+    ? `/users/${encodeURIComponent(friend.username)}`
+    : null
+
+  function openProfile(event: React.MouseEvent<HTMLElement>) {
+    if (!profileHref) return
+    if (clickedInsideInteractiveElement(event.target)) return
+    router.push(profileHref)
+  }
+
+  return (
+    <article
+      className={
+        profileHref
+          ? "cursor-pointer rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted/70 hover:shadow-md focus-within:ring-2 focus-within:ring-[var(--focus-ring)]"
+          : "rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:bg-muted/70"
+      }
+      onClick={openProfile}
+      aria-label={profileHref ? `Open profile for ${label}` : undefined}
+    >
+      <p className="font-medium text-foreground">
+        {profileHref ? (
+          <Link
+            href={profileHref}
+            className="decoration-primary decoration-2 underline-offset-4 hover:underline"
+          >
+            {label}
+          </Link>
+        ) : (
+          label
+        )}
+      </p>
+
+      {friend.username && (
+        <p className="mt-1 text-sm text-muted-foreground">
+          <Link
+            href={`/users/${encodeURIComponent(friend.username)}`}
+            className="underline underline-offset-4 transition hover:text-foreground"
+          >
+            @{friend.username}
+          </Link>
+        </p>
+      )}
+    </article>
+  )
+}
 
 export default function FriendsListSection({ friends }: FriendsListSectionProps) {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -68,40 +141,9 @@ export default function FriendsListSection({ friends }: FriendsListSectionProps)
         />
       ) : (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {visibleFriends.map((friend) => {
-            const label = friend.display_name || friend.username || "Unnamed user"
-
-            return (
-              <article
-                key={friend.connection_id}
-                className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:bg-muted/70"
-              >
-                <p className="font-medium text-foreground">
-                  {friend.username ? (
-                    <Link
-                      href={`/users/${friend.username}`}
-                      className="decoration-primary decoration-2 underline-offset-4 hover:underline"
-                    >
-                      {label}
-                    </Link>
-                  ) : (
-                    label
-                  )}
-                </p>
-
-                {friend.username && (
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    <Link
-                      href={`/users/${friend.username}`}
-                      className="underline underline-offset-4 transition hover:text-foreground"
-                    >
-                      @{friend.username}
-                    </Link>
-                  </p>
-                )}
-              </article>
-            )
-          })}
+          {visibleFriends.map((friend) => (
+            <FriendCard key={friend.connection_id} friend={friend} />
+          ))}
         </div>
       )}
     </section>

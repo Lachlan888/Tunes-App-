@@ -6,6 +6,7 @@ import PieceMediaLinksSection from "@/components/library/PieceMediaLinksSection"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCanonicalDetailsCard from "@/components/library/TuneCanonicalDetailsCard"
 import TuneDetailActions from "@/components/library/TuneDetailActions"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import { upsertUserPieceNotes } from "@/lib/actions/user-piece-metadata"
 import {
   addPieceMediaLink,
@@ -57,9 +58,6 @@ function DetailErrorShell({
 
 const inputClassName =
   "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
-
-const primaryButtonClass =
-  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 function getSingleValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? "" : value ?? ""
@@ -226,7 +224,7 @@ export default async function PiecePage({
               <SubmitButton
                 label="Save notes"
                 pendingLabel="Saving..."
-                className={primaryButtonClass}
+                className={buttonStyles.primary}
               />
             </form>
           </section>
@@ -267,7 +265,7 @@ export default async function PiecePage({
               <SubmitButton
                 label="Add sheet music link"
                 pendingLabel="Adding..."
-                className={primaryButtonClass}
+                className={buttonStyles.primary}
               />
             </form>
 

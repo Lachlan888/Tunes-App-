@@ -1,3 +1,5 @@
+import { statusStyles, type StatusTone } from "@/components/ui/statusStyles"
+
 type PracticeStatusMessagesProps = {
   practiceUpdate: string
   removeFromPracticeStatus: string
@@ -7,18 +9,12 @@ function StatusBox({
   tone,
   children,
 }: {
-  tone: "success" | "warning" | "error"
+  tone: StatusTone
   children: React.ReactNode
 }) {
-  const classes = {
-    success: "border-[#9dad7a] bg-[#e6edd6] text-[#435336]",
-    warning: "border-[#c5ad67] bg-[#f1e7bf] text-[#675622]",
-    error: "border-[#b98576] bg-[#f2dfd6] text-[#6f3f36]",
-  }
-
   return (
     <div
-      className={`mb-6 mt-4 rounded-xl border p-3 text-sm font-medium ${classes[tone]}`}
+      className={`mb-6 mt-4 rounded-xl border p-3 text-sm font-medium ${statusStyles[tone]}`}
     >
       {children}
     </div>

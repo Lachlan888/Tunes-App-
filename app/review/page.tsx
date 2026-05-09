@@ -37,10 +37,10 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   }
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-[#20271c]">
+    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
       <section className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <section className="rounded-3xl border border-[#b0bc8c] bg-[#e4ead8] p-6 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#596650]">
+        <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Practice
           </p>
 
@@ -48,7 +48,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
             Review your tunes
           </h1>
 
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-[#596650]">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
             Review tunes and rate recall.
           </p>
         </section>

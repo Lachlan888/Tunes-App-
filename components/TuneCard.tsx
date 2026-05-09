@@ -1,7 +1,9 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import ReferenceMediaLink from "@/components/ReferenceMediaLink"
+import { cardStyles } from "@/components/ui/cardStyles"
 import { getStyleLabelsFromPiece } from "@/lib/search-filters"
 import type { Piece } from "@/lib/types"
 
@@ -18,6 +20,28 @@ type TuneCardProps = {
   children?: React.ReactNode
 }
 
+function clickedInsideInteractiveElement(target: EventTarget | null) {
+  if (!(target instanceof Element)) return false
+
+  return Boolean(
+    target.closest(
+      [
+        "a",
+        "button",
+        "input",
+        "select",
+        "textarea",
+        "label",
+        "summary",
+        "details",
+        "form",
+        "[role='button']",
+        "[data-card-action]",
+      ].join(", ")
+    )
+  )
+}
+
 export default function TuneCard({
   id,
   title,
@@ -30,6 +54,8 @@ export default function TuneCard({
   topRightAction,
   children,
 }: TuneCardProps) {
+  const router = useRouter()
+
   const visibleListNames = listNames.slice(0, 3)
   const remainingListCount = Math.max(
     listNames.length - visibleListNames.length,
@@ -52,8 +78,18 @@ export default function TuneCard({
     timeSignature ? `Time: ${timeSignature}` : null,
   ].filter(Boolean)
 
+  function openTunePage(event: React.MouseEvent<HTMLElement>) {
+    if (clickedInsideInteractiveElement(event.target)) return
+
+    router.push(`/library/${id}`)
+  }
+
   return (
-    <article className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:bg-muted/70">
+    <article
+      className={cardStyles.clickableCard}
+      onClick={openTunePage}
+      aria-label={`Open tune page for ${title}`}
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h3 className="font-serif text-2xl font-bold leading-tight tracking-tight text-foreground">
@@ -73,14 +109,14 @@ export default function TuneCard({
         </div>
 
         {topRightAction ? (
-          <div className="flex flex-shrink-0 items-start">
+          <div data-card-action className="flex flex-shrink-0 items-start">
             {topRightAction}
           </div>
         ) : null}
       </div>
 
       {referenceUrl && (
-        <div className="mt-4">
+        <div data-card-action className="mt-4">
           <ReferenceMediaLink
             referenceUrl={referenceUrl}
             title={title}
@@ -97,7 +133,9 @@ export default function TuneCard({
       )}
 
       {children && (
-        <div className="mt-5 flex flex-wrap items-center gap-3">{children}</div>
+        <div data-card-action className="mt-5 flex flex-wrap items-center gap-3">
+          {children}
+        </div>
       )}
     </article>
   )

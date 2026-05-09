@@ -1,3 +1,5 @@
+import { statusStyles } from "@/components/ui/statusStyles"
+
 type ListsStatusMessagesProps = {
   createListStatus: string
   editListStatus: string
@@ -10,15 +12,9 @@ function StatusBanner({
   tone: "success" | "warning" | "error"
   children: React.ReactNode
 }) {
-  const toneClassNames = {
-    success: "border-success bg-[#e6edd6] text-[#435336]",
-    warning: "border-[#c5ad67] bg-[#f1e7bf] text-[#675622]",
-    error: "border-destructive bg-[#f2dfd6] text-[#6f3f36]",
-  }
-
   return (
     <div
-      className={`mb-6 rounded-2xl border p-4 text-sm font-medium shadow-sm ${toneClassNames[tone]}`}
+      className={`mb-6 rounded-2xl border p-4 text-sm font-medium shadow-sm ${statusStyles[tone]}`}
     >
       {children}
     </div>

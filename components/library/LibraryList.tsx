@@ -5,6 +5,7 @@ import AddToListModal from "@/components/AddToListModal"
 import EmptyState from "@/components/EmptyState"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import { markAsKnown } from "@/lib/actions/known-pieces"
 import { removeFromPractice } from "@/lib/actions/user-pieces"
 import type {
@@ -44,11 +45,10 @@ const secondaryButtonClass =
 const menuSubmitButtonClass =
   "w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
-const destructiveMenuButtonClass =
-  "w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-destructive transition hover:bg-[#f2dfd6] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+const destructiveMenuButtonClass = buttonStyles.destructiveMenuItem
 
 const moderatorDeleteTriggerClass =
-  "grid h-8 w-8 place-items-center rounded-lg border border-destructive bg-background/70 text-lg font-medium leading-none text-destructive shadow-sm transition hover:-translate-y-0.5 hover:bg-[#f2dfd6] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "grid h-8 w-8 place-items-center rounded-lg border border-destructive bg-background/70 text-lg font-medium leading-none text-destructive shadow-sm transition hover:-translate-y-0.5 hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 const inputClassName =
   "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
@@ -173,7 +173,7 @@ function StatusDropdown({
               <input type="hidden" name="piece_id" value={piece.id} />
               <input type="hidden" name="redirect_to" value={redirectTo} />
               <SubmitButton
-                label="Start practice"
+                label="Start Practice"
                 pendingLabel="Starting..."
                 className={menuSubmitButtonClass}
               />

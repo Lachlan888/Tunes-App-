@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import type {
   PublicProfileCreatedBadge,
   PublicProfileReceivedBadge,
@@ -18,6 +21,28 @@ function titleCase(value: string) {
     .join(" ")
 }
 
+function clickedInsideInteractiveElement(target: EventTarget | null) {
+  if (!(target instanceof Element)) return false
+
+  return Boolean(
+    target.closest(
+      [
+        "a",
+        "button",
+        "input",
+        "select",
+        "textarea",
+        "label",
+        "summary",
+        "details",
+        "form",
+        "[role='button']",
+        "[data-card-action]",
+      ].join(", ")
+    )
+  )
+}
+
 function BadgeLinkCard({
   href,
   title,
@@ -26,20 +51,30 @@ function BadgeLinkCard({
 }: {
   href: string
   title: string
-  meta: string
+  meta: React.ReactNode
   description?: string | null
 }) {
+  const router = useRouter()
+
+  function openBadge(event: React.MouseEvent<HTMLElement>) {
+    if (clickedInsideInteractiveElement(event.target)) return
+    router.push(href)
+  }
+
   return (
-    <Link
-      href={href}
-      className="group block rounded-2xl border border-border bg-background/70 p-4 transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+    <article
+      className="group cursor-pointer rounded-2xl border border-border bg-background/70 p-4 transition hover:-translate-y-0.5 hover:bg-muted hover:shadow-md focus-within:ring-2 focus-within:ring-[var(--focus-ring)]"
+      onClick={openBadge}
+      aria-label={`Open badge ${title}`}
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="font-semibold underline-offset-4 group-hover:underline">
-            {title}
+          <p className="font-semibold">
+            <Link href={href} className="underline-offset-4 hover:underline">
+              {title}
+            </Link>
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">{meta}</p>
+          <div className="mt-1 text-sm text-muted-foreground">{meta}</div>
           {description ? (
             <p className="mt-3 line-clamp-2 text-sm leading-6 text-muted-foreground">
               {description}
@@ -54,6 +89,27 @@ function BadgeLinkCard({
           →
         </span>
       </div>
+    </article>
+  )
+}
+
+function AwardedByLink({
+  profile,
+}: {
+  profile: PublicProfileReceivedBadge["awarded_by_profile"]
+}) {
+  const label = profile?.display_name || profile?.username || "Unknown user"
+
+  if (!profile?.username) {
+    return <span>{label}</span>
+  }
+
+  return (
+    <Link
+      href={`/users/${encodeURIComponent(profile.username)}`}
+      className="font-medium text-foreground underline underline-offset-4 transition hover:text-primary"
+    >
+      {label}
     </Link>
   )
 }
@@ -112,7 +168,7 @@ export default function PublicProfileBadgesSection({
               {createdBadges.map((badge) => (
                 <BadgeLinkCard
                   key={badge.id}
-                  href={`/badges/${badge.slug}`}
+                  href={`/badges/${encodeURIComponent(badge.slug)}`}
                   title={badge.name}
                   meta={`${titleCase(badge.category)} · awarded ${
                     badge.recipient_count
@@ -145,13 +201,14 @@ export default function PublicProfileBadgesSection({
               {receivedBadges.map((award) => (
                 <BadgeLinkCard
                   key={award.award_id}
-                  href={`/badges/${award.badge.slug}`}
+                  href={`/badges/${encodeURIComponent(award.badge.slug)}`}
                   title={award.badge.name}
-                  meta={`${titleCase(award.badge.category)} · awarded by ${
-                    award.awarded_by_profile?.display_name ||
-                    award.awarded_by_profile?.username ||
-                    "Unknown user"
-                  }`}
+                  meta={
+                    <>
+                      {titleCase(award.badge.category)} · awarded by{" "}
+                      <AwardedByLink profile={award.awarded_by_profile} />
+                    </>
+                  }
                   description={award.badge.description}
                 />
               ))}

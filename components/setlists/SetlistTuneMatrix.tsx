@@ -4,6 +4,8 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import EditSetlistItemModal from "@/components/setlists/EditSetlistItemModal"
 import SubmitButton from "@/components/SubmitButton"
+import UserIdentityLink from "@/components/UserIdentityLink"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import type { SetlistItemWithCoverage, SetlistMember } from "@/lib/types"
 
 type SetlistTuneMatrixProps = {
@@ -25,15 +27,6 @@ type CurrentUserCoverage = {
   stage: number | null
   user_piece_id: number | null
 }
-
-const statusTriggerClass =
-  "inline-flex min-w-[210px] items-center justify-between gap-3 rounded-xl border border-border bg-background/70 px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-
-const gapStatusTriggerClass =
-  "inline-flex min-w-[210px] items-center justify-between gap-3 rounded-xl border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-
-const menuSubmitButtonClass =
-  "w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 function memberLabel(member: SetlistMember) {
   return member.profile?.display_name || member.profile?.username || "Unknown"
@@ -116,7 +109,9 @@ function MyStatusDropdown({
       <button
         type="button"
         className={
-          hasUserRelationship ? statusTriggerClass : gapStatusTriggerClass
+          hasUserRelationship
+            ? buttonStyles.statusTrigger
+            : buttonStyles.statusTriggerEmpty
         }
         aria-expanded={isOpen}
         onClick={onToggle}
@@ -177,7 +172,7 @@ function MyStatusDropdown({
               <SubmitButton
                 label="Start Practice"
                 pendingLabel="Starting..."
-                className={menuSubmitButtonClass}
+                className={buttonStyles.menuItem}
               />
             </form>
           ) : null}
@@ -202,7 +197,7 @@ function MyStatusDropdown({
               <SubmitButton
                 label={isAlreadyInPractice ? "Set as known" : "Mark as known"}
                 pendingLabel="Saving..."
-                className={menuSubmitButtonClass}
+                className={buttonStyles.menuItem}
               />
             </form>
           ) : null}
@@ -229,7 +224,7 @@ function MyStatusDropdown({
               <SubmitButton
                 label="Remove from practice"
                 pendingLabel="Removing..."
-                className={menuSubmitButtonClass}
+                className={buttonStyles.menuItem}
               />
             </form>
           ) : null}
@@ -243,6 +238,41 @@ function MyStatusDropdown({
           </button>
         </div>
       ) : null}
+    </div>
+  )
+}
+
+function MemberCoverageCard({
+  member,
+  coverage,
+}: {
+  member: SetlistMember
+  coverage:
+    | {
+        status: "known" | "practice" | "gap"
+        stage: number | null
+      }
+    | undefined
+}) {
+  return (
+    <div
+      className={`rounded-xl border px-3 py-2 text-sm font-medium ${coverageClass(
+        coverage
+      )}`}
+    >
+      <p>
+        {member.profile?.username ? (
+          <UserIdentityLink
+            username={member.profile.username}
+            displayName={member.profile.display_name}
+            fallbackLabel="Unknown"
+            className="underline underline-offset-4 transition hover:text-primary"
+          />
+        ) : (
+          memberLabel(member)
+        )}
+      </p>
+      <p className="mt-1 text-xs opacity-85">{coverageLabel(coverage)}</p>
     </div>
   )
 }
@@ -325,9 +355,7 @@ export default function SetlistTuneMatrix({
                 <div className="mt-3 flex flex-wrap gap-2 text-sm text-muted-foreground">
                   <span>Key: {displayKey}</span>
 
-                  {hasKeyOverride ? (
-                    <span>Default: {piece?.key}</span>
-                  ) : null}
+                  {hasKeyOverride ? <span>Default: {piece?.key}</span> : null}
 
                   {piece?.style ? <span>Style: {piece.style}</span> : null}
 
@@ -363,7 +391,7 @@ export default function SetlistTuneMatrix({
                     href={item.chart_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-3 inline-flex rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                    className={buttonStyles.secondary}
                   >
                     {item.chart_label || item.chart_type || "Open chart/music"}
                   </a>
@@ -388,7 +416,7 @@ export default function SetlistTuneMatrix({
                     <SubmitButton
                       label="↑"
                       pendingLabel="..."
-                      className="rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                      className={buttonStyles.secondary}
                     />
                   </form>
 
@@ -408,7 +436,7 @@ export default function SetlistTuneMatrix({
                     <SubmitButton
                       label="↓"
                       pendingLabel="..."
-                      className="rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                      className={buttonStyles.secondary}
                     />
                   </form>
 
@@ -418,7 +446,18 @@ export default function SetlistTuneMatrix({
                     updateSetlistItem={updateSetlistItem}
                   />
 
-                  <form action={removeTuneFromSetlist}>
+                  <form
+                    action={removeTuneFromSetlist}
+                    onSubmit={(event) => {
+                      const confirmed = window.confirm(
+                        `Remove "${title}" from this setlist?`
+                      )
+
+                      if (!confirmed) {
+                        event.preventDefault()
+                      }
+                    }}
+                  >
                     <input
                       type="hidden"
                       name="setlist_id"
@@ -433,7 +472,7 @@ export default function SetlistTuneMatrix({
                     <SubmitButton
                       label="Remove"
                       pendingLabel="Removing..."
-                      className="rounded-full border border-destructive bg-background/70 px-3 py-1.5 text-sm font-medium text-destructive shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                      className={buttonStyles.destructiveSecondary}
                     />
                   </form>
                 </div>
@@ -447,17 +486,11 @@ export default function SetlistTuneMatrix({
                 )
 
                 return (
-                  <div
+                  <MemberCoverageCard
                     key={member.user_id}
-                    className={`rounded-xl border px-3 py-2 text-sm font-medium ${coverageClass(
-                      coverage
-                    )}`}
-                  >
-                    <p>{memberLabel(member)}</p>
-                    <p className="mt-1 text-xs opacity-85">
-                      {coverageLabel(coverage)}
-                    </p>
-                  </div>
+                    member={member}
+                    coverage={coverage}
+                  />
                 )
               })}
             </div>

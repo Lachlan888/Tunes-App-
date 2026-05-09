@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
+import PendingLinkButton from "@/components/PendingLinkButton"
 import PracticeProgress from "@/components/practice/PracticeProgress"
 import ReferenceMediaLink from "@/components/ReferenceMediaLink"
 import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeButton"
 import SubmitButton from "@/components/SubmitButton"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import { markFailed, markShaky, markSolid } from "@/lib/actions/reviews"
 import { APP_TIME_ZONE } from "@/lib/review"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
@@ -25,12 +26,6 @@ function formatDueDate(dateValue: string | null) {
   })
 }
 
-const reviewButtonBase =
-  "min-w-[104px] rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-
-const manageButtonClass =
-  "inline-flex items-center justify-center rounded-lg px-1 py-1 text-sm font-medium text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-
 export default function PracticeReviewCard({
   userPiece,
   redirectTo,
@@ -46,12 +41,12 @@ export default function PracticeReviewCard({
         <div className="min-w-0 flex-1">
           <h2 className="font-serif text-3xl font-bold leading-tight tracking-tight text-foreground">
             {userPiece.piece ? (
-              <Link
+              <PendingLinkButton
                 href={`/library/${userPiece.piece.id}`}
+                label={title}
+                pendingLabel="Loading..."
                 className="decoration-primary decoration-2 underline-offset-4 hover:underline"
-              >
-                {title}
-              </Link>
+              />
             ) : (
               title
             )}
@@ -101,7 +96,7 @@ export default function PracticeReviewCard({
             <SubmitButton
               label="Rough"
               pendingLabel="Saving..."
-              className={`${reviewButtonBase} border-[#b98576] bg-[#f2dfd6] text-[#6f3f36] hover:bg-[#ead0c5]`}
+              className={buttonStyles.reviewRough}
             />
           </form>
 
@@ -111,7 +106,7 @@ export default function PracticeReviewCard({
             <SubmitButton
               label="Shaky"
               pendingLabel="Saving..."
-              className={`${reviewButtonBase} border-[#c5ad67] bg-[#f1e7bf] text-[#675622] hover:bg-[#e8dca9]`}
+              className={buttonStyles.reviewShaky}
             />
           </form>
 
@@ -121,7 +116,7 @@ export default function PracticeReviewCard({
             <SubmitButton
               label="Solid"
               pendingLabel="Saving..."
-              className={`${reviewButtonBase} border-[#7b8a50] bg-[#9aaa72] text-[#f8faef] hover:bg-[#8d9d64]`}
+              className={buttonStyles.reviewSolid}
             />
           </form>
         </div>
@@ -130,7 +125,7 @@ export default function PracticeReviewCard({
       <div className="mt-5">
         <button
           type="button"
-          className={manageButtonClass}
+          className={buttonStyles.text}
           aria-expanded={isManageOpen}
           onClick={() => setIsManageOpen((current) => !current)}
         >
@@ -156,7 +151,7 @@ export default function PracticeReviewCard({
                 confirmMessage={`Remove "${title}" from active practice? This stops review scheduling for this tune, but does not delete the shared tune or remove it from your lists.`}
                 label="Remove from practice"
                 pendingLabel="Removing..."
-                className="rounded-lg border border-destructive bg-transparent px-3 py-2 text-sm font-medium text-destructive transition hover:bg-[#f2dfd6] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className={buttonStyles.destructiveSecondary}
               />
             </div>
           </div>

@@ -1,5 +1,6 @@
 import Link from "next/link"
 import SubmitButton from "@/components/SubmitButton"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import {
   addPieceComment,
   deletePieceComment,
@@ -37,7 +38,7 @@ function AuthorLink({ author }: { author: CommentAuthor }) {
 
   return (
     <Link
-      href={`/users/${author.username}`}
+      href={`/users/${encodeURIComponent(author.username)}`}
       className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
     >
       {author.displayName}
@@ -81,7 +82,7 @@ function CommentForm({
       <SubmitButton
         label={label}
         pendingLabel={pendingLabel}
-        className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        className={buttonStyles.primary}
       />
     </form>
   )
@@ -127,7 +128,7 @@ function ReportCommentForm({
         <SubmitButton
           label="Submit report"
           pendingLabel="Reporting..."
-          className="rounded-full border border-warning bg-background/70 px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          className={buttonStyles.secondary}
         />
       </form>
     </details>
@@ -142,7 +143,13 @@ function DeleteCommentForm({
   commentId: number
 }) {
   return (
-    <form action={deletePieceComment}>
+    <form
+      action={deletePieceComment}
+      onSubmit={(event) => {
+        const confirmed = window.confirm("Delete this comment?")
+        if (!confirmed) event.preventDefault()
+      }}
+    >
       <input type="hidden" name="piece_id" value={pieceId} />
       <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
       <input type="hidden" name="comment_id" value={commentId} />
@@ -150,7 +157,7 @@ function DeleteCommentForm({
       <SubmitButton
         label="Delete"
         pendingLabel="Deleting..."
-        className="rounded-full border border-destructive bg-background/70 px-3 py-1 text-xs font-medium text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        className={buttonStyles.destructiveSecondary}
       />
     </form>
   )
