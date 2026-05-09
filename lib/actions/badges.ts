@@ -16,6 +16,32 @@ const VALID_BADGE_CATEGORIES: BadgeCategory[] = [
   "catalogue",
 ]
 
+type ExistingBadgeForUpdate = {
+  id: number
+  owner_user_id: string
+  name: string
+  slug: string
+  category: BadgeCategory
+  condition_logic: BadgeConditionLogic
+}
+
+type BadgeForActivityEvent = {
+  id: number
+  owner_user_id: string
+  name: string
+  slug: string
+  category: BadgeCategory
+  created_at: string | null
+}
+
+type BadgeAwardForActivityEvent = {
+  id: number
+  badge_id: number
+  recipient_user_id: string
+  awarded_by_user_id: string
+  awarded_at: string | null
+}
+
 function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")
     ? `${url}&${key}=${encodeURIComponent(value)}`
@@ -68,10 +94,6 @@ function optionalNumber(value: FormDataEntryValue | null) {
   }
 
   return numberValue
-}
-
-function canonicaliseConditionLogic(value: unknown) {
-  return JSON.stringify(value ?? {})
 }
 
 async function buildUniqueSlug({
@@ -223,6 +245,174 @@ async function reconcileNewBadgeAwards({
   }
 }
 
+async function loadBadgeForActivityEvents({
+  supabase,
+  badgeId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  badgeId: number
+}) {
+  const { data, error } = await supabase
+    .from("badges")
+    .select("id, owner_user_id, name, slug, category, created_at")
+    .eq("id", badgeId)
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return (data as BadgeForActivityEvent | null) ?? null
+}
+
+function buildBadgeCreatedMetadata(badge: BadgeForActivityEvent) {
+  return {
+    badge_id: badge.id,
+    badge_slug: badge.slug,
+    badge_name: badge.name,
+    badge_category: badge.category,
+  }
+}
+
+function buildBadgeAwardedMetadata({
+  badge,
+  award,
+}: {
+  badge: BadgeForActivityEvent
+  award: BadgeAwardForActivityEvent
+}) {
+  return {
+    badge_id: badge.id,
+    badge_slug: badge.slug,
+    badge_name: badge.name,
+    badge_category: badge.category,
+    badge_award_id: award.id,
+    recipient_user_id: award.recipient_user_id,
+    awarded_by_user_id: award.awarded_by_user_id,
+  }
+}
+
+async function syncBadgeActivityEventsForBadge({
+  supabase,
+  badgeId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  badgeId: number
+}) {
+  const badge = await loadBadgeForActivityEvents({
+    supabase,
+    badgeId,
+  })
+
+  if (!badge) {
+    return
+  }
+
+  const createdMetadata = buildBadgeCreatedMetadata(badge)
+
+  const { data: existingCreatedEvent, error: existingCreatedEventError } =
+    await supabase
+      .from("user_activity_events")
+      .select("id")
+      .eq("event_type", "badge_created")
+      .filter("metadata->>badge_id", "eq", String(badge.id))
+      .maybeSingle()
+
+  if (existingCreatedEventError) {
+    throw new Error(existingCreatedEventError.message)
+  }
+
+  if (existingCreatedEvent) {
+    const { error: updateCreatedEventError } = await supabase
+      .from("user_activity_events")
+      .update({
+        user_id: badge.owner_user_id,
+        metadata: createdMetadata,
+      })
+      .eq("id", existingCreatedEvent.id)
+
+    if (updateCreatedEventError) {
+      throw new Error(updateCreatedEventError.message)
+    }
+  } else {
+    const { error: insertCreatedEventError } = await supabase
+      .from("user_activity_events")
+      .insert({
+        user_id: badge.owner_user_id,
+        event_type: "badge_created",
+        piece_id: null,
+        learning_list_id: null,
+        comment_id: null,
+        metadata: createdMetadata,
+        created_at: badge.created_at ?? new Date().toISOString(),
+      })
+
+    if (insertCreatedEventError) {
+      throw new Error(insertCreatedEventError.message)
+    }
+  }
+
+  const { data: awardRows, error: awardsError } = await supabase
+    .from("badge_awards")
+    .select("id, badge_id, recipient_user_id, awarded_by_user_id, awarded_at")
+    .eq("badge_id", badge.id)
+
+  if (awardsError) {
+    throw new Error(awardsError.message)
+  }
+
+  const awards = (awardRows ?? []) as BadgeAwardForActivityEvent[]
+
+  for (const award of awards) {
+    const awardedMetadata = buildBadgeAwardedMetadata({
+      badge,
+      award,
+    })
+
+    const { data: existingAwardEvent, error: existingAwardEventError } =
+      await supabase
+        .from("user_activity_events")
+        .select("id")
+        .eq("event_type", "badge_awarded")
+        .filter("metadata->>badge_award_id", "eq", String(award.id))
+        .maybeSingle()
+
+    if (existingAwardEventError) {
+      throw new Error(existingAwardEventError.message)
+    }
+
+    if (existingAwardEvent) {
+      const { error: updateAwardEventError } = await supabase
+        .from("user_activity_events")
+        .update({
+          user_id: award.recipient_user_id,
+          metadata: awardedMetadata,
+        })
+        .eq("id", existingAwardEvent.id)
+
+      if (updateAwardEventError) {
+        throw new Error(updateAwardEventError.message)
+      }
+    } else {
+      const { error: insertAwardEventError } = await supabase
+        .from("user_activity_events")
+        .insert({
+          user_id: award.recipient_user_id,
+          event_type: "badge_awarded",
+          piece_id: null,
+          learning_list_id: null,
+          comment_id: null,
+          metadata: awardedMetadata,
+          created_at: award.awarded_at ?? new Date().toISOString(),
+        })
+
+      if (insertAwardEventError) {
+        throw new Error(insertAwardEventError.message)
+      }
+    }
+  }
+}
+
 export async function createBadge(formData: FormData) {
   const supabase = await createClient()
 
@@ -294,9 +484,16 @@ export async function createBadge(formData: FormData) {
       supabase,
       badgeId: insertedBadge.id,
     })
+
+    await syncBadgeActivityEventsForBadge({
+      supabase,
+      badgeId: insertedBadge.id,
+    })
   }
 
+  revalidatePath("/")
   revalidatePath("/badges")
+  revalidatePath("/friends")
   revalidatePath("/inbox")
 
   redirect(
@@ -322,9 +519,9 @@ export async function updateBadge(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "update_badge", "missing_badge"))
   }
 
-  const { data: existingBadge, error: existingBadgeError } = await supabase
+  const { data: existingBadgeData, error: existingBadgeError } = await supabase
     .from("badges")
-    .select("id, owner_user_id, slug, condition_logic")
+    .select("id, owner_user_id, name, slug, category, condition_logic")
     .eq("id", badgeId)
     .maybeSingle()
 
@@ -332,6 +529,9 @@ export async function updateBadge(formData: FormData) {
     console.error("Error loading badge for update:", existingBadgeError)
     redirect(appendQueryParam(redirectTo, "update_badge", "error"))
   }
+
+  const existingBadge =
+    (existingBadgeData as ExistingBadgeForUpdate | null) ?? null
 
   if (!existingBadge) {
     redirect("/badges?update_badge=not_found")
@@ -343,7 +543,6 @@ export async function updateBadge(formData: FormData) {
 
   const name = formData.get("name")?.toString().trim() ?? ""
   const description = formData.get("description")?.toString().trim() ?? ""
-  const category = formData.get("category")?.toString() as BadgeCategory
 
   if (!name) {
     redirect(appendQueryParam(redirectTo, "update_badge", "missing_name"))
@@ -353,39 +552,48 @@ export async function updateBadge(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "update_badge", "missing_description"))
   }
 
-  if (!VALID_BADGE_CATEGORIES.includes(category)) {
-    redirect(appendQueryParam(redirectTo, "update_badge", "invalid_category"))
+  const { count, error: awardCountError } = await supabase
+    .from("badge_awards")
+    .select("id", { count: "exact", head: true })
+    .eq("badge_id", badgeId)
+
+  if (awardCountError) {
+    console.error("Error counting badge awards:", awardCountError)
+    redirect(appendQueryParam(redirectTo, "update_badge", "error"))
   }
 
-  const condition = buildCondition(formData)
+  const hasExistingAwards = (count ?? 0) > 0
 
-  if (!condition) {
-    redirect(appendQueryParam(redirectTo, "update_badge", "invalid_condition"))
-  }
+  let nextCategory = existingBadge.category
+  let nextConditionLogic = existingBadge.condition_logic
+  let conditionChanged = false
 
-  const nextConditionLogic: BadgeConditionLogic = {
-    mode: "all",
-    conditions: [condition],
-  }
+  if (!hasExistingAwards) {
+    const submittedCategory = formData
+      .get("category")
+      ?.toString() as BadgeCategory
 
-  const conditionChanged =
-    canonicaliseConditionLogic(existingBadge.condition_logic) !==
-    canonicaliseConditionLogic(nextConditionLogic)
-
-  if (conditionChanged) {
-    const { count, error: awardCountError } = await supabase
-      .from("badge_awards")
-      .select("id", { count: "exact", head: true })
-      .eq("badge_id", badgeId)
-
-    if (awardCountError) {
-      console.error("Error counting badge awards:", awardCountError)
-      redirect(appendQueryParam(redirectTo, "update_badge", "error"))
+    if (!VALID_BADGE_CATEGORIES.includes(submittedCategory)) {
+      redirect(appendQueryParam(redirectTo, "update_badge", "invalid_category"))
     }
 
-    if ((count ?? 0) > 0) {
-      redirect(appendQueryParam(redirectTo, "update_badge", "condition_locked"))
+    const condition = buildCondition(formData)
+
+    if (!condition) {
+      redirect(
+        appendQueryParam(redirectTo, "update_badge", "invalid_condition")
+      )
     }
+
+    nextCategory = submittedCategory
+    nextConditionLogic = {
+      mode: "all",
+      conditions: [condition],
+    }
+
+    conditionChanged =
+      JSON.stringify(existingBadge.condition_logic ?? {}) !==
+      JSON.stringify(nextConditionLogic ?? {})
   }
 
   const { error: updateError } = await supabase
@@ -394,7 +602,7 @@ export async function updateBadge(formData: FormData) {
       name,
       description,
       commentary: description,
-      category,
+      category: nextCategory,
       condition_logic: nextConditionLogic,
       updated_at: new Date().toISOString(),
     })
@@ -413,9 +621,16 @@ export async function updateBadge(formData: FormData) {
     })
   }
 
+  await syncBadgeActivityEventsForBadge({
+    supabase,
+    badgeId,
+  })
+
+  revalidatePath("/")
   revalidatePath("/badges")
   revalidatePath(`/badges/${existingBadge.slug}`)
   revalidatePath(`/badges/${existingBadge.slug}/edit`)
+  revalidatePath("/friends")
   revalidatePath("/inbox")
 
   redirect(`/badges/${existingBadge.slug}?update_badge=success`)
@@ -457,6 +672,22 @@ export async function deleteBadge(formData: FormData) {
     redirect(`/badges/${existingBadge.slug}?delete_badge=not_owner`)
   }
 
+  const { error: notificationArchiveError } = await supabase
+    .from("user_notifications")
+    .update({
+      archived_at: new Date().toISOString(),
+      read_at: new Date().toISOString(),
+    })
+    .eq("badge_id", badgeId)
+
+  if (notificationArchiveError) {
+    console.error(
+      "Error archiving badge notifications before delete:",
+      notificationArchiveError
+    )
+    redirect(`/badges/${existingBadge.slug}?delete_badge=error`)
+  }
+
   const { error: deleteError } = await supabase
     .from("badges")
     .delete()
@@ -468,7 +699,9 @@ export async function deleteBadge(formData: FormData) {
     redirect(`/badges/${existingBadge.slug}?delete_badge=error`)
   }
 
+  revalidatePath("/")
   revalidatePath("/badges")
+  revalidatePath("/friends")
   revalidatePath("/inbox")
 
   redirect("/badges?delete_badge=success")
