@@ -413,6 +413,26 @@ async function syncBadgeActivityEventsForBadge({
   }
 }
 
+async function safeSyncBadgeActivityEventsForBadge({
+  supabase,
+  badgeId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  badgeId: number
+}) {
+  try {
+    await syncBadgeActivityEventsForBadge({
+      supabase,
+      badgeId,
+    })
+  } catch (error) {
+    console.error("Error syncing badge activity events:", {
+      badgeId,
+      error,
+    })
+  }
+}
+
 export async function createBadge(formData: FormData) {
   const supabase = await createClient()
 
@@ -485,7 +505,7 @@ export async function createBadge(formData: FormData) {
       badgeId: insertedBadge.id,
     })
 
-    await syncBadgeActivityEventsForBadge({
+    await safeSyncBadgeActivityEventsForBadge({
       supabase,
       badgeId: insertedBadge.id,
     })
@@ -621,7 +641,7 @@ export async function updateBadge(formData: FormData) {
     })
   }
 
-  await syncBadgeActivityEventsForBadge({
+  await safeSyncBadgeActivityEventsForBadge({
     supabase,
     badgeId,
   })
