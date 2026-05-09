@@ -34,14 +34,6 @@ type BadgeForActivityEvent = {
   created_at: string | null
 }
 
-type BadgeAwardForActivityEvent = {
-  id: number
-  badge_id: number
-  recipient_user_id: string
-  awarded_by_user_id: string
-  awarded_at: string | null
-}
-
 function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")
     ? `${url}&${key}=${encodeURIComponent(value)}`
@@ -274,24 +266,13 @@ function buildBadgeCreatedMetadata(badge: BadgeForActivityEvent) {
   }
 }
 
-function buildBadgeAwardedMetadata({
-  badge,
-  award,
-}: {
-  badge: BadgeForActivityEvent
-  award: BadgeAwardForActivityEvent
-}) {
-  return {
-    badge_id: badge.id,
-    badge_slug: badge.slug,
-    badge_name: badge.name,
-    badge_category: badge.category,
-    badge_award_id: award.id,
-    recipient_user_id: award.recipient_user_id,
-    awarded_by_user_id: award.awarded_by_user_id,
-  }
-}
-
+/**
+ * Syncs only the badge_created activity event.
+ *
+ * badge_awarded activity events are now owned by the Supabase trigger on
+ * badge_awards, because those events belong to the recipient user and may need
+ * to be created for someone other than the currently authenticated user.
+ */
 async function syncBadgeActivityEventsForBadge({
   supabase,
   badgeId,
@@ -334,82 +315,24 @@ async function syncBadgeActivityEventsForBadge({
     if (updateCreatedEventError) {
       throw new Error(updateCreatedEventError.message)
     }
-  } else {
-    const { error: insertCreatedEventError } = await supabase
-      .from("user_activity_events")
-      .insert({
-        user_id: badge.owner_user_id,
-        event_type: "badge_created",
-        piece_id: null,
-        learning_list_id: null,
-        comment_id: null,
-        metadata: createdMetadata,
-        created_at: badge.created_at ?? new Date().toISOString(),
-      })
 
-    if (insertCreatedEventError) {
-      throw new Error(insertCreatedEventError.message)
-    }
+    return
   }
 
-  const { data: awardRows, error: awardsError } = await supabase
-    .from("badge_awards")
-    .select("id, badge_id, recipient_user_id, awarded_by_user_id, awarded_at")
-    .eq("badge_id", badge.id)
-
-  if (awardsError) {
-    throw new Error(awardsError.message)
-  }
-
-  const awards = (awardRows ?? []) as BadgeAwardForActivityEvent[]
-
-  for (const award of awards) {
-    const awardedMetadata = buildBadgeAwardedMetadata({
-      badge,
-      award,
+  const { error: insertCreatedEventError } = await supabase
+    .from("user_activity_events")
+    .insert({
+      user_id: badge.owner_user_id,
+      event_type: "badge_created",
+      piece_id: null,
+      learning_list_id: null,
+      comment_id: null,
+      metadata: createdMetadata,
+      created_at: badge.created_at ?? new Date().toISOString(),
     })
 
-    const { data: existingAwardEvent, error: existingAwardEventError } =
-      await supabase
-        .from("user_activity_events")
-        .select("id")
-        .eq("event_type", "badge_awarded")
-        .filter("metadata->>badge_award_id", "eq", String(award.id))
-        .maybeSingle()
-
-    if (existingAwardEventError) {
-      throw new Error(existingAwardEventError.message)
-    }
-
-    if (existingAwardEvent) {
-      const { error: updateAwardEventError } = await supabase
-        .from("user_activity_events")
-        .update({
-          user_id: award.recipient_user_id,
-          metadata: awardedMetadata,
-        })
-        .eq("id", existingAwardEvent.id)
-
-      if (updateAwardEventError) {
-        throw new Error(updateAwardEventError.message)
-      }
-    } else {
-      const { error: insertAwardEventError } = await supabase
-        .from("user_activity_events")
-        .insert({
-          user_id: award.recipient_user_id,
-          event_type: "badge_awarded",
-          piece_id: null,
-          learning_list_id: null,
-          comment_id: null,
-          metadata: awardedMetadata,
-          created_at: award.awarded_at ?? new Date().toISOString(),
-        })
-
-      if (insertAwardEventError) {
-        throw new Error(insertAwardEventError.message)
-      }
-    }
+  if (insertCreatedEventError) {
+    throw new Error(insertCreatedEventError.message)
   }
 }
 
