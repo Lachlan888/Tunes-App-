@@ -3,14 +3,156 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import {
+  ActivityEventRow,
   ActivityReplyRow,
   PieceCommentRow,
+  SupabaseServerClient,
   cleanRedirectTo,
   ensureCanInteractWithActivity,
+  getMetadataNumber,
+  getMetadataString,
   loadActivityEvent,
   normaliseJoinedActivityEvent,
   previewBody,
 } from "./shared"
+
+type BadgeRow = {
+  id: number
+  owner_user_id: string
+  name: string
+  slug: string
+}
+
+function isBadgeActivity(eventType: string) {
+  return eventType === "badge_created" || eventType === "badge_awarded"
+}
+
+async function loadBadgeOwnerUserId({
+  supabase,
+  badgeId,
+}: {
+  supabase: SupabaseServerClient
+  badgeId: number
+}) {
+  const { data, error } = await supabase
+    .from("badges")
+    .select("id, owner_user_id, name, slug")
+    .eq("id", badgeId)
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const badge = (data as BadgeRow | null) ?? null
+  return badge?.owner_user_id ?? null
+}
+
+async function createActivityReplyNotification({
+  supabase,
+  recipientUserId,
+  actorUserId,
+  activityEvent,
+  activityReplyId,
+  body,
+  badgeId,
+  commentId,
+}: {
+  supabase: SupabaseServerClient
+  recipientUserId: string
+  actorUserId: string
+  activityEvent: ActivityEventRow
+  activityReplyId: number
+  body: string
+  badgeId: number | null
+  commentId: number | null
+}) {
+  if (recipientUserId === actorUserId) {
+    return
+  }
+
+  const notificationType =
+    activityEvent.event_type === "comment_added" && commentId
+      ? "comment_reply"
+      : "activity_reply"
+
+  const { error } = await supabase.from("user_notifications").insert({
+    recipient_user_id: recipientUserId,
+    actor_user_id: actorUserId,
+    notification_type: notificationType,
+    activity_event_id: activityEvent.id,
+    activity_reply_id: activityReplyId,
+    piece_id: activityEvent.piece_id,
+    learning_list_id: activityEvent.learning_list_id,
+    comment_id: commentId,
+    badge_id: badgeId,
+    body_preview: previewBody(body),
+  })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+}
+
+async function notifyReplyTargets({
+  supabase,
+  activityEvent,
+  actorUserId,
+  activityReplyId,
+  body,
+  insertedPieceCommentId,
+}: {
+  supabase: SupabaseServerClient
+  activityEvent: ActivityEventRow
+  actorUserId: string
+  activityReplyId: number
+  body: string
+  insertedPieceCommentId: number | null
+}) {
+  const badgeId = getMetadataNumber(activityEvent.metadata, "badge_id")
+  const recipientUserIds = new Set<string>()
+
+  if (activityEvent.user_id !== actorUserId) {
+    recipientUserIds.add(activityEvent.user_id)
+  }
+
+  if (isBadgeActivity(activityEvent.event_type)) {
+    if (badgeId !== null) {
+      const badgeOwnerUserId = await loadBadgeOwnerUserId({
+        supabase,
+        badgeId,
+      })
+
+      if (badgeOwnerUserId && badgeOwnerUserId !== actorUserId) {
+        recipientUserIds.add(badgeOwnerUserId)
+      }
+    }
+
+    const badgeRecipientUserId = getMetadataString(
+      activityEvent.metadata,
+      "recipient_user_id"
+    )
+
+    if (badgeRecipientUserId && badgeRecipientUserId !== actorUserId) {
+      recipientUserIds.add(badgeRecipientUserId)
+    }
+  }
+
+  await Promise.all(
+    Array.from(recipientUserIds).map((recipientUserId) =>
+      createActivityReplyNotification({
+        supabase,
+        recipientUserId,
+        actorUserId,
+        activityEvent,
+        activityReplyId,
+        body,
+        badgeId,
+        commentId: insertedPieceCommentId ?? activityEvent.comment_id,
+      })
+    )
+  )
+}
 
 export async function addActivityReply(formData: FormData) {
   const supabase = await createClient()
@@ -52,7 +194,6 @@ export async function addActivityReply(formData: FormData) {
   }
 
   let insertedPieceCommentId: number | null = null
-  let notificationType: "activity_reply" | "comment_reply" = "activity_reply"
 
   if (
     activityEvent.event_type === "comment_added" &&
@@ -90,7 +231,6 @@ export async function addActivityReply(formData: FormData) {
       }
 
       insertedPieceCommentId = insertedPieceComment.id
-      notificationType = "comment_reply"
     }
   }
 
@@ -109,25 +249,14 @@ export async function addActivityReply(formData: FormData) {
     throw new Error(replyError.message)
   }
 
-  if (activityEvent.user_id !== user.id) {
-    const { error: notificationError } = await supabase
-      .from("user_notifications")
-      .insert({
-        recipient_user_id: activityEvent.user_id,
-        actor_user_id: user.id,
-        notification_type: notificationType,
-        activity_event_id: activityEvent.id,
-        activity_reply_id: insertedReply.id,
-        piece_id: activityEvent.piece_id,
-        learning_list_id: activityEvent.learning_list_id,
-        comment_id: insertedPieceCommentId ?? activityEvent.comment_id,
-        body_preview: previewBody(body),
-      })
-
-    if (notificationError) {
-      throw new Error(notificationError.message)
-    }
-  }
+  await notifyReplyTargets({
+    supabase,
+    activityEvent,
+    actorUserId: user.id,
+    activityReplyId: insertedReply.id,
+    body,
+    insertedPieceCommentId,
+  })
 
   if (activityEvent.piece_id) {
     revalidatePath(`/library/${activityEvent.piece_id}`)

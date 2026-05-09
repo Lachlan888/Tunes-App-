@@ -9,7 +9,9 @@ import type {
   ActivityReactionSummary,
   ActivityReplyItem,
   FriendActivityItem,
+  FriendActivityProfile,
 } from "@/lib/friend-activity"
+import type { BadgeCategory } from "@/lib/types"
 
 type ConnectionRow = {
   id: number
@@ -69,6 +71,15 @@ type ActivityReplyRow = {
   user_id: string
   body: string
   created_at: string
+}
+
+type BadgeRow = {
+  id: number
+  owner_user_id: string
+  name: string
+  slug: string
+  category: BadgeCategory
+  description: string | null
 }
 
 export type FriendSearchMatch = {
@@ -142,6 +153,10 @@ function isPublicListActivity(eventType: ActivityEventType) {
   return eventType === "public_list_created" || eventType === "public_list_updated"
 }
 
+function isBadgeActivity(eventType: ActivityEventType) {
+  return eventType === "badge_created" || eventType === "badge_awarded"
+}
+
 function canShowActivityForProfile(
   row: ActivityEventRow,
   profile: ActivityProfileRow | null
@@ -162,7 +177,64 @@ function canShowActivityForProfile(
     return profile.show_public_lists_on_profile !== false
   }
 
+  if (isBadgeActivity(row.event_type)) {
+    return true
+  }
+
   return false
+}
+
+function getMetadataNumber(
+  metadata: Record<string, unknown> | null,
+  key: string
+) {
+  const value = metadata?.[key]
+
+  if (typeof value === "number" && Number.isInteger(value)) {
+    return value
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number(value)
+    return Number.isInteger(parsed) ? parsed : null
+  }
+
+  return null
+}
+
+function getMetadataString(
+  metadata: Record<string, unknown> | null,
+  key: string
+) {
+  const value = metadata?.[key]
+  return typeof value === "string" ? value : null
+}
+
+async function loadProfilesByUserId(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userIds: string[]
+) {
+  const uniqueUserIds = Array.from(new Set(userIds)).filter(Boolean)
+
+  if (uniqueUserIds.length === 0) {
+    return new Map<string, FriendActivityProfile>()
+  }
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, username, display_name")
+    .in("id", uniqueUserIds)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return new Map(
+    ((data ?? []) as FriendActivityProfile[]).map((profile) => [
+      profile.id,
+      profile,
+    ])
+  )
 }
 
 export async function loadRecentFriendActivity(
@@ -257,9 +329,27 @@ export async function loadRecentFriendActivity(
     )
   )
 
+  const badgeIds = Array.from(
+    new Set(
+      visibleActivityRows
+        .map((row) => getMetadataNumber(row.metadata, "badge_id"))
+        .filter((value): value is number => value !== null)
+    )
+  )
+
+  const badgeAwarderIds = Array.from(
+    new Set(
+      visibleActivityRows
+        .map((row) => getMetadataString(row.metadata, "awarded_by_user_id"))
+        .filter((value): value is string => value !== null)
+    )
+  )
+
   let piecesById = new Map<number, PieceRow>()
   let learningListsById = new Map<number, LearningListRow>()
   let commentsById = new Map<number, PieceCommentRow>()
+  let badgesById = new Map<number, BadgeRow>()
+  let badgeAwarderProfilesById = new Map<string, FriendActivityProfile>()
   let reactionsByActivityId = new Map<number, ActivityReactionSummary[]>()
   let repliesByActivityId = new Map<number, ActivityReplyItem[]>()
 
@@ -315,6 +405,29 @@ export async function loadRecentFriendActivity(
     )
   }
 
+  if (badgeIds.length > 0) {
+    const { data: badges, error: badgesError } = await supabase
+      .from("badges")
+      .select("id, owner_user_id, name, slug, category, description")
+      .in("id", badgeIds)
+      .eq("visibility", "public")
+
+    if (badgesError) {
+      throw new Error(badgesError.message)
+    }
+
+    badgesById = new Map(
+      ((badges ?? []) as BadgeRow[]).map((badge) => [badge.id, badge])
+    )
+  }
+
+  if (badgeAwarderIds.length > 0) {
+    badgeAwarderProfilesById = await loadProfilesByUserId(
+      supabase,
+      badgeAwarderIds
+    )
+  }
+
   if (activityIds.length > 0) {
     const { data: reactions, error: reactionsError } = await supabase
       .from("activity_reactions")
@@ -356,7 +469,9 @@ export async function loadRecentFriendActivity(
     }
 
     const typedReplies = (replies ?? []) as ActivityReplyRow[]
-    const replyUserIds = Array.from(new Set(typedReplies.map((row) => row.user_id)))
+    const replyUserIds = Array.from(
+      new Set(typedReplies.map((row) => row.user_id))
+    )
 
     let replyProfilesById = new Map<string, ProfileSearchRow>()
 
@@ -403,76 +518,101 @@ export async function loadRecentFriendActivity(
     )
   }
 
-  return visibleActivityRows
-    .map((row) => {
-      const actor = activityProfilesById.get(row.user_id) ?? null
-      const piece =
-        row.piece_id != null ? piecesById.get(row.piece_id) ?? null : null
-      const learningList =
-        row.learning_list_id != null
-          ? learningListsById.get(row.learning_list_id) ?? null
-          : null
-      const comment =
-        row.comment_id != null ? commentsById.get(row.comment_id) ?? null : null
+  const items: FriendActivityItem[] = []
 
-      if (
-        (row.event_type === "public_list_created" ||
-          row.event_type === "public_list_updated") &&
-        !learningList
-      ) {
-        return null
-      }
+  for (const row of visibleActivityRows) {
+    const actor = activityProfilesById.get(row.user_id) ?? null
+    const piece =
+      row.piece_id != null ? piecesById.get(row.piece_id) ?? null : null
+    const learningList =
+      row.learning_list_id != null
+        ? learningListsById.get(row.learning_list_id) ?? null
+        : null
+    const comment =
+      row.comment_id != null ? commentsById.get(row.comment_id) ?? null : null
+    const badgeId = getMetadataNumber(row.metadata, "badge_id")
+    const badge = badgeId != null ? badgesById.get(badgeId) ?? null : null
+    const awardedByUserId = getMetadataString(row.metadata, "awarded_by_user_id")
+    const awardedByProfile = awardedByUserId
+      ? badgeAwarderProfilesById.get(awardedByUserId) ?? null
+      : null
 
-      if (
-        (row.event_type === "started_practice" ||
-          row.event_type === "tune_reviewed" ||
-          row.event_type === "marked_known" ||
-          row.event_type === "comment_added" ||
-          row.event_type === "piece_created" ||
-          row.event_type === "piece_details_added" ||
-          row.event_type === "piece_lore_added" ||
-          row.event_type === "piece_media_link_added" ||
-          row.event_type === "piece_sheet_music_link_added") &&
-        !piece
-      ) {
-        return null
-      }
+    if (
+      (row.event_type === "public_list_created" ||
+        row.event_type === "public_list_updated") &&
+      !learningList
+    ) {
+      continue
+    }
 
-      return {
-        id: row.id,
-        created_at: row.created_at,
-        event_type: row.event_type,
-        metadata: row.metadata,
-        actor: actor
-          ? {
-              id: actor.id,
-              username: actor.username,
-              display_name: actor.display_name,
-            }
-          : null,
-        piece: piece
-          ? {
-              id: piece.id,
-              title: piece.title,
-            }
-          : null,
-        learning_list: learningList
-          ? {
-              id: learningList.id,
-              name: learningList.name,
-            }
-          : null,
-        comment: comment
-          ? {
-              id: comment.id,
-              body: comment.body,
-            }
-          : null,
-        reactions: reactionsByActivityId.get(row.id) ?? [],
-        replies: repliesByActivityId.get(row.id) ?? [],
-      }
+    if (
+      (row.event_type === "started_practice" ||
+        row.event_type === "tune_reviewed" ||
+        row.event_type === "marked_known" ||
+        row.event_type === "comment_added" ||
+        row.event_type === "piece_created" ||
+        row.event_type === "piece_details_added" ||
+        row.event_type === "piece_lore_added" ||
+        row.event_type === "piece_media_link_added" ||
+        row.event_type === "piece_sheet_music_link_added") &&
+      !piece
+    ) {
+      continue
+    }
+
+    if (isBadgeActivity(row.event_type) && !badge) {
+      continue
+    }
+
+    items.push({
+      id: row.id,
+      activity_key: `activity-${row.id}`,
+      is_interactable: true,
+      created_at: row.created_at,
+      event_type: row.event_type,
+      metadata: row.metadata,
+      actor: actor
+        ? {
+            id: actor.id,
+            username: actor.username,
+            display_name: actor.display_name,
+          }
+        : null,
+      piece: piece
+        ? {
+            id: piece.id,
+            title: piece.title,
+          }
+        : null,
+      learning_list: learningList
+        ? {
+            id: learningList.id,
+            name: learningList.name,
+          }
+        : null,
+      comment: comment
+        ? {
+            id: comment.id,
+            body: comment.body,
+          }
+        : null,
+      badge: badge
+        ? {
+            id: badge.id,
+            name: badge.name,
+            slug: badge.slug,
+            category: badge.category,
+            description: badge.description,
+            owner_user_id: badge.owner_user_id,
+          }
+        : null,
+      awarded_by_profile: awardedByProfile,
+      reactions: reactionsByActivityId.get(row.id) ?? [],
+      replies: repliesByActivityId.get(row.id) ?? [],
     })
-    .filter((row): row is FriendActivityItem => row !== null)
+  }
+
+  return items
 }
 
 export async function loadFriendsPageData(searchQuery?: string) {

@@ -5,16 +5,11 @@ export const ALLOWED_REACTIONS = new Set(["good_craic"])
 export type ActivityEventRow = {
   id: number
   user_id: string
-  event_type:
-    | "started_practice"
-    | "tune_reviewed"
-    | "marked_known"
-    | "comment_added"
-    | "public_list_created"
-    | "public_list_updated"
+  event_type: string
   piece_id: number | null
   learning_list_id: number | null
   comment_id: number | null
+  metadata: Record<string, unknown> | null
 }
 
 export type PieceCommentRow = {
@@ -71,13 +66,41 @@ export function normaliseJoinedActivityEvent(
   return Array.isArray(value) ? value[0] ?? null : value
 }
 
+export function getMetadataNumber(
+  metadata: Record<string, unknown> | null,
+  key: string
+) {
+  const value = metadata?.[key]
+
+  if (typeof value === "number" && Number.isInteger(value)) {
+    return value
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number(value)
+    return Number.isInteger(parsed) ? parsed : null
+  }
+
+  return null
+}
+
+export function getMetadataString(
+  metadata: Record<string, unknown> | null,
+  key: string
+) {
+  const value = metadata?.[key]
+  return typeof value === "string" ? value : null
+}
+
 export async function loadActivityEvent(
   supabase: SupabaseServerClient,
   activityEventId: number
 ) {
   const { data, error } = await supabase
     .from("user_activity_events")
-    .select("id, user_id, event_type, piece_id, learning_list_id, comment_id")
+    .select(
+      "id, user_id, event_type, piece_id, learning_list_id, comment_id, metadata"
+    )
     .eq("id", activityEventId)
     .maybeSingle()
 

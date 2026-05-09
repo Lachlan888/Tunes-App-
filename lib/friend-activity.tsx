@@ -1,4 +1,5 @@
 import Link from "next/link"
+import type { BadgeCategory } from "@/lib/types"
 
 export type ActivityEventType =
   | "started_practice"
@@ -12,6 +13,8 @@ export type ActivityEventType =
   | "piece_lore_added"
   | "piece_media_link_added"
   | "piece_sheet_music_link_added"
+  | "badge_created"
+  | "badge_awarded"
 
 export type ActivityReactionSummary = {
   reaction_type: string
@@ -30,16 +33,20 @@ export type ActivityReplyItem = {
   } | null
 }
 
+export type FriendActivityProfile = {
+  id: string
+  username: string | null
+  display_name: string | null
+}
+
 export type FriendActivityItem = {
   id: number
+  activity_key: string
+  is_interactable: boolean
   created_at: string
   event_type: ActivityEventType
   metadata: Record<string, unknown> | null
-  actor: {
-    id: string
-    username: string | null
-    display_name: string | null
-  } | null
+  actor: FriendActivityProfile | null
   piece: {
     id: number
     title: string
@@ -52,6 +59,15 @@ export type FriendActivityItem = {
     id: number
     body: string
   } | null
+  badge: {
+    id: number
+    name: string
+    slug: string
+    category: BadgeCategory
+    description: string | null
+    owner_user_id: string
+  } | null
+  awarded_by_profile: FriendActivityProfile | null
   reactions: ActivityReactionSummary[]
   replies: ActivityReplyItem[]
 }
@@ -129,7 +145,18 @@ function renderAddedFields(metadata: Record<string, unknown> | null) {
   return `${fields.slice(0, -1).join(", ")}, and ${fields[fields.length - 1]}`
 }
 
+function titleCase(value: string) {
+  return value
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ")
+}
+
 export function getActivityContextHref(item: FriendActivityItem) {
+  if (item.badge) {
+    return `/badges/${item.badge.slug}`
+  }
+
   if (item.piece) {
     return `/library/${item.piece.id}`
   }
@@ -141,20 +168,23 @@ export function getActivityContextHref(item: FriendActivityItem) {
   return "/friends"
 }
 
-function renderActor(item: FriendActivityItem) {
-  const actorName =
-    item.actor?.display_name || item.actor?.username || "Unnamed user"
+function renderProfileLink(profile: FriendActivityProfile | null) {
+  const profileName = profile?.display_name || profile?.username || "Unnamed user"
 
-  return item.actor?.username ? (
+  return profile?.username ? (
     <Link
-      href={`/users/${item.actor.username}`}
+      href={`/users/${profile.username}`}
       className="font-medium underline underline-offset-4 hover:text-primary"
     >
-      {actorName}
+      {profileName}
     </Link>
   ) : (
-    <span>{actorName}</span>
+    <span>{profileName}</span>
   )
+}
+
+function renderActor(item: FriendActivityItem) {
+  return renderProfileLink(item.actor)
 }
 
 function renderPieceLink(item: FriendActivityItem) {
@@ -170,9 +200,23 @@ function renderPieceLink(item: FriendActivityItem) {
   )
 }
 
+function renderBadgeLink(item: FriendActivityItem) {
+  if (!item.badge) return null
+
+  return (
+    <Link
+      href={`/badges/${item.badge.slug}`}
+      className="font-medium underline underline-offset-4 hover:text-primary"
+    >
+      {item.badge.name}
+    </Link>
+  )
+}
+
 export function renderFriendActivityText(item: FriendActivityItem) {
   const actorNode = renderActor(item)
   const pieceNode = renderPieceLink(item)
+  const badgeNode = renderBadgeLink(item)
 
   if (item.event_type === "started_practice" && pieceNode) {
     return (
@@ -271,6 +315,24 @@ export function renderFriendActivityText(item: FriendActivityItem) {
         >
           {item.learning_list.name}
         </Link>
+      </>
+    )
+  }
+
+  if (item.event_type === "badge_created" && badgeNode && item.badge) {
+    return (
+      <>
+        {actorNode} created the {titleCase(item.badge.category)} badge {badgeNode}
+      </>
+    )
+  }
+
+  if (item.event_type === "badge_awarded" && badgeNode) {
+    const awarderNode = renderProfileLink(item.awarded_by_profile)
+
+    return (
+      <>
+        {actorNode} received the badge {badgeNode} from {awarderNode}
       </>
     )
   }
