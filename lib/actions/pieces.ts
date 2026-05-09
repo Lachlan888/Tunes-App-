@@ -3,12 +3,16 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { canModerate, getCurrentUserRole } from "@/lib/auth/roles"
-import { normaliseKey } from "@/lib/music/keys"
-import { normaliseTuneTitle } from "@/lib/normalise"
-import { createClient } from "@/lib/supabase/server"
 import { addPieceToLearningListForUser } from "@/lib/actions/lists"
 import { markPieceKnownForUser } from "@/lib/actions/known-pieces"
 import { startPracticeForUser } from "@/lib/actions/user-pieces"
+import { normaliseKey } from "@/lib/music/keys"
+import { normaliseTuneTitle } from "@/lib/normalise"
+import {
+  recordPieceCreatedEvent,
+  recordPieceDetailsAddedEvent,
+} from "@/lib/services/activity-events"
+import { createClient } from "@/lib/supabase/server"
 
 function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")
@@ -37,6 +41,14 @@ type PostCreateAction = "none" | "known" | "practice"
 
 export async function createTune(formData: FormData) {
   const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
 
   const title = String(formData.get("title") ?? "").trim()
   const rawKey = String(formData.get("key") ?? "").trim()
@@ -159,33 +171,23 @@ export async function createTune(formData: FormData) {
     }
   }
 
-  const needsUserAction = postCreateAction !== "none" || addToList
+  await recordPieceCreatedEvent(user.id, insertedPiece.id)
 
-  if (needsUserAction) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+  if (postCreateAction === "known") {
+    await markPieceKnownForUser(supabase, user.id, insertedPiece.id)
+  }
 
-    if (!user) {
-      redirect("/login")
-    }
+  if (postCreateAction === "practice") {
+    await startPracticeForUser(supabase, user.id, insertedPiece.id)
+  }
 
-    if (postCreateAction === "known") {
-      await markPieceKnownForUser(supabase, user.id, insertedPiece.id)
-    }
-
-    if (postCreateAction === "practice") {
-      await startPracticeForUser(supabase, user.id, insertedPiece.id)
-    }
-
-    if (addToList) {
-      await addPieceToLearningListForUser(
-        supabase,
-        user.id,
-        insertedPiece.id,
-        learningListId
-      )
-    }
+  if (addToList) {
+    await addPieceToLearningListForUser(
+      supabase,
+      user.id,
+      insertedPiece.id,
+      learningListId
+    )
   }
 
   redirect(appendQueryParam(redirectTo, "create_tune", "success"))
@@ -400,7 +402,9 @@ export async function updateMissingPieceDetails(formData: FormData) {
     }
   }
 
-  if (Object.keys(updates).length === 0) {
+  const updatedFields = Object.keys(updates)
+
+  if (updatedFields.length === 0) {
     return
   }
 
@@ -413,6 +417,8 @@ export async function updateMissingPieceDetails(formData: FormData) {
     console.error("Error updating missing piece details:", updateError)
     return
   }
+
+  await recordPieceDetailsAddedEvent(user.id, pieceId, updatedFields)
 
   revalidatePath(`/library/${pieceId}`)
   revalidatePath(redirectTo)

@@ -21,6 +21,7 @@ type ProfileEditorProps = {
   initialShowInstruments: boolean
   initialShowPublicListsOnProfile: boolean
   initialShowRepertoireSummary: boolean
+  initialShowCommentActivity: boolean
   initialShowCompareDiscoverability: boolean
   initialCompareRequiresFriend: boolean
 }
@@ -41,6 +42,7 @@ export default function ProfileEditor({
   initialShowInstruments,
   initialShowPublicListsOnProfile,
   initialShowRepertoireSummary,
+  initialShowCommentActivity,
   initialShowCompareDiscoverability,
   initialCompareRequiresFriend,
 }: ProfileEditorProps) {
@@ -57,6 +59,9 @@ export default function ProfileEditor({
   const [showRepertoireSummary, setShowRepertoireSummary] = useState(
     initialShowRepertoireSummary
   )
+  const [showCommentActivity, setShowCommentActivity] = useState(
+    initialShowCommentActivity
+  )
   const [showCompareDiscoverability, setShowCompareDiscoverability] = useState(
     initialShowCompareDiscoverability
   )
@@ -72,6 +77,7 @@ export default function ProfileEditor({
     showInstruments,
     showPublicListsOnProfile,
     showRepertoireSummary,
+    showCommentActivity,
     showCompareDiscoverability,
     compareRequiresFriend,
   }
@@ -97,6 +103,8 @@ export default function ProfileEditor({
         setShowPublicListsOnProfile={setShowPublicListsOnProfile}
         showRepertoireSummary={showRepertoireSummary}
         setShowRepertoireSummary={setShowRepertoireSummary}
+        showCommentActivity={showCommentActivity}
+        setShowCommentActivity={setShowCommentActivity}
         showCompareDiscoverability={showCompareDiscoverability}
         setShowCompareDiscoverability={setShowCompareDiscoverability}
         compareRequiresFriend={compareRequiresFriend}

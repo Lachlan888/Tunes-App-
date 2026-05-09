@@ -1,5 +1,18 @@
 import Link from "next/link"
 
+export type ActivityEventType =
+  | "started_practice"
+  | "tune_reviewed"
+  | "marked_known"
+  | "comment_added"
+  | "public_list_created"
+  | "public_list_updated"
+  | "piece_created"
+  | "piece_details_added"
+  | "piece_lore_added"
+  | "piece_media_link_added"
+  | "piece_sheet_music_link_added"
+
 export type ActivityReactionSummary = {
   reaction_type: string
   count: number
@@ -20,13 +33,8 @@ export type ActivityReplyItem = {
 export type FriendActivityItem = {
   id: number
   created_at: string
-  event_type:
-    | "started_practice"
-    | "tune_reviewed"
-    | "marked_known"
-    | "comment_added"
-    | "public_list_created"
-    | "public_list_updated"
+  event_type: ActivityEventType
+  metadata: Record<string, unknown> | null
   actor: {
     id: string
     username: string | null
@@ -87,6 +95,40 @@ function renderCommentExcerpt(body: string) {
   )
 }
 
+function getMetadataFields(metadata: Record<string, unknown> | null) {
+  const rawFields = metadata?.fields
+
+  if (!Array.isArray(rawFields)) {
+    return []
+  }
+
+  return rawFields.filter((field): field is string => typeof field === "string")
+}
+
+function humanisePieceDetailField(field: string) {
+  if (field === "time_signature") return "time signature"
+  if (field === "reference_url") return "reference link"
+  return field.replace(/_/g, " ")
+}
+
+function renderAddedFields(metadata: Record<string, unknown> | null) {
+  const fields = getMetadataFields(metadata).map(humanisePieceDetailField)
+
+  if (fields.length === 0) {
+    return "missing details"
+  }
+
+  if (fields.length === 1) {
+    return fields[0]
+  }
+
+  if (fields.length === 2) {
+    return `${fields[0]} and ${fields[1]}`
+  }
+
+  return `${fields.slice(0, -1).join(", ")}, and ${fields[fields.length - 1]}`
+}
+
 export function getActivityContextHref(item: FriendActivityItem) {
   if (item.piece) {
     return `/library/${item.piece.id}`
@@ -99,11 +141,11 @@ export function getActivityContextHref(item: FriendActivityItem) {
   return "/friends"
 }
 
-export function renderFriendActivityText(item: FriendActivityItem) {
+function renderActor(item: FriendActivityItem) {
   const actorName =
     item.actor?.display_name || item.actor?.username || "Unnamed user"
 
-  const actorNode = item.actor?.username ? (
+  return item.actor?.username ? (
     <Link
       href={`/users/${item.actor.username}`}
       className="font-medium underline underline-offset-4 hover:text-primary"
@@ -113,61 +155,94 @@ export function renderFriendActivityText(item: FriendActivityItem) {
   ) : (
     <span>{actorName}</span>
   )
+}
 
-  if (item.event_type === "started_practice" && item.piece) {
+function renderPieceLink(item: FriendActivityItem) {
+  if (!item.piece) return null
+
+  return (
+    <Link
+      href={`/library/${item.piece.id}`}
+      className="font-medium underline underline-offset-4 hover:text-primary"
+    >
+      {item.piece.title}
+    </Link>
+  )
+}
+
+export function renderFriendActivityText(item: FriendActivityItem) {
+  const actorNode = renderActor(item)
+  const pieceNode = renderPieceLink(item)
+
+  if (item.event_type === "started_practice" && pieceNode) {
     return (
       <>
-        {actorNode} started practising{" "}
-        <Link
-          href={`/library/${item.piece.id}`}
-          className="font-medium underline underline-offset-4 hover:text-primary"
-        >
-          {item.piece.title}
-        </Link>
+        {actorNode} started practising {pieceNode}
       </>
     )
   }
 
-  if (item.event_type === "tune_reviewed" && item.piece) {
+  if (item.event_type === "tune_reviewed" && pieceNode) {
     return (
       <>
-        {actorNode} practised{" "}
-        <Link
-          href={`/library/${item.piece.id}`}
-          className="font-medium underline underline-offset-4 hover:text-primary"
-        >
-          {item.piece.title}
-        </Link>
+        {actorNode} practised {pieceNode}
       </>
     )
   }
 
-  if (item.event_type === "marked_known" && item.piece) {
+  if (item.event_type === "marked_known" && pieceNode) {
     return (
       <>
-        {actorNode} marked{" "}
-        <Link
-          href={`/library/${item.piece.id}`}
-          className="font-medium underline underline-offset-4 hover:text-primary"
-        >
-          {item.piece.title}
-        </Link>{" "}
-        as known
+        {actorNode} marked {pieceNode} as known
       </>
     )
   }
 
-  if (item.event_type === "comment_added" && item.piece) {
+  if (item.event_type === "comment_added" && pieceNode) {
     return (
       <>
-        {actorNode} commented on{" "}
-        <Link
-          href={`/library/${item.piece.id}`}
-          className="font-medium underline underline-offset-4 hover:text-primary"
-        >
-          {item.piece.title}
-        </Link>
+        {actorNode} commented on {pieceNode}
         {item.comment?.body ? renderCommentExcerpt(item.comment.body) : null}
+      </>
+    )
+  }
+
+  if (item.event_type === "piece_created" && pieceNode) {
+    return (
+      <>
+        {actorNode} added a new tune: {pieceNode}
+      </>
+    )
+  }
+
+  if (item.event_type === "piece_details_added" && pieceNode) {
+    return (
+      <>
+        {actorNode} added {renderAddedFields(item.metadata)} to {pieceNode}
+      </>
+    )
+  }
+
+  if (item.event_type === "piece_lore_added" && pieceNode) {
+    return (
+      <>
+        {actorNode} added lore to {pieceNode}
+      </>
+    )
+  }
+
+  if (item.event_type === "piece_media_link_added" && pieceNode) {
+    return (
+      <>
+        {actorNode} added a reference link for {pieceNode}
+      </>
+    )
+  }
+
+  if (item.event_type === "piece_sheet_music_link_added" && pieceNode) {
+    return (
+      <>
+        {actorNode} added sheet music for {pieceNode}
       </>
     )
   }

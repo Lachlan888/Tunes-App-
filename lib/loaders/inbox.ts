@@ -8,6 +8,12 @@ export type InboxNotificationType =
   | "direct_message"
   | "piece_edit_request_approved"
   | "piece_edit_request_rejected"
+  | "setlist_invite"
+  | "setlist_invite_accepted"
+  | "setlist_tune_added"
+  | "setlist_tune_removed"
+  | "setlist_item_updated"
+  | "setlist_details_updated"
 
 type NotificationRow = {
   id: number
@@ -20,6 +26,8 @@ type NotificationRow = {
   direct_message_id: number | null
   piece_id: number | null
   learning_list_id: number | null
+  setlist_id: number | null
+  setlist_item_id: number | null
   comment_id: number | null
   body_preview: string | null
   read_at: string | null
@@ -38,6 +46,11 @@ type PieceRow = {
 }
 
 type LearningListRow = {
+  id: number
+  name: string
+}
+
+type SetlistRow = {
   id: number
   name: string
 }
@@ -67,6 +80,10 @@ export type InboxItem = {
     title: string
   } | null
   learning_list: {
+    id: number
+    name: string
+  } | null
+  setlist: {
     id: number
     name: string
   } | null
@@ -130,6 +147,8 @@ export async function loadInboxData() {
           direct_message_id,
           piece_id,
           learning_list_id,
+          setlist_id,
+          setlist_item_id,
           comment_id,
           body_preview,
           read_at,
@@ -141,6 +160,7 @@ export async function loadInboxData() {
       .is("archived_at", null)
       .order("created_at", { ascending: false })
       .limit(100),
+
     supabase
       .from("direct_messages")
       .select("id, body, sender_user_id, recipient_user_id, created_at, read_at")
@@ -182,6 +202,14 @@ export async function loadInboxData() {
     )
   )
 
+  const setlistIds = Array.from(
+    new Set(
+      typedNotifications
+        .map((notification) => notification.setlist_id)
+        .filter((value): value is number => value !== null)
+    )
+  )
+
   const directMessageParticipantIds = Array.from(
     new Set(
       typedDirectMessages.map((message) =>
@@ -199,6 +227,7 @@ export async function loadInboxData() {
   let profilesById = new Map<string, ProfileRow>()
   let piecesById = new Map<number, PieceRow>()
   let learningListsById = new Map<number, LearningListRow>()
+  let setlistsById = new Map<number, SetlistRow>()
 
   if (profileIds.length > 0) {
     const { data: profiles, error: profilesError } = await supabase
@@ -248,16 +277,41 @@ export async function loadInboxData() {
     )
   }
 
+  if (setlistIds.length > 0) {
+    const { data: setlists, error: setlistsError } = await supabase
+      .from("setlists")
+      .select("id, name")
+      .in("id", setlistIds)
+
+    if (setlistsError) {
+      throw new Error(setlistsError.message)
+    }
+
+    setlistsById = new Map(
+      ((setlists ?? []) as SetlistRow[]).map((setlist) => [
+        setlist.id,
+        setlist,
+      ])
+    )
+  }
+
   const notificationItems: InboxItem[] = typedNotifications.map(
     (notification) => {
       const actor = profilesById.get(notification.actor_user_id) ?? null
+
       const piece =
         notification.piece_id != null
           ? piecesById.get(notification.piece_id) ?? null
           : null
+
       const learningList =
         notification.learning_list_id != null
           ? learningListsById.get(notification.learning_list_id) ?? null
+          : null
+
+      const setlist =
+        notification.setlist_id != null
+          ? setlistsById.get(notification.setlist_id) ?? null
           : null
 
       return {
@@ -283,6 +337,12 @@ export async function loadInboxData() {
           ? {
               id: learningList.id,
               name: learningList.name,
+            }
+          : null,
+        setlist: setlist
+          ? {
+              id: setlist.id,
+              name: setlist.name,
             }
           : null,
         direct_message: null,

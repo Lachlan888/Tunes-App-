@@ -1,6 +1,10 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import {
+  recordPieceMediaLinkAddedEvent,
+  recordPieceSheetMusicLinkAddedEvent,
+} from "@/lib/services/activity-events"
 import { createClient } from "@/lib/supabase/server"
 
 export async function addPieceSheetMusicLink(formData: FormData) {
@@ -45,6 +49,8 @@ export async function addPieceSheetMusicLink(formData: FormData) {
     console.error("Error adding piece sheet music link:", error)
     return
   }
+
+  await recordPieceSheetMusicLinkAddedEvent(user.id, pieceId)
 
   revalidatePath(`/library/${pieceId}`)
   revalidatePath(redirectTo)
@@ -92,6 +98,8 @@ export async function addPieceMediaLink(formData: FormData) {
     console.error("Error adding piece media link:", error)
     return
   }
+
+  await recordPieceMediaLinkAddedEvent(user.id, pieceId)
 
   revalidatePath(`/library/${pieceId}`)
   revalidatePath(redirectTo)

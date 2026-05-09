@@ -31,6 +31,10 @@ function actorLink(item: InboxItem) {
   )
 }
 
+function setlistName(item: InboxItem) {
+  return item.setlist?.name ?? "a setlist"
+}
+
 function notificationTitle(item: InboxItem) {
   if (item.notification_type === "activity_reaction") {
     return <>{actorLink(item)} gave your activity Good craic!</>
@@ -62,10 +66,56 @@ function notificationTitle(item: InboxItem) {
     )
   }
 
-  return <>{actorLink(item)} sent you a message.</>
+  if (item.notification_type === "setlist_invite") {
+    return <>{actorLink(item)} invited you to {setlistName(item)}.</>
+  }
+
+  if (item.notification_type === "setlist_invite_accepted") {
+    return <>{actorLink(item)} joined {setlistName(item)}.</>
+  }
+
+  if (item.notification_type === "setlist_tune_added") {
+    return (
+      <>
+        {actorLink(item)} added
+        {item.piece ? <> {item.piece.title}</> : <> a tune</>} to{" "}
+        {setlistName(item)}.
+      </>
+    )
+  }
+
+  if (item.notification_type === "setlist_tune_removed") {
+    return (
+      <>
+        {actorLink(item)} removed
+        {item.piece ? <> {item.piece.title}</> : <> a tune</>} from{" "}
+        {setlistName(item)}.
+      </>
+    )
+  }
+
+  if (item.notification_type === "setlist_item_updated") {
+    return (
+      <>
+        {actorLink(item)} updated
+        {item.piece ? <> {item.piece.title}</> : <> a tune</>} in{" "}
+        {setlistName(item)}.
+      </>
+    )
+  }
+
+  if (item.notification_type === "setlist_details_updated") {
+    return <>{actorLink(item)} updated {setlistName(item)}.</>
+  }
+
+  return <>{actorLink(item)} sent you a notification.</>
 }
 
 function contextHref(item: InboxItem) {
+  if (item.setlist) {
+    return `/setlists/${item.setlist.id}`
+  }
+
   if (item.piece) {
     return `/library/${item.piece.id}`
   }
@@ -82,6 +132,10 @@ function contextHref(item: InboxItem) {
 }
 
 function contextLabel(item: InboxItem) {
+  if (item.setlist) {
+    return `Open ${item.setlist.name}`
+  }
+
   if (item.piece) {
     return `Open ${item.piece.title}`
   }
@@ -101,8 +155,8 @@ export default function InboxItemList({ items }: InboxItemListProps) {
   if (items.length === 0) {
     return (
       <p className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground shadow-sm">
-        No notifications yet. Reactions, replies, and moderation outcomes will
-        appear here.
+        No notifications yet. Reactions, replies, moderation outcomes, and
+        setlist changes will appear here.
       </p>
     )
   }

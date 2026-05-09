@@ -1,14 +1,21 @@
 import { createClient } from "@/lib/supabase/server"
 
+export type ActivityEventType =
+  | "started_practice"
+  | "tune_reviewed"
+  | "marked_known"
+  | "comment_added"
+  | "public_list_created"
+  | "public_list_updated"
+  | "piece_created"
+  | "piece_details_added"
+  | "piece_lore_added"
+  | "piece_media_link_added"
+  | "piece_sheet_music_link_added"
+
 type RecordActivityEventInput = {
   userId: string
-  eventType:
-    | "started_practice"
-    | "tune_reviewed"
-    | "marked_known"
-    | "comment_added"
-    | "public_list_created"
-    | "public_list_updated"
+  eventType: ActivityEventType
   pieceId?: number | null
   learningListId?: number | null
   commentId?: number | null
@@ -35,7 +42,15 @@ async function recordActivityEvent({
   })
 
   if (error) {
-    throw new Error(error.message)
+    console.error("Error recording activity event:", {
+      eventType,
+      userId,
+      pieceId,
+      learningListId,
+      commentId,
+      metadata,
+      error,
+    })
   }
 }
 
@@ -101,5 +116,65 @@ export async function recordPublicListUpdatedEvent(
     userId,
     eventType: "public_list_updated",
     learningListId,
+  })
+}
+
+export async function recordPieceCreatedEvent(userId: string, pieceId: number) {
+  await recordActivityEvent({
+    userId,
+    eventType: "piece_created",
+    pieceId,
+  })
+}
+
+export async function recordPieceDetailsAddedEvent(
+  userId: string,
+  pieceId: number,
+  fields: string[]
+) {
+  await recordActivityEvent({
+    userId,
+    eventType: "piece_details_added",
+    pieceId,
+    metadata: {
+      fields,
+    },
+  })
+}
+
+export async function recordPieceLoreAddedEvent(
+  userId: string,
+  pieceId: number,
+  loreEntryId: number
+) {
+  await recordActivityEvent({
+    userId,
+    eventType: "piece_lore_added",
+    pieceId,
+    metadata: {
+      lore_entry_id: loreEntryId,
+    },
+  })
+}
+
+export async function recordPieceMediaLinkAddedEvent(
+  userId: string,
+  pieceId: number
+) {
+  await recordActivityEvent({
+    userId,
+    eventType: "piece_media_link_added",
+    pieceId,
+  })
+}
+
+export async function recordPieceSheetMusicLinkAddedEvent(
+  userId: string,
+  pieceId: number
+) {
+  await recordActivityEvent({
+    userId,
+    eventType: "piece_sheet_music_link_added",
+    pieceId,
   })
 }

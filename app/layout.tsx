@@ -71,6 +71,10 @@ export default async function RootLayout({
                         href: "/public-lists",
                         label: "Shared",
                       },
+                      {
+                        href: "/setlists",
+                        label: "Setlists",
+                      },
                     ]}
                   />
 

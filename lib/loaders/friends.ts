@@ -5,6 +5,7 @@ import {
   type ProfileSearchRow,
 } from "@/lib/profile-search"
 import type {
+  ActivityEventType,
   ActivityReactionSummary,
   ActivityReplyItem,
   FriendActivityItem,
@@ -22,17 +23,21 @@ type ConnectionRow = {
 type ActivityEventRow = {
   id: number
   user_id: string
-  event_type:
-    | "started_practice"
-    | "tune_reviewed"
-    | "marked_known"
-    | "comment_added"
-    | "public_list_created"
-    | "public_list_updated"
+  event_type: ActivityEventType
   piece_id: number | null
   learning_list_id: number | null
   comment_id: number | null
+  metadata: Record<string, unknown> | null
   created_at: string
+}
+
+type ActivityProfileRow = {
+  id: string
+  username: string | null
+  display_name: string | null
+  show_repertoire_summary: boolean | null
+  show_comment_activity: boolean | null
+  show_public_lists_on_profile: boolean | null
 }
 
 type PieceRow = {
@@ -114,6 +119,52 @@ function buildReactionSummaries(
   return Array.from(summaryMap.values())
 }
 
+function isRepertoireActivity(eventType: ActivityEventType) {
+  return (
+    eventType === "started_practice" ||
+    eventType === "tune_reviewed" ||
+    eventType === "marked_known"
+  )
+}
+
+function isCommentOrContributionActivity(eventType: ActivityEventType) {
+  return (
+    eventType === "comment_added" ||
+    eventType === "piece_created" ||
+    eventType === "piece_details_added" ||
+    eventType === "piece_lore_added" ||
+    eventType === "piece_media_link_added" ||
+    eventType === "piece_sheet_music_link_added"
+  )
+}
+
+function isPublicListActivity(eventType: ActivityEventType) {
+  return eventType === "public_list_created" || eventType === "public_list_updated"
+}
+
+function canShowActivityForProfile(
+  row: ActivityEventRow,
+  profile: ActivityProfileRow | null
+) {
+  if (!profile) {
+    return false
+  }
+
+  if (isRepertoireActivity(row.event_type)) {
+    return profile.show_repertoire_summary === true
+  }
+
+  if (isCommentOrContributionActivity(row.event_type)) {
+    return profile.show_comment_activity !== false
+  }
+
+  if (isPublicListActivity(row.event_type)) {
+    return profile.show_public_lists_on_profile !== false
+  }
+
+  return false
+}
+
 export async function loadRecentFriendActivity(
   supabase: Awaited<ReturnType<typeof createClient>>,
   acceptedFriendIds: string[],
@@ -127,7 +178,7 @@ export async function loadRecentFriendActivity(
   const { data: activityRows, error: activityError } = await supabase
     .from("user_activity_events")
     .select(
-      "id, user_id, event_type, piece_id, learning_list_id, comment_id, created_at"
+      "id, user_id, event_type, piece_id, learning_list_id, comment_id, metadata, created_at"
     )
     .in("user_id", acceptedFriendIds)
     .order("created_at", { ascending: false })
@@ -139,48 +190,26 @@ export async function loadRecentFriendActivity(
 
   const typedActivityRows = (activityRows ?? []) as ActivityEventRow[]
 
-  const activityIds = typedActivityRows.map((row) => row.id)
-
   const activityUserIds = Array.from(
     new Set(typedActivityRows.map((row) => row.user_id))
   )
 
-  const pieceIds = Array.from(
-    new Set(
-      typedActivityRows
-        .map((row) => row.piece_id)
-        .filter((value): value is number => value !== null)
-    )
-  )
-
-  const learningListIds = Array.from(
-    new Set(
-      typedActivityRows
-        .map((row) => row.learning_list_id)
-        .filter((value): value is number => value !== null)
-    )
-  )
-
-  const commentIds = Array.from(
-    new Set(
-      typedActivityRows
-        .map((row) => row.comment_id)
-        .filter((value): value is number => value !== null)
-    )
-  )
-
-  let activityProfilesById = new Map<string, ProfileSearchRow>()
-  let piecesById = new Map<number, PieceRow>()
-  let learningListsById = new Map<number, LearningListRow>()
-  let commentsById = new Map<number, PieceCommentRow>()
-  let reactionsByActivityId = new Map<number, ActivityReactionSummary[]>()
-  let repliesByActivityId = new Map<number, ActivityReplyItem[]>()
+  let activityProfilesById = new Map<string, ActivityProfileRow>()
 
   if (activityUserIds.length > 0) {
     const { data: activityProfiles, error: activityProfilesError } =
       await supabase
         .from("profiles")
-        .select("id, username, display_name")
+        .select(
+          `
+            id,
+            username,
+            display_name,
+            show_repertoire_summary,
+            show_comment_activity,
+            show_public_lists_on_profile
+          `
+        )
         .in("id", activityUserIds)
 
     if (activityProfilesError) {
@@ -188,12 +217,51 @@ export async function loadRecentFriendActivity(
     }
 
     activityProfilesById = new Map(
-      ((activityProfiles ?? []) as ProfileSearchRow[]).map((profile) => [
+      ((activityProfiles ?? []) as ActivityProfileRow[]).map((profile) => [
         profile.id,
         profile,
       ])
     )
   }
+
+  const visibleActivityRows = typedActivityRows.filter((row) =>
+    canShowActivityForProfile(
+      row,
+      activityProfilesById.get(row.user_id) ?? null
+    )
+  )
+
+  const activityIds = visibleActivityRows.map((row) => row.id)
+
+  const pieceIds = Array.from(
+    new Set(
+      visibleActivityRows
+        .map((row) => row.piece_id)
+        .filter((value): value is number => value !== null)
+    )
+  )
+
+  const learningListIds = Array.from(
+    new Set(
+      visibleActivityRows
+        .map((row) => row.learning_list_id)
+        .filter((value): value is number => value !== null)
+    )
+  )
+
+  const commentIds = Array.from(
+    new Set(
+      visibleActivityRows
+        .map((row) => row.comment_id)
+        .filter((value): value is number => value !== null)
+    )
+  )
+
+  let piecesById = new Map<number, PieceRow>()
+  let learningListsById = new Map<number, LearningListRow>()
+  let commentsById = new Map<number, PieceCommentRow>()
+  let reactionsByActivityId = new Map<number, ActivityReactionSummary[]>()
+  let repliesByActivityId = new Map<number, ActivityReplyItem[]>()
 
   if (pieceIds.length > 0) {
     const { data: pieces, error: piecesError } = await supabase
@@ -259,20 +327,23 @@ export async function loadRecentFriendActivity(
 
     const typedReactions = (reactions ?? []) as ActivityReactionRow[]
 
-    reactionsByActivityId = typedReactions.reduce<
-      Map<number, ActivityReactionSummary[]>
+    const reactionsByRawActivityId = typedReactions.reduce<
+      Map<number, ActivityReactionRow[]>
     >((map, reaction) => {
-      const existingRows = typedReactions.filter(
-        (row) => row.activity_event_id === reaction.activity_event_id
-      )
-
-      map.set(
-        reaction.activity_event_id,
-        buildReactionSummaries(existingRows, currentUserId)
-      )
-
+      const existing = map.get(reaction.activity_event_id) ?? []
+      existing.push(reaction)
+      map.set(reaction.activity_event_id, existing)
       return map
     }, new Map())
+
+    reactionsByActivityId = new Map(
+      Array.from(reactionsByRawActivityId.entries()).map(
+        ([activityEventId, rows]) => [
+          activityEventId,
+          buildReactionSummaries(rows, currentUserId),
+        ]
+      )
+    )
 
     const { data: replies, error: repliesError } = await supabase
       .from("activity_replies")
@@ -332,7 +403,7 @@ export async function loadRecentFriendActivity(
     )
   }
 
-  return typedActivityRows
+  return visibleActivityRows
     .map((row) => {
       const actor = activityProfilesById.get(row.user_id) ?? null
       const piece =
@@ -352,10 +423,26 @@ export async function loadRecentFriendActivity(
         return null
       }
 
+      if (
+        (row.event_type === "started_practice" ||
+          row.event_type === "tune_reviewed" ||
+          row.event_type === "marked_known" ||
+          row.event_type === "comment_added" ||
+          row.event_type === "piece_created" ||
+          row.event_type === "piece_details_added" ||
+          row.event_type === "piece_lore_added" ||
+          row.event_type === "piece_media_link_added" ||
+          row.event_type === "piece_sheet_music_link_added") &&
+        !piece
+      ) {
+        return null
+      }
+
       return {
         id: row.id,
         created_at: row.created_at,
         event_type: row.event_type,
+        metadata: row.metadata,
         actor: actor
           ? {
               id: actor.id,

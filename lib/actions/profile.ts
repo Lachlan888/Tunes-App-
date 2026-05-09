@@ -37,6 +37,10 @@ function getProfileDraftParams(formData: FormData) {
     String(asBoolean(formData.get("show_repertoire_summary")))
   )
   params.set(
+    "show_comment_activity",
+    String(asBoolean(formData.get("show_comment_activity")))
+  )
+  params.set(
     "show_compare_discoverability",
     String(asBoolean(formData.get("show_compare_discoverability")))
   )
@@ -68,6 +72,9 @@ export async function updateProfile(formData: FormData) {
   )
   const show_repertoire_summary = asBoolean(
     formData.get("show_repertoire_summary")
+  )
+  const show_comment_activity = asBoolean(
+    formData.get("show_comment_activity")
   )
   const show_compare_discoverability = asBoolean(
     formData.get("show_compare_discoverability")
@@ -115,6 +122,7 @@ export async function updateProfile(formData: FormData) {
       show_instruments,
       show_public_lists_on_profile,
       show_repertoire_summary,
+      show_comment_activity,
       show_compare_discoverability,
       compare_requires_friend,
       updated_at: new Date().toISOString(),
@@ -133,6 +141,7 @@ export async function updateProfile(formData: FormData) {
   revalidatePath("/dashboard")
   revalidatePath("/compare")
   revalidatePath("/friends")
+  revalidatePath("/")
 
   if (previousUsername) {
     revalidatePath(`/users/${previousUsername}`)

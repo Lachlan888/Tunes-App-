@@ -12,6 +12,8 @@ type ProfileVisibilitySectionProps = {
   setShowPublicListsOnProfile: (value: boolean) => void
   showRepertoireSummary: boolean
   setShowRepertoireSummary: (value: boolean) => void
+  showCommentActivity: boolean
+  setShowCommentActivity: (value: boolean) => void
   showCompareDiscoverability: boolean
   setShowCompareDiscoverability: (value: boolean) => void
   compareRequiresFriend: boolean
@@ -68,6 +70,8 @@ export default function ProfileVisibilitySection({
   setShowPublicListsOnProfile,
   showRepertoireSummary,
   setShowRepertoireSummary,
+  showCommentActivity,
+  setShowCommentActivity,
   showCompareDiscoverability,
   setShowCompareDiscoverability,
   compareRequiresFriend,
@@ -80,8 +84,8 @@ export default function ProfileVisibilitySection({
       </h3>
 
       <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-        Control what other users can see on your public profile and whether
-        they can compare with you.
+        Control what other users can see on your public profile, whether they
+        can compare with you, and which kinds of activity appear to friends.
       </p>
 
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
@@ -106,15 +110,23 @@ export default function ProfileVisibilitySection({
           checked={showPublicListsOnProfile}
           onChange={setShowPublicListsOnProfile}
           title="Show public lists"
-          description="Display your public tune lists on your profile page."
+          description="Display your public tune lists on your profile page and allow public-list activity to appear to friends."
         />
 
         <VisibilityToggle
           name="show_repertoire_summary"
           checked={showRepertoireSummary}
           onChange={setShowRepertoireSummary}
-          title="Show repertoire summary"
-          description="Show counts for known tunes and tunes currently in practice."
+          title="Show repertoire activity"
+          description="Let friends see repertoire movement such as tunes marked known, tunes started in practice, and tune reviews."
+        />
+
+        <VisibilityToggle
+          name="show_comment_activity"
+          checked={showCommentActivity}
+          onChange={setShowCommentActivity}
+          title="Show comment and contribution activity"
+          description="Let friends see when you comment on tunes or add public tune information such as lore, missing details, recordings, or sheet music."
         />
 
         <VisibilityToggle

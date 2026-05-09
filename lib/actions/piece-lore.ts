@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { canModerate, getCurrentUserRole } from "@/lib/auth/roles"
+import { recordPieceLoreAddedEvent } from "@/lib/services/activity-events"
 import { createClient } from "@/lib/supabase/server"
 
 const VALID_LORE_CATEGORIES = [
@@ -85,17 +86,23 @@ export async function addPieceLoreEntry(formData: FormData) {
     return
   }
 
-  const { error } = await supabase.from("piece_lore_entries").insert({
-    piece_id: pieceId,
-    user_id: user.id,
-    category,
-    entry_text: entryText,
-  })
+  const { data: insertedLoreEntry, error } = await supabase
+    .from("piece_lore_entries")
+    .insert({
+      piece_id: pieceId,
+      user_id: user.id,
+      category,
+      entry_text: entryText,
+    })
+    .select("id")
+    .single()
 
-  if (error) {
+  if (error || !insertedLoreEntry) {
     console.error("Error adding piece lore entry:", error)
     return
   }
+
+  await recordPieceLoreAddedEvent(user.id, pieceId, insertedLoreEntry.id)
 
   revalidatePath(`/library/${pieceId}`)
   revalidatePath(redirectTo)
