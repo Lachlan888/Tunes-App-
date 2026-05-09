@@ -5,72 +5,73 @@ type SetlistOverviewCardProps = {
   setlist: SetlistOverview
 }
 
+function pluralise(count: number, singular: string, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`
+}
+
 export default function SetlistOverviewCard({
   setlist,
 }: SetlistOverviewCardProps) {
   return (
-    <Link
-      href={`/setlists/${setlist.id}`}
-      className="block rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-    >
-      <article>
-        <div className="min-w-0">
-          <h3 className="font-serif text-2xl font-bold tracking-tight text-foreground">
-            {setlist.name}
-          </h3>
+    <article className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:shadow-md">
+      <div className="flex flex-col gap-4">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-serif text-2xl font-bold tracking-tight text-foreground">
+              {setlist.name}
+            </h3>
 
-          {setlist.description ? (
-            <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
-              {setlist.description}
-            </p>
-          ) : (
-            <p className="mt-2 text-sm text-muted-foreground">
-              No description yet.
-            </p>
-          )}
-
-          <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-            <span>
-              {setlist.memberCount} collaborator
-              {setlist.memberCount === 1 ? "" : "s"}
-            </span>
-            <span>•</span>
-            <span>
-              {setlist.tuneCount} tune
-              {setlist.tuneCount === 1 ? "" : "s"}
-            </span>
-
-            {setlist.event_date ? (
-              <>
-                <span>•</span>
-                <span>{setlist.event_date}</span>
-              </>
+            {setlist.isCreator ? (
+              <span className="rounded-full border border-primary bg-primary px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-primary-foreground">
+                Creator
+              </span>
             ) : null}
           </div>
 
-          {setlist.location ? (
-            <p className="mt-2 text-sm text-muted-foreground">
-              {setlist.location}
+          {setlist.description ? (
+            <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">
+              {setlist.description}
             </p>
-          ) : null}
+          ) : (
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              No description yet.
+            </p>
+          )}
         </div>
 
-        <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-          <div className="rounded-xl border border-border bg-card px-4 py-3">
-            <p className="font-semibold text-foreground">
-              {setlist.knownByEveryoneCount}
-            </p>
-            <p className="text-muted-foreground">Known by everyone</p>
-          </div>
+        <div className="flex flex-wrap gap-2 text-sm">
+          <span className="rounded-full border border-border bg-card px-3 py-1.5 font-medium text-muted-foreground">
+            {pluralise(setlist.tuneCount, "tune")}
+          </span>
 
-          <div className="rounded-xl border border-border bg-card px-4 py-3">
-            <p className="font-semibold text-foreground">
-              {setlist.gapTuneCount}
-            </p>
-            <p className="text-muted-foreground">Tunes with gaps</p>
-          </div>
+          <span className="rounded-full border border-border bg-card px-3 py-1.5 font-medium text-muted-foreground">
+            {pluralise(setlist.memberCount, "collaborator")}
+          </span>
+
+          <span className="rounded-full border border-success bg-success px-3 py-1.5 font-medium text-success-foreground">
+            {setlist.knownByEveryoneCount} known by everyone
+          </span>
+
+          <span className="rounded-full border border-warning-strong bg-card px-3 py-1.5 font-medium text-muted-foreground">
+            {setlist.gapTuneCount} with gaps
+          </span>
         </div>
-      </article>
-    </Link>
+
+        {(setlist.event_date || setlist.location) ? (
+          <p className="text-sm text-muted-foreground">
+            {[setlist.event_date, setlist.location].filter(Boolean).join(" · ")}
+          </p>
+        ) : null}
+
+        <div>
+          <Link
+            href={`/setlists/${setlist.id}`}
+            className="inline-flex rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          >
+            View setlist
+          </Link>
+        </div>
+      </div>
+    </article>
   )
 }
