@@ -25,7 +25,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
-        <header className="border-b border-border bg-card/90 backdrop-blur">
+        <header className="relative z-[100] border-b border-border bg-card/90 backdrop-blur">
           <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-4 px-6 py-4">
             <div>
               <p className="font-serif text-xl font-bold tracking-tight text-foreground">
@@ -74,6 +74,10 @@ export default async function RootLayout({
                       {
                         href: "/setlists",
                         label: "Setlists",
+                      },
+                      {
+                        href: "/badges",
+                        label: "Badges",
                       },
                     ]}
                   />

@@ -14,6 +14,7 @@ export type InboxNotificationType =
   | "setlist_tune_removed"
   | "setlist_item_updated"
   | "setlist_details_updated"
+  | "badge_awarded"
 
 type NotificationRow = {
   id: number
@@ -29,6 +30,7 @@ type NotificationRow = {
   setlist_id: number | null
   setlist_item_id: number | null
   comment_id: number | null
+  badge_id: number | null
   body_preview: string | null
   read_at: string | null
   created_at: string
@@ -53,6 +55,12 @@ type LearningListRow = {
 type SetlistRow = {
   id: number
   name: string
+}
+
+type BadgeRow = {
+  id: number
+  name: string
+  slug: string
 }
 
 type DirectMessageRow = {
@@ -86,6 +94,11 @@ export type InboxItem = {
   setlist: {
     id: number
     name: string
+  } | null
+  badge: {
+    id: number
+    name: string
+    slug: string
   } | null
   direct_message: {
     id: number
@@ -150,6 +163,7 @@ export async function loadInboxData() {
           setlist_id,
           setlist_item_id,
           comment_id,
+          badge_id,
           body_preview,
           read_at,
           created_at
@@ -210,6 +224,14 @@ export async function loadInboxData() {
     )
   )
 
+  const badgeIds = Array.from(
+    new Set(
+      typedNotifications
+        .map((notification) => notification.badge_id)
+        .filter((value): value is number => value !== null)
+    )
+  )
+
   const directMessageParticipantIds = Array.from(
     new Set(
       typedDirectMessages.map((message) =>
@@ -228,6 +250,7 @@ export async function loadInboxData() {
   let piecesById = new Map<number, PieceRow>()
   let learningListsById = new Map<number, LearningListRow>()
   let setlistsById = new Map<number, SetlistRow>()
+  let badgesById = new Map<number, BadgeRow>()
 
   if (profileIds.length > 0) {
     const { data: profiles, error: profilesError } = await supabase
@@ -295,6 +318,21 @@ export async function loadInboxData() {
     )
   }
 
+  if (badgeIds.length > 0) {
+    const { data: badges, error: badgesError } = await supabase
+      .from("badges")
+      .select("id, name, slug")
+      .in("id", badgeIds)
+
+    if (badgesError) {
+      throw new Error(badgesError.message)
+    }
+
+    badgesById = new Map(
+      ((badges ?? []) as BadgeRow[]).map((badge) => [badge.id, badge])
+    )
+  }
+
   const notificationItems: InboxItem[] = typedNotifications.map(
     (notification) => {
       const actor = profilesById.get(notification.actor_user_id) ?? null
@@ -312,6 +350,11 @@ export async function loadInboxData() {
       const setlist =
         notification.setlist_id != null
           ? setlistsById.get(notification.setlist_id) ?? null
+          : null
+
+      const badge =
+        notification.badge_id != null
+          ? badgesById.get(notification.badge_id) ?? null
           : null
 
       return {
@@ -343,6 +386,13 @@ export async function loadInboxData() {
           ? {
               id: setlist.id,
               name: setlist.name,
+            }
+          : null,
+        badge: badge
+          ? {
+              id: badge.id,
+              name: badge.name,
+              slug: badge.slug,
             }
           : null,
         direct_message: null,

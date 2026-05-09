@@ -35,7 +35,19 @@ function setlistName(item: InboxItem) {
   return item.setlist?.name ?? "a setlist"
 }
 
+function badgeName(item: InboxItem) {
+  return item.badge?.name ?? "a badge"
+}
+
 function notificationTitle(item: InboxItem) {
+  if (item.notification_type === "badge_awarded") {
+    return (
+      <>
+        {actorLink(item)} awarded you the badge {badgeName(item)}.
+      </>
+    )
+  }
+
   if (item.notification_type === "activity_reaction") {
     return <>{actorLink(item)} gave your activity Good craic!</>
   }
@@ -112,6 +124,10 @@ function notificationTitle(item: InboxItem) {
 }
 
 function contextHref(item: InboxItem) {
+  if (item.badge) {
+    return `/badges/${item.badge.slug}`
+  }
+
   if (item.setlist) {
     return `/setlists/${item.setlist.id}`
   }
@@ -132,6 +148,10 @@ function contextHref(item: InboxItem) {
 }
 
 function contextLabel(item: InboxItem) {
+  if (item.badge) {
+    return `Open ${item.badge.name}`
+  }
+
   if (item.setlist) {
     return `Open ${item.setlist.name}`
   }
@@ -155,8 +175,8 @@ export default function InboxItemList({ items }: InboxItemListProps) {
   if (items.length === 0) {
     return (
       <p className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground shadow-sm">
-        No notifications yet. Reactions, replies, moderation outcomes, and
-        setlist changes will appear here.
+        No notifications yet. Reactions, replies, moderation outcomes, setlist
+        changes, and badge awards will appear here.
       </p>
     )
   }
