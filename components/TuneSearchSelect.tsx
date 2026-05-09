@@ -139,8 +139,7 @@ export default function TuneSearchSelect({
     updateSelection(selectedPieces.filter((piece) => piece.id !== pieceId))
   }
 
-  function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  function handleSearchSubmit() {
     setHasSubmittedSearch(true)
   }
 
@@ -153,13 +152,20 @@ export default function TuneSearchSelect({
     }
   }
 
+  function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      event.preventDefault()
+      handleSearchSubmit()
+    }
+  }
+
   return (
     <div>
       {selectedPieces.map((piece) => (
         <input key={piece.id} type="hidden" name={inputName} value={piece.id} />
       ))}
 
-      <form onSubmit={handleSearchSubmit}>
+      <div>
         <label className="text-sm font-medium text-foreground">
           Search tunes
         </label>
@@ -168,20 +174,22 @@ export default function TuneSearchSelect({
           <input
             value={query}
             onChange={(event) => handleQueryChange(event.target.value)}
+            onKeyDown={handleSearchKeyDown}
             placeholder="e.g. Angeline the Baker"
             autoComplete="off"
             className="min-w-0 flex-1 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
 
           <button
-            type="submit"
+            type="button"
+            onClick={handleSearchSubmit}
             disabled={!query.trim()}
             className="rounded-full border border-border bg-background/70 px-4 py-3 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             Search
           </button>
         </div>
-      </form>
+      </div>
 
       {query.trim() &&
       autocompleteMatches.length > 0 &&
