@@ -18,6 +18,11 @@ type PieceMetadataRow = {
   time_signature: string | null
 }
 
+type PieceTitleRow = {
+  id: number
+  title: string
+}
+
 type LearningListRow = {
   id: number
   name: string
@@ -187,6 +192,67 @@ function describeKnownTuneCountTarget(filters?: {
   return descriptors.length > 0 ? `${descriptors.join(" ")} ` : ""
 }
 
+function formatTitleList(titles: string[]) {
+  const cleanedTitles = titles.map((title) => title.trim()).filter(Boolean)
+
+  if (cleanedTitles.length === 0) return ""
+  if (cleanedTitles.length === 1) return cleanedTitles[0]
+  if (cleanedTitles.length === 2) {
+    return `${cleanedTitles[0]} and ${cleanedTitles[1]}`
+  }
+
+  return `${cleanedTitles.slice(0, -1).join(", ")}, and ${
+    cleanedTitles[cleanedTitles.length - 1]
+  }`
+}
+
+async function getPieceTitleMap(
+  supabase: SupabaseServerClient,
+  pieceIds: number[]
+) {
+  const uniquePieceIds = Array.from(new Set(pieceIds))
+
+  if (uniquePieceIds.length === 0) {
+    return new Map<number, string>()
+  }
+
+  const { data, error } = await supabase
+    .from("pieces")
+    .select("id, title")
+    .in("id", uniquePieceIds)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const titleMap = new Map<number, string>()
+
+  for (const row of (data ?? []) as PieceTitleRow[]) {
+    titleMap.set(row.id, row.title)
+  }
+
+  return titleMap
+}
+
+async function getLearningListName(
+  supabase: SupabaseServerClient,
+  listId: number
+) {
+  const { data, error } = await supabase
+    .from("learning_lists")
+    .select("id, name")
+    .eq("id", listId)
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const list = (data as LearningListRow | null) ?? null
+
+  return list?.name ?? null
+}
+
 function describeCondition(condition: BadgeCondition) {
   if (condition.type === "know_all_tunes_in_list") {
     return "Know every tune in a selected list"
@@ -247,6 +313,65 @@ function describeCondition(condition: BadgeCondition) {
   return "Meet this badge condition"
 }
 
+async function describeConditionWithNames({
+  supabase,
+  condition,
+}: {
+  supabase: SupabaseServerClient
+  condition: BadgeCondition
+}) {
+  if (condition.type === "know_all_tunes_in_list") {
+    const listName = await getLearningListName(supabase, condition.list_id)
+
+    return listName
+      ? `Know every tune in ${listName}`
+      : "Know every tune in the selected list"
+  }
+
+  if (condition.type === "know_selected_tunes") {
+    const uniquePieceIds = Array.from(new Set(condition.piece_ids))
+    const titleMap = await getPieceTitleMap(supabase, uniquePieceIds)
+    const titles = uniquePieceIds
+      .map((pieceId) => titleMap.get(pieceId))
+      .filter((title): title is string => Boolean(title))
+
+    if (titles.length === 1) {
+      return `Know ${titles[0]}`
+    }
+
+    if (titles.length > 1) {
+      return `Know ${formatTitleList(titles)}`
+    }
+
+    return describeCondition(condition)
+  }
+
+  if (condition.type === "added_media_links") {
+    const styleText = condition.filters?.style
+      ? ` in ${condition.filters.style}`
+      : ""
+    const missingMediaText = condition.filters?.only_previously_missing_media
+      ? " that were missing media"
+      : ""
+
+    let listText = ""
+
+    if (condition.filters?.list_id) {
+      const listName = await getLearningListName(
+        supabase,
+        condition.filters.list_id
+      )
+      listText = listName ? ` in ${listName}` : " in the selected list"
+    }
+
+    return `Add at least ${condition.count} reference media link${
+      condition.count === 1 ? "" : "s"
+    }${styleText}${listText}${missingMediaText}`
+  }
+
+  return describeCondition(condition)
+}
+
 export function summariseBadgeConditionLogic(logic: BadgeConditionLogic) {
   const conditions = logic.conditions ?? []
 
@@ -261,6 +386,34 @@ export function summariseBadgeConditionLogic(logic: BadgeConditionLogic) {
   const joiner = logic.mode === "any" ? " OR " : " AND "
 
   return conditions.map((condition) => describeCondition(condition)).join(joiner)
+}
+
+export async function summariseBadgeConditionLogicWithNames({
+  supabase,
+  conditionLogic,
+}: {
+  supabase: SupabaseServerClient
+  conditionLogic: BadgeConditionLogic
+}) {
+  const logic = normaliseBadgeConditionLogic(conditionLogic)
+  const conditions = logic.conditions ?? []
+
+  if (conditions.length === 0) {
+    return "No badge conditions have been defined yet."
+  }
+
+  const descriptions = await Promise.all(
+    conditions.map((condition) =>
+      describeConditionWithNames({
+        supabase,
+        condition,
+      })
+    )
+  )
+
+  const joiner = logic.mode === "any" ? " OR " : " AND "
+
+  return descriptions.join(joiner)
 }
 
 function combineProgress(
@@ -401,6 +554,17 @@ async function calculateKnowSelectedTunesProgress({
 }): Promise<BadgeProgressSummary> {
   const uniquePieceIds = Array.from(new Set(pieceIds))
 
+  if (uniquePieceIds.length === 0) {
+    return {
+      isEligible: false,
+      isCalculable: true,
+      current: 0,
+      required: 1,
+      label: "No selected tunes have been defined for this badge.",
+      missingPieceIds: [],
+    }
+  }
+
   const { data: knownRows, error: knownError } = await supabase
     .from("user_known_pieces")
     .select("piece_id")
@@ -419,14 +583,27 @@ async function calculateKnowSelectedTunesProgress({
     (pieceId) => !knownPieceIds.has(pieceId)
   )
 
+  const titleMap = await getPieceTitleMap(supabase, uniquePieceIds)
+  const titles = uniquePieceIds
+    .map((pieceId) => titleMap.get(pieceId))
+    .filter((title): title is string => Boolean(title))
+
+  let label = `Know ${uniquePieceIds.length} selected tune${
+    uniquePieceIds.length === 1 ? "" : "s"
+  }.`
+
+  if (titles.length === 1) {
+    label = `Know ${titles[0]}.`
+  } else if (titles.length > 1) {
+    label = `Know ${formatTitleList(titles)}.`
+  }
+
   return {
     isEligible: missingPieceIds.length === 0,
     isCalculable: true,
     current: knownPieceIds.size,
     required: uniquePieceIds.length,
-    label: `Know ${uniquePieceIds.length} selected tune${
-      uniquePieceIds.length === 1 ? "" : "s"
-    }.`,
+    label,
     missingPieceIds,
   }
 }

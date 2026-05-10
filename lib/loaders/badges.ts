@@ -1,7 +1,7 @@
 import {
   calculateBadgeProgress,
   normaliseBadgeConditionLogic,
-  summariseBadgeConditionLogic,
+  summariseBadgeConditionLogicWithNames,
 } from "@/lib/badges/conditions"
 import { autoAwardBadgeIfEligible } from "@/lib/services/badge-awards"
 import { createClient } from "@/lib/supabase/server"
@@ -66,11 +66,6 @@ export type EditBadgeData =
       timeSignatureOptions: string[]
       awardCount: number
     }
-
-function profileDisplayName(profile: BadgeOwnerProfile | null) {
-  if (!profile) return "Unknown user"
-  return profile.display_name || profile.username || "Unknown user"
-}
 
 function mapProfile(
   row: ProfileRow | BadgeOwnerProfile | null | undefined
@@ -267,13 +262,18 @@ async function attachBadgeDisplayData({
         existingViewerAward === null &&
         viewerAward.recipient_user_id === viewerId
 
+      const conditionSummary = await summariseBadgeConditionLogicWithNames({
+        supabase,
+        conditionLogic: badge.condition_logic,
+      })
+
       return {
         ...badge,
         owner_profile: ownerProfiles.get(badge.owner_user_id) ?? null,
         recipient_count: badgeAwards.length + (didCreateViewerAward ? 1 : 0),
         viewer_award: viewerAward,
         viewer_progress: viewerProgress,
-        condition_summary: summariseBadgeConditionLogic(badge.condition_logic),
+        condition_summary: conditionSummary,
       }
     })
   )
@@ -405,13 +405,7 @@ export async function loadBadgeDetailData(
   return {
     status: "loaded",
     viewerId,
-    badge: {
-      ...badgeWithOwner,
-      condition_summary: badgeWithOwner.condition_summary.replace(
-        "a selected list",
-        `${profileDisplayName(badgeWithOwner.owner_profile)}'s selected list`
-      ),
-    },
+    badge: badgeWithOwner,
     awards: awardsWithProfiles,
   }
 }
