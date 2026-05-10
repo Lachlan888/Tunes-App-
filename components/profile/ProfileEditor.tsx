@@ -25,6 +25,7 @@ type ProfileEditorProps = {
   initialShowCommentActivity: boolean
   initialShowCompareDiscoverability: boolean
   initialCompareRequiresFriend: boolean
+  initialPracticeDiaryEnabled: boolean
 }
 
 export default function ProfileEditor({
@@ -47,6 +48,7 @@ export default function ProfileEditor({
   initialShowCommentActivity,
   initialShowCompareDiscoverability,
   initialCompareRequiresFriend,
+  initialPracticeDiaryEnabled,
 }: ProfileEditorProps) {
   const [username, setUsername] = useState(initialUsername)
   const [displayName, setDisplayName] = useState(initialDisplayName)
@@ -73,6 +75,9 @@ export default function ProfileEditor({
   const [compareRequiresFriend, setCompareRequiresFriend] = useState(
     initialCompareRequiresFriend
   )
+  const [practiceDiaryEnabled, setPracticeDiaryEnabled] = useState(
+    initialPracticeDiaryEnabled
+  )
 
   const profileDraft = {
     username,
@@ -86,6 +91,7 @@ export default function ProfileEditor({
     showCommentActivity,
     showCompareDiscoverability,
     compareRequiresFriend,
+    practiceDiaryEnabled,
   }
 
   return (
@@ -117,6 +123,8 @@ export default function ProfileEditor({
         setShowCompareDiscoverability={setShowCompareDiscoverability}
         compareRequiresFriend={compareRequiresFriend}
         setCompareRequiresFriend={setCompareRequiresFriend}
+        practiceDiaryEnabled={practiceDiaryEnabled}
+        setPracticeDiaryEnabled={setPracticeDiaryEnabled}
       />
 
       <UserInstrumentsSection

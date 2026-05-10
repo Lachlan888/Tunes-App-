@@ -6,6 +6,7 @@ import PieceMediaLinksSection from "@/components/library/PieceMediaLinksSection"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCanonicalDetailsCard from "@/components/library/TuneCanonicalDetailsCard"
 import TuneDetailActions from "@/components/library/TuneDetailActions"
+import TunePracticeHistorySection from "@/components/practice-diary/TunePracticeHistorySection"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { upsertUserPieceNotes } from "@/lib/actions/user-piece-metadata"
 import {
@@ -26,6 +27,7 @@ type PiecePageProps = {
     lore_report?: string | string[]
     lore?: string | string[]
     moderator_edit?: string | string[]
+    diary?: string | string[]
   }>
 }
 
@@ -69,12 +71,14 @@ function getStatusMessage({
   loreReport,
   lore,
   moderatorEdit,
+  diary,
 }: {
   editRequest: string
   commentReport: string
   loreReport: string
   lore: string
   moderatorEdit: string
+  diary: string
 }) {
   if (editRequest === "success") return "Edit request submitted."
   if (editRequest === "empty") return "Add at least one proposed change."
@@ -104,6 +108,10 @@ function getStatusMessage({
   if (moderatorEdit === "invalid_key") return "That key is not valid."
   if (moderatorEdit === "invalid_url") return "That reference URL is not valid."
   if (moderatorEdit === "error") return "Could not save canonical details."
+
+  if (diary === "note_saved") return "Practice note saved."
+  if (diary === "note_deleted") return "Practice note deleted."
+  if (diary === "empty_note") return "Write a note before saving."
 
   return null
 }
@@ -147,6 +155,7 @@ export default async function PiecePage({
     typedUserKnownPiece,
     typedLearningLists,
     typedLearningListItems,
+    typedPracticeNotes,
     styleOptions,
     profileMap,
   } = tuneDetail
@@ -157,6 +166,7 @@ export default async function PiecePage({
     loreReport: getSingleValue(resolvedSearchParams?.lore_report),
     lore: getSingleValue(resolvedSearchParams?.lore),
     moderatorEdit: getSingleValue(resolvedSearchParams?.moderator_edit),
+    diary: getSingleValue(resolvedSearchParams?.diary),
   })
 
   return (
@@ -228,6 +238,8 @@ export default async function PiecePage({
               />
             </form>
           </section>
+
+          <TunePracticeHistorySection notes={typedPracticeNotes} />
 
           <PieceMediaLinksSection
             pieceId={pieceId}

@@ -71,6 +71,18 @@ export async function loadReviewPageData() {
     redirect("/login")
   }
 
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("practice_diary_enabled")
+    .eq("id", user.id)
+    .maybeSingle()
+
+  if (profileError) {
+    throw new Error(profileError.message)
+  }
+
+  const practiceDiaryEnabled = Boolean(profile?.practice_diary_enabled)
+
   const streakSummary: StreakSummary = await reconcileStreaksForUser(
     supabase,
     user.id
@@ -156,6 +168,7 @@ export async function loadReviewPageData() {
 
   return {
     user,
+    practiceDiaryEnabled,
     streakSummary,
     practiceItems,
     dueTodayPieces,

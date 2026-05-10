@@ -33,6 +33,8 @@ type ProfileDetailsSectionProps = {
   setShowCompareDiscoverability: (value: boolean) => void
   compareRequiresFriend: boolean
   setCompareRequiresFriend: (value: boolean) => void
+  practiceDiaryEnabled: boolean
+  setPracticeDiaryEnabled: (value: boolean) => void
 }
 
 const inputClassName =
@@ -74,6 +76,8 @@ export default function ProfileDetailsSection({
   setShowCompareDiscoverability,
   compareRequiresFriend,
   setCompareRequiresFriend,
+  practiceDiaryEnabled,
+  setPracticeDiaryEnabled,
 }: ProfileDetailsSectionProps) {
   const publicProfileHref =
     username.trim() !== ""
@@ -89,8 +93,9 @@ export default function ProfileDetailsSection({
           </h2>
 
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-            Manage how your identity appears around the app and on your public
-            profile.
+            Manage how your identity appears around the app, whether your
+            profile can be compared, and whether your optional practice diary is
+            enabled.
           </p>
 
           <p className="mt-4 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-muted-foreground">
@@ -194,6 +199,8 @@ export default function ProfileDetailsSection({
           setShowCompareDiscoverability={setShowCompareDiscoverability}
           compareRequiresFriend={compareRequiresFriend}
           setCompareRequiresFriend={setCompareRequiresFriend}
+          practiceDiaryEnabled={practiceDiaryEnabled}
+          setPracticeDiaryEnabled={setPracticeDiaryEnabled}
         />
 
         <SubmitButton

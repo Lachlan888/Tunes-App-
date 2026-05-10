@@ -4,6 +4,10 @@ import { redirect } from "next/navigation"
 import { markPieceKnownForUser } from "@/lib/actions/known-pieces"
 import { recordTuneReviewedEvent } from "@/lib/services/activity-events"
 import {
+  recordFormalReviewPracticeEvent,
+  recordPracticeNote,
+} from "@/lib/services/practice-diary"
+import {
   addDaysToDateOnly,
   getMaxPracticeStage,
   getNextReviewDateFromStage,
@@ -22,6 +26,16 @@ function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")
     ? `${url}&${key}=${encodeURIComponent(value)}`
     : `${url}?${key}=${encodeURIComponent(value)}`
+}
+
+function getOptionalPositiveNumber(value: FormDataEntryValue | null) {
+  const numberValue = Number(value)
+
+  if (!Number.isInteger(numberValue) || numberValue <= 0) {
+    return null
+  }
+
+  return numberValue
 }
 
 async function countPracticeTunesDueOnDate(
@@ -85,6 +99,8 @@ async function recordReview(
 
   const userPieceId = Number(formData.get("userPieceId"))
   const redirectTo = String(formData.get("redirectTo") || "/review")
+  const noteBody = String(formData.get("practice_note") ?? "").trim()
+  const categoryId = getOptionalPositiveNumber(formData.get("category_id"))
 
   const { data: userPiece, error: fetchError } = await supabase
     .from("user_pieces")
@@ -143,14 +159,38 @@ async function recordReview(
     }
   }
 
-  const { error: reviewEventError } = await supabase.from("review_events").insert({
-    user_piece_id: userPieceId,
-    outcome,
-    resulting_stage: newStage,
-  })
+  const { data: reviewEvent, error: reviewEventError } = await supabase
+    .from("review_events")
+    .insert({
+      user_piece_id: userPieceId,
+      outcome,
+      resulting_stage: newStage,
+    })
+    .select("id")
+    .single()
 
   if (reviewEventError) {
     throw new Error(reviewEventError.message)
+  }
+
+  const practiceEvent = await recordFormalReviewPracticeEvent({
+    supabase,
+    userId: user.id,
+    pieceId: userPiece.piece_id,
+    reviewEventId: reviewEvent.id,
+  })
+
+  if (practiceEvent && noteBody !== "") {
+    await recordPracticeNote({
+      supabase,
+      userId: user.id,
+      practiceDayId: practiceEvent.practice_day_id,
+      practiceEventId: practiceEvent.id,
+      pieceId: userPiece.piece_id,
+      reviewEventId: reviewEvent.id,
+      categoryId,
+      body: noteBody,
+    })
   }
 
   if (shouldMoveToKnown) {

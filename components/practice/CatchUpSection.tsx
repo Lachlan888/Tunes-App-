@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import PracticeReviewCard from "@/components/practice/PracticeReviewCard"
+import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 import type { BacklogGroupSummary, BacklogTier } from "@/lib/types"
 
@@ -10,6 +11,8 @@ type CatchUpSectionProps = {
   backlogSummary: BacklogGroupSummary[]
   redirectTo: string
   defaultOpen?: boolean
+  practiceDiaryEnabled: boolean
+  noteCategories: PracticeNoteCategory[]
 }
 
 function getStatusBadgeClasses(label: string | null) {
@@ -52,6 +55,8 @@ export default function CatchUpSection({
   backlogSummary,
   redirectTo,
   defaultOpen = false,
+  practiceDiaryEnabled,
+  noteCategories,
 }: CatchUpSectionProps) {
   const [activeTier, setActiveTier] = useState<BacklogTier | null>(null)
 
@@ -141,6 +146,8 @@ export default function CatchUpSection({
                   badgeClassName={getStatusBadgeClasses(
                     userPiece.backlog_label
                   )}
+                  practiceDiaryEnabled={practiceDiaryEnabled}
+                  noteCategories={noteCategories}
                 />
               ))}
             </div>

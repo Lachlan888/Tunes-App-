@@ -22,6 +22,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const practiceUpdate = resolvedSearchParams?.practice_update ?? ""
 
   const {
+    practiceDiaryEnabled,
     streakSummary,
     practiceItems,
     dueTodayPieces,
@@ -66,11 +67,13 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         backlogSummary={backlogSummary}
         redirectTo={redirectTo}
         defaultOpen={shouldOpenCatchUp}
+        practiceDiaryEnabled={practiceDiaryEnabled}
       />
 
       <DueTodaySection
         dueTodayPieces={dueTodayPieces}
         redirectTo={redirectTo}
+        practiceDiaryEnabled={practiceDiaryEnabled}
       />
 
       <ActivePracticeSection

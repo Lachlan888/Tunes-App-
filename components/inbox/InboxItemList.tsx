@@ -1,4 +1,8 @@
+"use client"
+
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import type { KeyboardEvent, MouseEvent, ReactNode } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import {
   archiveNotification,
@@ -14,6 +18,10 @@ function actorName(item: InboxItem) {
   return item.actor?.display_name || item.actor?.username || "Someone"
 }
 
+function stopCardNavigation(event: MouseEvent | KeyboardEvent) {
+  event.stopPropagation()
+}
+
 function actorLink(item: InboxItem) {
   const label = actorName(item)
 
@@ -24,7 +32,9 @@ function actorLink(item: InboxItem) {
   return (
     <Link
       href={`/users/${item.actor.username}`}
-      className="font-medium underline underline-offset-4 hover:text-primary"
+      onClick={stopCardNavigation}
+      onKeyDown={stopCardNavigation}
+      className="relative z-20 font-medium underline underline-offset-4 hover:text-primary"
     >
       {label}
     </Link>
@@ -171,6 +181,45 @@ function contextLabel(item: InboxItem) {
   return "Open"
 }
 
+function InboxCard({
+  item,
+  children,
+}: {
+  item: InboxItem
+  children: ReactNode
+}) {
+  const router = useRouter()
+  const href = contextHref(item)
+
+  function openContext() {
+    router.push(href)
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      openContext()
+    }
+  }
+
+  return (
+    <article
+      role="link"
+      tabIndex={0}
+      aria-label={contextLabel(item)}
+      onClick={openContext}
+      onKeyDown={handleKeyDown}
+      className={`group cursor-pointer rounded-2xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] ${
+        item.read_at === null
+          ? "border-primary bg-card"
+          : "border-border bg-background/70"
+      }`}
+    >
+      {children}
+    </article>
+  )
+}
+
 export default function InboxItemList({ items }: InboxItemListProps) {
   if (items.length === 0) {
     return (
@@ -188,17 +237,10 @@ export default function InboxItemList({ items }: InboxItemListProps) {
         const body = item.body_preview || null
 
         return (
-          <article
-            key={item.id}
-            className={`rounded-2xl border p-5 shadow-sm ${
-              isUnread
-                ? "border-primary bg-card"
-                : "border-border bg-background/70"
-            }`}
-          >
+          <InboxCard key={item.id} item={item}>
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
-                <p className="text-sm leading-6 text-foreground">
+                <p className="text-sm leading-6 text-foreground transition group-hover:text-primary">
                   {notificationTitle(item)}
                 </p>
 
@@ -214,7 +256,11 @@ export default function InboxItemList({ items }: InboxItemListProps) {
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div
+                className="relative z-20 flex flex-wrap gap-2"
+                onClick={stopCardNavigation}
+                onKeyDown={stopCardNavigation}
+              >
                 <Link
                   href={contextHref(item)}
                   className="rounded-full border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
@@ -229,6 +275,7 @@ export default function InboxItemList({ items }: InboxItemListProps) {
                       name="notification_id"
                       value={item.id}
                     />
+
                     <SubmitButton
                       label="Mark read"
                       pendingLabel="Saving..."
@@ -243,6 +290,7 @@ export default function InboxItemList({ items }: InboxItemListProps) {
                     name="notification_id"
                     value={item.id}
                   />
+
                   <SubmitButton
                     label="Archive"
                     pendingLabel="Archiving..."
@@ -251,7 +299,7 @@ export default function InboxItemList({ items }: InboxItemListProps) {
                 </form>
               </div>
             </div>
-          </article>
+          </InboxCard>
         )
       })}
     </div>

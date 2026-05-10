@@ -19,6 +19,7 @@ type DashboardPageProps = {
     show_comment_activity?: string | string[]
     show_compare_discoverability?: string | string[]
     compare_requires_friend?: string | string[]
+    practice_diary_enabled?: string | string[]
   }>
 }
 
@@ -154,6 +155,11 @@ export default async function DashboardPage({
     profile?.compare_requires_friend ?? false
   )
 
+  const initialPracticeDiaryEnabled = getBooleanDraftValue(
+    resolvedSearchParams?.practice_diary_enabled,
+    profile?.practice_diary_enabled ?? false
+  )
+
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
       <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
@@ -166,8 +172,8 @@ export default async function DashboardPage({
         </h1>
 
         <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground md:text-base">
-          Control your public identity, instruments, visibility, and comparison
-          settings.
+          Control your public identity, instruments, visibility, comparison
+          settings, and optional practice diary.
         </p>
 
         <p className="mt-4 text-sm text-muted-foreground">
@@ -195,6 +201,7 @@ export default async function DashboardPage({
         initialShowCommentActivity={initialShowCommentActivity}
         initialShowCompareDiscoverability={initialShowCompareDiscoverability}
         initialCompareRequiresFriend={initialCompareRequiresFriend}
+        initialPracticeDiaryEnabled={initialPracticeDiaryEnabled}
       />
     </main>
   )

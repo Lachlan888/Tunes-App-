@@ -231,6 +231,7 @@ export type Profile = {
   show_comment_activity: boolean
   show_compare_discoverability: boolean
   compare_requires_friend: boolean
+  practice_diary_enabled: boolean
 }
 
 export type PublicProfileList = {
@@ -280,6 +281,65 @@ export type PublicProfileData = {
   viewerLearningLists: LearningList[]
   createdBadges: PublicProfileCreatedBadge[]
   receivedBadges: PublicProfileReceivedBadge[]
+}
+
+export type PracticeEventType =
+  | "formal_review"
+  | "free_practice"
+  | "tune_target_work"
+  | "setlist_prep"
+  | "gig_prep"
+  | "daily_reflection"
+  | "focus_note"
+
+export type PracticeEventSourceType =
+  | "manual"
+  | "review"
+  | "tune_target"
+  | "focus"
+  | "setlist"
+  | "setlist_item"
+
+export type PracticeDay = {
+  id: number
+  user_id: string
+  practice_date: string
+  daily_reflection: string | null
+  created_at: string
+  updated_at: string | null
+}
+
+export type PracticeEvent = {
+  id: number
+  user_id: string
+  practice_day_id: number
+  piece_id: number | null
+  review_event_id: number | null
+  event_type: PracticeEventType
+  source_type: PracticeEventSourceType | null
+  source_id: number | null
+  counted_as_review: boolean
+  created_at: string
+}
+
+export type PracticeDiaryEvent = PracticeEvent & {
+  piece: Piece | null
+  review_event: {
+    id: number
+    outcome: "solid" | "shaky" | "failed" | string
+    resulting_stage: number | null
+    created_at: string | null
+  } | null
+}
+
+export type PracticeDiaryDayData = {
+  userId: string
+  selectedDate: string
+  previousDate: string
+  nextDate: string
+  today: string
+  practiceDay: PracticeDay | null
+  events: PracticeDiaryEvent[]
 }
 
 export type GettingStartedTaskId =

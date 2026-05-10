@@ -51,6 +51,15 @@ export type PieceLoreEntryRow = {
   user_id: string
 }
 
+export type TunePracticeNote = {
+  id: number
+  body: string
+  created_at: string
+  practice_date: string
+  category_name: string | null
+  outcome: string | null
+}
+
 type ProfileRow = {
   id: string
   username: string | null
@@ -65,6 +74,36 @@ export type CommentAuthor = {
 export type LearningListItemRow = {
   learning_list_id: number
   piece_id: number
+}
+
+type PracticeNoteRow = {
+  id: number
+  body: string
+  created_at: string
+  practice_days:
+    | {
+        practice_date: string
+      }
+    | {
+        practice_date: string
+      }[]
+    | null
+  practice_note_categories:
+    | {
+        name: string
+      }
+    | {
+        name: string
+      }[]
+    | null
+  review_events:
+    | {
+        outcome: string
+      }
+    | {
+        outcome: string
+      }[]
+    | null
 }
 
 export type TuneDetailLoadResult =
@@ -87,6 +126,7 @@ export type TuneDetailLoadResult =
       typedUserKnownPiece: UserKnownPiece | null
       typedLearningLists: LearningList[]
       typedLearningListItems: LearningListItemRow[]
+      typedPracticeNotes: TunePracticeNote[]
       styleOptions: StyleOption[]
       profileMap: Record<string, CommentAuthor>
     }
@@ -98,6 +138,26 @@ export type TuneDetailLoadResult =
       status: "not_found"
       pieceId: number
     }
+
+function getSingleJoinedRow<T>(value: T | T[] | null): T | null {
+  if (!value) return null
+  return Array.isArray(value) ? value[0] ?? null : value
+}
+
+function mapPracticeNote(row: PracticeNoteRow): TunePracticeNote {
+  const practiceDay = getSingleJoinedRow(row.practice_days)
+  const category = getSingleJoinedRow(row.practice_note_categories)
+  const reviewEvent = getSingleJoinedRow(row.review_events)
+
+  return {
+    id: row.id,
+    body: row.body,
+    created_at: row.created_at,
+    practice_date: practiceDay?.practice_date ?? row.created_at.slice(0, 10),
+    category_name: category?.name ?? null,
+    outcome: reviewEvent?.outcome ?? null,
+  }
+}
 
 export async function loadTuneDetailData(
   rawPieceId: string
@@ -171,6 +231,7 @@ export async function loadTuneDetailData(
     userKnownPieceResult,
     learningListsResult,
     learningListItemsResult,
+    practiceNotesResult,
     styleRowsResult,
   ] = await Promise.all([
     supabase
@@ -221,6 +282,28 @@ export async function loadTuneDetailData(
           .in("learning_list_id", ownedListIds)
       : Promise.resolve({ data: [], error: null }),
     supabase
+      .from("practice_notes")
+      .select(
+        `
+          id,
+          body,
+          created_at,
+          practice_days (
+            practice_date
+          ),
+          practice_note_categories (
+            name
+          ),
+          review_events (
+            outcome
+          )
+        `
+      )
+      .eq("user_id", user.id)
+      .eq("piece_id", pieceId)
+      .order("created_at", { ascending: false })
+      .limit(12),
+    supabase
       .from("styles")
       .select("id, slug, label")
       .eq("is_active", true)
@@ -245,6 +328,9 @@ export async function loadTuneDetailData(
     (learningListsResult.data as LearningList[] | null) ?? []
   const typedLearningListItems =
     (learningListItemsResult.data as LearningListItemRow[] | null) ?? []
+  const typedPracticeNotes = ((practiceNotesResult.data ?? []) as PracticeNoteRow[]).map(
+    mapPracticeNote
+  )
   const styleOptions = (styleRowsResult.data as StyleOption[] | null) ?? []
 
   const profileUserIds = Array.from(
@@ -293,6 +379,7 @@ export async function loadTuneDetailData(
     typedUserKnownPiece,
     typedLearningLists,
     typedLearningListItems,
+    typedPracticeNotes,
     styleOptions,
     profileMap,
   }

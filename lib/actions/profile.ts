@@ -52,6 +52,10 @@ function getProfileDraftParams(formData: FormData) {
     "compare_requires_friend",
     String(asBoolean(formData.get("compare_requires_friend")))
   )
+  params.set(
+    "practice_diary_enabled",
+    String(asBoolean(formData.get("practice_diary_enabled")))
+  )
 
   return params
 }
@@ -88,6 +92,9 @@ export async function updateProfile(formData: FormData) {
   )
   const compare_requires_friend = asBoolean(
     formData.get("compare_requires_friend")
+  )
+  const practice_diary_enabled = asBoolean(
+    formData.get("practice_diary_enabled")
   )
 
   if (!/^[a-zA-Z0-9_]{3,30}$/.test(username)) {
@@ -133,6 +140,7 @@ export async function updateProfile(formData: FormData) {
       show_comment_activity,
       show_compare_discoverability,
       compare_requires_friend,
+      practice_diary_enabled,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "id" }
@@ -150,6 +158,8 @@ export async function updateProfile(formData: FormData) {
   revalidatePath("/compare")
   revalidatePath("/friends")
   revalidatePath("/")
+  revalidatePath("/review")
+  revalidatePath("/review/diary")
 
   if (previousUsername) {
     revalidatePath(`/users/${previousUsername}`)
