@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import SubmitButton from "@/components/SubmitButton"
 import { buttonStyles } from "@/components/ui/buttonStyles"
@@ -63,6 +65,7 @@ function CommentForm({
     <form action={addPieceComment} className="space-y-3">
       <input type="hidden" name="piece_id" value={pieceId} />
       <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
+
       {parentCommentId ? (
         <input
           type="hidden"
@@ -289,6 +292,7 @@ export default function PieceCommentsSection({
                                   <p className="whitespace-pre-wrap text-sm leading-6 text-foreground">
                                     {reply.body}
                                   </p>
+
                                   <p className="mt-2 text-xs text-muted-foreground">
                                     Reply from{" "}
                                     <AuthorLink author={replyAuthor} />
