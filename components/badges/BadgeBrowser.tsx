@@ -6,6 +6,7 @@ import type { BadgeWithOwner } from "@/lib/types"
 
 type BadgeBrowserProps = {
   badges: BadgeWithOwner[]
+  viewerId: string | null
 }
 
 type BadgeFacetSummary = {
@@ -15,6 +16,12 @@ type BadgeFacetSummary = {
 }
 
 type BadgeStatus = "all" | "received" | "in_progress" | "not_received"
+
+type BadgeRelationship =
+  | "all"
+  | "received"
+  | "created"
+  | "received_or_created"
 
 function normaliseSearchText(value: string | null | undefined) {
   return (value ?? "")
@@ -57,6 +64,41 @@ function getBadgeStatus(badge: BadgeWithOwner): Exclude<BadgeStatus, "all"> {
   }
 
   return "not_received"
+}
+
+function badgeMatchesRelationship({
+  badge,
+  viewerId,
+  relationship,
+}: {
+  badge: BadgeWithOwner
+  viewerId: string | null
+  relationship: BadgeRelationship
+}) {
+  if (relationship === "all") {
+    return true
+  }
+
+  if (!viewerId) {
+    return false
+  }
+
+  const isReceived = Boolean(badge.viewer_award)
+  const isCreated = badge.owner_user_id === viewerId
+
+  if (relationship === "received") {
+    return isReceived
+  }
+
+  if (relationship === "created") {
+    return isCreated
+  }
+
+  if (relationship === "received_or_created") {
+    return isReceived || isCreated
+  }
+
+  return true
 }
 
 function extractConditionFacets(conditionLogic: unknown): BadgeFacetSummary {
@@ -167,12 +209,16 @@ function badgeMatchesFacet({
   )
 }
 
-export default function BadgeBrowser({ badges }: BadgeBrowserProps) {
+export default function BadgeBrowser({
+  badges,
+  viewerId,
+}: BadgeBrowserProps) {
   const [query, setQuery] = useState("")
   const [category, setCategory] = useState("")
   const [style, setStyle] = useState("")
   const [key, setKey] = useState("")
   const [status, setStatus] = useState<BadgeStatus>("all")
+  const [relationship, setRelationship] = useState<BadgeRelationship>("all")
 
   const badgeFacets = useMemo(() => {
     return new Map(
@@ -230,18 +276,40 @@ export default function BadgeBrowser({ badges }: BadgeBrowserProps) {
       const badgeStatus = getBadgeStatus(badge)
       const matchesStatus = status === "all" ? true : badgeStatus === status
 
+      const matchesRelationship = badgeMatchesRelationship({
+        badge,
+        viewerId,
+        relationship,
+      })
+
       return (
         matchesSearch &&
         matchesCategory &&
         matchesStyle &&
         matchesKey &&
-        matchesStatus
+        matchesStatus &&
+        matchesRelationship
       )
     })
-  }, [badges, badgeFacets, category, key, query, status, style])
+  }, [
+    badges,
+    badgeFacets,
+    category,
+    key,
+    query,
+    relationship,
+    status,
+    style,
+    viewerId,
+  ])
 
   const hasActiveFilters =
-    query.trim() || category || style || key || status !== "all"
+    query.trim() ||
+    category ||
+    style ||
+    key ||
+    status !== "all" ||
+    relationship !== "all"
 
   function clearFilters() {
     setQuery("")
@@ -249,12 +317,13 @@ export default function BadgeBrowser({ badges }: BadgeBrowserProps) {
     setStyle("")
     setKey("")
     setStatus("all")
+    setRelationship("all")
   }
 
   return (
     <section className="mt-8 space-y-6">
       <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(10rem,1fr))_auto]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_repeat(5,minmax(9.5rem,1fr))_auto]">
           <div className="space-y-2">
             <label
               htmlFor="badge-search"
@@ -269,6 +338,29 @@ export default function BadgeBrowser({ badges }: BadgeBrowserProps) {
               placeholder="Search badges, creators, styles..."
               className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
             />
+          </div>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="badge-relationship"
+              className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+            >
+              Your badges
+            </label>
+            <select
+              id="badge-relationship"
+              value={relationship}
+              onChange={(event) =>
+                setRelationship(event.target.value as BadgeRelationship)
+              }
+              disabled={!viewerId}
+              className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <option value="all">All badges</option>
+              <option value="received">Received</option>
+              <option value="created">Created by me</option>
+              <option value="received_or_created">Received or created</option>
+            </select>
           </div>
 
           <div className="space-y-2">
@@ -342,7 +434,7 @@ export default function BadgeBrowser({ badges }: BadgeBrowserProps) {
               htmlFor="badge-status"
               className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
             >
-              Your status
+              Progress
             </label>
             <select
               id="badge-status"
@@ -350,7 +442,7 @@ export default function BadgeBrowser({ badges }: BadgeBrowserProps) {
               onChange={(event) => setStatus(event.target.value as BadgeStatus)}
               className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
             >
-              <option value="all">All statuses</option>
+              <option value="all">All progress</option>
               <option value="received">Received</option>
               <option value="in_progress">In progress</option>
               <option value="not_received">Not received</option>
@@ -383,8 +475,7 @@ export default function BadgeBrowser({ badges }: BadgeBrowserProps) {
           </p>
 
           <p>
-            Style and key filters only use values explicitly mentioned in badge
-            conditions.
+            Use Your badges to show badges you have received, created, or both.
           </p>
         </div>
       </div>

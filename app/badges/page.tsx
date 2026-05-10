@@ -84,7 +84,7 @@ export default async function BadgesPage({ searchParams }: BadgesPageProps) {
       </section>
 
       {badges.length > 0 ? (
-        <BadgeBrowser badges={badges} />
+        <BadgeBrowser badges={badges} viewerId={viewerId} />
       ) : (
         <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
