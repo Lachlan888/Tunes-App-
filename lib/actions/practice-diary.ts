@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { ensurePracticeDayForDate, ensureTodayPracticeDay } from "@/lib/services/practice-diary"
+import {
+  ensurePracticeDayForDate,
+  ensureTodayPracticeDay,
+} from "@/lib/services/practice-diary"
 import { getToday } from "@/lib/review"
 import { createClient } from "@/lib/supabase/server"
 
@@ -271,24 +274,30 @@ export async function ensureStarterPracticeCategories() {
 
   const starterCategories = [
     {
-      name: "Memory",
-      prompt: "What did you forget or recall more easily today?",
+      name: "Tempo",
+      prompt: "What tempo felt clean, rushed, or unstable?",
       sort_order: 10,
     },
     {
-      name: "Tempo",
-      prompt: "What tempo felt clean?",
+      name: "Form",
+      prompt: "Was the structure, part order, repeat pattern, or ending clear?",
       sort_order: 20,
     },
     {
-      name: "Feel",
-      prompt: "Did the tune feel natural or forced?",
+      name: "Variations",
+      prompt: "What variation ideas, ornaments, or alternate versions came up?",
       sort_order: 30,
     },
     {
-      name: "Next step",
-      prompt: "What should you try next time?",
+      name: "Harmony",
+      prompt:
+        "What chords, backup ideas, double stops, or harmony parts need work?",
       sort_order: 40,
+    },
+    {
+      name: "Technique",
+      prompt: "What physical or technical issue showed up?",
+      sort_order: 50,
     },
   ]
 
@@ -299,7 +308,7 @@ export async function ensureStarterPracticeCategories() {
         user_id: user.id,
         ...category,
         applies_to_tune_notes: true,
-        applies_to_daily_reflection: category.name === "Feel" || category.name === "Next step",
+        applies_to_daily_reflection: true,
         is_active: true,
       })),
       {

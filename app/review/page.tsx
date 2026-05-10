@@ -4,6 +4,7 @@ import CatchUpSection from "@/components/practice/CatchUpSection"
 import DueTodaySection from "@/components/practice/DueTodaySection"
 import PracticeStatusMessages from "@/components/practice/PracticeStatusMessages"
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
+import PracticeDiaryNav from "@/components/practice-diary/PracticeDiaryNav"
 import { loadReviewPageData } from "@/lib/loaders/review"
 
 type ReviewPageProps = {
@@ -23,6 +24,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
   const {
     practiceDiaryEnabled,
+    noteCategories,
     streakSummary,
     practiceItems,
     dueTodayPieces,
@@ -52,6 +54,8 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
             Review tunes and rate recall.
           </p>
+
+          <PracticeDiaryNav active="review" />
         </section>
 
         <StreakSummarySection streakSummary={streakSummary} />
@@ -68,12 +72,14 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         redirectTo={redirectTo}
         defaultOpen={shouldOpenCatchUp}
         practiceDiaryEnabled={practiceDiaryEnabled}
+        noteCategories={noteCategories}
       />
 
       <DueTodaySection
         dueTodayPieces={dueTodayPieces}
         redirectTo={redirectTo}
         practiceDiaryEnabled={practiceDiaryEnabled}
+        noteCategories={noteCategories}
       />
 
       <ActivePracticeSection

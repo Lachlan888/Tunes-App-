@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import PracticeProgress from "@/components/practice/PracticeProgress"
 import ReferenceMediaLink from "@/components/ReferenceMediaLink"
@@ -9,17 +9,54 @@ import SubmitButton from "@/components/SubmitButton"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { markFailed, markShaky, markSolid } from "@/lib/actions/reviews"
 import { APP_TIME_ZONE } from "@/lib/review"
+import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type {
   RecentPracticeNoteForReview,
   ReviewQueueItem,
 } from "@/lib/loaders/review"
+
+type ReviewOutcome = "failed" | "shaky" | "solid"
+
+type ReviewOutcomeConfig = {
+  outcome: ReviewOutcome
+  label: string
+  modalTitle: string
+  action: (formData: FormData) => Promise<void>
+  className: string
+}
 
 type PracticeReviewCardProps = {
   userPiece: ReviewQueueItem
   redirectTo: string
   badgeLabel: string
   badgeClassName: string
+  practiceDiaryEnabled: boolean
+  noteCategories: PracticeNoteCategory[]
 }
+
+const REVIEW_OUTCOMES: ReviewOutcomeConfig[] = [
+  {
+    outcome: "failed",
+    label: "Rough",
+    modalTitle: "Rough review note",
+    action: markFailed,
+    className: buttonStyles.reviewRough,
+  },
+  {
+    outcome: "shaky",
+    label: "Shaky",
+    modalTitle: "Shaky review note",
+    action: markShaky,
+    className: buttonStyles.reviewShaky,
+  },
+  {
+    outcome: "solid",
+    label: "Solid",
+    modalTitle: "Solid review note",
+    action: markSolid,
+    className: buttonStyles.reviewSolid,
+  },
+]
 
 function formatDueDate(dateValue: string | null) {
   if (!dateValue) return "No due date"
@@ -104,18 +141,205 @@ function RecentPracticeNotes({
   )
 }
 
+function DirectReviewForms({
+  userPieceId,
+  redirectTo,
+}: {
+  userPieceId: number
+  redirectTo: string
+}) {
+  return (
+    <div className="mt-3 flex flex-wrap gap-3">
+      {REVIEW_OUTCOMES.map((reviewOutcome) => (
+        <form key={reviewOutcome.outcome} action={reviewOutcome.action}>
+          <input type="hidden" name="userPieceId" value={userPieceId} />
+          <input type="hidden" name="redirectTo" value={redirectTo} />
+          <SubmitButton
+            label={reviewOutcome.label}
+            pendingLabel="Saving..."
+            className={reviewOutcome.className}
+          />
+        </form>
+      ))}
+    </div>
+  )
+}
+
+function DiaryReviewButtons({
+  onSelectOutcome,
+}: {
+  onSelectOutcome: (outcome: ReviewOutcomeConfig) => void
+}) {
+  return (
+    <div className="mt-3 flex flex-wrap gap-3">
+      {REVIEW_OUTCOMES.map((reviewOutcome) => (
+        <button
+          key={reviewOutcome.outcome}
+          type="button"
+          className={reviewOutcome.className}
+          onClick={() => onSelectOutcome(reviewOutcome)}
+        >
+          {reviewOutcome.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function ReviewNoteModal({
+  selectedOutcome,
+  userPieceId,
+  redirectTo,
+  title,
+  noteCategories,
+  onClose,
+}: {
+  selectedOutcome: ReviewOutcomeConfig
+  userPieceId: number
+  redirectTo: string
+  title: string
+  noteCategories: PracticeNoteCategory[]
+  onClose: () => void
+}) {
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [onClose])
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 px-4 py-8"
+      role="presentation"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg rounded-3xl border border-border bg-card p-6 shadow-xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="review-note-modal-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Practice diary
+            </p>
+
+            <h3
+              id="review-note-modal-title"
+              className="mt-2 font-serif text-2xl font-bold text-foreground"
+            >
+              {selectedOutcome.modalTitle}
+            </h3>
+
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Add an optional note for {title}. Saving will also record the{" "}
+              {selectedOutcome.label.toLowerCase()} review result.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className={buttonStyles.text}
+            onClick={onClose}
+          >
+            Close
+          </button>
+        </div>
+
+        <form action={selectedOutcome.action} className="mt-5 space-y-4">
+          <input type="hidden" name="userPieceId" value={userPieceId} />
+          <input type="hidden" name="redirectTo" value={redirectTo} />
+
+          <label className="block">
+            <span className="text-sm font-semibold text-foreground">
+              Category
+            </span>
+
+            <select
+              name="category_id"
+              defaultValue=""
+              className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            >
+              <option value="">No category</option>
+              {noteCategories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-semibold text-foreground">
+              Optional note
+            </span>
+
+            <textarea
+              name="practice_note"
+              rows={5}
+              placeholder="What happened with this tune today?"
+              className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm leading-6 text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            />
+          </label>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <SubmitButton
+              label={`Save ${selectedOutcome.label}`}
+              pendingLabel="Saving..."
+              className={selectedOutcome.className}
+            />
+
+            <button
+              type="button"
+              className={buttonStyles.secondary}
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export default function PracticeReviewCard({
   userPiece,
   redirectTo,
   badgeLabel,
   badgeClassName,
+  practiceDiaryEnabled,
+  noteCategories,
 }: PracticeReviewCardProps) {
-  const [isManageOpen, setIsManageOpen] = useState(false)
+  const [selectedOutcome, setSelectedOutcome] =
+    useState<ReviewOutcomeConfig | null>(null)
+
   const title = userPiece.piece?.title ?? "Untitled piece"
 
   return (
-    <article className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:bg-muted/70">
-      <div className="flex items-start justify-between gap-4">
+    <article className="relative rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:bg-muted/70">
+      <div className="absolute right-4 top-4 z-10">
+        <RemoveFromPracticeButton
+          userPieceId={userPiece.id}
+          redirectTo={redirectTo}
+          confirmMessage={`Remove "${title}" from active practice? This stops review scheduling for this tune, but does not delete the shared tune or remove it from your lists.`}
+          label="×"
+          pendingLabel="…"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background/80 text-lg font-semibold leading-none text-muted-foreground shadow-sm transition hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        />
+      </div>
+
+      <div className="flex items-start justify-between gap-4 pr-12">
         <div className="min-w-0 flex-1">
           <h2 className="font-serif text-3xl font-bold leading-tight tracking-tight text-foreground">
             {userPiece.piece ? (
@@ -169,74 +393,26 @@ export default function PracticeReviewCard({
           How did it go?
         </p>
 
-        <div className="mt-3 flex flex-wrap gap-3">
-          <form action={markFailed}>
-            <input type="hidden" name="userPieceId" value={userPiece.id} />
-            <input type="hidden" name="redirectTo" value={redirectTo} />
-            <SubmitButton
-              label="Rough"
-              pendingLabel="Saving..."
-              className={buttonStyles.reviewRough}
-            />
-          </form>
-
-          <form action={markShaky}>
-            <input type="hidden" name="userPieceId" value={userPiece.id} />
-            <input type="hidden" name="redirectTo" value={redirectTo} />
-            <SubmitButton
-              label="Shaky"
-              pendingLabel="Saving..."
-              className={buttonStyles.reviewShaky}
-            />
-          </form>
-
-          <form action={markSolid}>
-            <input type="hidden" name="userPieceId" value={userPiece.id} />
-            <input type="hidden" name="redirectTo" value={redirectTo} />
-            <SubmitButton
-              label="Solid"
-              pendingLabel="Saving..."
-              className={buttonStyles.reviewSolid}
-            />
-          </form>
-        </div>
+        {practiceDiaryEnabled ? (
+          <DiaryReviewButtons onSelectOutcome={setSelectedOutcome} />
+        ) : (
+          <DirectReviewForms
+            userPieceId={userPiece.id}
+            redirectTo={redirectTo}
+          />
+        )}
       </div>
 
-      <div className="mt-5">
-        <button
-          type="button"
-          className={buttonStyles.text}
-          aria-expanded={isManageOpen}
-          onClick={() => setIsManageOpen((current) => !current)}
-        >
-          {isManageOpen ? "Hide practice management" : "Manage practice"}
-        </button>
-
-        {isManageOpen ? (
-          <div className="mt-3 rounded-2xl border border-border bg-background/70 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Practice management
-            </p>
-
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Remove this tune from active practice. This stops review
-              scheduling for this tune, but does not delete the shared tune or
-              remove it from your lists.
-            </p>
-
-            <div className="mt-3">
-              <RemoveFromPracticeButton
-                userPieceId={userPiece.id}
-                redirectTo={redirectTo}
-                confirmMessage={`Remove "${title}" from active practice? This stops review scheduling for this tune, but does not delete the shared tune or remove it from your lists.`}
-                label="Remove from practice"
-                pendingLabel="Removing..."
-                className={buttonStyles.destructiveSecondary}
-              />
-            </div>
-          </div>
-        ) : null}
-      </div>
+      {selectedOutcome ? (
+        <ReviewNoteModal
+          selectedOutcome={selectedOutcome}
+          userPieceId={userPiece.id}
+          redirectTo={redirectTo}
+          title={title}
+          noteCategories={noteCategories}
+          onClose={() => setSelectedOutcome(null)}
+        />
+      ) : null}
     </article>
   )
 }

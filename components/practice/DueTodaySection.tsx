@@ -1,16 +1,19 @@
 import PracticeReviewCard from "@/components/practice/PracticeReviewCard"
+import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 
 type DueTodaySectionProps = {
   dueTodayPieces: ReviewQueueItem[]
   redirectTo: string
   practiceDiaryEnabled: boolean
+  noteCategories: PracticeNoteCategory[]
 }
 
 export default function DueTodaySection({
   dueTodayPieces,
   redirectTo,
   practiceDiaryEnabled,
+  noteCategories,
 }: DueTodaySectionProps) {
   return (
     <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
@@ -38,6 +41,7 @@ export default function DueTodaySection({
                 badgeLabel="Due today"
                 badgeClassName="border border-accent bg-accent/20 text-accent-foreground"
                 practiceDiaryEnabled={practiceDiaryEnabled}
+                noteCategories={noteCategories}
               />
             ))}
           </div>

@@ -60,7 +60,7 @@ export default function PracticeEventList({
     return (
       <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Tunes practised
+          Reviewed tunes
         </h2>
 
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -76,11 +76,11 @@ export default function PracticeEventList({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Tunes practised
+            Reviewed tunes
           </h2>
 
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            These are formal reviews and practice events logged on this day.
+            Tune-specific practice records for this date.
           </p>
         </div>
 
@@ -121,7 +121,11 @@ export default function PracticeEventList({
 
                   {event.piece && (
                     <p className="mt-2 text-sm text-muted-foreground">
-                      {[event.piece.key, event.piece.style, event.piece.time_signature]
+                      {[
+                        event.piece.key,
+                        event.piece.style,
+                        event.piece.time_signature,
+                      ]
                         .filter(Boolean)
                         .join(" · ") || "No metadata yet"}
                     </p>
@@ -129,12 +133,6 @@ export default function PracticeEventList({
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {event.counted_as_review && (
-                    <span className="rounded-full border border-success bg-success px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-success-foreground">
-                      Counts as review
-                    </span>
-                  )}
-
                   <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     {outcome}
                   </span>
