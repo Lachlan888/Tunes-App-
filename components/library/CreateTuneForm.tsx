@@ -31,6 +31,18 @@ const helperClass = "mt-2 text-sm leading-6 text-muted-foreground"
 const fieldsetClass =
   "rounded-2xl border border-border bg-background/70 p-4"
 
+const advancedSectionClass =
+  "rounded-2xl border border-border bg-background/70 p-4"
+
+const LORE_CATEGORY_OPTIONS = [
+  { value: "region", label: "Region" },
+  { value: "informant", label: "Source" },
+  { value: "collector", label: "Collector" },
+  { value: "alternate_title", label: "Alternate title" },
+  { value: "tune_family", label: "Tune family" },
+  { value: "story_folklore_note", label: "Story / folklore note" },
+]
+
 export default function CreateTuneForm({
   createTune,
   styleOptions,
@@ -42,6 +54,7 @@ export default function CreateTuneForm({
     "none" | "known" | "practice"
   >("none")
   const [addToList, setAddToList] = useState(false)
+  const [showAdvancedDetails, setShowAdvancedDetails] = useState(false)
 
   return (
     <form
@@ -121,11 +134,12 @@ export default function CreateTuneForm({
                 htmlFor="reference_url"
                 className="mb-2 block text-sm font-medium"
               >
-                Reference URL
+                Primary reference URL
               </label>
               <input
                 id="reference_url"
                 name="reference_url"
+                type="url"
                 placeholder="e.g. YouTube, archive, or recording link"
                 className={inputClass}
               />
@@ -134,6 +148,174 @@ export default function CreateTuneForm({
                 YouTube video, field recording, or other version-defining
                 source.
               </p>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-background/70 p-4">
+              <button
+                type="button"
+                onClick={() => setShowAdvancedDetails((current) => !current)}
+                className="flex w-full items-center justify-between gap-4 text-left"
+                aria-expanded={showAdvancedDetails}
+              >
+                <span>
+                  <span className="block text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Advanced details
+                  </span>
+                  <span className="mt-2 block text-sm leading-6 text-muted-foreground">
+                    Add optional media, sheet music, sources, or lore while
+                    creating the tune.
+                  </span>
+                </span>
+
+                <span className="rounded-full border border-border bg-card px-3 py-1 text-sm font-medium text-foreground">
+                  {showAdvancedDetails ? "Hide" : "Show"}
+                </span>
+              </button>
+
+              {showAdvancedDetails && (
+                <div className="mt-5 space-y-4">
+                  <section className={advancedSectionClass}>
+                    <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      Extra media link
+                    </h3>
+                    <p className={helperClass}>
+                      Use this for another recording, video, or listening
+                      reference. The primary reference URL above will still
+                      remain the main tune reference.
+                    </p>
+
+                    <div className="mt-4 space-y-3">
+                      <div>
+                        <label
+                          htmlFor="advanced_media_label"
+                          className="mb-2 block text-sm font-medium"
+                        >
+                          Media label
+                        </label>
+                        <input
+                          id="advanced_media_label"
+                          name="advanced_media_label"
+                          placeholder="e.g. Session video"
+                          className={inputClass}
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="advanced_media_url"
+                          className="mb-2 block text-sm font-medium"
+                        >
+                          Media URL
+                        </label>
+                        <input
+                          id="advanced_media_url"
+                          name="advanced_media_url"
+                          type="url"
+                          placeholder="https://..."
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className={advancedSectionClass}>
+                    <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      Sheet music / tab
+                    </h3>
+                    <p className={helperClass}>
+                      Add one notation, tab, transcription, or source page link
+                      now. More can still be added later on the tune detail
+                      page.
+                    </p>
+
+                    <div className="mt-4 space-y-3">
+                      <div>
+                        <label
+                          htmlFor="advanced_sheet_music_label"
+                          className="mb-2 block text-sm font-medium"
+                        >
+                          Sheet music label
+                        </label>
+                        <input
+                          id="advanced_sheet_music_label"
+                          name="advanced_sheet_music_label"
+                          placeholder="e.g. Mandolin tab"
+                          className={inputClass}
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="advanced_sheet_music_url"
+                          className="mb-2 block text-sm font-medium"
+                        >
+                          Sheet music URL
+                        </label>
+                        <input
+                          id="advanced_sheet_music_url"
+                          name="advanced_sheet_music_url"
+                          type="url"
+                          placeholder="https://..."
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className={advancedSectionClass}>
+                    <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      Source or lore entry
+                    </h3>
+                    <p className={helperClass}>
+                      Add one source note, alternate title, regional note,
+                      collector note, tune-family link, or bit of folklore.
+                    </p>
+
+                    <div className="mt-4 space-y-3">
+                      <div>
+                        <label
+                          htmlFor="advanced_lore_category"
+                          className="mb-2 block text-sm font-medium"
+                        >
+                          Lore category
+                        </label>
+                        <select
+                          id="advanced_lore_category"
+                          name="advanced_lore_category"
+                          defaultValue=""
+                          className={inputClass}
+                        >
+                          <option value="">Choose a category</option>
+                          {LORE_CATEGORY_OPTIONS.map((category) => (
+                            <option
+                              key={category.value}
+                              value={category.value}
+                            >
+                              {category.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="advanced_lore_text"
+                          className="mb-2 block text-sm font-medium"
+                        >
+                          Lore text
+                        </label>
+                        <textarea
+                          id="advanced_lore_text"
+                          name="advanced_lore_text"
+                          rows={4}
+                          placeholder="Add a source, alternate title, regional note, tune-family link, or bit of folklore"
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              )}
             </div>
           </div>
 
