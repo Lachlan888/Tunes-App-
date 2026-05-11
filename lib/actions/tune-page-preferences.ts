@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server"
 
 const PREFERENCE_FIELDS = [
   "show_tune_state",
+  "show_tune_review",
   "show_canonical_details",
   "show_my_notes",
   "show_practice_history",

@@ -16,12 +16,22 @@ function getOutcomeLabel(outcome: string | null | undefined) {
   if (outcome === "solid") return "Solid"
   if (outcome === "shaky") return "Shaky"
   if (outcome === "failed") return "Rough"
+  if (outcome === "rough") return "Rough"
+
   return "Logged"
+}
+
+function getDisplayOutcome(event: PracticeDiaryEventWithNotes) {
+  return event.review_event?.outcome ?? event.practice_outcome
 }
 
 function getEventTypeLabel(event: PracticeDiaryEventWithNotes) {
   if (event.event_type === "formal_review") {
     return "Review"
+  }
+
+  if (event.event_type === "free_practice" && event.practice_outcome) {
+    return "Practice check"
   }
 
   if (event.event_type === "setlist_prep") {
@@ -64,8 +74,9 @@ export default function PracticeEventList({
         </h2>
 
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Nothing has been logged for this day yet. Formal reviews will appear
-          here automatically once the Practice Diary is enabled.
+          Nothing has been logged for this day yet. Formal reviews and
+          diary-only practice checks will appear here once the Practice Diary is
+          enabled.
         </p>
       </section>
     )
@@ -92,7 +103,7 @@ export default function PracticeEventList({
       <div className="mt-5 space-y-3">
         {events.map((event) => {
           const title = event.piece?.title ?? "Unknown tune"
-          const outcome = getOutcomeLabel(event.review_event?.outcome)
+          const outcome = getOutcomeLabel(getDisplayOutcome(event))
           const eventType = getEventTypeLabel(event)
 
           return (
@@ -142,6 +153,13 @@ export default function PracticeEventList({
                       Stage {event.review_event.resulting_stage}
                     </span>
                   )}
+
+                  {event.event_type === "free_practice" &&
+                  event.practice_outcome ? (
+                    <span className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      Diary only
+                    </span>
+                  ) : null}
                 </div>
               </div>
 

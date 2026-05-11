@@ -7,6 +7,7 @@ import type {
   PracticeDiaryDayData,
   PracticeDiaryEvent,
   PracticeEvent,
+  PracticeOutcome,
 } from "@/lib/types"
 
 export type PracticeNoteCategory = {
@@ -76,6 +77,14 @@ function getSingleJoinedRow<T>(value: T | T[] | null): T | null {
   return Array.isArray(value) ? value[0] ?? null : value
 }
 
+function normalisePracticeOutcome(value: string | null): PracticeOutcome | null {
+  if (value === "rough" || value === "shaky" || value === "solid") {
+    return value
+  }
+
+  return null
+}
+
 function mapPracticeEvent(row: PracticeEventRow): PracticeDiaryEvent {
   const reviewEvent = getSingleJoinedRow(row.review_events)
 
@@ -89,6 +98,7 @@ function mapPracticeEvent(row: PracticeEventRow): PracticeDiaryEvent {
     source_type: row.source_type,
     source_id: row.source_id,
     counted_as_review: row.counted_as_review,
+    practice_outcome: normalisePracticeOutcome(row.practice_outcome),
     created_at: row.created_at,
     piece: getSingleJoinedRow(row.pieces),
     review_event: reviewEvent
@@ -211,6 +221,7 @@ export async function loadPracticeDiaryDayData(
             source_type,
             source_id,
             counted_as_review,
+            practice_outcome,
             created_at,
             pieces (
               id,

@@ -283,6 +283,8 @@ export type PublicProfileData = {
   receivedBadges: PublicProfileReceivedBadge[]
 }
 
+export type PracticeOutcome = "rough" | "shaky" | "solid"
+
 export type PracticeEventType =
   | "formal_review"
   | "free_practice"
@@ -319,6 +321,7 @@ export type PracticeEvent = {
   source_type: PracticeEventSourceType | null
   source_id: number | null
   counted_as_review: boolean
+  practice_outcome: PracticeOutcome | null
   created_at: string
 }
 

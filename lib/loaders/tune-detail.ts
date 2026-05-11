@@ -9,6 +9,7 @@ import type {
   UserPiece,
   UserRole,
 } from "@/lib/types"
+import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 
 export type UserPieceMetadata = {
   notes: string | null
@@ -62,6 +63,7 @@ export type TunePracticeNote = {
 
 export type TunePagePreferences = {
   show_tune_state: boolean
+  show_tune_review: boolean
   show_canonical_details: boolean
   show_my_notes: boolean
   show_practice_history: boolean
@@ -75,6 +77,10 @@ type ProfileRow = {
   id: string
   username: string | null
   display_name: string | null
+}
+
+type PracticeProfileRow = {
+  practice_diary_enabled: boolean | null
 }
 
 export type CommentAuthor = {
@@ -117,6 +123,14 @@ type PracticeNoteRow = {
         outcome: string
       }[]
     | null
+  practice_events:
+    | {
+        practice_outcome: string | null
+      }
+    | {
+        practice_outcome: string | null
+      }[]
+    | null
 }
 
 export type TuneDetailLoadResult =
@@ -141,6 +155,8 @@ export type TuneDetailLoadResult =
       typedLearningListItems: LearningListItemRow[]
       typedPracticeNotes: TunePracticeNote[]
       typedTunePagePreferences: TunePagePreferences
+      practiceDiaryEnabled: boolean
+      practiceNoteCategories: PracticeNoteCategory[]
       styleOptions: StyleOption[]
       profileMap: Record<string, CommentAuthor>
     }
@@ -155,6 +171,7 @@ export type TuneDetailLoadResult =
 
 const DEFAULT_TUNE_PAGE_PREFERENCES: TunePagePreferences = {
   show_tune_state: true,
+  show_tune_review: true,
   show_canonical_details: true,
   show_my_notes: true,
   show_practice_history: true,
@@ -169,10 +186,20 @@ function getSingleJoinedRow<T>(value: T | T[] | null): T | null {
   return Array.isArray(value) ? value[0] ?? null : value
 }
 
+function mapPracticeOutcomeLabel(outcome: string | null) {
+  if (outcome === "rough") return "rough"
+  if (outcome === "shaky") return "shaky"
+  if (outcome === "solid") return "solid"
+  if (outcome === "failed") return "failed"
+
+  return outcome
+}
+
 function mapPracticeNote(row: PracticeNoteRow): TunePracticeNote {
   const practiceDay = getSingleJoinedRow(row.practice_days)
   const category = getSingleJoinedRow(row.practice_note_categories)
   const reviewEvent = getSingleJoinedRow(row.review_events)
+  const practiceEvent = getSingleJoinedRow(row.practice_events)
 
   return {
     id: row.id,
@@ -180,7 +207,9 @@ function mapPracticeNote(row: PracticeNoteRow): TunePracticeNote {
     created_at: row.created_at,
     practice_date: practiceDay?.practice_date ?? row.created_at.slice(0, 10),
     category_name: category?.name ?? null,
-    outcome: reviewEvent?.outcome ?? null,
+    outcome: mapPracticeOutcomeLabel(
+      reviewEvent?.outcome ?? practiceEvent?.practice_outcome ?? null
+    ),
   }
 }
 
@@ -271,6 +300,8 @@ export async function loadTuneDetailData(
     learningListItemsResult,
     practiceNotesResult,
     tunePagePreferencesResult,
+    practiceProfileResult,
+    practiceCategoriesResult,
     styleRowsResult,
   ] = await Promise.all([
     supabase
@@ -335,6 +366,9 @@ export async function loadTuneDetailData(
           ),
           review_events (
             outcome
+          ),
+          practice_events (
+            practice_outcome
           )
         `
       )
@@ -347,6 +381,7 @@ export async function loadTuneDetailData(
       .select(
         `
           show_tune_state,
+          show_tune_review,
           show_canonical_details,
           show_my_notes,
           show_practice_history,
@@ -358,6 +393,31 @@ export async function loadTuneDetailData(
       )
       .eq("user_id", user.id)
       .maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("practice_diary_enabled")
+      .eq("id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("practice_note_categories")
+      .select(
+        `
+          id,
+          user_id,
+          name,
+          prompt,
+          applies_to_tune_notes,
+          applies_to_daily_reflection,
+          sort_order,
+          is_active,
+          created_at,
+          updated_at
+        `
+      )
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .order("name", { ascending: true }),
     supabase
       .from("styles")
       .select("id, slug, label")
@@ -388,6 +448,12 @@ export async function loadTuneDetailData(
   const typedTunePagePreferences = normaliseTunePagePreferences(
     (tunePagePreferencesResult.data as TunePagePreferencesRow | null) ?? null
   )
+  const practiceDiaryEnabled = Boolean(
+    (practiceProfileResult.data as PracticeProfileRow | null)
+      ?.practice_diary_enabled
+  )
+  const practiceNoteCategories =
+    (practiceCategoriesResult.data as PracticeNoteCategory[] | null) ?? []
   const styleOptions = (styleRowsResult.data as StyleOption[] | null) ?? []
 
   const profileUserIds = Array.from(
@@ -438,6 +504,8 @@ export async function loadTuneDetailData(
     typedLearningListItems,
     typedPracticeNotes,
     typedTunePagePreferences,
+    practiceDiaryEnabled,
+    practiceNoteCategories,
     styleOptions,
     profileMap,
   }

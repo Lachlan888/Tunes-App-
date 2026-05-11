@@ -9,6 +9,8 @@ import {
 import { getToday } from "@/lib/review"
 import { createClient } from "@/lib/supabase/server"
 
+type TunePracticeCheckOutcome = "rough" | "shaky" | "solid"
+
 function asNullablePositiveNumber(value: FormDataEntryValue | null) {
   const numberValue = Number(value)
 
@@ -43,6 +45,35 @@ function appendStatus(url: string, key: string, value: string) {
   return url.includes("?")
     ? `${url}&${key}=${encodeURIComponent(value)}`
     : `${url}?${key}=${encodeURIComponent(value)}`
+}
+
+function getTunePracticeCheckOutcome(
+  value: FormDataEntryValue | null
+): TunePracticeCheckOutcome | null {
+  const outcome = String(value ?? "").trim()
+
+  if (outcome === "rough" || outcome === "shaky" || outcome === "solid") {
+    return outcome
+  }
+
+  return null
+}
+
+async function getPracticeDiaryEnabled(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string
+) {
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("practice_diary_enabled")
+    .eq("id", userId)
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return Boolean(profile?.practice_diary_enabled)
 }
 
 export async function saveDailyReflection(formData: FormData) {
@@ -135,6 +166,95 @@ export async function createPracticeNote(formData: FormData) {
   }
 
   redirect(appendStatus(redirectTo, "diary", "note_saved"))
+}
+
+export async function logTunePracticeCheck(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const redirectTo = getRedirectTo(formData, "/library")
+  const pieceId = asNullablePositiveNumber(formData.get("piece_id"))
+  const categoryId = asNullablePositiveNumber(formData.get("category_id"))
+  const outcome = getTunePracticeCheckOutcome(formData.get("practice_outcome"))
+  const noteBody = String(formData.get("practice_note") ?? "").trim()
+
+  if (!pieceId) {
+    redirect(appendStatus(redirectTo, "diary", "missing_piece"))
+  }
+
+  if (!outcome) {
+    redirect(appendStatus(redirectTo, "diary", "invalid_outcome"))
+  }
+
+  const practiceDiaryEnabled = await getPracticeDiaryEnabled(supabase, user.id)
+
+  if (!practiceDiaryEnabled) {
+    redirect(appendStatus(redirectTo, "diary", "diary_disabled"))
+  }
+
+  const { data: piece, error: pieceError } = await supabase
+    .from("pieces")
+    .select("id")
+    .eq("id", pieceId)
+    .maybeSingle()
+
+  if (pieceError) {
+    throw new Error(pieceError.message)
+  }
+
+  if (!piece) {
+    redirect(appendStatus(redirectTo, "diary", "missing_piece"))
+  }
+
+  const practiceDay = await ensureTodayPracticeDay(supabase, user.id)
+
+  const { data: practiceEvent, error: practiceEventError } = await supabase
+    .from("practice_events")
+    .insert({
+      user_id: user.id,
+      practice_day_id: practiceDay.id,
+      piece_id: pieceId,
+      review_event_id: null,
+      event_type: "free_practice",
+      source_type: "manual",
+      source_id: null,
+      counted_as_review: false,
+      practice_outcome: outcome,
+    })
+    .select("id")
+    .single()
+
+  if (practiceEventError) {
+    throw new Error(practiceEventError.message)
+  }
+
+  if (noteBody !== "") {
+    const { error: noteError } = await supabase.from("practice_notes").insert({
+      user_id: user.id,
+      practice_day_id: practiceDay.id,
+      practice_event_id: practiceEvent.id,
+      piece_id: pieceId,
+      review_event_id: null,
+      category_id: categoryId,
+      body: noteBody,
+    })
+
+    if (noteError) {
+      throw new Error(noteError.message)
+    }
+  }
+
+  revalidatePath("/review/diary")
+  revalidatePath(`/library/${pieceId}`)
+
+  redirect(appendStatus(redirectTo, "diary", "practice_check_saved"))
 }
 
 export async function deletePracticeNote(formData: FormData) {

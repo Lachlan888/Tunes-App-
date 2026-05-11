@@ -6,6 +6,7 @@ import PieceMediaLinksSection from "@/components/library/PieceMediaLinksSection"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCanonicalDetailsCard from "@/components/library/TuneCanonicalDetailsCard"
 import TuneDetailActions from "@/components/library/TuneDetailActions"
+import TunePageReviewPanel from "@/components/library/TunePageReviewPanel"
 import TunePageViewOptions from "@/components/library/TunePageViewOptions"
 import TunePracticeHistorySection from "@/components/practice-diary/TunePracticeHistorySection"
 import { buttonStyles } from "@/components/ui/buttonStyles"
@@ -116,6 +117,10 @@ function getStatusMessage({
   if (diary === "note_saved") return "Practice note saved."
   if (diary === "note_deleted") return "Practice note deleted."
   if (diary === "empty_note") return "Write a note before saving."
+  if (diary === "practice_check_saved") return "Practice check saved."
+  if (diary === "diary_disabled") return "Enable Practice Diary before logging tune practice checks."
+  if (diary === "invalid_outcome") return "Choose Rough, Shaky, or Solid."
+  if (diary === "missing_piece") return "Could not find that tune."
 
   if (viewPreferences === "saved") return "Tune page view preferences saved."
   if (viewPreferences === "error") return "Could not save Tune page view preferences."
@@ -164,6 +169,8 @@ export default async function PiecePage({
     typedLearningListItems,
     typedPracticeNotes,
     typedTunePagePreferences,
+    practiceDiaryEnabled,
+    practiceNoteCategories,
     styleOptions,
     profileMap,
   } = tuneDetail
@@ -218,6 +225,16 @@ export default async function PiecePage({
               redirectTo={redirectTo}
               startLearning={startLearning}
               addToLearningList={addToLearningList}
+            />
+          ) : null}
+
+          {typedTunePagePreferences.show_tune_review ? (
+            <TunePageReviewPanel
+              piece={typedPiece}
+              userPiece={typedUserPiece}
+              redirectTo={redirectTo}
+              practiceDiaryEnabled={practiceDiaryEnabled}
+              noteCategories={practiceNoteCategories}
             />
           ) : null}
 

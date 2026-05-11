@@ -19,9 +19,16 @@ const OPTIONS: Array<{
     description: "Practice, known, list count, and main tune actions.",
   },
   {
+    field: "show_tune_review",
+    label: "Review / practice check",
+    description:
+      "Formal review for tunes already in practice, or diary-only checks for other tunes.",
+  },
+  {
     field: "show_canonical_details",
     label: "Canonical details",
-    description: "Shared tune metadata such as key, style, time signature, and reference URL.",
+    description:
+      "Shared tune metadata such as key, style, time signature, and reference URL.",
   },
   {
     field: "show_my_notes",
