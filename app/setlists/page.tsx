@@ -1,4 +1,5 @@
 import Link from "next/link"
+import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import CreateSetlistModal from "@/components/setlists/CreateSetlistModal"
 import SetlistOverviewCard from "@/components/setlists/SetlistOverviewCard"
 import SetlistStatusMessages from "@/components/setlists/SetlistStatusMessages"
@@ -8,13 +9,28 @@ import {
   createSetlist,
   declineSetlistInvite,
 } from "@/lib/actions/setlists"
+import { loadPagePreferences } from "@/lib/loaders/page-preferences"
 import { loadSetlistsPageData } from "@/lib/loaders/setlists"
+import { SETLISTS_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 
 type SetlistsPageProps = {
   searchParams?: Promise<{
-    setlist?: string
-    setlist_invite?: string
+    setlist?: string | string[]
+    setlist_invite?: string | string[]
+    page_options?: string | string[]
   }>
+}
+
+function getSingleValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? ""
+}
+
+function getPageOptionsMessage(status: string) {
+  if (status === "saved") return "Setlists page options saved."
+  if (status === "reset") return "Setlists page options reset."
+  if (status === "error") return "Could not save Setlists page options."
+
+  return null
 }
 
 function profileLabel(profile: {
@@ -26,13 +42,29 @@ function profileLabel(profile: {
 
 export default async function SetlistsPage({ searchParams }: SetlistsPageProps) {
   const resolvedSearchParams = await searchParams
-  const setlistStatus = resolvedSearchParams?.setlist ?? ""
-  const inviteStatus = resolvedSearchParams?.setlist_invite ?? ""
+  const pagePreferences = await loadPagePreferences(
+    SETLISTS_PAGE_OPTIONS_CONFIG.pageKey
+  )
+
+  const showSection = (sectionId: string) =>
+    pagePreferences.visibleSections[sectionId] ?? true
+
+  const setlistStatus = getSingleValue(resolvedSearchParams?.setlist)
+  const inviteStatus = getSingleValue(resolvedSearchParams?.setlist_invite)
+  const pageOptionsMessage = getPageOptionsMessage(
+    getSingleValue(resolvedSearchParams?.page_options)
+  )
 
   const { user, setlists, pendingInvites } = await loadSetlistsPageData()
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+      {pageOptionsMessage ? (
+        <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+          {pageOptionsMessage}
+        </div>
+      ) : null}
+
       <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
@@ -55,16 +87,28 @@ export default async function SetlistsPage({ searchParams }: SetlistsPageProps) 
             </p>
           </div>
 
-          <CreateSetlistModal createSetlist={createSetlist} />
+          <div className="flex flex-wrap items-center gap-3">
+            {showSection("create_setlist") ? (
+              <CreateSetlistModal createSetlist={createSetlist} />
+            ) : null}
+
+            <PageOptionsModal
+              config={SETLISTS_PAGE_OPTIONS_CONFIG}
+              preferences={pagePreferences}
+              redirectTo="/setlists"
+            />
+          </div>
         </div>
       </section>
 
-      <SetlistStatusMessages
-        setlistStatus={setlistStatus}
-        inviteStatus={inviteStatus}
-      />
+      {showSection("status_messages") ? (
+        <SetlistStatusMessages
+          setlistStatus={setlistStatus}
+          inviteStatus={inviteStatus}
+        />
+      ) : null}
 
-      {pendingInvites.length > 0 ? (
+      {showSection("pending_invites") && pendingInvites.length > 0 ? (
         <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Pending invitations
@@ -127,35 +171,37 @@ export default async function SetlistsPage({ searchParams }: SetlistsPageProps) 
         </section>
       ) : null}
 
-      <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Your setlists
-        </h2>
+      {showSection("setlists") ? (
+        <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Your setlists
+          </h2>
 
-        {setlists.length === 0 ? (
-          <div className="mt-5 rounded-2xl border border-border bg-background/70 p-5">
-            <p className="font-medium text-foreground">No setlists yet.</p>
+          {setlists.length === 0 ? (
+            <div className="mt-5 rounded-2xl border border-border bg-background/70 p-5">
+              <p className="font-medium text-foreground">No setlists yet.</p>
 
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Create a setlist when you need a shared working list for a gig,
-              rehearsal, jam, workshop, or session.
-            </p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Create a setlist when you need a shared working list for a gig,
+                rehearsal, jam, workshop, or session.
+              </p>
 
-            <Link
-              href="/library"
-              className="mt-4 inline-flex rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-            >
-              Browse tunes
-            </Link>
-          </div>
-        ) : (
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            {setlists.map((setlist) => (
-              <SetlistOverviewCard key={setlist.id} setlist={setlist} />
-            ))}
-          </div>
-        )}
-      </section>
+              <Link
+                href="/library"
+                className="mt-4 inline-flex rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              >
+                Browse tunes
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {setlists.map((setlist) => (
+                <SetlistOverviewCard key={setlist.id} setlist={setlist} />
+              ))}
+            </div>
+          )}
+        </section>
+      ) : null}
     </main>
   )
 }

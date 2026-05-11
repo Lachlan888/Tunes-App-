@@ -5,6 +5,7 @@ import ListSearchFilters from "@/components/lists/ListSearchFilters"
 import ListsResultsHeader from "@/components/lists/ListsResultsHeader"
 import ListsStatusMessages from "@/components/lists/ListsStatusMessages"
 import ListsSummaryGrid from "@/components/lists/ListsSummaryGrid"
+import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import {
   addToLearningList,
   deleteList,
@@ -12,6 +13,8 @@ import {
   updateList,
 } from "@/lib/actions/lists"
 import { loadListsData } from "@/lib/loaders/lists"
+import { loadPagePreferences } from "@/lib/loaders/page-preferences"
+import { LISTS_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 import {
   getListFilterOptions,
   listMatchesFilters,
@@ -21,6 +24,7 @@ type LearningListsPageProps = {
   searchParams?: Promise<{
     create_list?: string
     edit_list?: string
+    page_options?: string | string[]
     q?: string | string[]
     size?: string | string[]
     style?: string | string[]
@@ -37,6 +41,14 @@ function toArray(value: string | string[] | undefined) {
 function getSingleValue(value: string | string[] | undefined) {
   if (!value) return ""
   return Array.isArray(value) ? value[0] ?? "" : value
+}
+
+function getPageOptionsMessage(status: string) {
+  if (status === "saved") return "Lists page options saved."
+  if (status === "reset") return "Lists page options reset."
+  if (status === "error") return "Could not save Lists page options."
+
+  return null
 }
 
 function buildListsHref(options: {
@@ -77,9 +89,18 @@ export default async function LearningListsPage({
   searchParams,
 }: LearningListsPageProps) {
   const resolvedSearchParams = await searchParams
+  const pagePreferences = await loadPagePreferences(
+    LISTS_PAGE_OPTIONS_CONFIG.pageKey
+  )
+
+  const showSection = (sectionId: string) =>
+    pagePreferences.visibleSections[sectionId] ?? true
 
   const createListStatus = resolvedSearchParams?.create_list ?? ""
   const editListStatus = resolvedSearchParams?.edit_list ?? ""
+  const pageOptionsMessage = getPageOptionsMessage(
+    getSingleValue(resolvedSearchParams?.page_options)
+  )
 
   const searchQuery = getSingleValue(resolvedSearchParams?.q)
   const selectedSize = getSingleValue(resolvedSearchParams?.size)
@@ -125,93 +146,122 @@ export default async function LearningListsPage({
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+      {pageOptionsMessage ? (
+        <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+          {pageOptionsMessage}
+        </div>
+      ) : null}
+
       <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Lists
-        </p>
-        <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
-          Organise your tunes
-        </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-          Keep repertoire, practice queues, session sets, and imported
-          collections in clear working lists.
-        </p>
-        <p className="mt-4 text-sm text-muted-foreground">
-          Logged in as {user.email}
-        </p>
+        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Lists
+            </p>
+            <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
+              Organise your tunes
+            </h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+              Keep repertoire, practice queues, session sets, and imported
+              collections in clear working lists.
+            </p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Logged in as {user.email}
+            </p>
+          </div>
+
+          <PageOptionsModal
+            config={LISTS_PAGE_OPTIONS_CONFIG}
+            preferences={pagePreferences}
+            redirectTo={redirectTo}
+          />
+        </div>
       </section>
 
-      <div className="mb-8">
-        <CreateListModal />
-      </div>
-
-      <ListsStatusMessages
-        createListStatus={createListStatus}
-        editListStatus={editListStatus}
-      />
-
-      <ListsSummaryGrid
-        myTunes={myTunes}
-        unlistedPracticeTunes={unlistedPracticeTunes}
-        unlistedKnownTunes={unlistedKnownTunes}
-        learningLists={learningLists}
-        addToLearningList={addToLearningList}
-        redirectTo={redirectTo}
-      />
-
-      {listOverviews.length > 0 && (
-        <>
-          <ListSearchFilters
-            basePath="/learning-lists"
-            searchLabel="Search by list name"
-            searchPlaceholder="Search lists"
-            searchValue={searchQuery}
-            selectedSize={selectedSize}
-            selectedStyles={selectedStyles}
-            selectedSource={selectedSource}
-            selectedVisibility={selectedVisibility}
-            availableStyles={availableStyles}
-            hasActiveFilters={hasActiveFilters}
-          />
-
-          <ListsResultsHeader
-            filteredCount={filteredListOverviews.length}
-            totalCount={listOverviews.length}
-            hasActiveFilters={hasActiveFilters}
-          />
-        </>
-      )}
-
-      {listOverviews.length === 0 ? (
-        <EmptyState
-          title="No lists yet"
-          description="Lists are where you organise tunes for learning, repertoire, sessions, or publishing. Use Create List above to start one."
-          secondaryActionHref="/library"
-          secondaryActionLabel="Browse Tunes"
-          className="bg-card p-5"
-          titleClassName="font-serif text-2xl font-bold text-foreground"
-        />
-      ) : filteredListOverviews.length === 0 ? (
-        <EmptyState
-          title="No lists match this view"
-          description="Try clearing the search or filters."
-          primaryActionHref="/learning-lists"
-          primaryActionLabel="Reset view"
-        />
-      ) : (
-        <div className="space-y-4">
-          {filteredListOverviews.map((list) => (
-            <ListOverviewCard
-              key={list.id}
-              list={list}
-              redirectTo={redirectTo}
-              updateList={updateList}
-              removeTuneFromList={removeTuneFromList}
-              deleteList={deleteList}
-            />
-          ))}
+      {showSection("create_list") ? (
+        <div className="mb-8">
+          <CreateListModal />
         </div>
-      )}
+      ) : null}
+
+      {showSection("status_messages") ? (
+        <ListsStatusMessages
+          createListStatus={createListStatus}
+          editListStatus={editListStatus}
+        />
+      ) : null}
+
+      {showSection("summary_grid") ? (
+        <ListsSummaryGrid
+          myTunes={myTunes}
+          unlistedPracticeTunes={unlistedPracticeTunes}
+          unlistedKnownTunes={unlistedKnownTunes}
+          learningLists={learningLists}
+          addToLearningList={addToLearningList}
+          redirectTo={redirectTo}
+        />
+      ) : null}
+
+      {listOverviews.length > 0 &&
+      (showSection("filters") || showSection("results_header")) ? (
+        <>
+          {showSection("filters") ? (
+            <ListSearchFilters
+              basePath="/learning-lists"
+              searchLabel="Search by list name"
+              searchPlaceholder="Search lists"
+              searchValue={searchQuery}
+              selectedSize={selectedSize}
+              selectedStyles={selectedStyles}
+              selectedSource={selectedSource}
+              selectedVisibility={selectedVisibility}
+              availableStyles={availableStyles}
+              hasActiveFilters={hasActiveFilters}
+            />
+          ) : null}
+
+          {showSection("results_header") ? (
+            <ListsResultsHeader
+              filteredCount={filteredListOverviews.length}
+              totalCount={listOverviews.length}
+              hasActiveFilters={hasActiveFilters}
+            />
+          ) : null}
+        </>
+      ) : null}
+
+      {showSection("list_results") ? (
+        listOverviews.length === 0 ? (
+          <EmptyState
+            title="No lists yet"
+            description="Lists are where you organise tunes for learning, repertoire, sessions, or publishing. Use Create List above to start one."
+            secondaryActionHref="/library"
+            secondaryActionLabel="Browse Tunes"
+            className="bg-card p-5"
+            titleClassName="font-serif text-2xl font-bold text-foreground"
+          />
+        ) : filteredListOverviews.length === 0 ? (
+          <EmptyState
+            title="No lists match this view"
+            description="Try clearing the search or filters."
+            primaryActionHref="/learning-lists"
+            primaryActionLabel="Reset view"
+          />
+        ) : (
+          <div className="space-y-4">
+            {filteredListOverviews.map((list) => (
+              <ListOverviewCard
+                key={list.id}
+                list={list}
+                redirectTo={redirectTo}
+                updateList={updateList}
+                removeTuneFromList={removeTuneFromList}
+                deleteList={deleteList}
+              />
+            ))}
+          </div>
+        )
+      ) : null}
     </main>
   )
 }

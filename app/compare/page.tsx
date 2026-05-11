@@ -6,16 +6,19 @@ import CompareSearchForm from "@/components/compare/CompareSearchForm"
 import CompareStatusMessage from "@/components/compare/CompareStatusMessage"
 import CompareSuggestionsSection from "@/components/compare/CompareSuggestionsSection"
 import CurrentCompareGroupSection from "@/components/compare/CurrentCompareGroupSection"
-import {
-  getPieceFilterOptions,
-  pieceMatchesFilters,
-} from "@/lib/search-filters"
+import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import {
   buildCompareHref,
   getIncludePracticeFromParam,
   toArray,
 } from "@/lib/compare-page"
 import { loadCompareData } from "@/lib/loaders/compare"
+import { loadPagePreferences } from "@/lib/loaders/page-preferences"
+import { COMPARE_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
+import {
+  getPieceFilterOptions,
+  pieceMatchesFilters,
+} from "@/lib/search-filters"
 import type { Piece } from "@/lib/types"
 
 type ComparePageProps = {
@@ -27,13 +30,32 @@ type ComparePageProps = {
     time_signature?: string | string[]
     include_practice?: string | string[]
     friend_request?: string
+    page_options?: string | string[]
   }>
+}
+
+function getSingleValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? ""
+}
+
+function getPageOptionsMessage(status: string) {
+  if (status === "saved") return "Compare page options saved."
+  if (status === "reset") return "Compare page options reset."
+  if (status === "error") return "Could not save Compare page options."
+
+  return null
 }
 
 export default async function ComparePage({
   searchParams,
 }: ComparePageProps) {
   const resolvedSearchParams = await searchParams
+  const pagePreferences = await loadPagePreferences(
+    COMPARE_PAGE_OPTIONS_CONFIG.pageKey
+  )
+
+  const showSection = (sectionId: string) =>
+    pagePreferences.visibleSections[sectionId] ?? true
 
   const selectedUsers = toArray(resolvedSearchParams?.user)
   const primarySearchValue = selectedUsers[selectedUsers.length - 1] ?? ""
@@ -47,6 +69,9 @@ export default async function ComparePage({
   )
 
   const friendRequestStatus = resolvedSearchParams?.friend_request ?? ""
+  const pageOptionsMessage = getPageOptionsMessage(
+    getSingleValue(resolvedSearchParams?.page_options)
+  )
 
   const selectedKeys = toArray(resolvedSearchParams?.key)
   const selectedStyles = toArray(resolvedSearchParams?.style)
@@ -120,25 +145,43 @@ export default async function ComparePage({
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
-      <section className="mb-6 rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-          Compare Tunes
-        </h1>
+      {pageOptionsMessage ? (
+        <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+          {pageOptionsMessage}
+        </div>
+      ) : null}
 
-        <p className="mt-3 max-w-3xl text-lg text-muted-foreground">
-          Build a group, then see the tunes common to everyone in it.
-        </p>
+      <section className="mb-6 rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+              Compare Tunes
+            </h1>
+
+            <p className="mt-3 max-w-3xl text-lg text-muted-foreground">
+              Build a group, then see the tunes common to everyone in it.
+            </p>
+          </div>
+
+          <PageOptionsModal
+            config={COMPARE_PAGE_OPTIONS_CONFIG}
+            preferences={pagePreferences}
+            redirectTo={redirectTo}
+          />
+        </div>
       </section>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,520px)] lg:items-stretch">
         <section className="min-w-0">
-          <CompareSearchForm
-            initialQuery=""
-            selectedUsers={filterPreservedUsers}
-            includePractice={includePractice}
-          />
+          {showSection("search_panel") ? (
+            <CompareSearchForm
+              initialQuery=""
+              selectedUsers={filterPreservedUsers}
+              includePractice={includePractice}
+            />
+          ) : null}
 
-          {filterPreservedUsers.length > 0 && (
+          {showSection("current_group") && filterPreservedUsers.length > 0 ? (
             <CurrentCompareGroupSection
               selectedProfiles={selectedProfiles}
               filterPreservedUsers={filterPreservedUsers}
@@ -148,63 +191,69 @@ export default async function ComparePage({
               selectedTimeSignatures={selectedTimeSignatures}
               includePractice={includePractice}
             />
-          )}
+          ) : null}
 
-          {friendRequestStatus === "sent" && (
-            <CompareStatusMessage tone="success">
-              Friend request sent.
-            </CompareStatusMessage>
-          )}
+          {showSection("status_messages") ? (
+            <>
+              {friendRequestStatus === "sent" && (
+                <CompareStatusMessage tone="success">
+                  Friend request sent.
+                </CompareStatusMessage>
+              )}
 
-          {friendRequestStatus === "missing_user" && (
-            <CompareStatusMessage tone="warning">
-              Please choose a valid user.
-            </CompareStatusMessage>
-          )}
+              {friendRequestStatus === "missing_user" && (
+                <CompareStatusMessage tone="warning">
+                  Please choose a valid user.
+                </CompareStatusMessage>
+              )}
 
-          {friendRequestStatus === "self" && (
-            <CompareStatusMessage tone="warning">
-              You cannot send a friend request to yourself.
-            </CompareStatusMessage>
-          )}
+              {friendRequestStatus === "self" && (
+                <CompareStatusMessage tone="warning">
+                  You cannot send a friend request to yourself.
+                </CompareStatusMessage>
+              )}
 
-          {friendRequestStatus === "not_found" && (
-            <CompareStatusMessage tone="error">
-              That user could not be found.
-            </CompareStatusMessage>
-          )}
+              {friendRequestStatus === "not_found" && (
+                <CompareStatusMessage tone="error">
+                  That user could not be found.
+                </CompareStatusMessage>
+              )}
 
-          {friendRequestStatus === "duplicate" && (
-            <CompareStatusMessage tone="neutral">
-              A pending or accepted connection already exists with that user.
-            </CompareStatusMessage>
-          )}
+              {friendRequestStatus === "duplicate" && (
+                <CompareStatusMessage tone="neutral">
+                  A pending or accepted connection already exists with that user.
+                </CompareStatusMessage>
+              )}
 
-          <CompareSuggestionsSection
-            compareSuggestions={compareSuggestions}
-            filterPreservedUsers={filterPreservedUsers}
-            includePractice={includePractice}
-          />
+              {error === "missing_search" && (
+                <CompareStatusMessage tone="neutral">
+                  Add at least one username or display name to start comparing.
+                </CompareStatusMessage>
+              )}
 
-          {error === "missing_search" && (
-            <CompareStatusMessage tone="neutral">
-              Add at least one username or display name to start comparing.
-            </CompareStatusMessage>
-          )}
+              {error === "user_not_found" && (
+                <CompareStatusMessage tone="error">
+                  No user found for “{primarySearchValue}”.
+                </CompareStatusMessage>
+              )}
 
-          {error === "user_not_found" && (
-            <CompareStatusMessage tone="error">
-              No user found for “{primarySearchValue}”.
-            </CompareStatusMessage>
-          )}
+              {error === "self_compare" && (
+                <CompareStatusMessage tone="warning">
+                  You cannot add your own profile to the compare group.
+                </CompareStatusMessage>
+              )}
+            </>
+          ) : null}
 
-          {error === "self_compare" && (
-            <CompareStatusMessage tone="warning">
-              You cannot add your own profile to the compare group.
-            </CompareStatusMessage>
-          )}
+          {showSection("suggestions") ? (
+            <CompareSuggestionsSection
+              compareSuggestions={compareSuggestions}
+              filterPreservedUsers={filterPreservedUsers}
+              includePractice={includePractice}
+            />
+          ) : null}
 
-          {error === "multiple_matches" && (
+          {showSection("candidate_matches") && error === "multiple_matches" ? (
             <CompareCandidateListSection
               title="Choose a user"
               description={`More than one user matched “${primarySearchValue}”.`}
@@ -213,9 +262,12 @@ export default async function ComparePage({
               filterPreservedUsers={filterPreservedUsers}
               redirectTo={redirectTo}
             />
-          )}
+          ) : null}
 
-          {error === null && !matchedProfile && searchMatches.length > 0 && (
+          {showSection("candidate_matches") &&
+          error === null &&
+          !matchedProfile &&
+          searchMatches.length > 0 ? (
             <CompareCandidateListSection
               title="Choose a user"
               description="Select the person you want to add to this compare group."
@@ -224,57 +276,59 @@ export default async function ComparePage({
               filterPreservedUsers={filterPreservedUsers}
               redirectTo={redirectTo}
             />
-          )}
+          ) : null}
 
-          {matchedProfile && error === null && !canCompare && (
+          {matchedProfile && error === null && !canCompare ? (
             <CompareBlockedSection
               matchedProfile={matchedProfile}
               isAcceptedFriend={isAcceptedFriend}
               redirectTo={redirectTo}
             />
-          )}
+          ) : null}
         </section>
 
-        <aside className="min-w-0 lg:sticky lg:top-8 lg:h-full">
-          <section className="flex h-full min-h-0 flex-col rounded-3xl border border-border bg-card p-5 shadow-sm">
-            {canShowResults ? (
-              <>
-                <CompareResultsHeader
-                  compareHeading={compareHeading}
-                  selectedProfiles={selectedProfiles}
-                  mutualPiecesCount={mutualPieces.length}
-                  isAcceptedFriend={isAcceptedFriend}
-                />
+        {showSection("results_panel") ? (
+          <aside className="min-w-0 lg:sticky lg:top-8 lg:h-full">
+            <section className="flex h-full min-h-0 flex-col rounded-3xl border border-border bg-card p-5 shadow-sm">
+              {canShowResults ? (
+                <>
+                  <CompareResultsHeader
+                    compareHeading={compareHeading}
+                    selectedProfiles={selectedProfiles}
+                    mutualPiecesCount={mutualPieces.length}
+                    isAcceptedFriend={isAcceptedFriend}
+                  />
 
-                <CompareMutualPiecesSection
-                  filteredPieces={filteredPieces}
-                  mutualPiecesCount={mutualPieces.length}
-                  titleQuery={titleQuery}
-                  selectedKeys={selectedKeys}
-                  selectedStyles={selectedStyles}
-                  selectedTimeSignatures={selectedTimeSignatures}
-                  availableKeys={availableKeys}
-                  availableStyles={availableStyles}
-                  availableTimeSignatures={availableTimeSignatures}
-                  hasActiveFilters={hasActiveFilters}
-                  filterPreservedUsers={filterPreservedUsers}
-                  includePractice={includePractice}
-                />
-              </>
-            ) : (
-              <div>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Common tunes
-                </h2>
+                  <CompareMutualPiecesSection
+                    filteredPieces={filteredPieces}
+                    mutualPiecesCount={mutualPieces.length}
+                    titleQuery={titleQuery}
+                    selectedKeys={selectedKeys}
+                    selectedStyles={selectedStyles}
+                    selectedTimeSignatures={selectedTimeSignatures}
+                    availableKeys={availableKeys}
+                    availableStyles={availableStyles}
+                    availableTimeSignatures={availableTimeSignatures}
+                    hasActiveFilters={hasActiveFilters}
+                    filterPreservedUsers={filterPreservedUsers}
+                    includePractice={includePractice}
+                  />
+                </>
+              ) : (
+                <div>
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Common tunes
+                  </h2>
 
-                <p className="mt-3 text-sm text-muted-foreground md:text-base">
-                  Add one or more players on the left. Tunes shared by everyone
-                  in the group will appear here.
-                </p>
-              </div>
-            )}
-          </section>
-        </aside>
+                  <p className="mt-3 text-sm text-muted-foreground md:text-base">
+                    Add one or more players on the left. Tunes shared by everyone
+                    in the group will appear here.
+                  </p>
+                </div>
+              )}
+            </section>
+          </aside>
+        ) : null}
       </div>
     </main>
   )

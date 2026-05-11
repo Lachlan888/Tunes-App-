@@ -3,6 +3,7 @@ import LibraryList from "@/components/library/LibraryList"
 import LibraryResultsHeader from "@/components/library/LibraryResultsHeader"
 import LibraryStatusMessages from "@/components/library/LibraryStatusMessages"
 import PieceSearchFilters from "@/components/library/PieceSearchFilters"
+import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import { addToLearningList } from "@/lib/actions/lists"
 import {
   deleteCanonicalTuneAsModerator,
@@ -10,6 +11,8 @@ import {
 } from "@/lib/actions/pieces"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadLibraryData } from "@/lib/loaders/library"
+import { loadPagePreferences } from "@/lib/loaders/page-preferences"
+import { LIBRARY_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 import { getPieceFilterOptions } from "@/lib/search-filters"
 import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
 
@@ -39,6 +42,7 @@ type LibraryPageProps = {
     remove_from_practice?: SearchParamValue
     delete_tune?: SearchParamValue
     scroll_piece?: SearchParamValue
+    page_options?: SearchParamValue
   }>
 }
 
@@ -76,8 +80,22 @@ function parsePage(value: SearchParamValue) {
   return page
 }
 
+function getPageOptionsMessage(status: string) {
+  if (status === "saved") return "Tunes page options saved."
+  if (status === "reset") return "Tunes page options reset."
+  if (status === "error") return "Could not save Tunes page options."
+
+  return null
+}
+
 export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   const resolvedSearchParams = await searchParams
+  const pagePreferences = await loadPagePreferences(
+    LIBRARY_PAGE_OPTIONS_CONFIG.pageKey
+  )
+
+  const showSection = (sectionId: string) =>
+    pagePreferences.visibleSections[sectionId] ?? true
 
   const searchQuery = firstParam(resolvedSearchParams?.q)
   const selectedKeys = toArray(resolvedSearchParams?.key)
@@ -107,6 +125,10 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     visibleCount,
     page: requestedPage,
   })
+
+  const pageOptionsMessage = getPageOptionsMessage(
+    firstParam(resolvedSearchParams?.page_options)
+  )
 
   const listAddStatus = firstParam(resolvedSearchParams?.list_add)
   const createTuneStatus = firstParam(resolvedSearchParams?.create_tune)
@@ -189,80 +211,108 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+      {pageOptionsMessage ? (
+        <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+          {pageOptionsMessage}
+        </div>
+      ) : null}
+
       <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Tunes
-        </p>
-        <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
-          Browse the tune catalogue
-        </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-          Search the shared tune library, add tunes to lists, mark known
-          repertoire, or deliberately move tunes into practice.
-        </p>
-        <p className="mt-4 text-sm text-muted-foreground">
-          Logged in as {user.email}
-        </p>
+        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Tunes
+            </p>
+            <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
+              Browse the tune catalogue
+            </h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+              Search the shared tune library, add tunes to lists, mark known
+              repertoire, or deliberately move tunes into practice.
+            </p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Logged in as {user.email}
+            </p>
+          </div>
+
+          <PageOptionsModal
+            config={LIBRARY_PAGE_OPTIONS_CONFIG}
+            preferences={pagePreferences}
+            redirectTo={redirectTo}
+          />
+        </div>
       </section>
 
-      <LibraryHeaderActions
-        styleOptions={styleOptions}
-        learningLists={(learningLists ?? []) as LearningList[]}
-      />
+      {showSection("header_actions") ? (
+        <LibraryHeaderActions
+          styleOptions={styleOptions}
+          learningLists={(learningLists ?? []) as LearningList[]}
+        />
+      ) : null}
 
-      <LibraryStatusMessages
-        createTuneStatus={createTuneStatus}
-        listAddStatus={listAddStatus}
-        removeTuneStatus={removeTuneStatus}
-        removeFromPracticeStatus={removeFromPracticeStatus}
-        deleteTuneStatus={deleteTuneStatus}
-        bulkUploadStatus={bulkUploadStatus}
-        bulkUploadRow={bulkUploadRow}
-        uploadedListId={uploadedListId}
-        createdPiecesCount={createdPiecesCount}
-        reusedPiecesCount={reusedPiecesCount}
-        addedKnownCount={addedKnownCount}
-        alreadyKnownCount={alreadyKnownCount}
-        addedToListCount={addedToListCount}
-        alreadyInListCount={alreadyInListCount}
-      />
+      {showSection("status_messages") ? (
+        <LibraryStatusMessages
+          createTuneStatus={createTuneStatus}
+          listAddStatus={listAddStatus}
+          removeTuneStatus={removeTuneStatus}
+          removeFromPracticeStatus={removeFromPracticeStatus}
+          deleteTuneStatus={deleteTuneStatus}
+          bulkUploadStatus={bulkUploadStatus}
+          bulkUploadRow={bulkUploadRow}
+          uploadedListId={uploadedListId}
+          createdPiecesCount={createdPiecesCount}
+          reusedPiecesCount={reusedPiecesCount}
+          addedKnownCount={addedKnownCount}
+          alreadyKnownCount={alreadyKnownCount}
+          addedToListCount={addedToListCount}
+          alreadyInListCount={alreadyInListCount}
+        />
+      ) : null}
 
-      <PieceSearchFilters
-        basePath="/library"
-        searchLabel="Search by title"
-        searchPlaceholder="Search tunes"
-        searchValue={searchQuery}
-        selectedKeys={selectedKeys}
-        selectedStyles={selectedStyles}
-        selectedTimeSignatures={selectedTimeSignatures}
-        availableKeys={availableKeys}
-        availableStyles={availableStyles}
-        availableTimeSignatures={availableTimeSignatures}
-        hasActiveFilters={hasActiveFilters}
-        preservedParams={{
-          visible: visibleCount === "all" ? "all" : String(visibleCount),
-        }}
-      />
+      {showSection("filters") ? (
+        <PieceSearchFilters
+          basePath="/library"
+          searchLabel="Search by title"
+          searchPlaceholder="Search tunes"
+          searchValue={searchQuery}
+          selectedKeys={selectedKeys}
+          selectedStyles={selectedStyles}
+          selectedTimeSignatures={selectedTimeSignatures}
+          availableKeys={availableKeys}
+          availableStyles={availableStyles}
+          availableTimeSignatures={availableTimeSignatures}
+          hasActiveFilters={hasActiveFilters}
+          preservedParams={{
+            visible: visibleCount === "all" ? "all" : String(visibleCount),
+          }}
+        />
+      ) : null}
 
-      <LibraryResultsHeader {...resultsHeaderProps} />
+      {showSection("results_header_top") ? (
+        <LibraryResultsHeader {...resultsHeaderProps} />
+      ) : null}
 
-      <LibraryList
-        pieces={loaderPieces}
-        userPieces={userPieces as UserPiece[] | null}
-        userKnownPieces={userKnownPieces as UserKnownPiece[]}
-        learningLists={learningLists as LearningList[] | null}
-        learningListItems={learningListItems as any}
-        currentUserRole={currentUserRole}
-        startLearning={startLearning}
-        addToLearningList={addToLearningList}
-        removeTuneFromMyApp={removeTuneFromMyApp}
-        deleteCanonicalTuneAsModerator={deleteCanonicalTuneAsModerator}
-        redirectTo={redirectTo}
-        scrollPieceId={scrollPieceId}
-        hasActiveFilters={hasActiveFilters}
-      />
+      {showSection("tune_results") ? (
+        <LibraryList
+          pieces={loaderPieces}
+          userPieces={userPieces as UserPiece[] | null}
+          userKnownPieces={userKnownPieces as UserKnownPiece[]}
+          learningLists={learningLists as LearningList[] | null}
+          learningListItems={learningListItems as any}
+          currentUserRole={currentUserRole}
+          startLearning={startLearning}
+          addToLearningList={addToLearningList}
+          removeTuneFromMyApp={removeTuneFromMyApp}
+          deleteCanonicalTuneAsModerator={deleteCanonicalTuneAsModerator}
+          redirectTo={redirectTo}
+          scrollPieceId={scrollPieceId}
+          hasActiveFilters={hasActiveFilters}
+        />
+      ) : null}
 
-      <LibraryResultsHeader {...resultsHeaderProps} position="bottom" />
+      {showSection("results_header_bottom") ? (
+        <LibraryResultsHeader {...resultsHeaderProps} position="bottom" />
+      ) : null}
     </main>
   )
 }

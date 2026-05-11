@@ -1,5 +1,9 @@
 import { redirect } from "next/navigation"
 import { getCurrentUserRole } from "@/lib/auth/roles"
+import { loadPagePreferences } from "@/lib/loaders/page-preferences"
+import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
+import { TUNE_DETAIL_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
+import type { PageOptionsPreferences } from "@/lib/page-options/types"
 import { createClient } from "@/lib/supabase/server"
 import type {
   LearningList,
@@ -9,7 +13,6 @@ import type {
   UserPiece,
   UserRole,
 } from "@/lib/types"
-import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 
 export type UserPieceMetadata = {
   notes: string | null
@@ -61,18 +64,6 @@ export type TunePracticeNote = {
   outcome: string | null
 }
 
-export type TunePagePreferences = {
-  show_tune_state: boolean
-  show_tune_review: boolean
-  show_canonical_details: boolean
-  show_my_notes: boolean
-  show_practice_history: boolean
-  show_media_links: boolean
-  show_sheet_music: boolean
-  show_lore: boolean
-  show_comments: boolean
-}
-
 type ProfileRow = {
   id: string
   username: string | null
@@ -92,8 +83,6 @@ export type LearningListItemRow = {
   learning_list_id: number
   piece_id: number
 }
-
-type TunePagePreferencesRow = TunePagePreferences
 
 type PracticeNoteRow = {
   id: number
@@ -154,7 +143,7 @@ export type TuneDetailLoadResult =
       typedLearningLists: LearningList[]
       typedLearningListItems: LearningListItemRow[]
       typedPracticeNotes: TunePracticeNote[]
-      typedTunePagePreferences: TunePagePreferences
+      typedTunePagePreferences: PageOptionsPreferences
       practiceDiaryEnabled: boolean
       practiceNoteCategories: PracticeNoteCategory[]
       styleOptions: StyleOption[]
@@ -168,18 +157,6 @@ export type TuneDetailLoadResult =
       status: "not_found"
       pieceId: number
     }
-
-const DEFAULT_TUNE_PAGE_PREFERENCES: TunePagePreferences = {
-  show_tune_state: true,
-  show_tune_review: true,
-  show_canonical_details: true,
-  show_my_notes: true,
-  show_practice_history: true,
-  show_media_links: true,
-  show_sheet_music: true,
-  show_lore: true,
-  show_comments: true,
-}
 
 function getSingleJoinedRow<T>(value: T | T[] | null): T | null {
   if (!value) return null
@@ -210,19 +187,6 @@ function mapPracticeNote(row: PracticeNoteRow): TunePracticeNote {
     outcome: mapPracticeOutcomeLabel(
       reviewEvent?.outcome ?? practiceEvent?.practice_outcome ?? null
     ),
-  }
-}
-
-function normaliseTunePagePreferences(
-  preferences: TunePagePreferencesRow | null
-): TunePagePreferences {
-  if (!preferences) {
-    return DEFAULT_TUNE_PAGE_PREFERENCES
-  }
-
-  return {
-    ...DEFAULT_TUNE_PAGE_PREFERENCES,
-    ...preferences,
   }
 }
 
@@ -299,10 +263,10 @@ export async function loadTuneDetailData(
     learningListsResult,
     learningListItemsResult,
     practiceNotesResult,
-    tunePagePreferencesResult,
     practiceProfileResult,
     practiceCategoriesResult,
     styleRowsResult,
+    typedTunePagePreferences,
   ] = await Promise.all([
     supabase
       .from("user_piece_metadata")
@@ -310,40 +274,48 @@ export async function loadTuneDetailData(
       .eq("user_id", user.id)
       .eq("piece_id", pieceId)
       .maybeSingle(),
+
     supabase
       .from("piece_sheet_music_links")
       .select("id, url, label")
       .eq("piece_id", pieceId)
       .order("created_at", { ascending: true }),
+
     supabase
       .from("piece_media_links")
       .select("id, url, label")
       .eq("piece_id", pieceId)
       .order("created_at", { ascending: true }),
+
     commentsQuery,
+
     supabase
       .from("piece_lore_entries")
       .select("id, category, entry_text, created_at, user_id")
       .eq("piece_id", pieceId)
       .order("category", { ascending: true })
       .order("created_at", { ascending: true }),
+
     supabase
       .from("user_pieces")
       .select("id, piece_id, status, next_review_due, stage")
       .eq("user_id", user.id)
       .eq("piece_id", pieceId)
       .maybeSingle(),
+
     supabase
       .from("user_known_pieces")
       .select("id, piece_id")
       .eq("user_id", user.id)
       .eq("piece_id", pieceId)
       .maybeSingle(),
+
     supabase
       .from("learning_lists")
       .select("id, name, description")
       .eq("user_id", user.id)
       .order("name", { ascending: true }),
+
     ownedListIds.length > 0
       ? supabase
           .from("learning_list_items")
@@ -351,6 +323,7 @@ export async function loadTuneDetailData(
           .eq("piece_id", pieceId)
           .in("learning_list_id", ownedListIds)
       : Promise.resolve({ data: [], error: null }),
+
     supabase
       .from("practice_notes")
       .select(
@@ -376,28 +349,13 @@ export async function loadTuneDetailData(
       .eq("piece_id", pieceId)
       .order("created_at", { ascending: false })
       .limit(12),
-    supabase
-      .from("user_tune_page_preferences")
-      .select(
-        `
-          show_tune_state,
-          show_tune_review,
-          show_canonical_details,
-          show_my_notes,
-          show_practice_history,
-          show_media_links,
-          show_sheet_music,
-          show_lore,
-          show_comments
-        `
-      )
-      .eq("user_id", user.id)
-      .maybeSingle(),
+
     supabase
       .from("profiles")
       .select("practice_diary_enabled")
       .eq("id", user.id)
       .maybeSingle(),
+
     supabase
       .from("practice_note_categories")
       .select(
@@ -418,11 +376,14 @@ export async function loadTuneDetailData(
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .order("name", { ascending: true }),
+
     supabase
       .from("styles")
       .select("id, slug, label")
       .eq("is_active", true)
       .order("sort_order", { ascending: true }),
+
+    loadPagePreferences(TUNE_DETAIL_PAGE_OPTIONS_CONFIG.pageKey),
   ])
 
   const typedPiece = piece as Piece
@@ -445,9 +406,6 @@ export async function loadTuneDetailData(
     (learningListItemsResult.data as LearningListItemRow[] | null) ?? []
   const typedPracticeNotes = ((practiceNotesResult.data ??
     []) as PracticeNoteRow[]).map(mapPracticeNote)
-  const typedTunePagePreferences = normaliseTunePagePreferences(
-    (tunePagePreferencesResult.data as TunePagePreferencesRow | null) ?? null
-  )
   const practiceDiaryEnabled = Boolean(
     (practiceProfileResult.data as PracticeProfileRow | null)
       ?.practice_diary_enabled

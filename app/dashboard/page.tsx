@@ -1,5 +1,8 @@
+import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import ProfileEditor from "@/components/profile/ProfileEditor"
+import { loadPagePreferences } from "@/lib/loaders/page-preferences"
 import { loadOwnProfileData } from "@/lib/loaders/profile"
+import { PROFILE_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 
 type DashboardPageProps = {
   searchParams?: Promise<{
@@ -20,6 +23,7 @@ type DashboardPageProps = {
     show_compare_discoverability?: string | string[]
     compare_requires_friend?: string | string[]
     practice_diary_enabled?: string | string[]
+    page_options?: string | string[]
   }>
 }
 
@@ -84,10 +88,25 @@ function getInstrumentErrorMessage(error: string) {
   return null
 }
 
+function getPageOptionsMessage(status: string) {
+  if (status === "saved") return "Profile page options saved."
+  if (status === "reset") return "Profile page options reset."
+  if (status === "error") return "Could not save Profile page options."
+
+  return null
+}
+
 export default async function DashboardPage({
   searchParams,
 }: DashboardPageProps) {
   const resolvedSearchParams = await searchParams
+  const pagePreferences = await loadPagePreferences(
+    PROFILE_PAGE_OPTIONS_CONFIG.pageKey
+  )
+
+  const showSection = (sectionId: string) =>
+    pagePreferences.visibleSections[sectionId] ?? true
+
   const { user, profile, instruments } = await loadOwnProfileData()
 
   const saved = getSingleValue(resolvedSearchParams?.saved) === "1"
@@ -102,6 +121,10 @@ export default async function DashboardPage({
 
   const instrumentErrorMessage = getInstrumentErrorMessage(
     getSingleValue(resolvedSearchParams?.instrument_error)
+  )
+
+  const pageOptionsMessage = getPageOptionsMessage(
+    getSingleValue(resolvedSearchParams?.page_options)
   )
 
   const initialUsername =
@@ -162,47 +185,65 @@ export default async function DashboardPage({
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+      {pageOptionsMessage ? (
+        <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+          {pageOptionsMessage}
+        </div>
+      ) : null}
+
       <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Profile
-        </p>
+        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Profile
+            </p>
 
-        <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight md:text-5xl">
-          Manage your profile
-        </h1>
+            <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight md:text-5xl">
+              Manage your profile
+            </h1>
 
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground md:text-base">
-          Control your public identity, instruments, visibility, comparison
-          settings, and optional practice diary.
-        </p>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground md:text-base">
+              Control your public identity, instruments, visibility, comparison
+              settings, and optional practice diary.
+            </p>
 
-        <p className="mt-4 text-sm text-muted-foreground">
-          Logged in as {user.email ?? "Unknown"}
-        </p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Logged in as {user.email ?? "Unknown"}
+            </p>
+          </div>
+
+          <PageOptionsModal
+            config={PROFILE_PAGE_OPTIONS_CONFIG}
+            preferences={pagePreferences}
+            redirectTo="/dashboard"
+          />
+        </div>
       </section>
 
-      <ProfileEditor
-        email={user.email}
-        profile={profile}
-        instruments={instruments}
-        errorMessage={errorMessage}
-        saved={saved}
-        instrumentErrorMessage={instrumentErrorMessage}
-        instrumentSaved={instrumentSaved}
-        instrumentRemoved={instrumentRemoved}
-        initialUsername={initialUsername}
-        initialDisplayName={initialDisplayName}
-        initialBio={initialBio}
-        initialShowIdentity={initialShowIdentity}
-        initialShowInstruments={initialShowInstruments}
-        initialShowPublicListsOnProfile={initialShowPublicListsOnProfile}
-        initialShowRepertoireSummary={initialShowRepertoireSummary}
-        initialShowRepertoireToFriends={initialShowRepertoireToFriends}
-        initialShowCommentActivity={initialShowCommentActivity}
-        initialShowCompareDiscoverability={initialShowCompareDiscoverability}
-        initialCompareRequiresFriend={initialCompareRequiresFriend}
-        initialPracticeDiaryEnabled={initialPracticeDiaryEnabled}
-      />
+      {showSection("profile_editor") ? (
+        <ProfileEditor
+          email={user.email}
+          profile={profile}
+          instruments={instruments}
+          errorMessage={errorMessage}
+          saved={saved}
+          instrumentErrorMessage={instrumentErrorMessage}
+          instrumentSaved={instrumentSaved}
+          instrumentRemoved={instrumentRemoved}
+          initialUsername={initialUsername}
+          initialDisplayName={initialDisplayName}
+          initialBio={initialBio}
+          initialShowIdentity={initialShowIdentity}
+          initialShowInstruments={initialShowInstruments}
+          initialShowPublicListsOnProfile={initialShowPublicListsOnProfile}
+          initialShowRepertoireSummary={initialShowRepertoireSummary}
+          initialShowRepertoireToFriends={initialShowRepertoireToFriends}
+          initialShowCommentActivity={initialShowCommentActivity}
+          initialShowCompareDiscoverability={initialShowCompareDiscoverability}
+          initialCompareRequiresFriend={initialCompareRequiresFriend}
+          initialPracticeDiaryEnabled={initialPracticeDiaryEnabled}
+        />
+      ) : null}
     </main>
   )
 }

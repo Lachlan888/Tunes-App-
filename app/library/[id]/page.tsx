@@ -1,5 +1,6 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
+import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import PieceCommentsSection from "@/components/library/PieceCommentsSection"
 import PieceLoreSection from "@/components/library/PieceLoreSection"
 import PieceMediaLinksSection from "@/components/library/PieceMediaLinksSection"
@@ -7,7 +8,6 @@ import SubmitButton from "@/components/SubmitButton"
 import TuneCanonicalDetailsCard from "@/components/library/TuneCanonicalDetailsCard"
 import TuneDetailActions from "@/components/library/TuneDetailActions"
 import TunePageReviewPanel from "@/components/library/TunePageReviewPanel"
-import TunePageViewOptions from "@/components/library/TunePageViewOptions"
 import TunePracticeHistorySection from "@/components/practice-diary/TunePracticeHistorySection"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { upsertUserPieceNotes } from "@/lib/actions/user-piece-metadata"
@@ -18,6 +18,7 @@ import {
 import { addToLearningList } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadTuneDetailData } from "@/lib/loaders/tune-detail"
+import { TUNE_DETAIL_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 
 type PiecePageProps = {
   params: Promise<{
@@ -30,7 +31,7 @@ type PiecePageProps = {
     lore?: string | string[]
     moderator_edit?: string | string[]
     diary?: string | string[]
-    view_preferences?: string | string[]
+    page_options?: string | string[]
   }>
 }
 
@@ -75,7 +76,7 @@ function getStatusMessage({
   lore,
   moderatorEdit,
   diary,
-  viewPreferences,
+  pageOptions,
 }: {
   editRequest: string
   commentReport: string
@@ -83,7 +84,7 @@ function getStatusMessage({
   lore: string
   moderatorEdit: string
   diary: string
-  viewPreferences: string
+  pageOptions: string
 }) {
   if (editRequest === "success") return "Edit request submitted."
   if (editRequest === "empty") return "Add at least one proposed change."
@@ -118,12 +119,14 @@ function getStatusMessage({
   if (diary === "note_deleted") return "Practice note deleted."
   if (diary === "empty_note") return "Write a note before saving."
   if (diary === "practice_check_saved") return "Practice check saved."
-  if (diary === "diary_disabled") return "Enable Practice Diary before logging tune practice checks."
+  if (diary === "diary_disabled")
+    return "Enable Practice Diary before logging tune practice checks."
   if (diary === "invalid_outcome") return "Choose Rough, Shaky, or Solid."
   if (diary === "missing_piece") return "Could not find that tune."
 
-  if (viewPreferences === "saved") return "Tune page view preferences saved."
-  if (viewPreferences === "error") return "Could not save Tune page view preferences."
+  if (pageOptions === "saved") return "Tune page options saved."
+  if (pageOptions === "reset") return "Tune page options reset."
+  if (pageOptions === "error") return "Could not save tune page options."
 
   return null
 }
@@ -182,8 +185,11 @@ export default async function PiecePage({
     lore: getSingleValue(resolvedSearchParams?.lore),
     moderatorEdit: getSingleValue(resolvedSearchParams?.moderator_edit),
     diary: getSingleValue(resolvedSearchParams?.diary),
-    viewPreferences: getSingleValue(resolvedSearchParams?.view_preferences),
+    pageOptions: getSingleValue(resolvedSearchParams?.page_options),
   })
+
+  const showTuneSection = (sectionId: string) =>
+    typedTunePagePreferences.visibleSections[sectionId] ?? true
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
@@ -203,19 +209,24 @@ export default async function PiecePage({
       ) : null}
 
       <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <h1 className="max-w-5xl font-serif text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
-          {typedPiece.title}
-        </h1>
+        <div className="flex flex-wrap items-start justify-between gap-5">
+          <div>
+            <h1 className="max-w-5xl font-serif text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
+              {typedPiece.title}
+            </h1>
+          </div>
 
-        <TunePageViewOptions
-          preferences={typedTunePagePreferences}
-          redirectTo={redirectTo}
-        />
+          <PageOptionsModal
+            config={TUNE_DETAIL_PAGE_OPTIONS_CONFIG}
+            preferences={typedTunePagePreferences}
+            redirectTo={redirectTo}
+          />
+        </div>
       </section>
 
       <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-2 2xl:grid-cols-3">
         <div className="space-y-8">
-          {typedTunePagePreferences.show_tune_state ? (
+          {showTuneSection("tune_state") ? (
             <TuneDetailActions
               piece={typedPiece}
               userPiece={typedUserPiece}
@@ -228,7 +239,7 @@ export default async function PiecePage({
             />
           ) : null}
 
-          {typedTunePagePreferences.show_tune_review ? (
+          {showTuneSection("tune_review") ? (
             <TunePageReviewPanel
               piece={typedPiece}
               userPiece={typedUserPiece}
@@ -238,7 +249,7 @@ export default async function PiecePage({
             />
           ) : null}
 
-          {typedTunePagePreferences.show_canonical_details ? (
+          {showTuneSection("canonical_details") ? (
             <TuneCanonicalDetailsCard
               piece={typedPiece}
               redirectTo={redirectTo}
@@ -249,7 +260,7 @@ export default async function PiecePage({
         </div>
 
         <div className="space-y-8">
-          {typedTunePagePreferences.show_my_notes ? (
+          {showTuneSection("my_notes") ? (
             <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
               <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 My notes
@@ -276,11 +287,11 @@ export default async function PiecePage({
             </section>
           ) : null}
 
-          {typedTunePagePreferences.show_practice_history ? (
+          {showTuneSection("practice_history") ? (
             <TunePracticeHistorySection notes={typedPracticeNotes} />
           ) : null}
 
-          {typedTunePagePreferences.show_media_links ? (
+          {showTuneSection("media_links") ? (
             <PieceMediaLinksSection
               pieceId={pieceId}
               redirectTo={redirectTo}
@@ -291,7 +302,7 @@ export default async function PiecePage({
             />
           ) : null}
 
-          {typedTunePagePreferences.show_sheet_music ? (
+          {showTuneSection("sheet_music") ? (
             <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
               <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Sheet music / tab
@@ -354,7 +365,7 @@ export default async function PiecePage({
         </div>
 
         <div className="space-y-8 xl:col-span-2 2xl:col-span-1">
-          {typedTunePagePreferences.show_lore ? (
+          {showTuneSection("lore") ? (
             <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
               <PieceLoreSection
                 pieceId={pieceId}
@@ -366,7 +377,7 @@ export default async function PiecePage({
             </section>
           ) : null}
 
-          {typedTunePagePreferences.show_comments ? (
+          {showTuneSection("comments") ? (
             <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
               <PieceCommentsSection
                 pieceId={pieceId}
