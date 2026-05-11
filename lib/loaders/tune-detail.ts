@@ -60,6 +60,17 @@ export type TunePracticeNote = {
   outcome: string | null
 }
 
+export type TunePagePreferences = {
+  show_tune_state: boolean
+  show_canonical_details: boolean
+  show_my_notes: boolean
+  show_practice_history: boolean
+  show_media_links: boolean
+  show_sheet_music: boolean
+  show_lore: boolean
+  show_comments: boolean
+}
+
 type ProfileRow = {
   id: string
   username: string | null
@@ -75,6 +86,8 @@ export type LearningListItemRow = {
   learning_list_id: number
   piece_id: number
 }
+
+type TunePagePreferencesRow = TunePagePreferences
 
 type PracticeNoteRow = {
   id: number
@@ -127,6 +140,7 @@ export type TuneDetailLoadResult =
       typedLearningLists: LearningList[]
       typedLearningListItems: LearningListItemRow[]
       typedPracticeNotes: TunePracticeNote[]
+      typedTunePagePreferences: TunePagePreferences
       styleOptions: StyleOption[]
       profileMap: Record<string, CommentAuthor>
     }
@@ -138,6 +152,17 @@ export type TuneDetailLoadResult =
       status: "not_found"
       pieceId: number
     }
+
+const DEFAULT_TUNE_PAGE_PREFERENCES: TunePagePreferences = {
+  show_tune_state: true,
+  show_canonical_details: true,
+  show_my_notes: true,
+  show_practice_history: true,
+  show_media_links: true,
+  show_sheet_music: true,
+  show_lore: true,
+  show_comments: true,
+}
 
 function getSingleJoinedRow<T>(value: T | T[] | null): T | null {
   if (!value) return null
@@ -156,6 +181,19 @@ function mapPracticeNote(row: PracticeNoteRow): TunePracticeNote {
     practice_date: practiceDay?.practice_date ?? row.created_at.slice(0, 10),
     category_name: category?.name ?? null,
     outcome: reviewEvent?.outcome ?? null,
+  }
+}
+
+function normaliseTunePagePreferences(
+  preferences: TunePagePreferencesRow | null
+): TunePagePreferences {
+  if (!preferences) {
+    return DEFAULT_TUNE_PAGE_PREFERENCES
+  }
+
+  return {
+    ...DEFAULT_TUNE_PAGE_PREFERENCES,
+    ...preferences,
   }
 }
 
@@ -232,6 +270,7 @@ export async function loadTuneDetailData(
     learningListsResult,
     learningListItemsResult,
     practiceNotesResult,
+    tunePagePreferencesResult,
     styleRowsResult,
   ] = await Promise.all([
     supabase
@@ -304,6 +343,22 @@ export async function loadTuneDetailData(
       .order("created_at", { ascending: false })
       .limit(12),
     supabase
+      .from("user_tune_page_preferences")
+      .select(
+        `
+          show_tune_state,
+          show_canonical_details,
+          show_my_notes,
+          show_practice_history,
+          show_media_links,
+          show_sheet_music,
+          show_lore,
+          show_comments
+        `
+      )
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase
       .from("styles")
       .select("id, slug, label")
       .eq("is_active", true)
@@ -328,8 +383,10 @@ export async function loadTuneDetailData(
     (learningListsResult.data as LearningList[] | null) ?? []
   const typedLearningListItems =
     (learningListItemsResult.data as LearningListItemRow[] | null) ?? []
-  const typedPracticeNotes = ((practiceNotesResult.data ?? []) as PracticeNoteRow[]).map(
-    mapPracticeNote
+  const typedPracticeNotes = ((practiceNotesResult.data ??
+    []) as PracticeNoteRow[]).map(mapPracticeNote)
+  const typedTunePagePreferences = normaliseTunePagePreferences(
+    (tunePagePreferencesResult.data as TunePagePreferencesRow | null) ?? null
   )
   const styleOptions = (styleRowsResult.data as StyleOption[] | null) ?? []
 
@@ -380,6 +437,7 @@ export async function loadTuneDetailData(
     typedLearningLists,
     typedLearningListItems,
     typedPracticeNotes,
+    typedTunePagePreferences,
     styleOptions,
     profileMap,
   }

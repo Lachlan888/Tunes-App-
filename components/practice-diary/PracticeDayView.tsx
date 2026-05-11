@@ -2,7 +2,6 @@ import DailyReflectionForm from "@/components/practice-diary/DailyReflectionForm
 import PracticeCategoryManager from "@/components/practice-diary/PracticeCategoryManager"
 import PracticeDayNavigator from "@/components/practice-diary/PracticeDayNavigator"
 import PracticeEventList from "@/components/practice-diary/PracticeEventList"
-import PracticeNoteForm from "@/components/practice-diary/PracticeNoteForm"
 import type { PracticeDiaryDayDataWithNotes } from "@/lib/loaders/practice-diary"
 
 type PracticeDayViewProps = {
@@ -24,7 +23,7 @@ export default function PracticeDayView({ data }: PracticeDayViewProps) {
         today={data.today}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[0.85fr_1fr_1.25fr]">
+      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.6fr]">
         <aside className="rounded-3xl border border-border bg-card p-6 shadow-sm">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Practice categories
@@ -79,49 +78,6 @@ export default function PracticeDayView({ data }: PracticeDayViewProps) {
 
           <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Loose notes
-            </h2>
-
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Add extra notes that are not attached to one specific reviewed
-              tune. Use this for reminders, observations, or small practice
-              thoughts that do not belong in the main session summary.
-            </p>
-
-            {data.unlinkedNotes.length > 0 ? (
-              <ul className="mt-5 space-y-3">
-                {data.unlinkedNotes.map((note) => (
-                  <li
-                    key={note.id}
-                    className="rounded-2xl border border-border bg-background/70 p-4"
-                  >
-                    {note.category ? (
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                        {note.category.name}
-                      </p>
-                    ) : null}
-
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground">
-                      {note.body}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-
-            <PracticeNoteForm
-              practiceDate={data.selectedDate}
-              redirectTo={redirectTo}
-              categories={data.categories}
-              label="Add loose note"
-              placeholder="What else do you want to remember about today?"
-            />
-          </section>
-        </section>
-
-        <section className="space-y-6">
-          <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Tune notes
             </h2>
 
@@ -129,14 +85,16 @@ export default function PracticeDayView({ data }: PracticeDayViewProps) {
               Reviewed tunes and tune-specific notes for this day. These notes
               also appear on each tune’s Practice history.
             </p>
-          </section>
 
-          <PracticeEventList
-            events={data.events}
-            categories={data.categories}
-            practiceDate={data.selectedDate}
-            redirectTo={redirectTo}
-          />
+            <div className="mt-5">
+              <PracticeEventList
+                events={data.events}
+                categories={data.categories}
+                practiceDate={data.selectedDate}
+                redirectTo={redirectTo}
+              />
+            </div>
+          </section>
         </section>
       </div>
     </div>

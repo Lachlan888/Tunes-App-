@@ -6,6 +6,7 @@ import PieceMediaLinksSection from "@/components/library/PieceMediaLinksSection"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCanonicalDetailsCard from "@/components/library/TuneCanonicalDetailsCard"
 import TuneDetailActions from "@/components/library/TuneDetailActions"
+import TunePageViewOptions from "@/components/library/TunePageViewOptions"
 import TunePracticeHistorySection from "@/components/practice-diary/TunePracticeHistorySection"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { upsertUserPieceNotes } from "@/lib/actions/user-piece-metadata"
@@ -28,6 +29,7 @@ type PiecePageProps = {
     lore?: string | string[]
     moderator_edit?: string | string[]
     diary?: string | string[]
+    view_preferences?: string | string[]
   }>
 }
 
@@ -72,6 +74,7 @@ function getStatusMessage({
   lore,
   moderatorEdit,
   diary,
+  viewPreferences,
 }: {
   editRequest: string
   commentReport: string
@@ -79,6 +82,7 @@ function getStatusMessage({
   lore: string
   moderatorEdit: string
   diary: string
+  viewPreferences: string
 }) {
   if (editRequest === "success") return "Edit request submitted."
   if (editRequest === "empty") return "Add at least one proposed change."
@@ -112,6 +116,9 @@ function getStatusMessage({
   if (diary === "note_saved") return "Practice note saved."
   if (diary === "note_deleted") return "Practice note deleted."
   if (diary === "empty_note") return "Write a note before saving."
+
+  if (viewPreferences === "saved") return "Tune page view preferences saved."
+  if (viewPreferences === "error") return "Could not save Tune page view preferences."
 
   return null
 }
@@ -156,6 +163,7 @@ export default async function PiecePage({
     typedLearningLists,
     typedLearningListItems,
     typedPracticeNotes,
+    typedTunePagePreferences,
     styleOptions,
     profileMap,
   } = tuneDetail
@@ -167,6 +175,7 @@ export default async function PiecePage({
     lore: getSingleValue(resolvedSearchParams?.lore),
     moderatorEdit: getSingleValue(resolvedSearchParams?.moderator_edit),
     diary: getSingleValue(resolvedSearchParams?.diary),
+    viewPreferences: getSingleValue(resolvedSearchParams?.view_preferences),
   })
 
   return (
@@ -190,145 +199,166 @@ export default async function PiecePage({
         <h1 className="max-w-5xl font-serif text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
           {typedPiece.title}
         </h1>
+
+        <TunePageViewOptions
+          preferences={typedTunePagePreferences}
+          redirectTo={redirectTo}
+        />
       </section>
 
       <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-2 2xl:grid-cols-3">
         <div className="space-y-8">
-          <TuneDetailActions
-            piece={typedPiece}
-            userPiece={typedUserPiece}
-            userKnownPiece={typedUserKnownPiece}
-            learningLists={typedLearningLists}
-            learningListItems={typedLearningListItems}
-            redirectTo={redirectTo}
-            startLearning={startLearning}
-            addToLearningList={addToLearningList}
-          />
+          {typedTunePagePreferences.show_tune_state ? (
+            <TuneDetailActions
+              piece={typedPiece}
+              userPiece={typedUserPiece}
+              userKnownPiece={typedUserKnownPiece}
+              learningLists={typedLearningLists}
+              learningListItems={typedLearningListItems}
+              redirectTo={redirectTo}
+              startLearning={startLearning}
+              addToLearningList={addToLearningList}
+            />
+          ) : null}
 
-          <TuneCanonicalDetailsCard
-            piece={typedPiece}
-            redirectTo={redirectTo}
-            styleOptions={styleOptions}
-            currentUserRole={currentUserRole}
-          />
+          {typedTunePagePreferences.show_canonical_details ? (
+            <TuneCanonicalDetailsCard
+              piece={typedPiece}
+              redirectTo={redirectTo}
+              styleOptions={styleOptions}
+              currentUserRole={currentUserRole}
+            />
+          ) : null}
         </div>
 
         <div className="space-y-8">
-          <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              My notes
-            </h2>
+          {typedTunePagePreferences.show_my_notes ? (
+            <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                My notes
+              </h2>
 
-            <form action={upsertUserPieceNotes} className="mt-5 space-y-3">
-              <input type="hidden" name="piece_id" value={pieceId} />
-              <input type="hidden" name="redirect_to" value={redirectTo} />
+              <form action={upsertUserPieceNotes} className="mt-5 space-y-3">
+                <input type="hidden" name="piece_id" value={pieceId} />
+                <input type="hidden" name="redirect_to" value={redirectTo} />
 
-              <textarea
-                name="notes"
-                defaultValue={typedUserPieceMetadata?.notes || ""}
-                rows={8}
-                placeholder="Add your private notes for this tune"
-                className={inputClassName}
-              />
+                <textarea
+                  name="notes"
+                  defaultValue={typedUserPieceMetadata?.notes || ""}
+                  rows={8}
+                  placeholder="Add your private notes for this tune"
+                  className={inputClassName}
+                />
 
-              <SubmitButton
-                label="Save notes"
-                pendingLabel="Saving..."
-                className={buttonStyles.primary}
-              />
-            </form>
-          </section>
+                <SubmitButton
+                  label="Save notes"
+                  pendingLabel="Saving..."
+                  className={buttonStyles.primary}
+                />
+              </form>
+            </section>
+          ) : null}
 
-          <TunePracticeHistorySection notes={typedPracticeNotes} />
+          {typedTunePagePreferences.show_practice_history ? (
+            <TunePracticeHistorySection notes={typedPracticeNotes} />
+          ) : null}
 
-          <PieceMediaLinksSection
-            pieceId={pieceId}
-            redirectTo={redirectTo}
-            mediaLinks={typedMediaLinks}
-            referenceUrl={typedPiece.reference_url}
-            referenceTitle={typedPiece.title}
-            addPieceMediaLink={addPieceMediaLink}
-          />
+          {typedTunePagePreferences.show_media_links ? (
+            <PieceMediaLinksSection
+              pieceId={pieceId}
+              redirectTo={redirectTo}
+              mediaLinks={typedMediaLinks}
+              referenceUrl={typedPiece.reference_url}
+              referenceTitle={typedPiece.title}
+              addPieceMediaLink={addPieceMediaLink}
+            />
+          ) : null}
 
-          <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Sheet music / tab
-            </h2>
+          {typedTunePagePreferences.show_sheet_music ? (
+            <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Sheet music / tab
+              </h2>
 
-            <form action={addPieceSheetMusicLink} className="mt-5 space-y-3">
-              <input type="hidden" name="piece_id" value={pieceId} />
-              <input type="hidden" name="redirect_to" value={redirectTo} />
+              <form action={addPieceSheetMusicLink} className="mt-5 space-y-3">
+                <input type="hidden" name="piece_id" value={pieceId} />
+                <input type="hidden" name="redirect_to" value={redirectTo} />
 
-              <input
-                name="label"
-                placeholder="Label, eg Mandolin tab"
-                className={inputClassName}
-                required
-              />
+                <input
+                  name="label"
+                  placeholder="Label, eg Mandolin tab"
+                  className={inputClassName}
+                  required
+                />
 
-              <input
-                name="url"
-                type="url"
-                placeholder="https://..."
-                className={inputClassName}
-                required
-              />
+                <input
+                  name="url"
+                  type="url"
+                  placeholder="https://..."
+                  className={inputClassName}
+                  required
+                />
 
-              <SubmitButton
-                label="Add sheet music link"
-                pendingLabel="Adding..."
-                className={buttonStyles.primary}
-              />
-            </form>
+                <SubmitButton
+                  label="Add sheet music link"
+                  pendingLabel="Adding..."
+                  className={buttonStyles.primary}
+                />
+              </form>
 
-            {typedSheetMusicLinks.length > 0 ? (
-              <ul className="mt-6 space-y-3">
-                {typedSheetMusicLinks.map((link) => (
-                  <li
-                    key={link.id}
-                    className="rounded-2xl border border-border bg-background/70 p-4"
-                  >
-                    <p className="text-sm font-medium text-foreground">
-                      {link.label}
-                    </p>
-                    <a
-                      href={link.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-2 block break-all text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              {typedSheetMusicLinks.length > 0 ? (
+                <ul className="mt-6 space-y-3">
+                  {typedSheetMusicLinks.map((link) => (
+                    <li
+                      key={link.id}
+                      className="rounded-2xl border border-border bg-background/70 p-4"
                     >
-                      {link.url}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-                No sheet music links yet.
-              </p>
-            )}
-          </section>
+                      <p className="text-sm font-medium text-foreground">
+                        {link.label}
+                      </p>
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-2 block break-all text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                      >
+                        {link.url}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+                  No sheet music links yet.
+                </p>
+              )}
+            </section>
+          ) : null}
         </div>
 
         <div className="space-y-8 xl:col-span-2 2xl:col-span-1">
-          <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-            <PieceLoreSection
-              pieceId={pieceId}
-              loreEntries={typedPieceLoreEntries}
-              profileMap={profileMap}
-              currentUserId={user.id}
-              currentUserRole={currentUserRole}
-            />
-          </section>
+          {typedTunePagePreferences.show_lore ? (
+            <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+              <PieceLoreSection
+                pieceId={pieceId}
+                loreEntries={typedPieceLoreEntries}
+                profileMap={profileMap}
+                currentUserId={user.id}
+                currentUserRole={currentUserRole}
+              />
+            </section>
+          ) : null}
 
-          <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-            <PieceCommentsSection
-              pieceId={pieceId}
-              comments={typedPieceComments}
-              profileMap={profileMap}
-              currentUserId={user.id}
-            />
-          </section>
+          {typedTunePagePreferences.show_comments ? (
+            <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+              <PieceCommentsSection
+                pieceId={pieceId}
+                comments={typedPieceComments}
+                profileMap={profileMap}
+                currentUserId={user.id}
+              />
+            </section>
+          ) : null}
         </div>
       </div>
     </main>
