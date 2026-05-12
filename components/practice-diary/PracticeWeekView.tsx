@@ -1,6 +1,7 @@
 import Link from "next/link"
-import PracticeDueTuneList from "@/components/practice-diary/PracticeDueTuneList"
+import PracticeCategorySummaryList from "@/components/practice-diary/PracticeCategorySummaryList"
 import PracticeDueTuneMiniList from "@/components/practice-diary/PracticeDueTuneMiniList"
+import PracticeTuneSummaryList from "@/components/practice-diary/PracticeTuneSummaryList"
 import type { PracticeDiaryWeekData } from "@/lib/loaders/practice-diary"
 
 type PracticeWeekViewProps = {
@@ -209,7 +210,7 @@ export default function PracticeWeekView({ data }: PracticeWeekViewProps) {
 
       <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Daily strip
+          Week at a glance
         </h2>
 
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -263,98 +264,21 @@ export default function PracticeWeekView({ data }: PracticeWeekViewProps) {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Due this week
-            </h2>
-
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Tunes currently scheduled for review during this week.
-            </p>
-          </div>
-
-          <p className="text-sm font-medium text-muted-foreground">
-            {data.dueTunes.length} due
-          </p>
-        </div>
-
-        <div className="mt-5">
-          <PracticeDueTuneList
-            dueTunes={data.dueTunes}
-            emptyMessage="No active-practice tunes are currently due this week."
-          />
-        </div>
-      </section>
-
       <section className="grid gap-6 xl:grid-cols-[1.35fr_0.85fr]">
         <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Tunes touched this week
           </h2>
 
-          {data.tuneSummaries.length === 0 ? (
-            <p className="mt-3 rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
-              No tune practice has been logged in this week yet.
-            </p>
-          ) : (
-            <div className="mt-5 space-y-3">
-              {data.tuneSummaries.map((summary) => (
-                <article
-                  key={summary.piece.id}
-                  className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
-                >
-                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                    <div>
-                      <Link
-                        href={`/library/${summary.piece.id}`}
-                        className="font-serif text-2xl font-bold text-foreground transition hover:text-primary"
-                      >
-                        {summary.piece.title}
-                      </Link>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Tunes with logged practice activity this week.
+          </p>
 
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        {[
-                          summary.piece.key,
-                          summary.piece.style,
-                          summary.piece.time_signature,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ") || "No metadata yet"}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {summary.latestOutcome ? (
-                        <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                          {summary.latestOutcome}
-                        </span>
-                      ) : null}
-
-                      {typeof summary.latestStage === "number" ? (
-                        <span className="rounded-full border border-accent bg-accent px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-accent-foreground">
-                          Stage {summary.latestStage}
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap gap-3 text-sm leading-6 text-muted-foreground">
-                    <span>{summary.eventCount} events</span>
-                    <span aria-hidden="true">|</span>
-                    <span>{summary.noteCount} notes</span>
-                  </div>
-
-                  {summary.latestNoteSnippet ? (
-                    <p className="mt-3 rounded-2xl border border-border bg-card p-4 text-sm leading-6 text-foreground">
-                      {summary.latestNoteSnippet}
-                    </p>
-                  ) : null}
-                </article>
-              ))}
-            </div>
-          )}
+          <PracticeTuneSummaryList
+            summaries={data.tuneSummaries}
+            emptyMessage="No tune practice has been logged in this week yet."
+            sortMode="recent"
+          />
         </section>
 
         <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
@@ -366,56 +290,10 @@ export default function PracticeWeekView({ data }: PracticeWeekViewProps) {
             The practice lenses that showed up in notes this week.
           </p>
 
-          {data.categorySummaries.length === 0 ? (
-            <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
-              No categorised notes this week.
-            </p>
-          ) : (
-            <div className="mt-5 space-y-3">
-              {data.categorySummaries.map((summary) => (
-                <article
-                  key={summary.categoryId}
-                  className="rounded-2xl border border-border bg-background/70 p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-sm font-semibold text-foreground">
-                      {summary.categoryName}
-                    </h3>
-
-                    <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                      {summary.noteCount}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 space-y-3">
-                    {summary.notes.map((note) => (
-                      <div
-                        key={note.noteId}
-                        className="rounded-xl border border-border bg-card p-3"
-                      >
-                        {note.pieceId && note.tuneTitle ? (
-                          <Link
-                            href={`/library/${note.pieceId}`}
-                            className="text-sm font-semibold text-foreground transition hover:text-primary"
-                          >
-                            {note.tuneTitle}
-                          </Link>
-                        ) : (
-                          <p className="text-sm font-semibold text-muted-foreground">
-                            General note
-                          </p>
-                        )}
-
-                        <p className="mt-2 text-sm leading-6 text-foreground">
-                          {note.body}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
+          <PracticeCategorySummaryList
+            summaries={data.categorySummaries}
+            emptyMessage="No categorised notes this week."
+          />
         </section>
       </section>
     </div>

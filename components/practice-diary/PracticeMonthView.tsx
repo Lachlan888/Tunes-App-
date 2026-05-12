@@ -1,19 +1,11 @@
 import Link from "next/link"
+import PracticeCategorySummaryList from "@/components/practice-diary/PracticeCategorySummaryList"
 import PracticeDueTuneMiniList from "@/components/practice-diary/PracticeDueTuneMiniList"
+import PracticeTuneSummaryList from "@/components/practice-diary/PracticeTuneSummaryList"
 import type { PracticeDiaryMonthData } from "@/lib/loaders/practice-diary"
 
 type PracticeMonthViewProps = {
   data: PracticeDiaryMonthData
-}
-
-function formatDateOnly(dateOnly: string) {
-  const [year, month, day] = dateOnly.split("-")
-
-  if (!year || !month || !day) {
-    return dateOnly
-  }
-
-  return `${day}/${month}/${year}`
 }
 
 function formatMonthLabel(dateOnly: string) {
@@ -229,7 +221,7 @@ export default function PracticeMonthView({ data }: PracticeMonthViewProps) {
 
       <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Practice calendar
+          Month at a glance
         </h2>
 
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -299,82 +291,11 @@ export default function PracticeMonthView({ data }: PracticeMonthViewProps) {
             Tunes with the most logged practice activity this month.
           </p>
 
-          {data.tuneSummaries.length === 0 ? (
-            <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
-              No tune practice has been logged in this month yet.
-            </p>
-          ) : (
-            <div className="mt-5 space-y-3">
-              {[...data.tuneSummaries]
-                .sort(
-                  (a, b) =>
-                    b.eventCount - a.eventCount ||
-                    b.noteCount - a.noteCount ||
-                    b.latestEventAt.localeCompare(a.latestEventAt)
-                )
-                .slice(0, 10)
-                .map((summary) => (
-                  <article
-                    key={summary.piece.id}
-                    className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
-                  >
-                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                      <div>
-                        <Link
-                          href={`/library/${summary.piece.id}`}
-                          className="font-serif text-2xl font-bold text-foreground transition hover:text-primary"
-                        >
-                          {summary.piece.title}
-                        </Link>
-
-                        <p className="mt-2 text-sm text-muted-foreground">
-                          {[
-                            summary.piece.key,
-                            summary.piece.style,
-                            summary.piece.time_signature,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ") || "No metadata yet"}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                          {summary.eventCount} events
-                        </span>
-
-                        {summary.latestOutcome ? (
-                          <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                            {summary.latestOutcome}
-                          </span>
-                        ) : null}
-
-                        {typeof summary.latestStage === "number" ? (
-                          <span className="rounded-full border border-accent bg-accent px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-accent-foreground">
-                            Stage {summary.latestStage}
-                          </span>
-                        ) : null}
-                      </div>
-                    </div>
-
-                    <div className="mt-3 flex flex-wrap gap-3 text-sm leading-6 text-muted-foreground">
-                      <span>{summary.noteCount} notes</span>
-                      <span aria-hidden="true">|</span>
-                      <span>
-                        latest activity{" "}
-                        {formatDateOnly(summary.latestEventAt.slice(0, 10))}
-                      </span>
-                    </div>
-
-                    {summary.latestNoteSnippet ? (
-                      <p className="mt-3 rounded-2xl border border-border bg-card p-4 text-sm leading-6 text-foreground">
-                        {summary.latestNoteSnippet}
-                      </p>
-                    ) : null}
-                  </article>
-                ))}
-            </div>
-          )}
+          <PracticeTuneSummaryList
+            summaries={data.tuneSummaries}
+            emptyMessage="No tune practice has been logged in this month yet."
+            sortMode="mostPractised"
+          />
         </section>
 
         <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
@@ -386,56 +307,10 @@ export default function PracticeMonthView({ data }: PracticeMonthViewProps) {
             The practice lenses that appeared in notes this month.
           </p>
 
-          {data.categorySummaries.length === 0 ? (
-            <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
-              No categorised notes this month.
-            </p>
-          ) : (
-            <div className="mt-5 space-y-3">
-              {data.categorySummaries.map((summary) => (
-                <article
-                  key={summary.categoryId}
-                  className="rounded-2xl border border-border bg-background/70 p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-sm font-semibold text-foreground">
-                      {summary.categoryName}
-                    </h3>
-
-                    <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                      {summary.noteCount}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 space-y-3">
-                    {summary.notes.map((note) => (
-                      <div
-                        key={note.noteId}
-                        className="rounded-xl border border-border bg-card p-3"
-                      >
-                        {note.pieceId && note.tuneTitle ? (
-                          <Link
-                            href={`/library/${note.pieceId}`}
-                            className="text-sm font-semibold text-foreground transition hover:text-primary"
-                          >
-                            {note.tuneTitle}
-                          </Link>
-                        ) : (
-                          <p className="text-sm font-semibold text-muted-foreground">
-                            General note
-                          </p>
-                        )}
-
-                        <p className="mt-2 text-sm leading-6 text-foreground">
-                          {note.body}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
+          <PracticeCategorySummaryList
+            summaries={data.categorySummaries}
+            emptyMessage="No categorised notes this month."
+          />
         </section>
       </section>
     </div>
