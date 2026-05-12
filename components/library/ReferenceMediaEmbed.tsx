@@ -52,7 +52,7 @@ export function getYouTubeEmbedUrl(referenceUrl: string): string | null {
 export default function ReferenceMediaEmbed({
   referenceUrl,
   title,
-  heading = "Reference video",
+  heading = "Reference video and loops",
   showHeading = true,
   pieceId,
   redirectTo,
@@ -71,7 +71,7 @@ export default function ReferenceMediaEmbed({
   return (
     <div>
       {showHeading ? (
-        <h2 className="mb-3 text-xl font-semibold text-foreground">
+        <h2 className="mb-5 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           {heading}
         </h2>
       ) : null}
