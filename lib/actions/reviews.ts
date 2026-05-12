@@ -83,6 +83,62 @@ async function findAvailableRecoveryDate(
   }
 }
 
+async function getValidActiveFocusId({
+  supabase,
+  userId,
+  focusId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  userId: string
+  focusId: number | null
+}) {
+  if (!focusId) {
+    return null
+  }
+
+  const { data, error } = await supabase
+    .from("practice_foci")
+    .select("id")
+    .eq("id", focusId)
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return data?.id ?? null
+}
+
+async function ensureTuneIsInFocus({
+  supabase,
+  userId,
+  focusId,
+  pieceId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  userId: string
+  focusId: number
+  pieceId: number
+}) {
+  const { error } = await supabase.from("practice_focus_tunes").upsert(
+    {
+      user_id: userId,
+      focus_id: focusId,
+      piece_id: pieceId,
+    },
+    {
+      onConflict: "focus_id,piece_id",
+      ignoreDuplicates: true,
+    }
+  )
+
+  if (error) {
+    throw new Error(error.message)
+  }
+}
+
 async function recordReview(
   formData: FormData,
   outcome: "solid" | "shaky" | "failed"
@@ -101,6 +157,9 @@ async function recordReview(
   const redirectTo = String(formData.get("redirectTo") || "/review")
   const noteBody = String(formData.get("practice_note") ?? "").trim()
   const categoryId = getOptionalPositiveNumber(formData.get("category_id"))
+  const requestedFocusId = getOptionalPositiveNumber(formData.get("focus_id"))
+  const shouldAddTuneToFocus =
+    String(formData.get("add_tune_to_focus") ?? "") === "on"
 
   const { data: userPiece, error: fetchError } = await supabase
     .from("user_pieces")
@@ -111,6 +170,21 @@ async function recordReview(
 
   if (fetchError) {
     throw new Error(fetchError.message)
+  }
+
+  const focusId = await getValidActiveFocusId({
+    supabase,
+    userId: user.id,
+    focusId: requestedFocusId,
+  })
+
+  if (focusId && shouldAddTuneToFocus) {
+    await ensureTuneIsInFocus({
+      supabase,
+      userId: user.id,
+      focusId,
+      pieceId: userPiece.piece_id,
+    })
   }
 
   const currentStage =
@@ -189,6 +263,7 @@ async function recordReview(
       pieceId: userPiece.piece_id,
       reviewEventId: reviewEvent.id,
       categoryId,
+      focusId,
       body: noteBody,
     })
   }

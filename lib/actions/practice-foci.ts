@@ -30,6 +30,16 @@ function asPositiveInteger(value: FormDataEntryValue | null) {
   return numberValue
 }
 
+function normaliseOptionalDateOnly(value: FormDataEntryValue | null) {
+  const date = String(value ?? "").trim()
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return date
+  }
+
+  return null
+}
+
 async function requireUser() {
   const supabase = await createClient()
 
@@ -53,7 +63,7 @@ export async function createPracticeFocus(formData: FormData) {
   const redirectTo = getRedirectTo(formData)
   const title = String(formData.get("title") ?? "").trim()
   const description = String(formData.get("description") ?? "").trim()
-  const targetDate = String(formData.get("target_date") ?? "").trim()
+  const targetDate = normaliseOptionalDateOnly(formData.get("target_date"))
 
   if (title === "") {
     redirect(appendStatus(redirectTo, "foci", "missing_title"))
@@ -65,7 +75,7 @@ export async function createPracticeFocus(formData: FormData) {
     description: description === "" ? null : description,
     status: "active",
     started_at: new Date().toISOString().slice(0, 10),
-    target_date: /^\d{4}-\d{2}-\d{2}$/.test(targetDate) ? targetDate : null,
+    target_date: targetDate,
   })
 
   if (error) {
@@ -74,6 +84,42 @@ export async function createPracticeFocus(formData: FormData) {
 
   revalidatePath("/review/foci")
   redirect(appendStatus(redirectTo, "foci", "created"))
+}
+
+export async function updatePracticeFocus(formData: FormData) {
+  const { supabase, user } = await requireUser()
+
+  const redirectTo = getRedirectTo(formData)
+  const focusId = asPositiveInteger(formData.get("focus_id"))
+  const title = String(formData.get("title") ?? "").trim()
+  const description = String(formData.get("description") ?? "").trim()
+  const targetDate = normaliseOptionalDateOnly(formData.get("target_date"))
+
+  if (!focusId) {
+    redirect(appendStatus(redirectTo, "foci", "missing_focus"))
+  }
+
+  if (title === "") {
+    redirect(appendStatus(redirectTo, "foci", "missing_title"))
+  }
+
+  const { error } = await supabase
+    .from("practice_foci")
+    .update({
+      title,
+      description: description === "" ? null : description,
+      target_date: targetDate,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", focusId)
+    .eq("user_id", user.id)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath("/review/foci")
+  redirect(appendStatus(redirectTo, "foci", "updated"))
 }
 
 export async function archivePracticeFocus(formData: FormData) {
@@ -104,6 +150,30 @@ export async function archivePracticeFocus(formData: FormData) {
 
   revalidatePath("/review/foci")
   redirect(appendStatus(redirectTo, "foci", "archived"))
+}
+
+export async function deletePracticeFocus(formData: FormData) {
+  const { supabase, user } = await requireUser()
+
+  const redirectTo = getRedirectTo(formData)
+  const focusId = asPositiveInteger(formData.get("focus_id"))
+
+  if (!focusId) {
+    redirect(appendStatus(redirectTo, "foci", "missing_focus"))
+  }
+
+  const { error } = await supabase
+    .from("practice_foci")
+    .delete()
+    .eq("id", focusId)
+    .eq("user_id", user.id)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath("/review/foci")
+  redirect(appendStatus(redirectTo, "foci", "deleted"))
 }
 
 export async function addTuneToPracticeFocus(formData: FormData) {

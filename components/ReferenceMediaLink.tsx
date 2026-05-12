@@ -1,47 +1,14 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import ReferenceMediaEmbed, {
+  getYouTubeVideoId,
+} from "@/components/library/ReferenceMediaEmbed"
 
 type ReferenceMediaLinkProps = {
   referenceUrl: string
   title: string
   className?: string
-}
-
-function getYouTubeEmbedUrl(referenceUrl: string): string | null {
-  let url: URL
-
-  try {
-    url = new URL(referenceUrl)
-  } catch {
-    return null
-  }
-
-  const host = url.hostname.replace(/^www\./, "")
-
-  if (host === "youtube.com" || host === "m.youtube.com") {
-    if (url.pathname === "/watch") {
-      const videoId = url.searchParams.get("v")
-      return videoId ? `https://www.youtube.com/embed/${videoId}` : null
-    }
-
-    if (url.pathname.startsWith("/embed/")) {
-      const videoId = url.pathname.split("/embed/")[1]
-      return videoId ? `https://www.youtube.com/embed/${videoId}` : null
-    }
-
-    if (url.pathname.startsWith("/shorts/")) {
-      const videoId = url.pathname.split("/shorts/")[1]
-      return videoId ? `https://www.youtube.com/embed/${videoId}` : null
-    }
-  }
-
-  if (host === "youtu.be") {
-    const videoId = url.pathname.replace(/^\/+/, "")
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : null
-  }
-
-  return null
 }
 
 export default function ReferenceMediaLink({
@@ -51,8 +18,8 @@ export default function ReferenceMediaLink({
 }: ReferenceMediaLinkProps) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const embedUrl = useMemo(() => getYouTubeEmbedUrl(referenceUrl), [referenceUrl])
-  const isYouTube = Boolean(embedUrl)
+  const videoId = useMemo(() => getYouTubeVideoId(referenceUrl), [referenceUrl])
+  const isYouTube = Boolean(videoId)
 
   if (!referenceUrl) {
     return null
@@ -77,24 +44,20 @@ export default function ReferenceMediaLink({
         type="button"
         onClick={() => setIsOpen((current) => !current)}
         className={className ?? "text-sm underline"}
+        aria-expanded={isOpen}
       >
-        {isOpen ? "Hide reference" : "Reference"}
+        {isOpen ? "Hide reference" : "Show reference"}
       </button>
 
-      {isOpen && embedUrl && (
-        <div className="mt-3 overflow-hidden rounded border">
-          <div className="aspect-video w-full">
-            <iframe
-              src={embedUrl}
-              title={`${title} reference video`}
-              className="h-full w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
-          </div>
+      {isOpen ? (
+        <div className="mt-3 overflow-hidden rounded-2xl border border-border bg-background/70 p-3">
+          <ReferenceMediaEmbed
+            referenceUrl={referenceUrl}
+            title={title}
+            showHeading={false}
+          />
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

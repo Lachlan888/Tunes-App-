@@ -11,12 +11,17 @@ type PracticeFociPageProps = {
 
 function getFociStatusMessage(status: string | undefined) {
   if (status === "created") return "Practice focus created."
+  if (status === "updated") return "Practice focus updated."
+  if (status === "deleted") return "Practice focus deleted."
   if (status === "archived") return "Practice focus archived."
   if (status === "tune_added") return "Tune added to focus."
   if (status === "tune_removed") return "Tune removed from focus."
   if (status === "missing_title") return "Add a title before creating a focus."
   if (status === "missing_focus") return "Could not find that focus."
   if (status === "missing_piece") return "Choose a tune first."
+  if (status === "missing_focus_tune") {
+    return "Could not find that tune link."
+  }
   if (status === "focus_not_found") return "That focus could not be found."
   if (status === "focus_not_active") {
     return "Only active foci can be changed."

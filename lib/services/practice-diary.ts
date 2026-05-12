@@ -24,6 +24,7 @@ type RecordPracticeNoteParams = {
   pieceId?: number | null
   reviewEventId?: number | null
   categoryId?: number | null
+  focusId?: number | null
 }
 
 export async function ensurePracticeDayForDate({
@@ -99,6 +100,7 @@ export async function recordPracticeNote({
   pieceId = null,
   reviewEventId = null,
   categoryId = null,
+  focusId = null,
 }: RecordPracticeNoteParams) {
   const trimmedBody = body.trim()
 
@@ -115,6 +117,7 @@ export async function recordPracticeNote({
       piece_id: pieceId,
       review_event_id: reviewEventId,
       category_id: categoryId,
+      focus_id: focusId,
       body: trimmedBody,
     })
     .select("id")

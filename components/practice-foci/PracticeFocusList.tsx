@@ -1,6 +1,13 @@
+"use client"
+
+import { useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import { buttonStyles } from "@/components/ui/buttonStyles"
-import { archivePracticeFocus } from "@/lib/actions/practice-foci"
+import {
+  archivePracticeFocus,
+  deletePracticeFocus,
+  updatePracticeFocus,
+} from "@/lib/actions/practice-foci"
 import type {
   ActivePracticeTuneOption,
   PracticeFocus,
@@ -34,6 +41,106 @@ function getStatusClasses(status: PracticeFocus["status"]) {
   return "border border-border bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground"
 }
 
+function FocusEditPanel({
+  focus,
+  onCancel,
+}: {
+  focus: PracticeFocus
+  onCancel: () => void
+}) {
+  return (
+    <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
+      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        Edit focus
+      </p>
+
+      <form action={updatePracticeFocus} className="mt-4 grid gap-4">
+        <input type="hidden" name="focus_id" value={focus.id} />
+        <input type="hidden" name="redirect_to" value="/review/foci" />
+
+        <label className="grid gap-2 text-sm font-medium text-foreground">
+          Title
+          <input
+            name="title"
+            required
+            defaultValue={focus.title}
+            className="rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+          />
+        </label>
+
+        <label className="grid gap-2 text-sm font-medium text-foreground">
+          Description
+          <textarea
+            name="description"
+            rows={4}
+            defaultValue={focus.description ?? ""}
+            className="rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+          />
+        </label>
+
+        <label className="grid gap-2 text-sm font-medium text-foreground">
+          Optional target date
+          <input
+            name="target_date"
+            type="date"
+            defaultValue={focus.target_date ?? ""}
+            className="rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+          />
+        </label>
+
+        <div className="flex flex-wrap gap-3">
+          <SubmitButton
+            label="Save focus"
+            pendingLabel="Saving..."
+            className={buttonStyles.primary}
+          />
+
+          <button
+            type="button"
+            className={buttonStyles.secondary}
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+
+      <div className="mt-5 rounded-2xl border border-destructive/40 bg-destructive/10 p-4">
+        <p className="text-sm font-semibold text-destructive">Danger zone</p>
+
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          Delete this focus permanently. This removes the focus and its tune
+          links, but does not remove tunes from practice and does not delete
+          diary notes.
+        </p>
+
+        <form
+          action={deletePracticeFocus}
+          className="mt-4"
+          onSubmit={(event) => {
+            const confirmed = window.confirm(
+              `Delete "${focus.title}" permanently? This cannot be undone.`
+            )
+
+            if (!confirmed) {
+              event.preventDefault()
+            }
+          }}
+        >
+          <input type="hidden" name="focus_id" value={focus.id} />
+          <input type="hidden" name="redirect_to" value="/review/foci" />
+
+          <SubmitButton
+            label="Delete focus"
+            pendingLabel="Deleting..."
+            className={buttonStyles.destructive}
+          />
+        </form>
+      </div>
+    </div>
+  )
+}
+
 function FocusCard({
   focus,
   activePracticeTunes,
@@ -41,6 +148,8 @@ function FocusCard({
   focus: PracticeFocus
   activePracticeTunes: ActivePracticeTuneOption[]
 }) {
+  const [isEditing, setIsEditing] = useState(false)
+
   return (
     <article className="rounded-3xl border border-border bg-card p-6 shadow-sm">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -72,19 +181,33 @@ function FocusCard({
           ) : null}
         </div>
 
-        {focus.status === "active" ? (
-          <form action={archivePracticeFocus}>
-            <input type="hidden" name="focus_id" value={focus.id} />
-            <input type="hidden" name="redirect_to" value="/review/foci" />
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className={buttonStyles.secondary}
+            onClick={() => setIsEditing((current) => !current)}
+          >
+            {isEditing ? "Close edit" : "Edit focus"}
+          </button>
 
-            <SubmitButton
-              label="Archive focus"
-              pendingLabel="Archiving..."
-              className={buttonStyles.secondary}
-            />
-          </form>
-        ) : null}
+          {focus.status === "active" ? (
+            <form action={archivePracticeFocus}>
+              <input type="hidden" name="focus_id" value={focus.id} />
+              <input type="hidden" name="redirect_to" value="/review/foci" />
+
+              <SubmitButton
+                label="Archive focus"
+                pendingLabel="Archiving..."
+                className={buttonStyles.secondary}
+              />
+            </form>
+          ) : null}
+        </div>
       </div>
+
+      {isEditing ? (
+        <FocusEditPanel focus={focus} onCancel={() => setIsEditing(false)} />
+      ) : null}
 
       <PracticeFocusTuneManager
         focus={focus}

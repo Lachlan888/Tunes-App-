@@ -49,12 +49,46 @@ type RecentPracticeNoteRow = {
   practice_days: PracticeDayRelation
 }
 
+type PracticeFocusRelation =
+  | {
+      id: number
+      title: string
+      description: string | null
+      status: string
+    }
+  | {
+      id: number
+      title: string
+      description: string | null
+      status: string
+    }[]
+  | null
+
+type PracticeFocusTuneRow = {
+  id: number
+  piece_id: number
+  practice_foci: PracticeFocusRelation
+}
+
+type PracticeFocusRow = {
+  id: number
+  title: string
+  description: string | null
+  status: string
+}
+
 export type RecentPracticeNoteForReview = {
   id: number
   body: string
   created_at: string
   practice_date: string | null
   category_name: string | null
+}
+
+export type PracticeFocusForReview = {
+  id: number
+  title: string
+  description: string | null
 }
 
 export type ReviewQueueItem = UserPiece & {
@@ -64,6 +98,8 @@ export type ReviewQueueItem = UserPiece & {
   backlog_tier: BacklogTier | null
   backlog_label: string | null
   recent_practice_notes: RecentPracticeNoteForReview[]
+  active_practice_foci: PracticeFocusForReview[]
+  practice_focus_options: PracticeFocusForReview[]
 }
 
 function getPiece(pieces: Piece[] | Piece | null): Piece | null {
@@ -209,6 +245,90 @@ async function loadRecentPracticeNotesByPieceId(
   return notesByPieceId
 }
 
+async function loadActivePracticeFociByPieceId(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  pieceIds: number[]
+) {
+  const fociByPieceId = new Map<number, PracticeFocusForReview[]>()
+
+  if (pieceIds.length === 0) {
+    return fociByPieceId
+  }
+
+  const { data, error } = await supabase
+    .from("practice_focus_tunes")
+    .select(
+      `
+        id,
+        piece_id,
+        practice_foci!inner (
+          id,
+          title,
+          description,
+          status
+        )
+      `
+    )
+    .eq("user_id", userId)
+    .in("piece_id", pieceIds)
+    .eq("practice_foci.status", "active")
+    .order("created_at", { ascending: true })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  for (const row of (data ?? []) as PracticeFocusTuneRow[]) {
+    const focus = getSingleJoinedRow(row.practice_foci)
+
+    if (!focus || focus.status !== "active") {
+      continue
+    }
+
+    const existing = fociByPieceId.get(row.piece_id) ?? []
+
+    existing.push({
+      id: focus.id,
+      title: focus.title,
+      description: focus.description,
+    })
+
+    fociByPieceId.set(row.piece_id, existing)
+  }
+
+  return fociByPieceId
+}
+
+async function loadActivePracticeFocusOptions(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string
+): Promise<PracticeFocusForReview[]> {
+  const { data, error } = await supabase
+    .from("practice_foci")
+    .select(
+      `
+        id,
+        title,
+        description,
+        status
+      `
+    )
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return ((data ?? []) as PracticeFocusRow[]).map((focus) => ({
+    id: focus.id,
+    title: focus.title,
+    description: focus.description,
+  }))
+}
+
 export async function loadReviewPageData() {
   const supabase = await createClient()
 
@@ -282,6 +402,17 @@ export async function loadReviewPageData() {
     pieceIds
   )
 
+  const activeFociByPieceId = await loadActivePracticeFociByPieceId(
+    supabase,
+    user.id,
+    pieceIds
+  )
+
+  const activeFocusOptions = await loadActivePracticeFocusOptions(
+    supabase,
+    user.id
+  )
+
   const today = getToday()
 
   const practiceItems: ReviewQueueItem[] = rows
@@ -298,6 +429,9 @@ export async function loadReviewPageData() {
         backlog_label: backlogTier ? getBacklogTierLabel(backlogTier) : null,
         recent_practice_notes:
           recentNotesByPieceId.get(userPiece.piece_id) ?? [],
+        active_practice_foci:
+          activeFociByPieceId.get(userPiece.piece_id) ?? [],
+        practice_focus_options: activeFocusOptions,
       }
     })
     .sort(sortByDueDateAscending)

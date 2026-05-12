@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import Link from "next/link"
+import { useEffect, useMemo, useState } from "react"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import PracticeProgress from "@/components/practice/PracticeProgress"
 import ReferenceMediaLink from "@/components/ReferenceMediaLink"
@@ -12,6 +13,7 @@ import { markFailed, markShaky, markSolid } from "@/lib/actions/reviews"
 import { APP_TIME_ZONE } from "@/lib/review"
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type {
+  PracticeFocusForReview,
   RecentPracticeNoteForReview,
   ReviewQueueItem,
 } from "@/lib/loaders/review"
@@ -77,6 +79,39 @@ function formatDateOnly(dateOnly: string | null) {
   }
 
   return `${day}/${month}/${year}`
+}
+
+function ActivePracticeFoci({
+  foci,
+}: {
+  foci: PracticeFocusForReview[]
+}) {
+  if (foci.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="mt-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        Active foci
+      </p>
+
+      <p className="mt-1 text-sm italic leading-6 text-muted-foreground">
+        {foci.map((focus, index) => (
+          <span key={focus.id}>
+            <Link
+              href="/review/foci"
+              className="underline decoration-border underline-offset-4 transition hover:text-foreground hover:decoration-primary"
+              title={focus.description ?? undefined}
+            >
+              {focus.title}
+            </Link>
+            {index < foci.length - 1 ? ", " : ""}
+          </span>
+        ))}
+      </p>
+    </div>
+  )
 }
 
 function RecentPracticeNotes({
@@ -155,6 +190,7 @@ function DirectReviewForms({
         <form key={reviewOutcome.outcome} action={reviewOutcome.action}>
           <input type="hidden" name="userPieceId" value={userPieceId} />
           <input type="hidden" name="redirectTo" value={redirectTo} />
+
           <SubmitButton
             label={reviewOutcome.label}
             pendingLabel="Saving..."
@@ -224,6 +260,7 @@ function AddCategoryInReviewModal({
             <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               Category name
             </span>
+
             <input
               name="name"
               placeholder="Tone"
@@ -236,6 +273,7 @@ function AddCategoryInReviewModal({
             <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               Prompt, optional
             </span>
+
             <textarea
               name="prompt"
               rows={3}
@@ -264,19 +302,35 @@ function AddCategoryInReviewModal({
 
 function ReviewNoteModal({
   selectedOutcome,
-  userPieceId,
+  userPiece,
   redirectTo,
   title,
   noteCategories,
   onClose,
 }: {
   selectedOutcome: ReviewOutcomeConfig
-  userPieceId: number
+  userPiece: ReviewQueueItem
   redirectTo: string
   title: string
   noteCategories: PracticeNoteCategory[]
   onClose: () => void
 }) {
+  const [selectedFocusId, setSelectedFocusId] = useState("")
+
+  const linkedFocusIds = useMemo(
+    () => new Set(userPiece.active_practice_foci.map((focus) => focus.id)),
+    [userPiece.active_practice_foci]
+  )
+
+  const selectedFocusNumber = Number(selectedFocusId)
+
+  const selectedFocusIsAlreadyLinked =
+    Number.isInteger(selectedFocusNumber) &&
+    linkedFocusIds.has(selectedFocusNumber)
+
+  const shouldShowAddTuneToFocus =
+    selectedFocusId !== "" && !selectedFocusIsAlreadyLinked
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -336,7 +390,7 @@ function ReviewNoteModal({
           <AddCategoryInReviewModal redirectTo={redirectTo} />
 
           <form action={selectedOutcome.action} className="space-y-4">
-            <input type="hidden" name="userPieceId" value={userPieceId} />
+            <input type="hidden" name="userPieceId" value={userPiece.id} />
             <input type="hidden" name="redirectTo" value={redirectTo} />
 
             <label className="block">
@@ -357,6 +411,43 @@ function ReviewNoteModal({
                 ))}
               </select>
             </label>
+
+            {userPiece.practice_focus_options.length > 0 ? (
+              <label className="block">
+                <span className="text-sm font-semibold text-foreground">
+                  Focus
+                </span>
+
+                <select
+                  name="focus_id"
+                  value={selectedFocusId}
+                  onChange={(event) => setSelectedFocusId(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                >
+                  <option value="">No focus</option>
+                  {userPiece.practice_focus_options.map((focus) => (
+                    <option key={focus.id} value={focus.id}>
+                      {focus.title}
+                      {linkedFocusIds.has(focus.id) ? " (already linked)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+
+            {shouldShowAddTuneToFocus ? (
+              <label className="flex gap-3 rounded-2xl border border-border bg-background/70 p-3 text-sm leading-6 text-muted-foreground">
+                <input
+                  type="checkbox"
+                  name="add_tune_to_focus"
+                  defaultChecked
+                  className="mt-1"
+                />
+                <span>
+                  Also add this tune to the selected focus from now on.
+                </span>
+              </label>
+            ) : null}
 
             <label className="block">
               <span className="text-sm font-semibold text-foreground">
@@ -466,6 +557,8 @@ export default function PracticeReviewCard({
 
       <PracticeProgress stage={userPiece.stage} className="mt-5" />
 
+      <ActivePracticeFoci foci={userPiece.active_practice_foci} />
+
       <RecentPracticeNotes notes={userPiece.recent_practice_notes} />
 
       <div className="mt-6">
@@ -486,7 +579,7 @@ export default function PracticeReviewCard({
       {selectedOutcome ? (
         <ReviewNoteModal
           selectedOutcome={selectedOutcome}
-          userPieceId={userPiece.id}
+          userPiece={userPiece}
           redirectTo={redirectTo}
           title={title}
           noteCategories={noteCategories}

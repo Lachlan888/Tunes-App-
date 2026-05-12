@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import ReferenceMediaEmbed, {
-  getYouTubeEmbedUrl,
+  getYouTubeVideoId,
 } from "@/components/library/ReferenceMediaEmbed"
 import SubmitButton from "@/components/SubmitButton"
 import { buttonStyles } from "@/components/ui/buttonStyles"
@@ -42,6 +42,7 @@ export default function PieceMediaLinksSection({
           <ReferenceMediaEmbed
             referenceUrl={referenceUrl}
             title={referenceTitle}
+            heading="Reference video"
           />
         </div>
       ) : null}
@@ -79,8 +80,9 @@ export default function PieceMediaLinksSection({
       {mediaLinks.length > 0 ? (
         <ul className="mt-6 space-y-3">
           {mediaLinks.map((link) => {
-            const embedUrl = getYouTubeEmbedUrl(link.url)
+            const videoId = getYouTubeVideoId(link.url)
             const isOpen = openMediaId === link.id
+            const label = link.label || "Untitled media link"
 
             return (
               <li
@@ -89,11 +91,11 @@ export default function PieceMediaLinksSection({
               >
                 <div className="space-y-3">
                   <p className="text-sm font-medium text-foreground">
-                    {link.label || "Untitled media link"}
+                    {label}
                   </p>
 
                   <div className="flex flex-wrap gap-3 text-sm">
-                    {embedUrl ? (
+                    {videoId ? (
                       <button
                         type="button"
                         onClick={() =>
@@ -117,15 +119,12 @@ export default function PieceMediaLinksSection({
                     </a>
                   </div>
 
-                  {embedUrl && isOpen ? (
-                    <div className="aspect-video w-full overflow-hidden rounded-2xl border border-border">
-                      <iframe
-                        src={embedUrl}
-                        title={`${link.label || "Media"} player`}
-                        className="h-full w-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerPolicy="strict-origin-when-cross-origin"
-                        allowFullScreen
+                  {videoId && isOpen ? (
+                    <div className="rounded-2xl border border-border bg-card/60 p-3">
+                      <ReferenceMediaEmbed
+                        referenceUrl={link.url}
+                        title={label}
+                        showHeading={false}
                       />
                     </div>
                   ) : null}

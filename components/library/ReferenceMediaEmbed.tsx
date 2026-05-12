@@ -1,9 +1,13 @@
+import YouTubeLoopPlayer from "@/components/library/YouTubeLoopPlayer"
+
 type ReferenceMediaEmbedProps = {
   referenceUrl: string
   title: string
+  heading?: string
+  showHeading?: boolean
 }
 
-export function getYouTubeEmbedUrl(referenceUrl: string): string | null {
+export function getYouTubeVideoId(referenceUrl: string): string | null {
   let url: URL
 
   try {
@@ -16,53 +20,52 @@ export function getYouTubeEmbedUrl(referenceUrl: string): string | null {
 
   if (host === "youtube.com" || host === "m.youtube.com") {
     if (url.pathname === "/watch") {
-      const videoId = url.searchParams.get("v")
-      return videoId ? `https://www.youtube.com/embed/${videoId}` : null
+      return url.searchParams.get("v")
     }
 
     if (url.pathname.startsWith("/embed/")) {
-      const videoId = url.pathname.split("/embed/")[1]
-      return videoId ? `https://www.youtube.com/embed/${videoId}` : null
+      return url.pathname.split("/").filter(Boolean)[1] ?? null
     }
 
     if (url.pathname.startsWith("/shorts/")) {
-      const videoId = url.pathname.split("/shorts/")[1]
-      return videoId ? `https://www.youtube.com/embed/${videoId}` : null
+      return url.pathname.split("/").filter(Boolean)[1] ?? null
     }
   }
 
   if (host === "youtu.be") {
-    const videoId = url.pathname.replace(/^\/+/, "")
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : null
+    return url.pathname.split("/").filter(Boolean)[0] ?? null
   }
 
   return null
 }
 
+export function getYouTubeEmbedUrl(referenceUrl: string): string | null {
+  const videoId = getYouTubeVideoId(referenceUrl)
+
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : null
+}
+
 export default function ReferenceMediaEmbed({
   referenceUrl,
   title,
+  heading = "Reference video",
+  showHeading = true,
 }: ReferenceMediaEmbedProps) {
-  const embedUrl = getYouTubeEmbedUrl(referenceUrl)
+  const videoId = getYouTubeVideoId(referenceUrl)
 
-  if (!embedUrl) {
+  if (!videoId) {
     return null
   }
 
   return (
     <div>
-      <h2 className="mb-3 text-xl font-semibold">Reference video</h2>
+      {showHeading ? (
+        <h2 className="mb-3 text-xl font-semibold text-foreground">
+          {heading}
+        </h2>
+      ) : null}
 
-      <div className="aspect-video w-full overflow-hidden rounded border">
-        <iframe
-          src={embedUrl}
-          title={`${title} reference video`}
-          className="h-full w-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-          allowFullScreen
-        />
-      </div>
+      <YouTubeLoopPlayer videoId={videoId} title={`${title} video`} />
     </div>
   )
 }
