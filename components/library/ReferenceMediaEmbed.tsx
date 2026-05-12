@@ -1,10 +1,14 @@
 import YouTubeLoopPlayer from "@/components/library/YouTubeLoopPlayer"
+import type { UserPieceMediaLoop } from "@/lib/loaders/tune-detail"
 
 type ReferenceMediaEmbedProps = {
   referenceUrl: string
   title: string
   heading?: string
   showHeading?: boolean
+  pieceId?: number
+  redirectTo?: string
+  savedLoops?: UserPieceMediaLoop[]
 }
 
 export function getYouTubeVideoId(referenceUrl: string): string | null {
@@ -50,12 +54,19 @@ export default function ReferenceMediaEmbed({
   title,
   heading = "Reference video",
   showHeading = true,
+  pieceId,
+  redirectTo,
+  savedLoops = [],
 }: ReferenceMediaEmbedProps) {
   const videoId = getYouTubeVideoId(referenceUrl)
 
   if (!videoId) {
     return null
   }
+
+  const loopsForVideo = savedLoops.filter(
+    (loop) => loop.youtube_video_id === videoId
+  )
 
   return (
     <div>
@@ -65,7 +76,13 @@ export default function ReferenceMediaEmbed({
         </h2>
       ) : null}
 
-      <YouTubeLoopPlayer videoId={videoId} title={`${title} video`} />
+      <YouTubeLoopPlayer
+        videoId={videoId}
+        title={`${title} video`}
+        pieceId={pieceId}
+        redirectTo={redirectTo}
+        savedLoops={loopsForVideo}
+      />
     </div>
   )
 }

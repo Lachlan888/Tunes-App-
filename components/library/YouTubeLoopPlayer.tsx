@@ -1,7 +1,10 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import SubmitButton from "@/components/SubmitButton"
+import { createMediaLoop, deleteMediaLoop } from "@/lib/actions/media-loops"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
+import type { UserPieceMediaLoop } from "@/lib/loaders/tune-detail"
 
 type YouTubePlayer = {
   destroy: () => void
@@ -12,6 +15,7 @@ type YouTubePlayer = {
   setPlaybackRate: (rate: number) => void
   seekTo: (seconds: number, allowSeekAhead: boolean) => void
   playVideo: () => void
+  pauseVideo?: () => void
   getPlayerState?: () => number
 }
 
@@ -46,6 +50,9 @@ type YouTubeLoopPlayerProps = {
   videoId: string
   title: string
   className?: string
+  pieceId?: number
+  redirectTo?: string
+  savedLoops?: UserPieceMediaLoop[]
 }
 
 const DEFAULT_SPEEDS = [0.5, 0.75, 1]
@@ -163,10 +170,17 @@ function compactButton(className: string) {
   return `${className} px-3 py-2 text-xs sm:px-4 sm:text-sm`
 }
 
+function numericInputValue(value: number | null) {
+  return value === null ? "" : value.toFixed(2)
+}
+
 export default function YouTubeLoopPlayer({
   videoId,
   title,
   className,
+  pieceId,
+  redirectTo,
+  savedLoops = [],
 }: YouTubeLoopPlayerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const playerRef = useRef<YouTubePlayer | null>(null)
@@ -181,6 +195,8 @@ export default function YouTubeLoopPlayer({
   const [availableRates, setAvailableRates] = useState<number[]>(DEFAULT_SPEEDS)
   const [nudgeAmount, setNudgeAmount] = useState<NudgeAmount>(0.5)
   const [showLoopControls, setShowLoopControls] = useState(false)
+
+  const canSaveLoops = Boolean(pieceId && redirectTo)
 
   const hasValidLoop =
     loopStart !== null && loopEnd !== null && loopEnd > loopStart + 0.2
@@ -399,6 +415,31 @@ export default function YouTubeLoopPlayer({
     }
   }
 
+  function handleLoadSavedLoop(loop: UserPieceMediaLoop) {
+    const start = Number(loop.start_seconds)
+    const end = Number(loop.end_seconds)
+    const rate = Number(loop.playback_rate)
+
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+      return
+    }
+
+    setLoopStart(start)
+    setLoopEnd(end)
+    setLoopEnabled(true)
+    setShowLoopControls(true)
+
+    if (Number.isFinite(rate) && rate > 0) {
+      handlePlaybackRate(rate)
+    }
+
+    const player = playerRef.current
+    if (player) {
+      player.seekTo(start, true)
+      player.playVideo()
+    }
+  }
+
   return (
     <div className={joinClasses("space-y-3 sm:space-y-4", className)}>
       <div className="aspect-video w-full overflow-hidden rounded-2xl border border-border bg-foreground/10">
@@ -429,6 +470,86 @@ export default function YouTubeLoopPlayer({
             {showLoopControls ? "Hide loop controls" : "Show loop controls"}
           </button>
         </div>
+
+        {savedLoops.length > 0 ? (
+          <div className="mt-4 rounded-2xl border border-border bg-card/50 p-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Saved loops
+            </p>
+
+            <ul className="mt-3 space-y-2">
+              {savedLoops.map((loop) => (
+                <li
+                  key={loop.id}
+                  className="rounded-xl border border-border bg-background/70 p-3"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">
+                        {loop.label}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {formatTime(Number(loop.start_seconds), true)}–
+                        {formatTime(Number(loop.end_seconds), true)} ·{" "}
+                        {Number(loop.playback_rate)}x
+                      </p>
+                      {loop.notes ? (
+                        <p className="mt-2 text-sm leading-5 text-muted-foreground">
+                          {loop.notes}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className={compactButton(buttonStyles.secondaryStrong)}
+                        onClick={() => handleLoadSavedLoop(loop)}
+                        disabled={!isReady}
+                      >
+                        Play loop
+                      </button>
+
+                      {pieceId && redirectTo ? (
+                        <form
+                          action={deleteMediaLoop}
+                          onSubmit={(event) => {
+                            const confirmed = window.confirm(
+                              `Delete saved loop "${loop.label}"?`
+                            )
+
+                            if (!confirmed) {
+                              event.preventDefault()
+                            }
+                          }}
+                        >
+                          <input type="hidden" name="loop_id" value={loop.id} />
+                          <input
+                            type="hidden"
+                            name="piece_id"
+                            value={pieceId}
+                          />
+                          <input
+                            type="hidden"
+                            name="redirect_to"
+                            value={redirectTo}
+                          />
+                          <SubmitButton
+                            label="Delete"
+                            pendingLabel="Deleting..."
+                            className={compactButton(
+                              buttonStyles.destructiveSecondary
+                            )}
+                          />
+                        </form>
+                      ) : null}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         {showLoopControls ? (
           <div className="mt-4 space-y-3 sm:space-y-4">
@@ -618,6 +739,66 @@ export default function YouTubeLoopPlayer({
               </div>
             </div>
 
+            {canSaveLoops ? (
+              <form
+                action={createMediaLoop}
+                className="space-y-3 rounded-2xl border border-border bg-card/50 p-3"
+              >
+                <input type="hidden" name="piece_id" value={pieceId} />
+                <input type="hidden" name="redirect_to" value={redirectTo} />
+                <input type="hidden" name="youtube_video_id" value={videoId} />
+                <input
+                  type="hidden"
+                  name="start_seconds"
+                  value={numericInputValue(loopStart)}
+                />
+                <input
+                  type="hidden"
+                  name="end_seconds"
+                  value={numericInputValue(loopEnd)}
+                />
+                <input
+                  type="hidden"
+                  name="playback_rate"
+                  value={playbackRate}
+                />
+
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Save loop
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Save the current loop points with a label so they appear on
+                    this tune next time.
+                  </p>
+                </div>
+
+                <input
+                  name="label"
+                  placeholder="Label, eg B part"
+                  className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  required
+                  disabled={!hasValidLoop}
+                />
+
+                <textarea
+                  name="notes"
+                  placeholder="Optional note"
+                  rows={3}
+                  className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  disabled={!hasValidLoop}
+                />
+
+                <button
+                  type="submit"
+                  className={buttonStyles.primary}
+                  disabled={!hasValidLoop}
+                >
+                  Save loop
+                </button>
+              </form>
+            ) : null}
+
             {!isReady ? (
               <p className="text-sm text-muted-foreground">
                 Loading YouTube controls...
@@ -630,14 +811,14 @@ export default function YouTubeLoopPlayer({
             ) : (
               <p className="text-sm leading-6 text-muted-foreground">
                 Nudge size defaults to 0.5s. Use 0.1s for fine trimming, or 1s
-                for rough movement. Loop points reset when this player closes.
+                for rough movement.
               </p>
             )}
           </div>
         ) : (
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Open loop controls to set a temporary Tap in / Tap out loop, change
-            speed, or trim the loop points.
+            Open loop controls to set a Tap in / Tap out loop, change speed,
+            trim the loop points, or save a labelled loop.
           </p>
         )}
       </div>

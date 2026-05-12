@@ -31,6 +31,7 @@ type PiecePageProps = {
     lore?: string | string[]
     moderator_edit?: string | string[]
     diary?: string | string[]
+    loop?: string | string[]
     page_options?: string | string[]
   }>
 }
@@ -76,6 +77,7 @@ function getStatusMessage({
   lore,
   moderatorEdit,
   diary,
+  loop,
   pageOptions,
 }: {
   editRequest: string
@@ -84,6 +86,7 @@ function getStatusMessage({
   lore: string
   moderatorEdit: string
   diary: string
+  loop: string
   pageOptions: string
 }) {
   if (editRequest === "success") return "Edit request submitted."
@@ -123,6 +126,14 @@ function getStatusMessage({
     return "Enable Practice Diary before logging tune practice checks."
   if (diary === "invalid_outcome") return "Choose Rough, Shaky, or Solid."
   if (diary === "missing_piece") return "Could not find that tune."
+
+  if (loop === "saved") return "Loop saved."
+  if (loop === "deleted") return "Loop deleted."
+  if (loop === "missing_fields") return "Add a label before saving the loop."
+  if (loop === "invalid_range") return "Set a valid loop start and end first."
+  if (loop === "missing_loop") return "Could not find that saved loop."
+  if (loop === "missing_piece") return "Could not find that tune."
+  if (loop === "error") return "Could not save loop."
 
   if (pageOptions === "saved") return "Tune page options saved."
   if (pageOptions === "reset") return "Tune page options reset."
@@ -164,6 +175,7 @@ export default async function PiecePage({
     typedUserPieceMetadata,
     typedSheetMusicLinks,
     typedMediaLinks,
+    typedMediaLoops,
     typedPieceComments,
     typedPieceLoreEntries,
     typedUserPiece,
@@ -185,6 +197,7 @@ export default async function PiecePage({
     lore: getSingleValue(resolvedSearchParams?.lore),
     moderatorEdit: getSingleValue(resolvedSearchParams?.moderator_edit),
     diary: getSingleValue(resolvedSearchParams?.diary),
+    loop: getSingleValue(resolvedSearchParams?.loop),
     pageOptions: getSingleValue(resolvedSearchParams?.page_options),
   })
 
@@ -296,6 +309,7 @@ export default async function PiecePage({
               pieceId={pieceId}
               redirectTo={redirectTo}
               mediaLinks={typedMediaLinks}
+              savedLoops={typedMediaLoops}
               referenceUrl={typedPiece.reference_url}
               referenceTitle={typedPiece.title}
               addPieceMediaLink={addPieceMediaLink}

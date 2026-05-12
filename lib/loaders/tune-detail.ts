@@ -30,6 +30,19 @@ export type PieceMediaLink = {
   label: string | null
 }
 
+export type UserPieceMediaLoop = {
+  id: number
+  piece_id: number
+  youtube_video_id: string
+  label: string
+  start_seconds: number
+  end_seconds: number
+  playback_rate: number
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
 export type PieceCommentRow = {
   id: number
   body: string
@@ -136,6 +149,7 @@ export type TuneDetailLoadResult =
       typedUserPieceMetadata: UserPieceMetadata | null
       typedSheetMusicLinks: PieceSheetMusicLink[]
       typedMediaLinks: PieceMediaLink[]
+      typedMediaLoops: UserPieceMediaLoop[]
       typedPieceComments: PieceCommentRow[]
       typedPieceLoreEntries: PieceLoreEntryRow[]
       typedUserPiece: UserPiece | null
@@ -256,6 +270,7 @@ export async function loadTuneDetailData(
     userPieceMetadataResult,
     sheetMusicLinksResult,
     mediaLinksResult,
+    mediaLoopsResult,
     pieceCommentsResult,
     pieceLoreEntriesResult,
     userPieceResult,
@@ -284,6 +299,15 @@ export async function loadTuneDetailData(
     supabase
       .from("piece_media_links")
       .select("id, url, label")
+      .eq("piece_id", pieceId)
+      .order("created_at", { ascending: true }),
+
+    supabase
+      .from("user_piece_media_loops")
+      .select(
+        "id, piece_id, youtube_video_id, label, start_seconds, end_seconds, playback_rate, notes, created_at, updated_at"
+      )
+      .eq("user_id", user.id)
       .eq("piece_id", pieceId)
       .order("created_at", { ascending: true }),
 
@@ -393,6 +417,8 @@ export async function loadTuneDetailData(
     (sheetMusicLinksResult.data as PieceSheetMusicLink[] | null) ?? []
   const typedMediaLinks =
     (mediaLinksResult.data as PieceMediaLink[] | null) ?? []
+  const typedMediaLoops =
+    (mediaLoopsResult.data as UserPieceMediaLoop[] | null) ?? []
   const typedPieceComments =
     (pieceCommentsResult.data as PieceCommentRow[] | null) ?? []
   const typedPieceLoreEntries =
@@ -454,6 +480,7 @@ export async function loadTuneDetailData(
     typedUserPieceMetadata,
     typedSheetMusicLinks,
     typedMediaLinks,
+    typedMediaLoops,
     typedPieceComments,
     typedPieceLoreEntries,
     typedUserPiece,

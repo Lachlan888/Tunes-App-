@@ -6,6 +6,7 @@ import ReferenceMediaEmbed, {
 } from "@/components/library/ReferenceMediaEmbed"
 import SubmitButton from "@/components/SubmitButton"
 import { buttonStyles } from "@/components/ui/buttonStyles"
+import type { UserPieceMediaLoop } from "@/lib/loaders/tune-detail"
 
 type PieceMediaLink = {
   id: number
@@ -19,6 +20,7 @@ type PieceMediaLinksSectionProps = {
   mediaLinks: PieceMediaLink[]
   referenceUrl?: string | null
   referenceTitle?: string
+  savedLoops: UserPieceMediaLoop[]
   addPieceMediaLink: (formData: FormData) => Promise<void>
 }
 
@@ -31,6 +33,7 @@ export default function PieceMediaLinksSection({
   mediaLinks,
   referenceUrl,
   referenceTitle = "Tune",
+  savedLoops,
   addPieceMediaLink,
 }: PieceMediaLinksSectionProps) {
   const [openMediaId, setOpenMediaId] = useState<number | null>(null)
@@ -43,6 +46,9 @@ export default function PieceMediaLinksSection({
             referenceUrl={referenceUrl}
             title={referenceTitle}
             heading="Reference video"
+            pieceId={pieceId}
+            redirectTo={redirectTo}
+            savedLoops={savedLoops}
           />
         </div>
       ) : null}
@@ -125,6 +131,9 @@ export default function PieceMediaLinksSection({
                         referenceUrl={link.url}
                         title={label}
                         showHeading={false}
+                        pieceId={pieceId}
+                        redirectTo={redirectTo}
+                        savedLoops={savedLoops}
                       />
                     </div>
                   ) : null}
