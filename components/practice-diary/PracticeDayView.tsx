@@ -1,6 +1,7 @@
 import DailyReflectionForm from "@/components/practice-diary/DailyReflectionForm"
 import PracticeCategoryManager from "@/components/practice-diary/PracticeCategoryManager"
 import PracticeDayNavigator from "@/components/practice-diary/PracticeDayNavigator"
+import PracticeDueTuneList from "@/components/practice-diary/PracticeDueTuneList"
 import PracticeEventList from "@/components/practice-diary/PracticeEventList"
 import type { PracticeDiaryDayDataWithNotes } from "@/lib/loaders/practice-diary"
 
@@ -72,6 +73,32 @@ export default function PracticeDayView({ data }: PracticeDayViewProps) {
                 practiceDate={data.selectedDate}
                 redirectTo={redirectTo}
                 initialValue={data.practiceDay?.daily_reflection ?? ""}
+              />
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  Due on this day
+                </h2>
+
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  Tunes currently scheduled for review on this date, according
+                  to the current review database.
+                </p>
+              </div>
+
+              <p className="text-sm font-medium text-muted-foreground">
+                {data.dueTunes.length} due
+              </p>
+            </div>
+
+            <div className="mt-5">
+              <PracticeDueTuneList
+                dueTunes={data.dueTunes}
+                emptyMessage="No active-practice tunes are currently due on this day."
               />
             </div>
           </section>
