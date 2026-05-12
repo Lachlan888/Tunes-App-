@@ -90,6 +90,17 @@ function getLowerGridClass(homePreferences: PageOptionsPreferences) {
   }
 }
 
+function getLearningQueueMeta(options: {
+  firstListName: string
+  listNames: string[]
+}) {
+  if (options.listNames.length <= 1) {
+    return `In: ${options.firstListName}`
+  }
+
+  return `In: ${options.firstListName} + ${options.listNames.length - 1} more`
+}
+
 function OverviewCard({
   href,
   label,
@@ -290,9 +301,44 @@ export default function HomeSummarySection({
       ) : null}
 
       <section className={getLowerGridClass(homePreferences)}>
-        {(isSectionVisible(homePreferences, "due_next") ||
+        {(isSectionVisible(homePreferences, "learning_queue") ||
+          isSectionVisible(homePreferences, "due_next") ||
           isSectionVisible(homePreferences, "currently_in_practice")) ? (
           <div className="space-y-4">
+            {isSectionVisible(homePreferences, "learning_queue") ? (
+              <PreviewPanel
+                title="Learning queue"
+                href="/learning-lists"
+                linkLabel="Open queue"
+                density={density}
+              >
+                {summary.learningQueuePreview.length === 0 ? (
+                  <EmptyPreview>
+                    No saved tunes waiting to start. Add tunes to lists before
+                    starting Practice to build this queue.
+                  </EmptyPreview>
+                ) : (
+                  <ul className="space-y-3">
+                    {summary.learningQueuePreview
+                      .slice(0, previewLimit)
+                      .map((queueTune) => (
+                        <li key={queueTune.piece_id}>
+                          <PreviewLink
+                            href={`/library/${queueTune.piece_id}`}
+                            title={queueTune.title}
+                            meta={getLearningQueueMeta({
+                              firstListName: queueTune.firstListName,
+                              listNames: queueTune.listNames,
+                            })}
+                            density={density}
+                          />
+                        </li>
+                      ))}
+                  </ul>
+                )}
+              </PreviewPanel>
+            ) : null}
+
             {isSectionVisible(homePreferences, "due_next") ? (
               <PreviewPanel
                 title="Due next"

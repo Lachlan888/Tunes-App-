@@ -398,14 +398,25 @@ export type HomeListPreview = {
   name: string
 }
 
+export type HomeLearningQueuePreview = {
+  piece_id: number
+  title: string
+  firstAddedAt: string | null
+  firstListId: number
+  firstListName: string
+  listNames: string[]
+}
+
 export type HomeSummaryData = {
   knownCount: number
   practiceCount: number
   dueTodayCount: number
   needsAttentionCount: number
   listCount: number
+  learningQueueCount: number
   badgeSummary: HomeBadgeSummary
   dueTodayPreview: HomeTunePreview[]
+  learningQueuePreview: HomeLearningQueuePreview[]
   inPracticePreview: HomeTunePreview[]
   listPreview: HomeListPreview[]
 }

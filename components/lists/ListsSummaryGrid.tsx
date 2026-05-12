@@ -1,7 +1,9 @@
 import EmptyState from "@/components/EmptyState"
+import LearningQueueModal from "@/components/lists/LearningQueueModal"
 import MyTunesModal from "@/components/lists/MyTunesModal"
 import UnlistedKnownTunesModal from "@/components/lists/UnlistedKnownTunesModal"
 import UnlistedPracticeTunesModal from "@/components/lists/UnlistedPracticeTunesModal"
+import type { LearningQueueTune } from "@/lib/loaders/lists"
 import type {
   LearningList,
   MyTuneRow,
@@ -11,10 +13,12 @@ import type {
 
 type ListsSummaryGridProps = {
   myTunes: MyTuneRow[]
+  learningQueueTunes: LearningQueueTune[]
   unlistedPracticeTunes: UserPieceWithPiece[]
   unlistedKnownTunes: UserKnownPieceWithPiece[]
   learningLists: LearningList[]
   addToLearningList: (formData: FormData) => Promise<void>
+  startLearning: (formData: FormData) => Promise<void>
   redirectTo: string
 }
 
@@ -35,14 +39,17 @@ const summaryCardClass =
 
 export default function ListsSummaryGrid({
   myTunes,
+  learningQueueTunes,
   unlistedPracticeTunes,
   unlistedKnownTunes,
   learningLists,
   addToLearningList,
+  startLearning,
   redirectTo,
 }: ListsSummaryGridProps) {
   const visibleSummaryCount =
     1 +
+    (learningQueueTunes.length > 0 ? 1 : 0) +
     (unlistedPracticeTunes.length > 0 ? 1 : 0) +
     (unlistedKnownTunes.length > 0 ? 1 : 0)
 
@@ -79,6 +86,13 @@ export default function ListsSummaryGrid({
           </div>
         )}
       </section>
+
+      <LearningQueueModal
+        learningQueueTunes={learningQueueTunes}
+        startLearning={startLearning}
+        redirectTo={redirectTo}
+        summaryClassName={summaryCardClass}
+      />
 
       <UnlistedPracticeTunesModal
         unlistedPracticeTunes={unlistedPracticeTunes}

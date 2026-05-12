@@ -13,6 +13,7 @@ import type {
   GettingStartedTask,
   HomeBadgePreview,
   HomeBadgeSummary,
+  HomeLearningQueuePreview,
   HomeListPreview,
   HomeSummaryData,
   HomeTunePreview,
@@ -57,6 +58,39 @@ type HomePracticePreviewRow = UserPiece & {
     | null
 }
 
+type HomeKnownPieceRow = {
+  piece_id: number
+}
+
+type HomeLearningQueueItemRow = {
+  id: number
+  learning_list_id: number
+  created_at: string | null
+  piece_id: number
+  pieces:
+    | {
+        id: number
+        title: string
+      }
+    | {
+        id: number
+        title: string
+      }[]
+    | null
+  learning_lists:
+    | {
+        id: number
+        name: string
+        user_id: string
+      }
+    | {
+        id: number
+        name: string
+        user_id: string
+      }[]
+    | null
+}
+
 type HomeBadgeRow = {
   id: number
   name: string
@@ -71,6 +105,23 @@ type HomeBadgeAwardRow = {
   badges: HomeBadgeRow | HomeBadgeRow[] | null
 }
 
+function getJoinedPiece(
+  pieces:
+    | {
+        id: number
+        title: string
+      }
+    | {
+        id: number
+        title: string
+      }[]
+    | null
+) {
+  if (!pieces) return null
+
+  return Array.isArray(pieces) ? pieces[0] ?? null : pieces
+}
+
 function getJoinedPieceTitle(
   pieces:
     | {
@@ -83,11 +134,30 @@ function getJoinedPieceTitle(
       }[]
     | null
 ) {
-  if (!pieces) return "Untitled tune"
-
-  const piece = Array.isArray(pieces) ? pieces[0] ?? null : pieces
+  const piece = getJoinedPiece(pieces)
 
   return piece?.title ?? "Untitled tune"
+}
+
+function getJoinedList(
+  learningLists:
+    | {
+        id: number
+        name: string
+        user_id: string
+      }
+    | {
+        id: number
+        name: string
+        user_id: string
+      }[]
+    | null
+) {
+  if (!learningLists) return null
+
+  return Array.isArray(learningLists)
+    ? learningLists[0] ?? null
+    : learningLists
 }
 
 function toHomeTunePreview(row: HomePracticePreviewRow): HomeTunePreview {
@@ -131,6 +201,75 @@ function sortPracticePreviewRows(
   const bTitle = getJoinedPieceTitle(b.pieces)
 
   return aTitle.localeCompare(bTitle)
+}
+
+function getQueueSortValue(item: HomeLearningQueueItemRow) {
+  return item.created_at ?? `9999-12-31T23:59:59.999Z-${item.id}`
+}
+
+function buildLearningQueuePreview(options: {
+  rows: HomeLearningQueueItemRow[]
+  practicePieceIds: Set<number>
+  knownPieceIds: Set<number>
+}) {
+  const queueMap = new Map<
+    number,
+    HomeLearningQueuePreview & { firstAddedSortValue: string }
+  >()
+
+  for (const item of options.rows) {
+    const piece = getJoinedPiece(item.pieces)
+    const list = getJoinedList(item.learning_lists)
+
+    if (!piece || !list) continue
+
+    if (
+      options.practicePieceIds.has(piece.id) ||
+      options.knownPieceIds.has(piece.id)
+    ) {
+      continue
+    }
+
+    const sortValue = getQueueSortValue(item)
+    const existing = queueMap.get(piece.id)
+
+    if (!existing) {
+      queueMap.set(piece.id, {
+        piece_id: piece.id,
+        title: piece.title,
+        firstAddedAt: item.created_at,
+        firstAddedSortValue: sortValue,
+        firstListId: list.id,
+        firstListName: list.name,
+        listNames: [list.name],
+      })
+      continue
+    }
+
+    if (!existing.listNames.includes(list.name)) {
+      existing.listNames.push(list.name)
+    }
+
+    if (sortValue < existing.firstAddedSortValue) {
+      queueMap.set(piece.id, {
+        ...existing,
+        firstAddedAt: item.created_at,
+        firstAddedSortValue: sortValue,
+        firstListId: list.id,
+        firstListName: list.name,
+      })
+    }
+  }
+
+  return Array.from(queueMap.values()).sort((a, b) => {
+    const dateCompare = a.firstAddedSortValue.localeCompare(
+      b.firstAddedSortValue
+    )
+
+    if (dateCompare !== 0) return dateCompare
+
+    return a.title.localeCompare(b.title)
+  })
 }
 
 function buildGettingStartedState(options: {
@@ -391,6 +530,8 @@ export async function loadHomepageData() {
     { data: repertoireSummaryRows, error: repertoireSummaryError },
     { data: listPreviewRows, error: listPreviewError },
     { data: practiceSummaryRows, error: practiceSummaryError },
+    { data: knownPieceRows, error: knownPieceRowsError },
+    { data: learningQueueRows, error: learningQueueRowsError },
     { data: connectionRows, error: connectionError },
   ] = await Promise.all([
     supabase
@@ -415,6 +556,33 @@ export async function loadHomepageData() {
       .eq("status", "learning"),
 
     supabase
+      .from("user_known_pieces")
+      .select("piece_id")
+      .eq("user_id", user.id),
+
+    supabase
+      .from("learning_list_items")
+      .select(
+        `
+          id,
+          learning_list_id,
+          created_at,
+          piece_id,
+          pieces (
+            id,
+            title
+          ),
+          learning_lists!inner (
+            id,
+            name,
+            user_id
+          )
+        `
+      )
+      .eq("learning_lists.user_id", user.id)
+      .order("created_at", { ascending: true }),
+
+    supabase
       .from("connections")
       .select("id, status, requester_id, addressee_id")
       .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`),
@@ -436,6 +604,14 @@ export async function loadHomepageData() {
     throw new Error(practiceSummaryError.message)
   }
 
+  if (knownPieceRowsError) {
+    throw new Error(knownPieceRowsError.message)
+  }
+
+  if (learningQueueRowsError) {
+    throw new Error(learningQueueRowsError.message)
+  }
+
   if (connectionError) {
     throw new Error(connectionError.message)
   }
@@ -454,6 +630,22 @@ export async function loadHomepageData() {
 
   const typedPracticeSummaryRows =
     (practiceSummaryRows ?? []) as HomePracticeSummaryRow[]
+
+  const typedKnownPieceRows = (knownPieceRows ?? []) as HomeKnownPieceRow[]
+
+  const practicePieceIds = new Set(
+    typedPracticeSummaryRows.map((userPiece) => userPiece.piece_id)
+  )
+
+  const knownPieceIds = new Set(
+    typedKnownPieceRows.map((knownPiece) => knownPiece.piece_id)
+  )
+
+  const learningQueue = buildLearningQueuePreview({
+    rows: (learningQueueRows ?? []) as HomeLearningQueueItemRow[],
+    practicePieceIds,
+    knownPieceIds,
+  })
 
   const practiceCount =
     repertoireSummary?.practice_count ?? typedPracticeSummaryRows.length
@@ -603,8 +795,10 @@ export async function loadHomepageData() {
     dueTodayCount,
     needsAttentionCount,
     listCount: safeListCount,
+    learningQueueCount: learningQueue.length,
     badgeSummary,
     dueTodayPreview,
+    learningQueuePreview: learningQueue.slice(0, 3),
     inPracticePreview,
     listPreview,
   }

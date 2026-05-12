@@ -12,6 +12,7 @@ import {
   removeTuneFromList,
   updateList,
 } from "@/lib/actions/lists"
+import { startLearning } from "@/lib/actions/user-pieces"
 import { loadListsData } from "@/lib/loaders/lists"
 import { loadPagePreferences } from "@/lib/loaders/page-preferences"
 import { LISTS_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
@@ -113,6 +114,7 @@ export default async function LearningListsPage({
     learningLists,
     listOverviews,
     myTunes,
+    learningQueueTunes,
     unlistedPracticeTunes,
     unlistedKnownTunes,
   } = await loadListsData()
@@ -194,10 +196,12 @@ export default async function LearningListsPage({
       {showSection("summary_grid") ? (
         <ListsSummaryGrid
           myTunes={myTunes}
+          learningQueueTunes={learningQueueTunes}
           unlistedPracticeTunes={unlistedPracticeTunes}
           unlistedKnownTunes={unlistedKnownTunes}
           learningLists={learningLists}
           addToLearningList={addToLearningList}
+          startLearning={startLearning}
           redirectTo={redirectTo}
         />
       ) : null}

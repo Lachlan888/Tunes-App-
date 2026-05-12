@@ -45,6 +45,12 @@ const HOME_SECTIONS = [
     isCore: true,
   },
   {
+    id: "learning_queue",
+    label: "Learning queue",
+    description:
+      "Tunes saved in lists but not yet started in Practice or marked Known.",
+  },
+  {
     id: "currently_in_practice",
     label: "Currently in practice",
     description: "A small preview of tunes inside the review system.",
@@ -84,6 +90,7 @@ const HOME_SECTIONS = [
 const homeAllVisible = visibleSections({
   repertoire_state: true,
   due_next: true,
+  learning_queue: true,
   currently_in_practice: true,
   streaks: true,
   badges: true,
@@ -121,12 +128,13 @@ export const HOME_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
       id: "practice_first",
       label: "Practice First",
       description:
-        "Prioritises due tunes, catch-up pressure, current practice, and streaks.",
+        "Prioritises due tunes, learning queue, catch-up pressure, current practice, and streaks.",
       preferences: preferences({
         layoutPreset: "practice_first",
         visibleSections: visibleSections({
           repertoire_state: true,
           due_next: true,
+          learning_queue: true,
           currently_in_practice: true,
           streaks: true,
           badges: false,
@@ -141,12 +149,13 @@ export const HOME_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
       id: "organiser",
       label: "Organiser",
       description:
-        "Prioritises lists, repertoire state, and current practice organisation.",
+        "Prioritises lists, learning queue, repertoire state, and current practice organisation.",
       preferences: preferences({
         layoutPreset: "organiser",
         visibleSections: visibleSections({
           repertoire_state: true,
           due_next: true,
+          learning_queue: true,
           currently_in_practice: true,
           streaks: false,
           badges: false,
@@ -167,6 +176,7 @@ export const HOME_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
         visibleSections: visibleSections({
           repertoire_state: true,
           due_next: true,
+          learning_queue: false,
           currently_in_practice: false,
           streaks: true,
           badges: true,
@@ -189,6 +199,7 @@ export const HOME_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
         visibleSections: visibleSections({
           repertoire_state: true,
           due_next: true,
+          learning_queue: false,
           currently_in_practice: false,
           streaks: false,
           badges: false,
@@ -482,7 +493,8 @@ const LISTS_SECTIONS = [
   {
     id: "summary_grid",
     label: "Summary grid",
-    description: "List overview and unlisted-tune organisation prompts.",
+    description:
+      "My Tunes, Learning Queue, and unlisted-tune organisation prompts.",
   },
   {
     id: "filters",
@@ -516,7 +528,7 @@ export const LISTS_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
   title: "Lists Page Options",
   description: "Choose how your list-management page is arranged.",
   helperText:
-    "These settings affect only how the Lists page is shown. They do not change list contents or visibility.",
+    "These settings affect only how the Lists page is shown. They do not change list contents, queue order, practice state, or list visibility.",
   sections: [...LISTS_SECTIONS],
   allowColumns: false,
   allowDensity: true,
@@ -528,7 +540,8 @@ export const LISTS_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
     {
       id: "organiser",
       label: "Organiser",
-      description: "Shows creation, clean-up prompts, filters, and list cards.",
+      description:
+        "Shows creation, Learning Queue, clean-up prompts, filters, and list cards.",
       preferences: preferences({
         layoutPreset: "organiser",
         visibleSections: listsAllVisible,
@@ -537,7 +550,8 @@ export const LISTS_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
     {
       id: "management",
       label: "Management",
-      description: "Keeps every management surface visible.",
+      description:
+        "Keeps every list-management and learning-queue surface visible.",
       preferences: preferences({
         layoutPreset: "management",
         visibleSections: listsAllVisible,
@@ -1059,7 +1073,7 @@ const moderatorAllVisible = visibleSections({
 })
 
 export const MODERATOR_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
-  pageKey: "moderator",
+  pageKey: "moderator" as PageKey,
   title: "Moderator Page Options",
   description: "Choose which moderation queues are visible.",
   helperText:
@@ -1068,66 +1082,38 @@ export const MODERATOR_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
   allowColumns: false,
   allowDensity: true,
   defaultPreferences: preferences({
-    layoutPreset: "triage",
+    layoutPreset: "management",
     visibleSections: moderatorAllVisible,
   }),
   presets: [
     {
-      id: "triage",
-      label: "Triage",
-      description: "Shows all moderation queues.",
+      id: "management",
+      label: "Management",
+      description: "Shows all moderation queues and summary counts.",
       preferences: preferences({
-        layoutPreset: "triage",
+        layoutPreset: "management",
         visibleSections: moderatorAllVisible,
-      }),
-    },
-    {
-      id: "tune_edits",
-      label: "Tune Edits",
-      description: "Focuses on canonical tune edit requests.",
-      preferences: preferences({
-        layoutPreset: "tune_edits",
-        visibleSections: visibleSections({
-          summary_counts: true,
-          tune_edit_requests: true,
-          comment_reports: false,
-          lore_reports: false,
-        }),
-      }),
-    },
-    {
-      id: "reports",
-      label: "Reports",
-      description: "Focuses on comment and lore reports.",
-      preferences: preferences({
-        layoutPreset: "reports",
-        visibleSections: visibleSections({
-          summary_counts: true,
-          tune_edit_requests: false,
-          comment_reports: true,
-          lore_reports: true,
-        }),
       }),
     },
     {
       id: "minimal",
       label: "Minimal",
-      description: "Shows queue counts only.",
+      description: "Shows moderation queues without summary counts.",
       preferences: preferences({
         layoutPreset: "minimal",
         density: "compact",
         visibleSections: visibleSections({
-          summary_counts: true,
-          tune_edit_requests: false,
-          comment_reports: false,
-          lore_reports: false,
+          summary_counts: false,
+          tune_edit_requests: true,
+          comment_reports: true,
+          lore_reports: true,
         }),
       }),
     },
   ],
 }
 
-export const PAGE_OPTIONS_CONFIGS = [
+const PAGE_OPTIONS_CONFIGS: PageOptionsConfig[] = [
   HOME_PAGE_OPTIONS_CONFIG,
   LIBRARY_PAGE_OPTIONS_CONFIG,
   TUNE_DETAIL_PAGE_OPTIONS_CONFIG,
@@ -1139,13 +1125,13 @@ export const PAGE_OPTIONS_CONFIGS = [
   SHARED_PAGE_OPTIONS_CONFIG,
   PROFILE_PAGE_OPTIONS_CONFIG,
   MODERATOR_PAGE_OPTIONS_CONFIG,
-] as const
+]
 
 export function getPageOptionsConfig(pageKey: PageKey) {
-  return PAGE_OPTIONS_CONFIGS.find((config) => config.pageKey === pageKey)
+  return PAGE_OPTIONS_CONFIGS.find((config) => config.pageKey === pageKey) ?? null
 }
 
-function isColumnMode(value: unknown): value is PageColumnMode {
+function isPageColumnMode(value: unknown): value is PageColumnMode {
   return (
     value === "auto" ||
     value === "compact" ||
@@ -1154,63 +1140,78 @@ function isColumnMode(value: unknown): value is PageColumnMode {
   )
 }
 
-function isDensity(value: unknown): value is PageDensity {
+function isPageDensity(value: unknown): value is PageDensity {
   return value === "spacious" || value === "standard" || value === "compact"
 }
 
-function isPresetId(
-  value: unknown,
-  config: PageOptionsConfig
-): value is PageLayoutPresetId {
-  return config.presets.some((preset) => preset.id === value)
+function isLayoutPresetId(value: unknown): value is PageLayoutPresetId {
+  return typeof value === "string" && value.length > 0
 }
 
-function normaliseVisibleSections(
-  rawVisibleSections: unknown,
-  config: PageOptionsConfig
-): PageVisibleSections {
-  const visibleSectionRecord =
-    rawVisibleSections &&
-    typeof rawVisibleSections === "object" &&
-    !Array.isArray(rawVisibleSections)
-      ? (rawVisibleSections as Record<string, unknown>)
-      : {}
-
-  const normalisedSections: PageVisibleSections = {}
-
-  for (const section of config.sections) {
-    const rawValue = visibleSectionRecord[section.id]
-
-    normalisedSections[section.id] =
-      typeof rawValue === "boolean"
-        ? rawValue
-        : config.defaultPreferences.visibleSections[section.id] ?? true
+function getRawPreferenceObject(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null
   }
 
-  return normalisedSections
+  return value as Partial<PageOptionsPreferences>
 }
 
 export function normalisePageOptionsPreferences(
-  rawPreferences: unknown,
+  value: unknown,
   config: PageOptionsConfig
 ): PageOptionsPreferences {
-  const raw =
-    rawPreferences &&
-    typeof rawPreferences === "object" &&
-    !Array.isArray(rawPreferences)
-      ? (rawPreferences as Record<string, unknown>)
+  const rawPreferences = getRawPreferenceObject(value)
+
+  if (!rawPreferences) {
+    return config.defaultPreferences
+  }
+
+  const presetIds = new Set(config.presets.map((preset) => preset.id))
+
+  const layoutPreset =
+    isLayoutPresetId(rawPreferences.layoutPreset) &&
+    presetIds.has(rawPreferences.layoutPreset)
+      ? rawPreferences.layoutPreset
+      : config.defaultPreferences.layoutPreset
+
+  const columnMode =
+    config.allowColumns && isPageColumnMode(rawPreferences.columnMode)
+      ? rawPreferences.columnMode
+      : config.defaultPreferences.columnMode
+
+  const density =
+    config.allowDensity && isPageDensity(rawPreferences.density)
+      ? rawPreferences.density
+      : config.defaultPreferences.density
+
+  const rawVisibleSections =
+    rawPreferences.visibleSections &&
+    typeof rawPreferences.visibleSections === "object" &&
+    !Array.isArray(rawPreferences.visibleSections)
+      ? rawPreferences.visibleSections
       : {}
 
+  const visibleSections = Object.fromEntries(
+    config.sections.map((section) => {
+      const rawValue = rawVisibleSections[section.id]
+      const defaultValue =
+        config.defaultPreferences.visibleSections[section.id] ?? true
+
+      return [
+        section.id,
+        section.isCore
+          ? true
+          : typeof rawValue === "boolean"
+            ? rawValue
+            : defaultValue,
+      ]
+    })
+  )
+
   return {
-    layoutPreset: isPresetId(raw.layoutPreset, config)
-      ? raw.layoutPreset
-      : config.defaultPreferences.layoutPreset,
-    columnMode: isColumnMode(raw.columnMode)
-      ? raw.columnMode
-      : config.defaultPreferences.columnMode,
-    density: isDensity(raw.density)
-      ? raw.density
-      : config.defaultPreferences.density,
-    visibleSections: normaliseVisibleSections(raw.visibleSections, config),
+    layoutPreset,
+    columnMode,
+    density,
+    visibleSections,
   }
 }

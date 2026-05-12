@@ -15,8 +15,32 @@ type LearningListMembershipRow = {
 }
 
 type LearningListItemWithPieceRow = {
+  id: number
   learning_list_id: number
+  created_at: string | null
   pieces: Piece | Piece[] | null
+  learning_lists:
+    | {
+        id: number
+        name: string
+        user_id: string
+      }
+    | {
+        id: number
+        name: string
+        user_id: string
+      }[]
+    | null
+}
+
+export type LearningQueueTune = {
+  piece: Piece
+  firstAddedAt: string | null
+  firstAddedSortValue: string
+  firstListId: number
+  firstListName: string
+  listIds: number[]
+  listNames: string[]
 }
 
 function extractPieceTitle(
@@ -44,6 +68,31 @@ function extractPiece(piece: Piece | Piece[] | null): Piece | null {
     return piece[0] ?? null
   }
   return piece
+}
+
+function extractList(
+  list:
+    | {
+        id: number
+        name: string
+        user_id: string
+      }
+    | {
+        id: number
+        name: string
+        user_id: string
+      }[]
+    | null
+) {
+  if (!list) return null
+  if (Array.isArray(list)) {
+    return list[0] ?? null
+  }
+  return list
+}
+
+function getQueueSortValue(item: LearningListItemWithPieceRow) {
+  return item.created_at ?? `9999-12-31T23:59:59.999Z-${item.id}`
 }
 
 export async function loadListsData() {
@@ -106,7 +155,9 @@ export async function loadListsData() {
     supabase
       .from("learning_list_items")
       .select(`
+        id,
         learning_list_id,
+        created_at,
         pieces (
           id,
           title,
@@ -123,9 +174,14 @@ export async function loadListsData() {
             )
           )
         ),
-        learning_lists!inner(user_id)
+        learning_lists!inner(
+          id,
+          name,
+          user_id
+        )
       `)
       .eq("learning_lists.user_id", user.id)
+      .order("created_at", { ascending: true })
       .order("position", { ascending: true }),
   ])
 
@@ -160,6 +216,14 @@ export async function loadListsData() {
 
   const listedPieceIds = new Set(
     typedLearningListMemberships.map((item) => item.piece_id)
+  )
+
+  const practicePieceIds = new Set(
+    typedUserPieces.map((userPiece) => userPiece.piece_id)
+  )
+
+  const knownPieceIds = new Set(
+    typedUserKnownPieces.map((userKnownPiece) => userKnownPiece.piece_id)
   )
 
   const unlistedPracticeTunes = typedUserPieces.filter(
@@ -205,6 +269,7 @@ export async function loadListsData() {
   )
 
   const tunesByListId = new Map<number, Piece[]>()
+  const learningQueueMap = new Map<number, LearningQueueTune>()
 
   for (const item of typedLearningListItemsWithPieces) {
     const piece = extractPiece(item.pieces)
@@ -213,7 +278,57 @@ export async function loadListsData() {
     const existingTunes = tunesByListId.get(item.learning_list_id) ?? []
     existingTunes.push(piece)
     tunesByListId.set(item.learning_list_id, existingTunes)
+
+    if (practicePieceIds.has(piece.id) || knownPieceIds.has(piece.id)) {
+      continue
+    }
+
+    const list = extractList(item.learning_lists)
+    if (!list) continue
+
+    const sortValue = getQueueSortValue(item)
+    const existingQueueTune = learningQueueMap.get(piece.id)
+
+    if (!existingQueueTune) {
+      learningQueueMap.set(piece.id, {
+        piece,
+        firstAddedAt: item.created_at,
+        firstAddedSortValue: sortValue,
+        firstListId: list.id,
+        firstListName: list.name,
+        listIds: [list.id],
+        listNames: [list.name],
+      })
+      continue
+    }
+
+    if (!existingQueueTune.listIds.includes(list.id)) {
+      existingQueueTune.listIds.push(list.id)
+      existingQueueTune.listNames.push(list.name)
+    }
+
+    if (sortValue < existingQueueTune.firstAddedSortValue) {
+      learningQueueMap.set(piece.id, {
+        ...existingQueueTune,
+        firstAddedAt: item.created_at,
+        firstAddedSortValue: sortValue,
+        firstListId: list.id,
+        firstListName: list.name,
+      })
+    }
   }
+
+  const learningQueueTunes = Array.from(learningQueueMap.values()).sort(
+    (a, b) => {
+      const dateCompare = a.firstAddedSortValue.localeCompare(
+        b.firstAddedSortValue
+      )
+
+      if (dateCompare !== 0) return dateCompare
+
+      return a.piece.title.localeCompare(b.piece.title)
+    }
+  )
 
   const listOverviews: FilterableLearningList[] = typedLearningLists.map(
     (list) => {
@@ -241,6 +356,7 @@ export async function loadListsData() {
     learningLists: typedLearningLists,
     listOverviews,
     myTunes,
+    learningQueueTunes,
     unlistedPracticeTunes,
     unlistedKnownTunes,
   }
