@@ -16,7 +16,7 @@ export default function DueTodaySection({
   noteCategories,
 }: DueTodaySectionProps) {
   return (
-    <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+    <section className="mt-8 rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
       <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         Due today
       </h2>
@@ -32,7 +32,7 @@ export default function DueTodaySection({
             {dueTodayPieces.length === 1 ? "" : "s"} due today.
           </p>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-6 grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {dueTodayPieces.map((userPiece) => (
               <PracticeReviewCard
                 key={userPiece.id}

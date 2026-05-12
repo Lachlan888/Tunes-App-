@@ -81,6 +81,10 @@ function formatDateOnly(dateOnly: string | null) {
   return `${day}/${month}/${year}`
 }
 
+function getReviewButtonClassName(className: string) {
+  return `${className} !min-w-0 flex-1 !px-1.5 !py-2 text-[0.8rem] leading-none sm:!min-w-[104px] sm:flex-none sm:!px-4 sm:!py-2 sm:text-sm`
+}
+
 function ActivePracticeFoci({
   foci,
 }: {
@@ -126,7 +130,7 @@ function RecentPracticeNotes({
   }
 
   return (
-    <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
+    <div className="mt-5 rounded-2xl border border-border bg-background/70 p-3 sm:p-4">
       <button
         type="button"
         className="flex w-full items-center justify-between gap-3 text-left"
@@ -185,16 +189,20 @@ function DirectReviewForms({
   redirectTo: string
 }) {
   return (
-    <div className="mt-3 flex flex-wrap gap-3">
+    <div className="mt-3 flex w-full gap-1 sm:w-auto sm:flex-wrap sm:gap-3">
       {REVIEW_OUTCOMES.map((reviewOutcome) => (
-        <form key={reviewOutcome.outcome} action={reviewOutcome.action}>
+        <form
+          key={reviewOutcome.outcome}
+          action={reviewOutcome.action}
+          className="min-w-0 flex-1 sm:flex-none"
+        >
           <input type="hidden" name="userPieceId" value={userPieceId} />
           <input type="hidden" name="redirectTo" value={redirectTo} />
 
           <SubmitButton
             label={reviewOutcome.label}
             pendingLabel="Saving..."
-            className={reviewOutcome.className}
+            className={getReviewButtonClassName(reviewOutcome.className)}
           />
         </form>
       ))}
@@ -208,12 +216,12 @@ function DiaryReviewButtons({
   onSelectOutcome: (outcome: ReviewOutcomeConfig) => void
 }) {
   return (
-    <div className="mt-3 flex flex-wrap gap-3">
+    <div className="mt-3 flex w-full gap-1 sm:w-auto sm:flex-wrap sm:gap-3">
       {REVIEW_OUTCOMES.map((reviewOutcome) => (
         <button
           key={reviewOutcome.outcome}
           type="button"
-          className={reviewOutcome.className}
+          className={getReviewButtonClassName(reviewOutcome.className)}
           onClick={() => onSelectOutcome(reviewOutcome)}
         >
           {reviewOutcome.label}
@@ -352,7 +360,7 @@ function ReviewNoteModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-3xl border border-border bg-card p-6 shadow-xl"
+        className="max-h-[calc(100vh-4rem)] w-full max-w-lg overflow-y-auto rounded-3xl border border-border bg-card p-5 shadow-xl sm:p-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="review-note-modal-title"
@@ -462,16 +470,16 @@ function ReviewNoteModal({
               />
             </label>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
               <SubmitButton
                 label={`Save ${selectedOutcome.label}`}
                 pendingLabel="Saving..."
-                className={selectedOutcome.className}
+                className={`${selectedOutcome.className} w-full sm:w-auto`}
               />
 
               <button
                 type="button"
-                className={buttonStyles.secondary}
+                className={`${buttonStyles.secondary} w-full sm:w-auto`}
                 onClick={onClose}
               >
                 Cancel
@@ -498,8 +506,8 @@ export default function PracticeReviewCard({
   const title = userPiece.piece?.title ?? "Untitled piece"
 
   return (
-    <article className="relative rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:bg-muted/70">
-      <div className="absolute right-4 top-4 z-10">
+    <article className="relative min-w-0 overflow-hidden rounded-2xl border border-border bg-background/70 p-3 shadow-sm transition hover:bg-muted/70 sm:p-5">
+      <div className="absolute right-3 top-3 z-10 sm:right-4 sm:top-4">
         <RemoveFromPracticeButton
           userPieceId={userPiece.id}
           redirectTo={redirectTo}
@@ -510,9 +518,9 @@ export default function PracticeReviewCard({
         />
       </div>
 
-      <div className="flex items-start justify-between gap-4 pr-12">
+      <div className="flex min-w-0 flex-col gap-3 pr-10 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:pr-12">
         <div className="min-w-0 flex-1">
-          <h2 className="font-serif text-3xl font-bold leading-tight tracking-tight text-foreground">
+          <h2 className="break-words pr-1 font-serif text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
             {userPiece.piece ? (
               <PendingLinkButton
                 href={`/library/${userPiece.piece.id}`}
@@ -539,7 +547,7 @@ export default function PracticeReviewCard({
         </div>
 
         <span
-          className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${badgeClassName}`}
+          className={`w-fit shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${badgeClassName}`}
         >
           {badgeLabel}
         </span>

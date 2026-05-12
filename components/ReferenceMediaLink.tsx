@@ -50,7 +50,7 @@ export default function ReferenceMediaLink({
       </button>
 
       {isOpen ? (
-        <div className="mt-3 overflow-hidden rounded-2xl border border-border bg-background/70 p-3">
+        <div className="mt-3 -mx-1 sm:mx-0 sm:overflow-hidden sm:rounded-3xl sm:border sm:border-border sm:bg-card-strong/70 sm:p-4 sm:shadow-inner">
           <ReferenceMediaEmbed
             referenceUrl={referenceUrl}
             title={title}

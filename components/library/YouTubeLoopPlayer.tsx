@@ -48,8 +48,9 @@ type YouTubeLoopPlayerProps = {
   className?: string
 }
 
-const DEFAULT_SPEEDS = [0.5, 0.75, 0.85, 1]
+const DEFAULT_SPEEDS = [0.5, 0.75, 1]
 const NUDGE_AMOUNTS = [0.1, 0.5, 1] as const
+
 type NudgeAmount = (typeof NUDGE_AMOUNTS)[number]
 
 let youtubeApiPromise: Promise<void> | null = null
@@ -156,6 +157,10 @@ function clampTime(value: number, duration: number) {
   }
 
   return Math.max(value, 0)
+}
+
+function compactButton(className: string) {
+  return `${className} px-3 py-2 text-xs sm:px-4 sm:text-sm`
 }
 
 export default function YouTubeLoopPlayer({
@@ -395,13 +400,13 @@ export default function YouTubeLoopPlayer({
   }
 
   return (
-    <div className={joinClasses("space-y-4", className)}>
+    <div className={joinClasses("space-y-3 sm:space-y-4", className)}>
       <div className="aspect-video w-full overflow-hidden rounded-2xl border border-border bg-foreground/10">
         <div ref={containerRef} title={title} className="h-full w-full" />
       </div>
 
-      <div className="rounded-2xl border border-border bg-background/70 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-transparent p-0 sm:rounded-2xl sm:border sm:border-border sm:bg-background/70 sm:p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-foreground">
               Reference controls
@@ -414,7 +419,9 @@ export default function YouTubeLoopPlayer({
 
           <button
             type="button"
-            className={showLoopControls ? buttonStyles.primary : buttonStyles.secondary}
+            className={compactButton(
+              showLoopControls ? buttonStyles.primary : buttonStyles.secondary
+            )}
             onClick={() => setShowLoopControls((current) => !current)}
             disabled={!isReady}
             aria-expanded={showLoopControls}
@@ -424,11 +431,11 @@ export default function YouTubeLoopPlayer({
         </div>
 
         {showLoopControls ? (
-          <div className="mt-4 space-y-4">
-            <div className="flex flex-wrap gap-2">
+          <div className="mt-4 space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
               <button
                 type="button"
-                className={buttonStyles.secondaryStrong}
+                className={compactButton(buttonStyles.secondaryStrong)}
                 onClick={handleTapIn}
                 disabled={!isReady}
               >
@@ -437,7 +444,7 @@ export default function YouTubeLoopPlayer({
 
               <button
                 type="button"
-                className={buttonStyles.secondaryStrong}
+                className={compactButton(buttonStyles.secondaryStrong)}
                 onClick={handleTapOut}
                 disabled={!isReady || loopStart === null}
               >
@@ -446,7 +453,9 @@ export default function YouTubeLoopPlayer({
 
               <button
                 type="button"
-                className={hasValidLoop ? buttonStyles.primary : buttonStyles.secondary}
+                className={compactButton(
+                  hasValidLoop ? buttonStyles.primary : buttonStyles.secondary
+                )}
                 onClick={() => setLoopEnabled((current) => !current)}
                 disabled={!hasValidLoop}
               >
@@ -455,7 +464,7 @@ export default function YouTubeLoopPlayer({
 
               <button
                 type="button"
-                className={buttonStyles.text}
+                className={compactButton(buttonStyles.text)}
                 onClick={handleClearLoop}
                 disabled={loopStart === null && loopEnd === null}
               >
@@ -463,39 +472,39 @@ export default function YouTubeLoopPlayer({
               </button>
             </div>
 
-            <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
-              <div className="rounded-xl border border-border bg-card/60 px-3 py-2">
+            <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-3">
+              <div className="rounded-xl border border-border bg-background/60 px-3 py-2">
                 <span className="font-medium text-foreground">In:</span>{" "}
                 {formatTime(loopStart, true)}
               </div>
 
-              <div className="rounded-xl border border-border bg-card/60 px-3 py-2">
+              <div className="rounded-xl border border-border bg-background/60 px-3 py-2">
                 <span className="font-medium text-foreground">Out:</span>{" "}
                 {formatTime(loopEnd, true)}
               </div>
 
-              <div className="rounded-xl border border-border bg-card/60 px-3 py-2">
+              <div className="rounded-xl border border-border bg-background/60 px-3 py-2">
                 <span className="font-medium text-foreground">Length:</span>{" "}
                 {formatTime(loopLength, true)}
               </div>
             </div>
 
-            <div className="space-y-3 rounded-2xl border border-border bg-card/40 p-3">
-              <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-3 rounded-2xl border border-border bg-background/40 p-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   Adjust loop
                 </p>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
                   {NUDGE_AMOUNTS.map((amount) => (
                     <button
                       key={amount}
                       type="button"
-                      className={
+                      className={compactButton(
                         nudgeAmount === amount
                           ? buttonStyles.primary
                           : buttonStyles.secondary
-                      }
+                      )}
                       onClick={() => setNudgeAmount(amount)}
                     >
                       {amount}s
@@ -505,15 +514,15 @@ export default function YouTubeLoopPlayer({
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-border bg-background/70 p-3">
+                <div className="rounded-xl border border-border bg-card/40 p-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     In point
                   </p>
 
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="mt-2 grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      className={buttonStyles.secondary}
+                      className={compactButton(buttonStyles.secondary)}
                       onClick={() => handleNudgeLoopStart(-nudgeAmount)}
                       disabled={loopStart === null}
                     >
@@ -522,7 +531,7 @@ export default function YouTubeLoopPlayer({
 
                     <button
                       type="button"
-                      className={buttonStyles.secondary}
+                      className={compactButton(buttonStyles.secondary)}
                       onClick={() => handleNudgeLoopStart(nudgeAmount)}
                       disabled={loopStart === null}
                     >
@@ -531,15 +540,15 @@ export default function YouTubeLoopPlayer({
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-border bg-background/70 p-3">
+                <div className="rounded-xl border border-border bg-card/40 p-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     Out point
                   </p>
 
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="mt-2 grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      className={buttonStyles.secondary}
+                      className={compactButton(buttonStyles.secondary)}
                       onClick={() => handleNudgeLoopEnd(-nudgeAmount)}
                       disabled={!hasValidLoop}
                     >
@@ -548,7 +557,7 @@ export default function YouTubeLoopPlayer({
 
                     <button
                       type="button"
-                      className={buttonStyles.secondary}
+                      className={compactButton(buttonStyles.secondary)}
                       onClick={() => handleNudgeLoopEnd(nudgeAmount)}
                       disabled={loopEnd === null}
                     >
@@ -558,10 +567,10 @@ export default function YouTubeLoopPlayer({
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                 <button
                   type="button"
-                  className={buttonStyles.secondary}
+                  className={compactButton(buttonStyles.secondary)}
                   onClick={handleHalveLoopLength}
                   disabled={!hasValidLoop}
                 >
@@ -570,7 +579,7 @@ export default function YouTubeLoopPlayer({
 
                 <button
                   type="button"
-                  className={buttonStyles.secondary}
+                  className={compactButton(buttonStyles.secondary)}
                   onClick={handleDoubleLoopLength}
                   disabled={!hasValidLoop}
                 >
@@ -584,7 +593,7 @@ export default function YouTubeLoopPlayer({
                 Speed
               </p>
 
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-2 flex flex-wrap justify-center gap-2 sm:justify-start">
                 {DEFAULT_SPEEDS.map((rate) => {
                   const isAvailable =
                     availableRates.includes(rate) || availableRates.length === 0
@@ -594,9 +603,11 @@ export default function YouTubeLoopPlayer({
                     <button
                       key={rate}
                       type="button"
-                      className={
-                        isSelected ? buttonStyles.primary : buttonStyles.secondary
-                      }
+                      className={compactButton(
+                        isSelected
+                          ? buttonStyles.primary
+                          : buttonStyles.secondary
+                      )}
                       onClick={() => handlePlaybackRate(rate)}
                       disabled={!isReady || !isAvailable}
                     >
@@ -612,19 +623,19 @@ export default function YouTubeLoopPlayer({
                 Loading YouTube controls...
               </p>
             ) : !hasValidLoop ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm leading-6 text-muted-foreground">
                 Press Tap in at the start of the phrase, then Tap out at the
                 end. Use the adjust controls to trim the loop once it is close.
               </p>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm leading-6 text-muted-foreground">
                 Nudge size defaults to 0.5s. Use 0.1s for fine trimming, or 1s
                 for rough movement. Loop points reset when this player closes.
               </p>
             )}
           </div>
         ) : (
-          <p className="mt-3 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
             Open loop controls to set a temporary Tap in / Tap out loop, change
             speed, or trim the loop points.
           </p>
