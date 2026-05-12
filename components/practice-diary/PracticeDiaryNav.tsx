@@ -15,6 +15,11 @@ const links = [
     label: "Diary",
     value: "diary",
   },
+  {
+    href: "/review/foci",
+    label: "Foci",
+    value: "foci",
+  },
 ] as const
 
 export default function PracticeDiaryNav({ active }: PracticeDiaryNavProps) {
@@ -37,10 +42,6 @@ export default function PracticeDiaryNav({ active }: PracticeDiaryNavProps) {
           </Link>
         )
       })}
-
-      <span className="rounded-full border border-border bg-background/40 px-4 py-2 text-sm font-medium text-muted-foreground opacity-70">
-        Foci later
-      </span>
     </nav>
   )
 }
