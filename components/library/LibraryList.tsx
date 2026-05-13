@@ -111,7 +111,10 @@ function StatusDropdown({
   })
 
   return (
-    <div className="relative" data-status-dropdown-root>
+    <div
+      className={isOpen ? "relative z-[70]" : "relative"}
+      data-status-dropdown-root
+    >
       <button
         type="button"
         className={
@@ -143,7 +146,7 @@ function StatusDropdown({
       </button>
 
       {isOpen ? (
-        <div className="absolute left-0 z-40 mt-2 w-72 rounded-2xl border border-border bg-card p-2 shadow-xl">
+        <div className="absolute left-0 z-[80] mt-2 w-72 rounded-2xl border border-border bg-card p-2 shadow-xl">
           <div className="px-3 py-2">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               {hasUserRelationship ? "Change status" : "Add to my tunes"}
@@ -397,27 +400,15 @@ export default function LibraryList({
   useEffect(() => {
     if (openStatusPieceId === null) return
 
-    function handlePointerDown(event: MouseEvent) {
-      const target = event.target
-
-      if (!(target instanceof Element)) return
-
-      if (!target.closest("[data-status-dropdown-root]")) {
-        setOpenStatusPieceId(null)
-      }
-    }
-
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setOpenStatusPieceId(null)
       }
     }
 
-    document.addEventListener("mousedown", handlePointerDown)
     document.addEventListener("keydown", handleKeyDown)
 
     return () => {
-      document.removeEventListener("mousedown", handlePointerDown)
       document.removeEventListener("keydown", handleKeyDown)
     }
   }, [openStatusPieceId])
@@ -440,6 +431,16 @@ export default function LibraryList({
 
   return (
     <>
+      {openStatusPieceId !== null ? (
+        <button
+          type="button"
+          aria-label="Close status menu"
+          className="fixed inset-0 z-40 cursor-default bg-transparent"
+          onClick={() => setOpenStatusPieceId(null)}
+          tabIndex={-1}
+        />
+      ) : null}
+
       <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {allPieces.map((piece) => {
           const pieceRedirectTo = buildPieceRedirectTo(redirectTo, piece.id)
@@ -470,7 +471,11 @@ export default function LibraryList({
             <li
               key={piece.id}
               id={`piece-${piece.id}`}
-              className="scroll-mt-28"
+              className={
+                isStatusOpen
+                  ? "relative z-50 scroll-mt-28"
+                  : "relative z-0 scroll-mt-28"
+              }
             >
               <TuneCard
                 id={piece.id}
