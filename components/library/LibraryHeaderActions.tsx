@@ -17,7 +17,10 @@ export default function LibraryHeaderActions({
         styleOptions={styleOptions}
         learningLists={learningLists}
       />
-      <BulkImportKnownTunesModal />
+
+      <div className="hidden md:block">
+        <BulkImportKnownTunesModal />
+      </div>
     </div>
   )
 }
