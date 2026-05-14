@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
-import MobilePageHeader from "@/components/mobile/MobilePageHeader"
+import Link from "next/link"
 import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import ActivePracticeSection from "@/components/practice/ActivePracticeSection"
 import CatchUpSection from "@/components/practice/CatchUpSection"
@@ -7,6 +7,7 @@ import DueTodaySection from "@/components/practice/DueTodaySection"
 import PracticeStatusMessages from "@/components/practice/PracticeStatusMessages"
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import PracticeDiaryNav from "@/components/practice-diary/PracticeDiaryNav"
+import { joinClasses } from "@/components/ui/buttonStyles"
 import { loadPagePreferences } from "@/lib/loaders/page-preferences"
 import { loadReviewPageData } from "@/lib/loaders/review"
 import { PRACTICE_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
@@ -32,6 +33,43 @@ function getPageOptionsMessage(status: string) {
   return null
 }
 
+function MobileReviewModeLink({
+  href,
+  label,
+  count,
+  isActive,
+}: {
+  href: string
+  label: string
+  count: number
+  isActive: boolean
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={isActive ? "page" : undefined}
+      className={joinClasses(
+        "rounded-2xl border p-4 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
+        isActive
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border bg-background/70 text-foreground hover:bg-muted"
+      )}
+    >
+      <p
+        className={joinClasses(
+          "text-xs font-semibold uppercase tracking-[0.14em]",
+          isActive ? "text-primary-foreground/85" : "text-muted-foreground"
+        )}
+      >
+        {label}
+      </p>
+      <p className="mt-2 font-serif text-3xl font-bold leading-none">
+        {count}
+      </p>
+    </Link>
+  )
+}
+
 export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const resolvedSearchParams = await searchParams
   const pagePreferences = await loadPagePreferences(
@@ -42,6 +80,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     pagePreferences.visibleSections[sectionId] ?? true
 
   const mode = resolvedSearchParams?.mode ?? ""
+  const mobileReviewMode = mode === "catch-up" ? "catch-up" : "due-today"
   const removeFromPracticeStatus =
     resolvedSearchParams?.remove_from_practice ?? ""
   const practiceUpdate = resolvedSearchParams?.practice_update ?? ""
@@ -74,17 +113,40 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         </div>
       ) : null}
 
-      <div className="mb-5 md:hidden">
-        <MobilePageHeader
-          eyebrow="Practice"
-          title="Review your tunes"
-          subtitle={`${dueTodayPieces.length} due today · ${catchUpQueue.length} in catch-up`}
-        >
+      <section className="mb-5 md:hidden">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Practice
+          </p>
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <MobileReviewModeLink
+              href="/review#due-today"
+              label="Due today"
+              count={dueTodayPieces.length}
+              isActive={mobileReviewMode === "due-today"}
+            />
+
+            <MobileReviewModeLink
+              href="/review?mode=catch-up#catch-up"
+              label="Catch-up"
+              count={catchUpQueue.length}
+              isActive={mobileReviewMode === "catch-up"}
+            />
+          </div>
+
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Choose a review mode, then use the review cards below. Diary and
+            Foci are separate practice tools.
+          </p>
+
           {showSection("practice_nav") ? (
-            <PracticeDiaryNav active="review" />
+            <div className="mt-4">
+              <PracticeDiaryNav active="review" />
+            </div>
           ) : null}
-        </MobilePageHeader>
-      </div>
+        </div>
+      </section>
 
       <section className="hidden gap-6 md:grid xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
@@ -120,7 +182,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         ) : null}
       </section>
 
-      <div className="md:hidden">
+      <div className="mt-5 md:hidden">
         {showSection("streaks") ? (
           <StreakSummarySection streakSummary={streakSummary} />
         ) : null}
@@ -133,24 +195,36 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         />
       ) : null}
 
-      {showSection("catch_up") ? (
-        <CatchUpSection
-          catchUpQueue={catchUpQueue}
-          backlogSummary={backlogSummary}
-          redirectTo={redirectTo}
-          defaultOpen={shouldOpenCatchUp}
-          practiceDiaryEnabled={practiceDiaryEnabled}
-          noteCategories={noteCategories}
-        />
+      {showSection("due_today") ? (
+        <div
+          className={
+            mobileReviewMode === "catch-up" ? "hidden md:block" : undefined
+          }
+        >
+          <DueTodaySection
+            dueTodayPieces={dueTodayPieces}
+            redirectTo={redirectTo}
+            practiceDiaryEnabled={practiceDiaryEnabled}
+            noteCategories={noteCategories}
+          />
+        </div>
       ) : null}
 
-      {showSection("due_today") ? (
-        <DueTodaySection
-          dueTodayPieces={dueTodayPieces}
-          redirectTo={redirectTo}
-          practiceDiaryEnabled={practiceDiaryEnabled}
-          noteCategories={noteCategories}
-        />
+      {showSection("catch_up") ? (
+        <div
+          className={
+            mobileReviewMode === "due-today" ? "hidden md:block" : undefined
+          }
+        >
+          <CatchUpSection
+            catchUpQueue={catchUpQueue}
+            backlogSummary={backlogSummary}
+            redirectTo={redirectTo}
+            defaultOpen={shouldOpenCatchUp}
+            practiceDiaryEnabled={practiceDiaryEnabled}
+            noteCategories={noteCategories}
+          />
+        </div>
       ) : null}
 
       {showSection("active_practice") ? (

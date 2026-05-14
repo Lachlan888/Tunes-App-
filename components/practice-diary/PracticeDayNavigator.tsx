@@ -8,6 +8,12 @@ type PracticeDayNavigatorProps = {
   today: string
 }
 
+const secondaryLinkClassName =
+  "inline-flex min-h-10 items-center justify-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+
+const primaryLinkClassName =
+  "inline-flex min-h-10 items-center justify-center rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+
 export default function PracticeDayNavigator({
   selectedDate,
   previousDate,
@@ -23,35 +29,26 @@ export default function PracticeDayNavigator({
       : `/review/diary?date=${previousDate}`
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
-      <div className="grid gap-4 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center">
-        <Link
-          href={previousHref}
-          className="inline-flex justify-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground"
-        >
+    <section className="space-y-3">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-between">
+        <Link href={previousHref} className={secondaryLinkClassName}>
           Previous day
         </Link>
 
-        <PracticeDayCalendarPicker selectedDate={selectedDate} today={today} />
+        <Link href={nextHref} className={secondaryLinkClassName}>
+          Next day
+        </Link>
+      </div>
 
-        <div className="flex flex-wrap justify-center gap-2 lg:justify-end">
-          {selectedDate !== today && (
-            <Link
-              href="/review/diary"
-              className="inline-flex justify-center rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover"
-            >
-              Today
-            </Link>
-          )}
+      <PracticeDayCalendarPicker selectedDate={selectedDate} today={today} />
 
-          <Link
-            href={nextHref}
-            className="inline-flex justify-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground"
-          >
-            Next day
+      {selectedDate !== today ? (
+        <div className="flex justify-center">
+          <Link href="/review/diary" className={primaryLinkClassName}>
+            Today
           </Link>
         </div>
-      </div>
-    </div>
+      ) : null}
+    </section>
   )
 }

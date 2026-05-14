@@ -1,4 +1,4 @@
-import YouTubeLoopPlayer from "@/components/library/YouTubeLoopPlayer"
+import ReferenceMediaModal from "@/components/library/ReferenceMediaModal"
 import type { UserPieceMediaLoop } from "@/lib/loaders/tune-detail"
 
 type ReferenceMediaEmbedProps = {
@@ -9,6 +9,8 @@ type ReferenceMediaEmbedProps = {
   pieceId?: number
   redirectTo?: string
   savedLoops?: UserPieceMediaLoop[]
+  triggerLabel?: string
+  triggerClassName?: string
 }
 
 export function getYouTubeVideoId(referenceUrl: string): string | null {
@@ -57,6 +59,8 @@ export default function ReferenceMediaEmbed({
   pieceId,
   redirectTo,
   savedLoops = [],
+  triggerLabel,
+  triggerClassName,
 }: ReferenceMediaEmbedProps) {
   const videoId = getYouTubeVideoId(referenceUrl)
 
@@ -69,20 +73,16 @@ export default function ReferenceMediaEmbed({
   )
 
   return (
-    <div>
-      {showHeading ? (
-        <h2 className="mb-5 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          {heading}
-        </h2>
-      ) : null}
-
-      <YouTubeLoopPlayer
-        videoId={videoId}
-        title={`${title} video`}
-        pieceId={pieceId}
-        redirectTo={redirectTo}
-        savedLoops={loopsForVideo}
-      />
-    </div>
+    <ReferenceMediaModal
+      videoId={videoId}
+      title={title}
+      heading={heading}
+      showHeading={showHeading}
+      pieceId={pieceId}
+      redirectTo={redirectTo}
+      savedLoops={loopsForVideo}
+      triggerLabel={triggerLabel}
+      triggerClassName={triggerClassName}
+    />
   )
 }

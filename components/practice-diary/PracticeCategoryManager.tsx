@@ -19,19 +19,11 @@ export default function PracticeCategoryManager({
   redirectTo,
 }: PracticeCategoryManagerProps) {
   return (
-    <section className="rounded-3xl border border-border bg-background/60 p-5 shadow-sm">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        Your categories
-      </h3>
-
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">
-        Create the musical lenses you want to use when writing practice notes.
-      </p>
-
-      <section className="mt-5">
-        <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+    <section className="space-y-5">
+      <section>
+        <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
           Current categories
-        </h4>
+        </h3>
 
         {categories.length === 0 ? (
           <div className="mt-3 rounded-2xl border border-border bg-background/70 p-4">
@@ -54,14 +46,14 @@ export default function PracticeCategoryManager({
                 key={category.id}
                 className="rounded-2xl border border-border bg-background/70 p-4"
               >
-                <div className="flex flex-col gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="break-words text-sm font-semibold text-foreground">
                       {category.name}
                     </p>
 
                     {category.prompt ? (
-                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                      <p className="mt-1 break-words text-sm leading-6 text-muted-foreground">
                         {category.prompt}
                       </p>
                     ) : (
@@ -71,7 +63,7 @@ export default function PracticeCategoryManager({
                     )}
                   </div>
 
-                  <form action={archivePracticeNoteCategory}>
+                  <form action={archivePracticeNoteCategory} className="shrink-0">
                     <input
                       type="hidden"
                       name="category_id"
@@ -96,15 +88,10 @@ export default function PracticeCategoryManager({
         )}
       </section>
 
-      <section className="mt-6 rounded-2xl border border-border bg-card p-4 shadow-sm">
-        <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Add a new category
-        </h4>
-
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Add another lens if you want to track a recurring musical concern,
-          such as tone, memory, bowing, groove, backup, or source version.
-        </p>
+      <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
+          Add category
+        </h3>
 
         <form action={createPracticeNoteCategory} className="mt-4 space-y-4">
           <input type="hidden" name="redirect_to" value={redirectTo} />

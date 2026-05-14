@@ -73,10 +73,10 @@ export default function CatchUpSection({
   return (
     <section
       id="catch-up"
-      className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-sm"
+      className="mt-5 rounded-2xl border border-border bg-card p-4 shadow-sm md:mt-8 md:rounded-3xl md:p-6"
     >
       <details open={defaultOpen}>
-        <summary className="cursor-pointer text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
           Catch up ({catchUpQueue.length})
         </summary>
 
@@ -90,7 +90,7 @@ export default function CatchUpSection({
           </p>
         ) : (
           <>
-            <ul className="mt-5 grid gap-3 md:grid-cols-3">
+            <ul className="mt-4 grid gap-2 md:mt-5 md:grid-cols-3 md:gap-3">
               {backlogSummary.map((group) => {
                 const isActive = activeTier === group.tier
 
@@ -104,7 +104,7 @@ export default function CatchUpSection({
                           currentTier === group.tier ? null : group.tier
                         )
                       }
-                      className={`flex w-full items-center justify-between rounded-2xl border border-border bg-background/70 px-4 py-3 text-left transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] ${
+                      className={`flex w-full items-center justify-between rounded-2xl border border-border bg-background/70 px-3 py-3 text-left transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:px-4 ${
                         isActive ? "ring-2 ring-[var(--focus-ring)]" : ""
                       }`}
                     >
@@ -136,7 +136,7 @@ export default function CatchUpSection({
               </p>
             )}
 
-            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-4 grid gap-4 md:mt-6 md:grid-cols-2 xl:grid-cols-3">
               {visibleCatchUpQueue.map((userPiece) => (
                 <PracticeReviewCard
                   key={userPiece.id}

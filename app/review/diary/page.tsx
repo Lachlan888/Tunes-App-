@@ -22,6 +22,7 @@ type PracticeDiaryPageProps = {
 
 function isValidDateOnly(value: string | undefined): value is string {
   if (!value) return false
+
   return /^\d{4}-\d{2}-\d{2}$/.test(value)
 }
 
@@ -31,6 +32,18 @@ function getDiaryView(value: string | undefined): PracticeDiaryView {
   }
 
   return "day"
+}
+
+function getViewDescription(activeView: PracticeDiaryView) {
+  if (activeView === "week") {
+    return "Weekly patterns, tunes touched, and category activity."
+  }
+
+  if (activeView === "month") {
+    return "Monthly habit and coverage summary."
+  }
+
+  return "Daily notebook, reflection, due tunes, and tune notes."
 }
 
 export default async function PracticeDiaryPage({
@@ -60,19 +73,18 @@ export default async function PracticeDiaryPage({
       : null
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
-      <section className="mb-6 rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
+      <section className="mb-5 rounded-2xl border border-border bg-card p-4 shadow-sm md:mb-6 md:rounded-3xl md:p-6">
+        <p className="hidden text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground md:block">
           Practice
         </p>
 
-        <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight md:text-5xl">
+        <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight md:mt-2 md:text-5xl">
           Practice diary
         </h1>
 
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground md:text-base">
-          A date-bound practice notebook for session summaries, reviewed tunes,
-          and tune-specific notes.
+        <p className="mt-3 hidden max-w-3xl text-base leading-7 text-muted-foreground md:block">
+          {getViewDescription(activeView)}
         </p>
 
         <PracticeDiaryNav active="diary" />

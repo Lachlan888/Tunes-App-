@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { joinClasses } from "@/components/ui/buttonStyles"
 
 type PracticeDiaryView = "day" | "week" | "month"
 
@@ -35,7 +36,7 @@ export default function PracticeDiaryViewSwitcher({
 }: PracticeDiaryViewSwitcherProps) {
   return (
     <nav
-      className="flex flex-wrap gap-2"
+      className="grid grid-cols-3 gap-2 md:flex md:flex-wrap"
       aria-label="Practice diary view options"
     >
       {views.map((view) => {
@@ -46,11 +47,13 @@ export default function PracticeDiaryViewSwitcher({
           <Link
             key={view.value}
             href={href}
-            className={
+            aria-current={isActive ? "page" : undefined}
+            className={joinClasses(
+              "rounded-full border px-3 py-2 text-center text-sm font-medium shadow-sm transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:px-4",
               isActive
-                ? "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm"
-                : "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground"
-            }
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-background/70 text-muted-foreground hover:-translate-y-0.5 hover:bg-muted hover:text-foreground"
+            )}
           >
             <span>{view.label}</span>
             <span className="sr-only">, {view.description}</span>

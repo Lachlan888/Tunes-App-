@@ -201,11 +201,6 @@ export default function YouTubeLoopPlayer({
   const hasValidLoop =
     loopStart !== null && loopEnd !== null && loopEnd > loopStart + 0.2
 
-  const loopLength =
-    hasValidLoop && loopStart !== null && loopEnd !== null
-      ? loopEnd - loopStart
-      : null
-
   useEffect(() => {
     let cancelled = false
     const container = containerRef.current
@@ -335,6 +330,7 @@ export default function YouTubeLoopPlayer({
     setLoopEnabled(true)
 
     const player = playerRef.current
+
     if (player) {
       const current = getPlayerTime(player)
 
@@ -373,6 +369,7 @@ export default function YouTubeLoopPlayer({
     setLoopStart(nextStart)
 
     const player = playerRef.current
+
     if (player) {
       const current = getPlayerTime(player)
 
@@ -392,6 +389,7 @@ export default function YouTubeLoopPlayer({
     setLoopEnd(nextEnd)
 
     const player = playerRef.current
+
     if (player) {
       const current = getPlayerTime(player)
 
@@ -434,6 +432,7 @@ export default function YouTubeLoopPlayer({
     }
 
     const player = playerRef.current
+
     if (player) {
       player.seekTo(start, true)
       player.playVideo()
@@ -447,8 +446,8 @@ export default function YouTubeLoopPlayer({
       </div>
 
       <div className="bg-transparent p-0 sm:rounded-2xl sm:border sm:border-border sm:bg-background/70 sm:p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <div>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-foreground">
               Reference controls
             </p>
@@ -460,14 +459,17 @@ export default function YouTubeLoopPlayer({
 
           <button
             type="button"
-            className={compactButton(
-              showLoopControls ? buttonStyles.primary : buttonStyles.secondary
+            className={joinClasses(
+              compactButton(
+                showLoopControls ? buttonStyles.primary : buttonStyles.secondary
+              ),
+              "shrink-0 whitespace-nowrap"
             )}
             onClick={() => setShowLoopControls((current) => !current)}
             disabled={!isReady}
             aria-expanded={showLoopControls}
           >
-            {showLoopControls ? "Hide loop controls" : "Show loop controls"}
+            {showLoopControls ? "Hide loops" : "Show loops"}
           </button>
         </div>
 
@@ -552,7 +554,7 @@ export default function YouTubeLoopPlayer({
         ) : null}
 
         {showLoopControls ? (
-          <div className="mt-4 space-y-3 sm:space-y-4">
+          <div className="mt-4 space-y-4">
             <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
               <button
                 type="button"
@@ -593,25 +595,26 @@ export default function YouTubeLoopPlayer({
               </button>
             </div>
 
-            <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-3">
-              <div className="rounded-xl border border-border bg-background/60 px-3 py-2">
-                <span className="font-medium text-foreground">In:</span>{" "}
-                {formatTime(loopStart, true)}
+            <div className="grid grid-cols-2 overflow-hidden rounded-2xl border border-border bg-background/60 text-xs text-muted-foreground sm:text-sm">
+              <div className="min-w-0 border-r border-border px-2 py-2 text-center">
+                <span className="font-semibold text-foreground">In</span>
+                <span className="mx-1 text-muted-foreground">·</span>
+                <span className="whitespace-nowrap">
+                  {formatTime(loopStart, true)}
+                </span>
               </div>
 
-              <div className="rounded-xl border border-border bg-background/60 px-3 py-2">
-                <span className="font-medium text-foreground">Out:</span>{" "}
-                {formatTime(loopEnd, true)}
-              </div>
-
-              <div className="rounded-xl border border-border bg-background/60 px-3 py-2">
-                <span className="font-medium text-foreground">Length:</span>{" "}
-                {formatTime(loopLength, true)}
+              <div className="min-w-0 px-2 py-2 text-center">
+                <span className="font-semibold text-foreground">Out</span>
+                <span className="mx-1 text-muted-foreground">·</span>
+                <span className="whitespace-nowrap">
+                  {formatTime(loopEnd, true)}
+                </span>
               </div>
             </div>
 
-            <div className="space-y-3 rounded-2xl border border-border bg-background/40 p-3">
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <div className="rounded-2xl border border-border bg-background/40 p-3 sm:p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   Adjust loop
                 </p>
@@ -634,61 +637,57 @@ export default function YouTubeLoopPlayer({
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-border bg-card/40 p-3">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-[3.5rem_1fr_1fr] items-center gap-2">
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                    In point
+                    In
                   </p>
 
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      className={compactButton(buttonStyles.secondary)}
-                      onClick={() => handleNudgeLoopStart(-nudgeAmount)}
-                      disabled={loopStart === null}
-                    >
-                      -{nudgeAmount}s
-                    </button>
+                  <button
+                    type="button"
+                    className={compactButton(buttonStyles.secondary)}
+                    onClick={() => handleNudgeLoopStart(-nudgeAmount)}
+                    disabled={loopStart === null}
+                  >
+                    -{nudgeAmount}s
+                  </button>
 
-                    <button
-                      type="button"
-                      className={compactButton(buttonStyles.secondary)}
-                      onClick={() => handleNudgeLoopStart(nudgeAmount)}
-                      disabled={loopStart === null}
-                    >
-                      +{nudgeAmount}s
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className={compactButton(buttonStyles.secondary)}
+                    onClick={() => handleNudgeLoopStart(nudgeAmount)}
+                    disabled={loopStart === null}
+                  >
+                    +{nudgeAmount}s
+                  </button>
                 </div>
 
-                <div className="rounded-xl border border-border bg-card/40 p-3">
+                <div className="grid grid-cols-[3.5rem_1fr_1fr] items-center gap-2">
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                    Out point
+                    Out
                   </p>
 
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      className={compactButton(buttonStyles.secondary)}
-                      onClick={() => handleNudgeLoopEnd(-nudgeAmount)}
-                      disabled={!hasValidLoop}
-                    >
-                      -{nudgeAmount}s
-                    </button>
+                  <button
+                    type="button"
+                    className={compactButton(buttonStyles.secondary)}
+                    onClick={() => handleNudgeLoopEnd(-nudgeAmount)}
+                    disabled={!hasValidLoop}
+                  >
+                    -{nudgeAmount}s
+                  </button>
 
-                    <button
-                      type="button"
-                      className={compactButton(buttonStyles.secondary)}
-                      onClick={() => handleNudgeLoopEnd(nudgeAmount)}
-                      disabled={loopEnd === null}
-                    >
-                      +{nudgeAmount}s
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className={compactButton(buttonStyles.secondary)}
+                    onClick={() => handleNudgeLoopEnd(nudgeAmount)}
+                    disabled={loopEnd === null}
+                  >
+                    +{nudgeAmount}s
+                  </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+              <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                 <button
                   type="button"
                   className={compactButton(buttonStyles.secondary)}
@@ -806,21 +805,16 @@ export default function YouTubeLoopPlayer({
             ) : !hasValidLoop ? (
               <p className="text-sm leading-6 text-muted-foreground">
                 Press Tap in at the start of the phrase, then Tap out at the
-                end. Use the adjust controls to trim the loop once it is close.
+                end.
               </p>
             ) : (
               <p className="text-sm leading-6 text-muted-foreground">
-                Nudge size defaults to 0.5s. Use 0.1s for fine trimming, or 1s
-                for rough movement.
+                Use a smaller nudge for fine trimming, or a larger nudge for
+                rough movement.
               </p>
             )}
           </div>
-        ) : (
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Open loop controls to set a Tap in / Tap out loop, change speed,
-            trim the loop points, or save a labelled loop.
-          </p>
-        )}
+        ) : null}
       </div>
     </div>
   )

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
-import { buttonStyles } from "@/components/ui/buttonStyles"
+import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import {
   archivePracticeFocus,
   deletePracticeFocus,
@@ -26,6 +26,7 @@ function getStatusLabel(status: PracticeFocus["status"]) {
   if (status === "active") return "Active"
   if (status === "paused") return "Paused"
   if (status === "completed") return "Completed"
+
   return "Archived"
 }
 
@@ -50,7 +51,7 @@ function FocusEditPanel({
 }) {
   return (
     <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
-      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
         Edit focus
       </p>
 
@@ -64,7 +65,7 @@ function FocusEditPanel({
             name="title"
             required
             defaultValue={focus.title}
-            className="rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className="min-w-0 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
         </label>
 
@@ -74,7 +75,7 @@ function FocusEditPanel({
             name="description"
             rows={4}
             defaultValue={focus.description ?? ""}
-            className="rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className="min-w-0 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
         </label>
 
@@ -84,7 +85,7 @@ function FocusEditPanel({
             name="target_date"
             type="date"
             defaultValue={focus.target_date ?? ""}
-            className="rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className="min-w-0 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
         </label>
 
@@ -151,11 +152,11 @@ function FocusCard({
   const [isEditing, setIsEditing] = useState(false)
 
   return (
-    <article className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+    <article className="min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-sm md:rounded-3xl md:p-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
+        <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-serif text-2xl font-bold text-foreground">
+            <h2 className="min-w-0 break-words font-serif text-2xl font-bold leading-tight text-foreground">
               {focus.title}
             </h2>
 
@@ -165,7 +166,7 @@ function FocusCard({
           </div>
 
           {focus.description ? (
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+            <p className="mt-2 max-w-3xl break-words text-sm leading-6 text-muted-foreground">
               {focus.description}
             </p>
           ) : (
@@ -181,7 +182,7 @@ function FocusCard({
           ) : null}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex shrink-0 flex-wrap gap-2">
           <button
             type="button"
             className={buttonStyles.secondary}
@@ -222,14 +223,45 @@ function FocusGroup({
   emptyMessage,
   foci,
   activePracticeTunes,
+  defaultOpen = true,
 }: {
   title: string
   emptyMessage?: string
   foci: PracticeFocus[]
   activePracticeTunes: ActivePracticeTuneOption[]
+  defaultOpen?: boolean
 }) {
   if (foci.length === 0 && !emptyMessage) {
     return null
+  }
+
+  const content =
+    foci.length === 0 ? (
+      <div className="rounded-2xl border border-border bg-card p-4 text-sm leading-6 text-muted-foreground shadow-sm md:rounded-3xl md:p-6">
+        {emptyMessage}
+      </div>
+    ) : (
+      <div className="grid gap-4">
+        {foci.map((focus) => (
+          <FocusCard
+            key={focus.id}
+            focus={focus}
+            activePracticeTunes={activePracticeTunes}
+          />
+        ))}
+      </div>
+    )
+
+  if (!defaultOpen) {
+    return (
+      <details className="grid gap-4">
+        <summary className="cursor-pointer text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          {title} ({foci.length})
+        </summary>
+
+        <div className="mt-4">{content}</div>
+      </details>
+    )
   }
 
   return (
@@ -238,19 +270,7 @@ function FocusGroup({
         {title}
       </p>
 
-      {foci.length === 0 ? (
-        <div className="rounded-3xl border border-border bg-card p-6 text-sm leading-6 text-muted-foreground shadow-sm">
-          {emptyMessage}
-        </div>
-      ) : (
-        foci.map((focus) => (
-          <FocusCard
-            key={focus.id}
-            focus={focus}
-            activePracticeTunes={activePracticeTunes}
-          />
-        ))
-      )}
+      {content}
     </section>
   )
 }
@@ -263,7 +283,7 @@ export default function PracticeFocusList({
   activePracticeTunes,
 }: PracticeFocusListProps) {
   return (
-    <div className="grid gap-6">
+    <div className="grid min-w-0 gap-6">
       <FocusGroup
         title="Active foci"
         emptyMessage="No active foci yet. Create one when a few tunes are connected by the same musical problem or preparation goal."
@@ -275,18 +295,21 @@ export default function PracticeFocusList({
         title="Paused foci"
         foci={pausedFoci}
         activePracticeTunes={activePracticeTunes}
+        defaultOpen={false}
       />
 
       <FocusGroup
         title="Completed foci"
         foci={completedFoci}
         activePracticeTunes={activePracticeTunes}
+        defaultOpen={false}
       />
 
       <FocusGroup
         title="Archived foci"
         foci={archivedFoci}
         activePracticeTunes={activePracticeTunes}
+        defaultOpen={false}
       />
     </div>
   )

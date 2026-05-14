@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import ReferenceMediaEmbed, {
   getYouTubeVideoId,
 } from "@/components/library/ReferenceMediaEmbed"
@@ -16,8 +16,6 @@ export default function ReferenceMediaLink({
   title,
   className,
 }: ReferenceMediaLinkProps) {
-  const [isOpen, setIsOpen] = useState(false)
-
   const videoId = useMemo(() => getYouTubeVideoId(referenceUrl), [referenceUrl])
   const isYouTube = Boolean(videoId)
 
@@ -33,31 +31,20 @@ export default function ReferenceMediaLink({
         rel="noreferrer"
         className={className ?? "text-sm underline"}
       >
-        Reference
+        Open reference
       </a>
     )
   }
 
   return (
-    <div className="mt-2">
-      <button
-        type="button"
-        onClick={() => setIsOpen((current) => !current)}
-        className={className ?? "text-sm underline"}
-        aria-expanded={isOpen}
-      >
-        {isOpen ? "Hide reference" : "Show reference"}
-      </button>
-
-      {isOpen ? (
-        <div className="mt-3 -mx-1 sm:mx-0 sm:overflow-hidden sm:rounded-3xl sm:border sm:border-border sm:bg-card-strong/70 sm:p-4 sm:shadow-inner">
-          <ReferenceMediaEmbed
-            referenceUrl={referenceUrl}
-            title={title}
-            showHeading={false}
-          />
-        </div>
-      ) : null}
-    </div>
+    <span className="inline-block">
+      <ReferenceMediaEmbed
+        referenceUrl={referenceUrl}
+        title={title}
+        showHeading={false}
+        triggerLabel="Open reference"
+        triggerClassName={className ?? "text-sm underline"}
+      />
+    </span>
   )
 }

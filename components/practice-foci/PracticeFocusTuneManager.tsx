@@ -14,13 +14,16 @@ type PracticeFocusTuneManagerProps = {
   activePracticeTunes: ActivePracticeTuneOption[]
 }
 
-function getTuneMeta(tune: ActivePracticeTuneOption) {
+function getPieceMeta(piece: {
+  key?: string | null
+  style?: string | null
+  time_signature?: string | null
+}) {
   return [
-    tune.key ? `Key: ${tune.key}` : "Key unknown",
-    tune.style ? `Style: ${tune.style}` : "Style unknown",
-    tune.time_signature ? `Time: ${tune.time_signature}` : "Time unknown",
-    `Stage ${tune.stage}`,
-  ].join(" | ")
+    piece.key ? `Key: ${piece.key}` : "Key unknown",
+    piece.style ? `Style: ${piece.style}` : "Style unknown",
+    piece.time_signature ? `Time: ${piece.time_signature}` : "Time unknown",
+  ].join(" · ")
 }
 
 export default function PracticeFocusTuneManager({
@@ -33,19 +36,19 @@ export default function PracticeFocusTuneManager({
   )
 
   return (
-    <div className="mt-5 grid gap-4">
+    <div className="mt-5 grid min-w-0 gap-4">
       {focus.status === "active" ? (
-        <div className="rounded-2xl border border-border bg-background/70 p-4">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <details className="rounded-2xl border border-border bg-background/70 p-4">
+          <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
             Add active-practice tune
-          </p>
+          </summary>
 
           {availableTunes.length === 0 ? (
             <p className="mt-3 text-sm text-muted-foreground">
               No more active-practice tunes are available for this focus.
             </p>
           ) : (
-            <form action={addTuneToPracticeFocus} className="mt-3">
+            <form action={addTuneToPracticeFocus} className="mt-4">
               <input type="hidden" name="focus_id" value={focus.id} />
               <input type="hidden" name="redirect_to" value="/review/foci" />
 
@@ -54,7 +57,7 @@ export default function PracticeFocusTuneManager({
                 <select
                   name="piece_id"
                   required
-                  className="rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className="min-w-0 max-w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
                   defaultValue=""
                 >
                   <option value="" disabled>
@@ -78,11 +81,11 @@ export default function PracticeFocusTuneManager({
               </div>
             </form>
           )}
-        </div>
+        </details>
       ) : null}
 
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
           Tunes in this focus ({focus.tunes.length})
         </p>
 
@@ -95,26 +98,16 @@ export default function PracticeFocusTuneManager({
             {focus.tunes.map((focusTune) => (
               <li
                 key={focusTune.id}
-                className="flex flex-col gap-3 rounded-2xl border border-border bg-background/70 p-4 shadow-sm md:flex-row md:items-start md:justify-between"
+                className="flex min-w-0 flex-col gap-3 rounded-2xl border border-border bg-background/70 p-4 shadow-sm md:flex-row md:items-start md:justify-between"
               >
-                <div>
-                  <p className="font-medium text-foreground">
+                <div className="min-w-0">
+                  <p className="break-words font-medium text-foreground">
                     {focusTune.piece?.title ?? "Untitled tune"}
                   </p>
 
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="mt-1 break-words text-sm leading-5 text-muted-foreground">
                     {focusTune.piece
-                      ? [
-                          focusTune.piece.key
-                            ? `Key: ${focusTune.piece.key}`
-                            : "Key unknown",
-                          focusTune.piece.style
-                            ? `Style: ${focusTune.piece.style}`
-                            : "Style unknown",
-                          focusTune.piece.time_signature
-                            ? `Time: ${focusTune.piece.time_signature}`
-                            : "Time unknown",
-                        ].join(" | ")
+                      ? getPieceMeta(focusTune.piece)
                       : "Tune details unavailable"}
                   </p>
                 </div>
@@ -144,25 +137,6 @@ export default function PracticeFocusTuneManager({
           </ul>
         )}
       </div>
-
-      {availableTunes.length > 0 && focus.status === "active" ? (
-        <div className="rounded-2xl border border-border bg-muted/60 p-4">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Available active-practice tunes
-          </p>
-
-          <ul className="mt-3 space-y-2">
-            {availableTunes.slice(0, 5).map((tune) => (
-              <li key={tune.piece_id} className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">
-                  {tune.title}
-                </span>{" "}
-                — {getTuneMeta(tune)}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
     </div>
   )
 }
