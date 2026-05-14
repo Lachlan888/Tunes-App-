@@ -7,6 +7,7 @@ type PendingNavLinkProps = {
   href: string
   label: string
   badgeCount?: number
+  size?: "default" | "compact"
 }
 
 function NavBadge({ count }: { count: number }) {
@@ -23,12 +24,16 @@ export default function PendingNavLink({
   href,
   label,
   badgeCount = 0,
+  size = "default",
 }: PendingNavLinkProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
 
   const isActive = pathname === href
+
+  const sizeClasses =
+    size === "compact" ? "px-2.5 py-1.5 text-sm" : "px-3 py-1.5 text-sm"
 
   return (
     <button
@@ -43,7 +48,7 @@ export default function PendingNavLink({
           router.push(href)
         })
       }}
-      className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70 ${
+      className={`inline-flex shrink-0 items-center rounded-full border font-medium transition disabled:cursor-not-allowed disabled:opacity-70 ${sizeClasses} ${
         isActive
           ? "border-primary bg-primary text-primary-foreground shadow-sm"
           : "border-transparent text-foreground hover:border-border hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
