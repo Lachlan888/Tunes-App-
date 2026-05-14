@@ -48,14 +48,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     homePreferences.visibleSections.signed_in_card ?? true
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8">
+    <main className="mx-auto max-w-[1500px] px-4 py-5 md:px-6 md:py-8">
       {statusMessage ? (
-        <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+        <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
           {statusMessage}
         </div>
       ) : null}
 
-      <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <section className="mb-8 hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
         <div className="flex flex-wrap items-end justify-between gap-5">
           <div>
             <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">

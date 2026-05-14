@@ -3,6 +3,7 @@ import LibraryList from "@/components/library/LibraryList"
 import LibraryResultsHeader from "@/components/library/LibraryResultsHeader"
 import LibraryStatusMessages from "@/components/library/LibraryStatusMessages"
 import PieceSearchFilters from "@/components/library/PieceSearchFilters"
+import MobilePageHeader from "@/components/mobile/MobilePageHeader"
 import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import { addToLearningList } from "@/lib/actions/lists"
 import {
@@ -210,14 +211,23 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   }
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+    <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       {pageOptionsMessage ? (
-        <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+        <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
           {pageOptionsMessage}
         </div>
       ) : null}
 
-      <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <div className="mb-5 md:hidden">
+        <MobilePageHeader
+          eyebrow="Tunes"
+          title="Tune catalogue"
+          subtitle="Search, filter, create tunes, add tunes to lists, or move tunes into practice."
+          meta={<span className="block truncate">Signed in as {user.email}</span>}
+        />
+      </div>
+
+      <section className="mb-8 hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">

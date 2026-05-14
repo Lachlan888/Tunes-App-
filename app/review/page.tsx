@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation"
+import MobilePageHeader from "@/components/mobile/MobilePageHeader"
 import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import ActivePracticeSection from "@/components/practice/ActivePracticeSection"
 import CatchUpSection from "@/components/practice/CatchUpSection"
@@ -66,14 +67,26 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   }
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+    <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       {pageOptionsMessage ? (
-        <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+        <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
           {pageOptionsMessage}
         </div>
       ) : null}
 
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+      <div className="mb-5 md:hidden">
+        <MobilePageHeader
+          eyebrow="Practice"
+          title="Review your tunes"
+          subtitle={`${dueTodayPieces.length} due today · ${catchUpQueue.length} in catch-up`}
+        >
+          {showSection("practice_nav") ? (
+            <PracticeDiaryNav active="review" />
+          ) : null}
+        </MobilePageHeader>
+      </div>
+
+      <section className="hidden gap-6 md:grid xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
           <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
@@ -106,6 +119,12 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           <StreakSummarySection streakSummary={streakSummary} />
         ) : null}
       </section>
+
+      <div className="md:hidden">
+        {showSection("streaks") ? (
+          <StreakSummarySection streakSummary={streakSummary} />
+        ) : null}
+      </div>
 
       {showSection("status_messages") ? (
         <PracticeStatusMessages
