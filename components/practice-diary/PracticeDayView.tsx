@@ -24,7 +24,7 @@ export default function PracticeDayView({ data }: PracticeDayViewProps) {
         today={data.today}
       />
 
-      <section className="space-y-5 md:space-y-6">
+      <section className="space-y-6">
         <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:rounded-3xl md:p-6">
           <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
             Session summary
@@ -69,23 +69,21 @@ export default function PracticeDayView({ data }: PracticeDayViewProps) {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:rounded-3xl md:p-6">
+        <section className="space-y-4 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
           <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
             Tune notes
           </h2>
 
-          <p className="mt-3 hidden text-sm leading-6 text-muted-foreground md:block">
+          <p className="hidden text-sm leading-6 text-muted-foreground md:block">
             Reviewed tunes and tune-specific notes for this day.
           </p>
 
-          <div className="mt-4 md:mt-5">
-            <PracticeEventList
-              events={data.events}
-              categories={data.categories}
-              practiceDate={data.selectedDate}
-              redirectTo={redirectTo}
-            />
-          </div>
+          <PracticeEventList
+            events={data.events}
+            categories={data.categories}
+            practiceDate={data.selectedDate}
+            redirectTo={redirectTo}
+          />
         </section>
 
         <PracticeCategoryManagerModal

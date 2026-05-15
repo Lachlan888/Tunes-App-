@@ -68,12 +68,12 @@ export default function PracticeEventList({
 }: PracticeEventListProps) {
   if (events.length === 0) {
     return (
-      <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <section className="space-y-3 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Reviewed tunes
         </h2>
 
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        <p className="text-sm leading-6 text-muted-foreground md:mt-3">
           Nothing has been logged for this day yet. Formal reviews and
           diary-only practice checks will appear here once the Practice Diary is
           enabled.
@@ -83,7 +83,7 @@ export default function PracticeEventList({
   }
 
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+    <section className="space-y-4 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -100,7 +100,7 @@ export default function PracticeEventList({
         </p>
       </div>
 
-      <div className="mt-5 space-y-3">
+      <div className="divide-y divide-border/70 md:mt-5 md:space-y-3 md:divide-y-0">
         {events.map((event) => {
           const title = event.piece?.title ?? "Unknown tune"
           const outcome = getOutcomeLabel(getDisplayOutcome(event))
@@ -109,10 +109,10 @@ export default function PracticeEventList({
           return (
             <article
               key={event.id}
-              className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
+              className="space-y-4 py-5 first:pt-1 last:pb-0 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm"
             >
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     {eventType} · {formatTime(event.created_at)}
                   </p>
@@ -120,18 +120,18 @@ export default function PracticeEventList({
                   {event.piece ? (
                     <Link
                       href={`/library/${event.piece.id}`}
-                      className="mt-1 inline-flex font-serif text-2xl font-bold text-foreground transition hover:text-primary"
+                      className="mt-1 inline-flex max-w-full font-serif text-3xl font-bold leading-tight text-foreground transition hover:text-primary md:text-2xl"
                     >
-                      {title}
+                      <span className="break-words">{title}</span>
                     </Link>
                   ) : (
-                    <h3 className="mt-1 font-serif text-2xl font-bold text-foreground">
+                    <h3 className="mt-1 font-serif text-3xl font-bold leading-tight text-foreground md:text-2xl">
                       {title}
                     </h3>
                   )}
 
                   {event.piece && (
-                    <p className="mt-2 text-sm text-muted-foreground">
+                    <p className="mt-2 break-words text-sm text-muted-foreground">
                       {[
                         event.piece.key,
                         event.piece.style,
@@ -164,11 +164,11 @@ export default function PracticeEventList({
               </div>
 
               {event.notes.length > 0 ? (
-                <div className="mt-4 space-y-3">
+                <div className="space-y-3 md:mt-4">
                   {event.notes.map((note) => (
                     <div
                       key={note.id}
-                      className="rounded-2xl border border-border bg-card p-4"
+                      className="rounded-2xl border border-border bg-card/60 p-4 md:bg-card"
                     >
                       {note.category ? (
                         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">

@@ -2,7 +2,7 @@ import Link from "next/link"
 import { joinClasses } from "@/components/ui/buttonStyles"
 
 type PracticeDiaryNavProps = {
-  active: "review" | "diary" | "foci"
+  active: "review" | "diary" | "index" | "foci"
 }
 
 const links = [
@@ -15,6 +15,11 @@ const links = [
     href: "/review/diary",
     label: "Diary",
     value: "diary",
+  },
+  {
+    href: "/review/diary/index",
+    label: "Index",
+    value: "index",
   },
   {
     href: "/review/foci",

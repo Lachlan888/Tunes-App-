@@ -19,29 +19,37 @@ export default function PracticeDueTuneList({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5 lg:space-y-3">
       {dueTunes.map((dueTune) => (
         <article
           key={`${dueTune.userPieceId}-${dueTune.dueDate}`}
-          className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
+          className="rounded-xl border border-border bg-background/70 px-3 py-2.5 shadow-sm lg:rounded-2xl lg:p-4"
         >
           <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               {dueTune.piece ? (
                 <Link
                   href={`/library/${dueTune.piece.id}`}
-                  className="block truncate font-serif text-2xl font-bold leading-tight text-foreground transition hover:text-primary"
+                  className="line-clamp-2 block overflow-hidden font-serif font-bold leading-[1.08] text-foreground transition hover:text-primary"
+                  style={{
+                    fontSize: "clamp(1.05rem, 4.6vw, 1.45rem)",
+                  }}
                 >
                   {dueTune.piece.title}
                 </Link>
               ) : (
-                <h3 className="truncate font-serif text-2xl font-bold leading-tight text-foreground">
+                <h3
+                  className="line-clamp-2 overflow-hidden font-serif font-bold leading-[1.08] text-foreground"
+                  style={{
+                    fontSize: "clamp(1.05rem, 4.6vw, 1.45rem)",
+                  }}
+                >
                   Unknown tune
                 </h3>
               )}
             </div>
 
-            <span className="shrink-0 rounded-full border border-accent bg-accent px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-accent-foreground">
+            <span className="shrink-0 rounded-full border border-accent bg-accent px-2.5 py-0.5 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-accent-foreground lg:px-3 lg:py-1 lg:text-xs">
               Stage {dueTune.stage}
             </span>
           </div>
