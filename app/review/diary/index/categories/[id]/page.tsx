@@ -1,5 +1,5 @@
 import Link from "next/link"
-import PracticeCategoryDetail from "@/components/practice-diary/PracticeCategoryDetail"
+import PracticeCategoryDetail from "../../../../../../components/practice-diary/PracticeCategoryDetail"
 import PracticeDiaryNav from "@/components/practice-diary/PracticeDiaryNav"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { requirePracticeDiaryEnabled } from "@/lib/loaders/practice-diary"
