@@ -124,8 +124,8 @@ export default function LoginPage() {
   const isBusy = isSubmitting || isRedirecting
 
   return (
-    <main className="mx-auto grid max-w-[1300px] grid-cols-1 gap-8 px-6 py-10 text-foreground lg:grid-cols-[minmax(0,1.1fr)_minmax(380px,520px)] lg:items-start">
-      <section className="rounded-3xl border border-border bg-card p-6 shadow-sm lg:p-8">
+    <main className="mx-auto grid max-w-[1300px] grid-cols-1 gap-6 px-4 py-6 text-foreground sm:px-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(380px,520px)] lg:items-start lg:gap-8 lg:py-10">
+      <section className="hidden rounded-3xl border border-border bg-card p-6 shadow-sm lg:block lg:p-8">
         <h1 className="max-w-3xl font-serif text-4xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
           Remember what you play, and build repertoire as culture.
         </h1>
@@ -170,14 +170,26 @@ export default function LoginPage() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-border bg-card p-6 shadow-sm lg:p-8">
-        <h2 className="font-serif text-4xl font-bold tracking-tight text-foreground">
+      <section
+        id="sign-in"
+        className="rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-6 lg:p-8"
+      >
+        <div className="lg:hidden">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Tunes App
+          </p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Sign in to manage your tunes, lists, practice, and repertoire.
+          </p>
+        </div>
+
+        <h1 className="mt-4 font-serif text-4xl font-bold tracking-tight text-foreground lg:mt-0">
           {isLogin && "Sign in"}
           {isSignup && "Create account"}
           {isReset && "Reset password"}
-        </h2>
+        </h1>
 
-        <p className="mt-3 text-sm leading-6 text-muted-foreground md:text-base">
+        <p className="mt-3 hidden text-sm leading-6 text-muted-foreground md:text-base lg:block">
           {isLogin &&
             "Sign in to manage your tunes, lists, practice, and repertoire."}
           {isSignup &&

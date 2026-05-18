@@ -237,18 +237,7 @@ export default function MobileNav({
   }
 
   if (!isSignedIn) {
-    return (
-      <nav className="md:hidden">
-        <div className="grid grid-cols-1 gap-1 text-sm">
-          <MobileNavLink
-            href="/login"
-            label="Login"
-            isActive={pathname === "/login"}
-            onNavigate={closePanel}
-          />
-        </div>
-      </nav>
-    )
+    return null
   }
 
   return (
