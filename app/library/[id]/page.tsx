@@ -4,12 +4,12 @@ import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import PieceCommentsSection from "@/components/library/PieceCommentsSection"
 import PieceLoreSection from "@/components/library/PieceLoreSection"
 import PieceMediaLinksSection from "@/components/library/PieceMediaLinksSection"
-import SubmitButton from "@/components/SubmitButton"
+import PieceSheetMusicSection from "@/components/library/PieceSheetMusicSection"
 import TuneCanonicalDetailsCard from "@/components/library/TuneCanonicalDetailsCard"
 import TuneDetailActions from "@/components/library/TuneDetailActions"
 import TunePageReviewPanel from "@/components/library/TunePageReviewPanel"
+import TunePrivateNotesSection from "@/components/library/TunePrivateNotesSection"
 import TunePracticeHistorySection from "@/components/practice-diary/TunePracticeHistorySection"
-import { buttonStyles } from "@/components/ui/buttonStyles"
 import { upsertUserPieceNotes } from "@/lib/actions/user-piece-metadata"
 import {
   addPieceMediaLink,
@@ -19,6 +19,10 @@ import { addToLearningList } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadTuneDetailData } from "@/lib/loaders/tune-detail"
 import { TUNE_DETAIL_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
+import {
+  getSingleSearchParamValue,
+  getTuneDetailStatusMessage,
+} from "@/lib/tune-detail-status"
 
 type PiecePageProps = {
   params: Promise<{
@@ -49,7 +53,9 @@ function DetailErrorShell({
         <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
           {title}
         </h1>
+
         <div className="mt-4 text-sm text-muted-foreground">{children}</div>
+
         <div className="mt-5">
           <Link
             href="/library"
@@ -61,85 +67,6 @@ function DetailErrorShell({
       </section>
     </main>
   )
-}
-
-const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
-
-function getSingleValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] ?? "" : value ?? ""
-}
-
-function getStatusMessage({
-  editRequest,
-  commentReport,
-  loreReport,
-  lore,
-  moderatorEdit,
-  diary,
-  loop,
-  pageOptions,
-}: {
-  editRequest: string
-  commentReport: string
-  loreReport: string
-  lore: string
-  moderatorEdit: string
-  diary: string
-  loop: string
-  pageOptions: string
-}) {
-  if (editRequest === "success") return "Edit request submitted."
-  if (editRequest === "empty") return "Add at least one proposed change."
-  if (editRequest === "invalid_key") return "That key is not valid."
-  if (editRequest === "invalid_url") return "That reference URL is not valid."
-  if (editRequest === "error") return "Could not submit edit request."
-
-  if (commentReport === "success") return "Comment report submitted."
-  if (commentReport === "invalid_reason") return "Choose a report reason."
-  if (commentReport === "own_comment") return "You cannot report your own comment."
-  if (commentReport === "already_hidden") return "That comment is already hidden."
-  if (commentReport === "error") return "Could not submit comment report."
-
-  if (loreReport === "success") return "Lore report submitted."
-  if (loreReport === "invalid_reason") return "Choose a lore report reason."
-  if (loreReport === "own_entry") return "You cannot report your own lore entry."
-  if (loreReport === "entry_not_found") return "That lore entry could not be found."
-  if (loreReport === "error") return "Could not submit lore report."
-
-  if (lore === "updated") return "Lore entry updated."
-  if (lore === "invalid_category") return "Choose a valid lore category."
-  if (lore === "missing_text") return "Lore entry text is required."
-  if (lore === "error") return "Could not update lore entry."
-
-  if (moderatorEdit === "success") return "Canonical tune details updated."
-  if (moderatorEdit === "missing_title") return "Title is required."
-  if (moderatorEdit === "invalid_key") return "That key is not valid."
-  if (moderatorEdit === "invalid_url") return "That reference URL is not valid."
-  if (moderatorEdit === "error") return "Could not save canonical details."
-
-  if (diary === "note_saved") return "Practice note saved."
-  if (diary === "note_deleted") return "Practice note deleted."
-  if (diary === "empty_note") return "Write a note before saving."
-  if (diary === "practice_check_saved") return "Practice check saved."
-  if (diary === "diary_disabled")
-    return "Enable Practice Diary before logging tune practice checks."
-  if (diary === "invalid_outcome") return "Choose Rough, Shaky, or Solid."
-  if (diary === "missing_piece") return "Could not find that tune."
-
-  if (loop === "saved") return "Loop saved."
-  if (loop === "deleted") return "Loop deleted."
-  if (loop === "missing_fields") return "Add a label before saving the loop."
-  if (loop === "invalid_range") return "Set a valid loop start and end first."
-  if (loop === "missing_loop") return "Could not find that saved loop."
-  if (loop === "missing_piece") return "Could not find that tune."
-  if (loop === "error") return "Could not save loop."
-
-  if (pageOptions === "saved") return "Tune page options saved."
-  if (pageOptions === "reset") return "Tune page options reset."
-  if (pageOptions === "error") return "Could not save tune page options."
-
-  return null
 }
 
 export default async function PiecePage({
@@ -190,15 +117,25 @@ export default async function PiecePage({
     profileMap,
   } = tuneDetail
 
-  const statusMessage = getStatusMessage({
-    editRequest: getSingleValue(resolvedSearchParams?.edit_request),
-    commentReport: getSingleValue(resolvedSearchParams?.comment_report),
-    loreReport: getSingleValue(resolvedSearchParams?.lore_report),
-    lore: getSingleValue(resolvedSearchParams?.lore),
-    moderatorEdit: getSingleValue(resolvedSearchParams?.moderator_edit),
-    diary: getSingleValue(resolvedSearchParams?.diary),
-    loop: getSingleValue(resolvedSearchParams?.loop),
-    pageOptions: getSingleValue(resolvedSearchParams?.page_options),
+  const statusMessage = getTuneDetailStatusMessage({
+    editRequest: getSingleSearchParamValue(
+      resolvedSearchParams?.edit_request
+    ),
+    commentReport: getSingleSearchParamValue(
+      resolvedSearchParams?.comment_report
+    ),
+    loreReport: getSingleSearchParamValue(
+      resolvedSearchParams?.lore_report
+    ),
+    lore: getSingleSearchParamValue(resolvedSearchParams?.lore),
+    moderatorEdit: getSingleSearchParamValue(
+      resolvedSearchParams?.moderator_edit
+    ),
+    diary: getSingleSearchParamValue(resolvedSearchParams?.diary),
+    loop: getSingleSearchParamValue(resolvedSearchParams?.loop),
+    pageOptions: getSingleSearchParamValue(
+      resolvedSearchParams?.page_options
+    ),
   })
 
   const showTuneSection = (sectionId: string) =>
@@ -274,30 +211,12 @@ export default async function PiecePage({
 
         <div className="space-y-8">
           {showTuneSection("my_notes") ? (
-            <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                My notes
-              </h2>
-
-              <form action={upsertUserPieceNotes} className="mt-5 space-y-3">
-                <input type="hidden" name="piece_id" value={pieceId} />
-                <input type="hidden" name="redirect_to" value={redirectTo} />
-
-                <textarea
-                  name="notes"
-                  defaultValue={typedUserPieceMetadata?.notes || ""}
-                  rows={8}
-                  placeholder="Add your private notes for this tune"
-                  className={inputClassName}
-                />
-
-                <SubmitButton
-                  label="Save notes"
-                  pendingLabel="Saving..."
-                  className={buttonStyles.primary}
-                />
-              </form>
-            </section>
+            <TunePrivateNotesSection
+              pieceId={pieceId}
+              redirectTo={redirectTo}
+              userPieceMetadata={typedUserPieceMetadata}
+              upsertUserPieceNotes={upsertUserPieceNotes}
+            />
           ) : null}
 
           {showTuneSection("practice_history") ? (
@@ -317,64 +236,12 @@ export default async function PiecePage({
           ) : null}
 
           {showTuneSection("sheet_music") ? (
-            <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Sheet music / tab
-              </h2>
-
-              <form action={addPieceSheetMusicLink} className="mt-5 space-y-3">
-                <input type="hidden" name="piece_id" value={pieceId} />
-                <input type="hidden" name="redirect_to" value={redirectTo} />
-
-                <input
-                  name="label"
-                  placeholder="Label, eg Mandolin tab"
-                  className={inputClassName}
-                  required
-                />
-
-                <input
-                  name="url"
-                  type="url"
-                  placeholder="https://..."
-                  className={inputClassName}
-                  required
-                />
-
-                <SubmitButton
-                  label="Add sheet music link"
-                  pendingLabel="Adding..."
-                  className={buttonStyles.primary}
-                />
-              </form>
-
-              {typedSheetMusicLinks.length > 0 ? (
-                <ul className="mt-6 space-y-3">
-                  {typedSheetMusicLinks.map((link) => (
-                    <li
-                      key={link.id}
-                      className="rounded-2xl border border-border bg-background/70 p-4"
-                    >
-                      <p className="text-sm font-medium text-foreground">
-                        {link.label}
-                      </p>
-                      <a
-                        href={link.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-2 block break-all text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-                      >
-                        {link.url}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-                  No sheet music links yet.
-                </p>
-              )}
-            </section>
+            <PieceSheetMusicSection
+              pieceId={pieceId}
+              redirectTo={redirectTo}
+              sheetMusicLinks={typedSheetMusicLinks}
+              addPieceSheetMusicLink={addPieceSheetMusicLink}
+            />
           ) : null}
         </div>
 
