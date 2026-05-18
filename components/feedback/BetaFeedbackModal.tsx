@@ -18,10 +18,10 @@ const initialState: BetaFeedbackFormState = {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/80 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full rounded-2xl border border-border bg-background/80 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 const textareaClassName =
-  "min-h-32 w-full rounded-2xl border border-border bg-background/80 px-4 py-3 text-sm leading-6 text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "min-h-32 w-full rounded-2xl border border-border bg-background/80 px-4 py-3 text-sm leading-6 text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 function getCurrentPagePath() {
   return `${window.location.pathname}${window.location.search}${window.location.hash}`
@@ -37,6 +37,7 @@ export default function BetaFeedbackModal({
   const [browser, setBrowser] = useState("")
   const [viewportWidth, setViewportWidth] = useState("")
   const [viewportHeight, setViewportHeight] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return
@@ -46,6 +47,7 @@ export default function BetaFeedbackModal({
     setBrowser(window.navigator.userAgent)
     setViewportWidth(String(window.innerWidth))
     setViewportHeight(String(window.innerHeight))
+    setIsSubmitting(false)
   }, [isOpen])
 
   useEffect(() => {
@@ -60,6 +62,17 @@ export default function BetaFeedbackModal({
     return undefined
   }, [state.status, onClose])
 
+  useEffect(() => {
+    if (state.status === "error") {
+      setIsSubmitting(false)
+    }
+  }, [state.status])
+
+  function handleClose() {
+    if (isSubmitting) return
+    onClose()
+  }
+
   if (!isOpen) {
     return null
   }
@@ -72,9 +85,11 @@ export default function BetaFeedbackModal({
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Beta feedback
             </p>
+
             <h2 className="mt-1 font-serif text-2xl font-bold">
               Send feedback
             </h2>
+
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               This includes the exact page path so the issue can be opened from
               the Dev Cockpit.
@@ -83,8 +98,9 @@ export default function BetaFeedbackModal({
 
           <button
             type="button"
-            onClick={onClose}
-            className="rounded-full border border-border px-3 py-1 text-sm font-semibold text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            className="rounded-full border border-border px-3 py-1 text-sm font-semibold text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             Close
           </button>
@@ -92,6 +108,7 @@ export default function BetaFeedbackModal({
 
         <form
           action={formAction}
+          onSubmit={() => setIsSubmitting(true)}
           className="max-h-[calc(92vh-7rem)] space-y-4 overflow-y-auto px-5 py-5"
         >
           <input type="hidden" name="page_path" value={pagePath} />
@@ -111,10 +128,12 @@ export default function BetaFeedbackModal({
             <span className="text-sm font-semibold text-foreground">
               What kind of feedback is this?
             </span>
+
             <select
               name="category"
               defaultValue="confusing"
               className={`${inputClassName} mt-2`}
+              disabled={isSubmitting}
             >
               <option value="broken">Broken thing</option>
               <option value="confusing">Function confusion</option>
@@ -128,10 +147,12 @@ export default function BetaFeedbackModal({
             <span className="text-sm font-semibold text-foreground">
               How serious is it?
             </span>
+
             <select
               name="severity"
               defaultValue="medium"
               className={`${inputClassName} mt-2`}
+              disabled={isSubmitting}
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -143,11 +164,13 @@ export default function BetaFeedbackModal({
             <span className="text-sm font-semibold text-foreground">
               What happened?
             </span>
+
             <textarea
               name="message"
               required
               className={`${textareaClassName} mt-2`}
               placeholder="What was broken, confusing, awkward, or missing?"
+              disabled={isSubmitting}
             />
           </label>
 
@@ -166,8 +189,9 @@ export default function BetaFeedbackModal({
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             <button
               type="button"
-              onClick={onClose}
-              className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              onClick={handleClose}
+              disabled={isSubmitting}
+              className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               Cancel
             </button>
@@ -175,6 +199,7 @@ export default function BetaFeedbackModal({
             <SubmitButton
               label="Send feedback"
               pendingLabel="Sending…"
+              forcePending={isSubmitting}
               className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             />
           </div>
