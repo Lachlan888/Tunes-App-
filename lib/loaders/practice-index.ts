@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation"
 import { requireUserContext } from "@/lib/auth/session"
 import { getToday } from "@/lib/review"
 import type { Piece } from "@/lib/types"
@@ -58,9 +59,38 @@ export type PracticeIndexCategoryGroup = {
   notes: PracticeIndexItem[]
 }
 
+export type PracticeIndexFocusStatus =
+  | "active"
+  | "paused"
+  | "completed"
+  | "archived"
+
+export type PracticeIndexFocusNote = {
+  id: number
+  body: string
+  noteDate: string | null
+  createdAt: string
+  piece: Piece | null
+  categoryName: string | null
+}
+
+export type PracticeIndexFocusSummary = {
+  id: number
+  title: string
+  description: string | null
+  status: PracticeIndexFocusStatus
+  targetDate: string | null
+  tuneCount: number
+  noteCount: number
+  lastTouchedDate: string | null
+  lastTouchedAt: string | null
+  recentNotes: PracticeIndexFocusNote[]
+}
+
 export type PracticeIndexData = {
   today: string
   filters: PracticeIndexFilters
+  focusSummaries: PracticeIndexFocusSummary[]
   categoryGroups: PracticeIndexCategoryGroup[]
   categories: PracticeIndexCategoryOption[]
   summary: {
@@ -70,7 +100,44 @@ export type PracticeIndexData = {
     uncategorisedNotes: number
     tunesMentioned: number
     dailyReflections: number
+    activeFoci: number
   }
+}
+
+export type PracticeCategoryDetailNote = {
+  id: number
+  body: string
+  noteDate: string
+  createdAt: string
+  updatedAt: string | null
+  practiceDayId: number
+  practiceEventId: number | null
+  reviewEventId: number | null
+  piece: Piece | null
+}
+
+export type PracticeCategoryTuneSummary = {
+  piece: Piece
+  noteCount: number
+  latestDate: string
+  latestNoteAt: string
+  latestSnippet: string | null
+}
+
+export type PracticeCategoryDetailData = {
+  today: string
+  category: {
+    id: number
+    name: string
+    prompt: string | null
+  }
+  summary: {
+    totalNotes: number
+    tunesMentioned: number
+    latestDate: string | null
+  }
+  tuneSummaries: PracticeCategoryTuneSummary[]
+  notes: PracticeCategoryDetailNote[]
 }
 
 type PracticeDayRow = {
@@ -84,6 +151,12 @@ type PracticeDayRow = {
 type PracticeNoteCategoryRow = {
   id: number
   name: string
+}
+
+type PracticeCategoryDetailRow = {
+  id: number
+  name: string
+  prompt: string | null
 }
 
 type PracticeNoteRow = {
@@ -108,6 +181,72 @@ type PracticeNoteRow = {
       }[]
     | null
   pieces: Piece | Piece[] | null
+}
+
+type PracticeCategoryDetailNoteRow = {
+  id: number
+  user_id: string
+  practice_day_id: number
+  practice_event_id: number | null
+  piece_id: number | null
+  review_event_id: number | null
+  category_id: number | null
+  body: string | null
+  created_at: string
+  updated_at: string | null
+  practice_days:
+    | {
+        practice_date: string | null
+      }
+    | {
+        practice_date: string | null
+      }[]
+    | null
+  pieces: Piece | Piece[] | null
+}
+
+type PracticeFocusRow = {
+  id: number
+  title: string
+  description: string | null
+  status: PracticeIndexFocusStatus
+  target_date: string | null
+  created_at: string
+  updated_at: string | null
+}
+
+type PracticeFocusTuneRow = {
+  focus_id: number
+  piece_id: number
+}
+
+type PracticeFocusNoteRow = {
+  id: number
+  focus_id: number
+  body: string | null
+  created_at: string
+  piece_id: number | null
+  practice_days:
+    | {
+        practice_date: string | null
+      }
+    | {
+        practice_date: string | null
+      }[]
+    | null
+  practice_note_categories:
+    | {
+        name: string | null
+      }
+    | {
+        name: string | null
+      }[]
+    | null
+  pieces: Piece | Piece[] | null
+}
+
+type PracticeIndexFocusNoteWithFocusId = PracticeIndexFocusNote & {
+  focusId: number
 }
 
 function isValidDateOnly(value: string | undefined): value is string {
@@ -278,7 +417,97 @@ function buildCategoryGroups({
   )
 }
 
-function buildSummary(notes: PracticeIndexItem[]) {
+function mapFocusNote(row: PracticeFocusNoteRow): PracticeIndexFocusNote | null {
+  const body = row.body?.trim()
+
+  if (!body) {
+    return null
+  }
+
+  return {
+    id: row.id,
+    body,
+    noteDate: getSingleJoinedRow(row.practice_days)?.practice_date ?? null,
+    createdAt: row.created_at,
+    piece: getSingleJoinedRow(row.pieces),
+    categoryName: getSingleJoinedRow(row.practice_note_categories)?.name ?? null,
+  }
+}
+
+function getFocusStatusRank(status: PracticeIndexFocusStatus) {
+  if (status === "active") return 0
+  if (status === "paused") return 1
+  if (status === "completed") return 2
+  return 3
+}
+
+function buildFocusSummaries({
+  foci,
+  focusTunes,
+  focusNotes,
+}: {
+  foci: PracticeFocusRow[]
+  focusTunes: PracticeFocusTuneRow[]
+  focusNotes: PracticeIndexFocusNoteWithFocusId[]
+}) {
+  const tuneCountsByFocusId = new Map<number, Set<number>>()
+  const notesByFocusId = new Map<number, PracticeIndexFocusNote[]>()
+
+  for (const focusTune of focusTunes) {
+    const existing = tuneCountsByFocusId.get(focusTune.focus_id) ?? new Set()
+    existing.add(focusTune.piece_id)
+    tuneCountsByFocusId.set(focusTune.focus_id, existing)
+  }
+
+  for (const note of focusNotes) {
+    const existing = notesByFocusId.get(note.focusId) ?? []
+    existing.push(note)
+    notesByFocusId.set(note.focusId, existing)
+  }
+
+  return foci
+    .map((focus) => {
+      const notes = (notesByFocusId.get(focus.id) ?? []).sort((a, b) => {
+        const dateCompare = (b.noteDate ?? "").localeCompare(a.noteDate ?? "")
+
+        if (dateCompare !== 0) {
+          return dateCompare
+        }
+
+        return b.createdAt.localeCompare(a.createdAt)
+      })
+
+      const latestNote = notes[0] ?? null
+
+      return {
+        id: focus.id,
+        title: focus.title,
+        description: focus.description,
+        status: focus.status,
+        targetDate: focus.target_date,
+        tuneCount: tuneCountsByFocusId.get(focus.id)?.size ?? 0,
+        noteCount: notes.length,
+        lastTouchedDate: latestNote?.noteDate ?? null,
+        lastTouchedAt: latestNote?.createdAt ?? null,
+        recentNotes: notes.slice(0, 2),
+      }
+    })
+    .sort(
+      (a, b) =>
+        getFocusStatusRank(a.status) - getFocusStatusRank(b.status) ||
+        (b.lastTouchedDate ?? "").localeCompare(a.lastTouchedDate ?? "") ||
+        (b.lastTouchedAt ?? "").localeCompare(a.lastTouchedAt ?? "") ||
+        a.title.localeCompare(b.title)
+    )
+}
+
+function buildSummary({
+  notes,
+  focusSummaries,
+}: {
+  notes: PracticeIndexItem[]
+  focusSummaries: PracticeIndexFocusSummary[]
+}) {
   const pieceIds = new Set<number>()
 
   for (const note of notes) {
@@ -297,7 +526,174 @@ function buildSummary(notes: PracticeIndexItem[]) {
     tunesMentioned: pieceIds.size,
     dailyReflections: notes.filter((note) => note.kind === "daily_reflection")
       .length,
+    activeFoci: focusSummaries.filter((focus) => focus.status === "active")
+      .length,
   }
+}
+
+function mapCategoryDetailNote(
+  row: PracticeCategoryDetailNoteRow
+): PracticeCategoryDetailNote | null {
+  const body = row.body?.trim()
+  const practiceDate = getSingleJoinedRow(row.practice_days)?.practice_date
+
+  if (!body || !practiceDate) {
+    return null
+  }
+
+  return {
+    id: row.id,
+    body,
+    noteDate: practiceDate,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    practiceDayId: row.practice_day_id,
+    practiceEventId: row.practice_event_id,
+    reviewEventId: row.review_event_id,
+    piece: getSingleJoinedRow(row.pieces),
+  }
+}
+
+function buildCategoryTuneSummaries(notes: PracticeCategoryDetailNote[]) {
+  const summariesByPieceId = new Map<number, PracticeCategoryTuneSummary>()
+
+  for (const note of notes) {
+    if (!note.piece) continue
+
+    const existing = summariesByPieceId.get(note.piece.id)
+
+    if (!existing) {
+      summariesByPieceId.set(note.piece.id, {
+        piece: note.piece,
+        noteCount: 1,
+        latestDate: note.noteDate,
+        latestNoteAt: note.createdAt,
+        latestSnippet: note.body,
+      })
+      continue
+    }
+
+    existing.noteCount += 1
+
+    if (
+      note.noteDate > existing.latestDate ||
+      (note.noteDate === existing.latestDate &&
+        note.createdAt > existing.latestNoteAt)
+    ) {
+      existing.latestDate = note.noteDate
+      existing.latestNoteAt = note.createdAt
+      existing.latestSnippet = note.body
+    }
+  }
+
+  return Array.from(summariesByPieceId.values()).sort(
+    (a, b) =>
+      b.noteCount - a.noteCount ||
+      b.latestDate.localeCompare(a.latestDate) ||
+      a.piece.title.localeCompare(b.piece.title)
+  )
+}
+
+async function loadPracticeFocusSummaries({
+  supabase,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof import("@/lib/supabase/server").createClient>>
+  userId: string
+}) {
+  const { data: focusData, error: focusError } = await supabase
+    .from("practice_foci")
+    .select(
+      `
+        id,
+        title,
+        description,
+        status,
+        target_date,
+        created_at,
+        updated_at
+      `
+    )
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+
+  if (focusError) {
+    throw new Error(focusError.message)
+  }
+
+  const foci = (focusData ?? []) as unknown as PracticeFocusRow[]
+
+  if (foci.length === 0) {
+    return []
+  }
+
+  const focusIds = foci.map((focus) => focus.id)
+
+  const { data: focusTuneData, error: focusTuneError } = await supabase
+    .from("practice_focus_tunes")
+    .select("focus_id, piece_id")
+    .in("focus_id", focusIds)
+
+  if (focusTuneError) {
+    throw new Error(focusTuneError.message)
+  }
+
+  const { data: focusNoteData, error: focusNoteError } = await supabase
+    .from("practice_notes")
+    .select(
+      `
+        id,
+        focus_id,
+        body,
+        created_at,
+        piece_id,
+        practice_days (
+          practice_date
+        ),
+        practice_note_categories (
+          name
+        ),
+        pieces (
+          id,
+          title,
+          key,
+          style,
+          time_signature,
+          reference_url
+        )
+      `
+    )
+    .eq("user_id", userId)
+    .in("focus_id", focusIds)
+    .not("focus_id", "is", null)
+    .order("created_at", { ascending: false })
+
+  if (focusNoteError) {
+    throw new Error(focusNoteError.message)
+  }
+
+  const focusNotes = ((focusNoteData ?? []) as unknown as PracticeFocusNoteRow[])
+    .map((row) => {
+      const mappedNote = mapFocusNote(row)
+
+      if (!mappedNote) {
+        return null
+      }
+
+      return {
+        ...mappedNote,
+        focusId: row.focus_id,
+      }
+    })
+    .filter(
+      (note): note is PracticeIndexFocusNoteWithFocusId => note !== null
+    )
+
+  return buildFocusSummaries({
+    foci,
+    focusTunes: (focusTuneData ?? []) as unknown as PracticeFocusTuneRow[],
+    focusNotes,
+  })
 }
 
 export async function loadPracticeIndexData(
@@ -306,6 +702,11 @@ export async function loadPracticeIndexData(
   const { supabase, user } = await requireUserContext()
   const today = getToday()
   const filters = buildFilters(searchParams)
+
+  const focusSummaries = await loadPracticeFocusSummaries({
+    supabase,
+    userId: user.id,
+  })
 
   let practiceDaysQuery = supabase
     .from("practice_days")
@@ -394,7 +795,7 @@ export async function loadPracticeIndexData(
       throw new Error(notesError.message)
     }
 
-    noteRows.push(...((notesData ?? []) as PracticeNoteRow[]))
+    noteRows.push(...((notesData ?? []) as unknown as PracticeNoteRow[]))
   }
 
   const noteItems: PracticeIndexItem[] = []
@@ -462,8 +863,106 @@ export async function loadPracticeIndexData(
   return {
     today,
     filters,
+    focusSummaries,
     categoryGroups,
     categories,
-    summary: buildSummary(filteredItems),
+    summary: buildSummary({
+      notes: filteredItems,
+      focusSummaries,
+    }),
+  }
+}
+
+export async function loadPracticeCategoryDetailData(
+  categoryId: number
+): Promise<PracticeCategoryDetailData> {
+  const { supabase, user } = await requireUserContext()
+  const today = getToday()
+
+  if (!Number.isInteger(categoryId) || categoryId <= 0) {
+    notFound()
+  }
+
+  const { data: categoryData, error: categoryError } = await supabase
+    .from("practice_note_categories")
+    .select("id, name, prompt")
+    .eq("id", categoryId)
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (categoryError) {
+    throw new Error(categoryError.message)
+  }
+
+  if (!categoryData) {
+    notFound()
+  }
+
+  const category = categoryData as unknown as PracticeCategoryDetailRow
+
+  const { data: notesData, error: notesError } = await supabase
+    .from("practice_notes")
+    .select(
+      `
+        id,
+        user_id,
+        practice_day_id,
+        practice_event_id,
+        piece_id,
+        review_event_id,
+        category_id,
+        body,
+        created_at,
+        updated_at,
+        practice_days (
+          practice_date
+        ),
+        pieces (
+          id,
+          title,
+          key,
+          style,
+          time_signature,
+          reference_url
+        )
+      `
+    )
+    .eq("user_id", user.id)
+    .eq("category_id", categoryId)
+    .order("created_at", { ascending: false })
+
+  if (notesError) {
+    throw new Error(notesError.message)
+  }
+
+  const notes = ((notesData ?? []) as unknown as PracticeCategoryDetailNoteRow[])
+    .map(mapCategoryDetailNote)
+    .filter((note): note is PracticeCategoryDetailNote => note !== null)
+    .sort((a, b) => {
+      const dateCompare = b.noteDate.localeCompare(a.noteDate)
+
+      if (dateCompare !== 0) {
+        return dateCompare
+      }
+
+      return b.createdAt.localeCompare(a.createdAt)
+    })
+
+  const tuneSummaries = buildCategoryTuneSummaries(notes)
+
+  return {
+    today,
+    category: {
+      id: category.id,
+      name: category.name,
+      prompt: category.prompt,
+    },
+    summary: {
+      totalNotes: notes.length,
+      tunesMentioned: tuneSummaries.length,
+      latestDate: notes[0]?.noteDate ?? null,
+    },
+    tuneSummaries,
+    notes,
   }
 }

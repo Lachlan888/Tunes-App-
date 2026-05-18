@@ -30,8 +30,8 @@ export default async function PracticeDiaryIndexPage({
         </h1>
 
         <p className="mt-3 hidden max-w-3xl text-base leading-7 text-muted-foreground md:block">
-          Combine practice notes by category so musical patterns are easier to
-          find across different days and tunes.
+          Find practice foci, categories, tune notes, review notes, and daily
+          reflections without digging through the diary day by day.
         </p>
 
         <PracticeDiaryNav active="index" />
