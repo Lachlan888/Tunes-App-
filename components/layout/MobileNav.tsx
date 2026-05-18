@@ -10,6 +10,7 @@ type MobileNavProps = {
   unreadTotalCount: number
   pendingModerationCount: number
   canModerate: boolean
+  canAccessDev: boolean
 }
 
 type MobileNavItem = {
@@ -133,6 +134,7 @@ export default function MobileNav({
   unreadTotalCount,
   pendingModerationCount,
   canModerate,
+  canAccessDev,
 }: MobileNavProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -182,6 +184,14 @@ export default function MobileNav({
             href: "/moderator",
             label: "Moderator",
             badgeCount: pendingModerationCount,
+          },
+        ]
+      : []),
+    ...(canAccessDev
+      ? [
+          {
+            href: "/dev",
+            label: "Dev",
           },
         ]
       : []),

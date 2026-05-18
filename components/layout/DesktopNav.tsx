@@ -8,6 +8,7 @@ type DesktopNavProps = {
   unreadTotalCount: number
   pendingModerationCount: number
   canModerate: boolean
+  canAccessDev: boolean
 }
 
 export default function DesktopNav({
@@ -16,6 +17,7 @@ export default function DesktopNav({
   unreadTotalCount,
   pendingModerationCount,
   canModerate,
+  canAccessDev,
 }: DesktopNavProps) {
   return (
     <nav className="hidden flex-wrap items-center gap-2 text-sm md:flex">
@@ -73,6 +75,8 @@ export default function DesktopNav({
               badgeCount={pendingModerationCount}
             />
           ) : null}
+
+          {canAccessDev ? <PendingNavLink href="/dev" label="Dev" /> : null}
 
           <PendingNavLink href="/dashboard" label="Profile" />
           <LogoutButton />

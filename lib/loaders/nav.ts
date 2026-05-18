@@ -1,4 +1,4 @@
-import { canModerate } from "@/lib/auth/roles"
+import { canModerate, isAppAdmin } from "@/lib/auth/roles"
 import { getToday, normaliseStoredDate } from "@/lib/review"
 import type { SupabaseServerClient } from "@/lib/auth/session"
 import type { UserRole } from "@/lib/types"
@@ -6,6 +6,7 @@ import type { UserRole } from "@/lib/types"
 export type NavContext = {
   role: UserRole
   canModerate: boolean
+  canAccessDev: boolean
   unreadNotificationCount: number
   unreadMessageCount: number
   unreadTotalCount: number
@@ -16,6 +17,7 @@ export type NavContext = {
 export const emptyNavContext: NavContext = {
   role: "user",
   canModerate: false,
+  canAccessDev: false,
   unreadNotificationCount: 0,
   unreadMessageCount: 0,
   unreadTotalCount: 0,
@@ -112,7 +114,11 @@ export async function loadNavContext(
   supabase: SupabaseServerClient,
   userId: string
 ): Promise<NavContext> {
-  const role = await loadRole(supabase, userId)
+  const [role, userCanAccessDev] = await Promise.all([
+    loadRole(supabase, userId),
+    isAppAdmin(supabase, userId),
+  ])
+
   const userCanModerate = canModerate(role)
 
   const [
@@ -178,6 +184,7 @@ export async function loadNavContext(
   return {
     role,
     canModerate: userCanModerate,
+    canAccessDev: userCanAccessDev,
     unreadNotificationCount: safeUnreadNotificationCount,
     unreadMessageCount: safeUnreadMessageCount,
     unreadTotalCount: safeUnreadNotificationCount + safeUnreadMessageCount,

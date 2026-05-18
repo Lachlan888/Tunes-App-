@@ -7,6 +7,7 @@ type AppHeaderProps = {
   unreadTotalCount: number
   pendingModerationCount: number
   canModerate: boolean
+  canAccessDev: boolean
 }
 
 export default function AppHeader({
@@ -15,6 +16,7 @@ export default function AppHeader({
   unreadTotalCount,
   pendingModerationCount,
   canModerate,
+  canAccessDev,
 }: AppHeaderProps) {
   return (
     <header className="relative z-[100] border-b border-border bg-card/90 backdrop-blur">
@@ -34,6 +36,7 @@ export default function AppHeader({
           unreadTotalCount={unreadTotalCount}
           pendingModerationCount={pendingModerationCount}
           canModerate={canModerate}
+          canAccessDev={canAccessDev}
         />
 
         <MobileNav
@@ -42,6 +45,7 @@ export default function AppHeader({
           unreadTotalCount={unreadTotalCount}
           pendingModerationCount={pendingModerationCount}
           canModerate={canModerate}
+          canAccessDev={canAccessDev}
         />
       </div>
     </header>

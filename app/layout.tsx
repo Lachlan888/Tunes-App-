@@ -1,4 +1,5 @@
 import "./globals.css"
+import FloatingFeedbackButton from "@/components/feedback/FloatingFeedbackButton"
 import AppHeader from "@/components/layout/AppHeader"
 import { emptyNavContext, loadNavContext } from "@/lib/loaders/nav"
 import { createClient } from "@/lib/supabase/server"
@@ -29,9 +30,12 @@ export default async function RootLayout({
           unreadTotalCount={navContext.unreadTotalCount}
           pendingModerationCount={navContext.pendingModerationCount}
           canModerate={navContext.canModerate}
+          canAccessDev={navContext.canAccessDev}
         />
 
         {children}
+
+        {user ? <FloatingFeedbackButton /> : null}
       </body>
     </html>
   )
