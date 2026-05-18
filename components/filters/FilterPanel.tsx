@@ -37,17 +37,19 @@ export default function FilterPanel({
       eyebrow="Filters"
       title={title}
       description={description}
+      closeLabel="Close filters"
       panelClassName={className}
       bodyClassName="min-h-0 flex-1 overflow-y-auto p-5 md:p-6"
+      footerClassName="pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-4"
       footer={
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             type="button"
             onClick={onClose}
             className={buttonStyles.secondary}
             disabled={isPending}
           >
-            Close
+            Close filters
           </button>
 
           {hasActiveFilters && onClearAll ? (

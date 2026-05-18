@@ -108,7 +108,9 @@ export default function ResponsiveModal({
   const modalContent = (
     <div
       className="fixed inset-0 z-[1000] flex min-w-0 items-end justify-center overflow-hidden bg-foreground/35 p-0 backdrop-blur-sm md:items-center md:p-4"
-      onClick={() => {
+      onClick={(event) => {
+        if (event.target !== event.currentTarget) return
+
         if (closeOnOverlayClick) {
           requestClose()
         }
@@ -127,6 +129,8 @@ export default function ResponsiveModal({
           panelClassName
         )}
         onClick={(event) => event.stopPropagation()}
+        onMouseDown={(event) => event.stopPropagation()}
+        onPointerDown={(event) => event.stopPropagation()}
       >
         <header
           className={joinClasses(

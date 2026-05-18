@@ -4,6 +4,8 @@ import { useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import UserIdentityLink from "@/components/UserIdentityLink"
 import MobileCompareTuneRow from "@/components/compare/MobileCompareTuneRow"
+import FilterPanel from "@/components/filters/FilterPanel"
+import FilterSection from "@/components/filters/FilterSection"
 import { buildCompareHref, removeUserOnce } from "@/lib/compare-page"
 import { pieceMatchesFilters } from "@/lib/search-filters"
 import type { ProfileSearchRow } from "@/lib/profile-search"
@@ -238,94 +240,150 @@ export default function MobileCompareResultsPanel({
 
           <button
             type="button"
-            onClick={() => setShowFilters((current) => !current)}
+            onClick={() => setShowFilters(true)}
             className={
               activeFilterCount > 0
                 ? "shrink-0 rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground"
                 : "shrink-0 rounded-full border border-border px-4 py-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
             }
+            aria-expanded={showFilters}
+            aria-controls="mobile-compare-filter-panel"
           >
             Filters{activeFilterCount > 0 ? ` ${activeFilterCount}` : ""}
           </button>
         </div>
 
-        {showFilters ? (
-          <div className="mt-4 rounded-3xl border border-border bg-card p-4">
-            {availableKeys.length > 0 ? (
-              <div>
-                <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Key
-                </h3>
-
-                <div className="mt-2 flex max-w-full flex-wrap gap-2">
-                  {availableKeys.map((key) => (
-                    <FilterChip
-                      key={key}
-                      label={key}
-                      selected={selectedKeys.includes(key)}
-                      onClick={() =>
-                        setSelectedKeys(toggleValue(selectedKeys, key))
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
+        {hasActiveFilters ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {query.trim() ? (
+              <span className="rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-medium text-foreground">
+                Search: {query.trim()}
+              </span>
             ) : null}
 
-            {availableStyles.length > 0 ? (
-              <div className="mt-4">
-                <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Style
-                </h3>
-
-                <div className="mt-2 flex max-w-full flex-wrap gap-2">
-                  {availableStyles.map((style) => (
-                    <FilterChip
-                      key={style}
-                      label={style}
-                      selected={selectedStyles.includes(style)}
-                      onClick={() =>
-                        setSelectedStyles(toggleValue(selectedStyles, style))
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {availableTimeSignatures.length > 0 ? (
-              <div className="mt-4">
-                <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Time
-                </h3>
-
-                <div className="mt-2 flex max-w-full flex-wrap gap-2">
-                  {availableTimeSignatures.map((timeSignature) => (
-                    <FilterChip
-                      key={timeSignature}
-                      label={timeSignature}
-                      selected={selectedTimeSignatures.includes(timeSignature)}
-                      onClick={() =>
-                        setSelectedTimeSignatures(
-                          toggleValue(selectedTimeSignatures, timeSignature)
-                        )
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {hasActiveFilters ? (
-              <button
-                type="button"
-                onClick={clearLocalFilters}
-                className="mt-4 text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+            {selectedKeys.map((key) => (
+              <span
+                key={`key-${key}`}
+                className="rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-medium text-foreground"
               >
-                Clear search and filters
-              </button>
-            ) : null}
+                Key: {key}
+              </span>
+            ))}
+
+            {selectedStyles.map((style) => (
+              <span
+                key={`style-${style}`}
+                className="rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-medium text-foreground"
+              >
+                Style: {style}
+              </span>
+            ))}
+
+            {selectedTimeSignatures.map((timeSignature) => (
+              <span
+                key={`time-${timeSignature}`}
+                className="rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-medium text-foreground"
+              >
+                Time: {timeSignature}
+              </span>
+            ))}
           </div>
+        ) : null}
+
+        {showFilters ? (
+          <FilterPanel
+            id="mobile-compare-filter-panel"
+            title="Filter common tunes"
+            description="Select filters, then close this panel to keep browsing the results."
+            hasActiveFilters={hasActiveFilters}
+            isPending={false}
+            onClearAll={clearLocalFilters}
+            onClose={() => setShowFilters(false)}
+          >
+            <div className="space-y-5">
+              <FilterSection
+                title="Key"
+                count={selectedKeys.length}
+                disabled={false}
+              >
+                {availableKeys.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No keys available.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {availableKeys.map((key) => (
+                      <FilterChip
+                        key={key}
+                        label={key}
+                        selected={selectedKeys.includes(key)}
+                        onClick={() =>
+                          setSelectedKeys(toggleValue(selectedKeys, key))
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
+              </FilterSection>
+
+              <FilterSection
+                title="Style"
+                count={selectedStyles.length}
+                disabled={false}
+              >
+                {availableStyles.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No styles available.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {availableStyles.map((style) => (
+                      <FilterChip
+                        key={style}
+                        label={style}
+                        selected={selectedStyles.includes(style)}
+                        onClick={() =>
+                          setSelectedStyles(toggleValue(selectedStyles, style))
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
+              </FilterSection>
+
+              <FilterSection
+                title="Time"
+                count={selectedTimeSignatures.length}
+                disabled={false}
+              >
+                {availableTimeSignatures.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No time signatures available.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {availableTimeSignatures.map((timeSignature) => (
+                      <FilterChip
+                        key={timeSignature}
+                        label={timeSignature}
+                        selected={selectedTimeSignatures.includes(
+                          timeSignature
+                        )}
+                        onClick={() =>
+                          setSelectedTimeSignatures(
+                            toggleValue(
+                              selectedTimeSignatures,
+                              timeSignature
+                            )
+                          )
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
+              </FilterSection>
+            </div>
+          </FilterPanel>
         ) : null}
       </section>
 

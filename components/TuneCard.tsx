@@ -1,7 +1,7 @@
 "use client"
 
+import Link from "next/link"
 import type { ReactNode } from "react"
-import PendingLinkButton from "@/components/PendingLinkButton"
 import ReferenceMediaLink from "@/components/ReferenceMediaLink"
 import ClickableCard from "@/components/ui/ClickableCard"
 import { getStyleLabelsFromPiece } from "@/lib/search-filters"
@@ -63,12 +63,12 @@ export default function TuneCard({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h3 className="font-serif text-2xl font-bold leading-tight tracking-tight text-foreground">
-            <PendingLinkButton
+            <Link
               href={`/library/${id}`}
-              label={title}
-              pendingLabel="Loading..."
               className="decoration-primary decoration-2 underline-offset-4 hover:underline"
-            />
+            >
+              {title}
+            </Link>
           </h3>
 
           {metadataParts.length > 0 && (
