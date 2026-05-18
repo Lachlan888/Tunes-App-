@@ -1,4 +1,5 @@
 import Link from "next/link"
+import PracticeNoteCard from "@/components/practice-diary/PracticeNoteCard"
 import PracticeNoteForm from "@/components/practice-diary/PracticeNoteForm"
 import type {
   PracticeDiaryEventWithNotes,
@@ -58,47 +59,6 @@ function formatTime(value: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value))
-}
-
-function NoteContextLabels({
-  category,
-  focus,
-}: {
-  category: PracticeNoteCategory | null
-  focus: {
-    id: number
-    title: string
-    description: string | null
-    status: string
-  } | null
-}) {
-  if (!category && !focus) {
-    return null
-  }
-
-  return (
-    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-      {category ? (
-        <Link
-          href={`/review/diary/categories/${category.id}`}
-          className="rounded-full border border-border bg-muted px-2.5 py-1 text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          title={category.prompt ?? undefined}
-        >
-          {category.name}
-        </Link>
-      ) : null}
-
-      {focus ? (
-        <Link
-          href={`/review/foci/${focus.id}`}
-          className="rounded-full border border-border bg-background/70 px-2.5 py-1 text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          title={focus.description ?? undefined}
-        >
-          Focus: {focus.title}
-        </Link>
-      ) : null}
-    </div>
-  )
 }
 
 export default function PracticeEventList({
@@ -193,11 +153,11 @@ export default function PracticeEventList({
                     {outcome}
                   </span>
 
-                  {typeof event.review_event?.resulting_stage === "number" && (
+                  {typeof event.review_event?.resulting_stage === "number" ? (
                     <span className="rounded-full border border-accent bg-accent px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-accent-foreground">
                       Stage {event.review_event.resulting_stage}
                     </span>
-                  )}
+                  ) : null}
 
                   {event.event_type === "free_practice" &&
                   event.practice_outcome ? (
@@ -211,25 +171,12 @@ export default function PracticeEventList({
               {event.notes.length > 0 ? (
                 <div className="space-y-3">
                   {event.notes.map((note) => (
-                    <div
+                    <PracticeNoteCard
                       key={note.id}
-                      className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm md:bg-card"
-                    >
-                      <div className="mb-3 flex flex-col gap-2">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                          Note
-                        </p>
-
-                        <NoteContextLabels
-                          category={note.category}
-                          focus={note.focus}
-                        />
-                      </div>
-
-                      <p className="whitespace-pre-wrap text-lg leading-8 text-foreground md:text-base md:leading-7">
-                        {note.body}
-                      </p>
-                    </div>
+                      note={note}
+                      categories={categories}
+                      redirectTo={redirectTo}
+                    />
                   ))}
                 </div>
               ) : null}

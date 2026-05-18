@@ -28,6 +28,10 @@ function getRedirectTo(formData: FormData, fallback = "/review/diary") {
     return fallback
   }
 
+  if (redirectTo.startsWith("//")) {
+    return fallback
+  }
+
   return redirectTo
 }
 
@@ -166,6 +170,82 @@ export async function createPracticeNote(formData: FormData) {
   }
 
   redirect(appendStatus(redirectTo, "diary", "note_saved"))
+}
+
+export async function updatePracticeNote(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const noteId = asNullablePositiveNumber(formData.get("note_id"))
+  const categoryId = asNullablePositiveNumber(formData.get("category_id"))
+  const redirectTo = getRedirectTo(formData)
+  const body = String(formData.get("body") ?? "").trim()
+
+  if (!noteId) {
+    redirect(appendStatus(redirectTo, "diary", "missing_note"))
+  }
+
+  if (body === "") {
+    redirect(appendStatus(redirectTo, "diary", "empty_note"))
+  }
+
+  if (categoryId) {
+    const { data: category, error: categoryError } = await supabase
+      .from("practice_note_categories")
+      .select("id")
+      .eq("id", categoryId)
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .maybeSingle()
+
+    if (categoryError) {
+      throw new Error(categoryError.message)
+    }
+
+    if (!category) {
+      redirect(appendStatus(redirectTo, "diary", "invalid_category"))
+    }
+  }
+
+  const { data: updatedNote, error } = await supabase
+    .from("practice_notes")
+    .update({
+      body,
+      category_id: categoryId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", noteId)
+    .eq("user_id", user.id)
+    .select("id, piece_id, focus_id")
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  if (!updatedNote) {
+    redirect(appendStatus(redirectTo, "diary", "missing_note"))
+  }
+
+  revalidatePath("/review")
+  revalidatePath("/review/diary")
+
+  if (updatedNote.piece_id) {
+    revalidatePath(`/library/${updatedNote.piece_id}`)
+  }
+
+  if (updatedNote.focus_id) {
+    revalidatePath(`/review/foci/${updatedNote.focus_id}`)
+  }
+
+  redirect(appendStatus(redirectTo, "diary", "note_updated"))
 }
 
 export async function logTunePracticeCheck(formData: FormData) {
