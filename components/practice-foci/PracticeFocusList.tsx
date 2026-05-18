@@ -1,25 +1,12 @@
-"use client"
-
-import { useState } from "react"
-import SubmitButton from "@/components/SubmitButton"
+import Link from "next/link"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
-import {
-  archivePracticeFocus,
-  deletePracticeFocus,
-  updatePracticeFocus,
-} from "@/lib/actions/practice-foci"
-import type {
-  ActivePracticeTuneOption,
-  PracticeFocus,
-} from "@/lib/loaders/practice-foci"
-import PracticeFocusTuneManager from "./PracticeFocusTuneManager"
+import type { PracticeFocus } from "@/lib/loaders/practice-foci"
 
 type PracticeFocusListProps = {
   activeFoci: PracticeFocus[]
   pausedFoci: PracticeFocus[]
   completedFoci: PracticeFocus[]
   archivedFoci: PracticeFocus[]
-  activePracticeTunes: ActivePracticeTuneOption[]
 }
 
 function getStatusLabel(status: PracticeFocus["status"]) {
@@ -32,188 +19,114 @@ function getStatusLabel(status: PracticeFocus["status"]) {
 
 function getStatusClasses(status: PracticeFocus["status"]) {
   if (status === "active") {
-    return "border border-success bg-success px-3 py-1 text-xs font-semibold text-success-foreground"
+    return "border-success bg-success text-success-foreground"
   }
 
   if (status === "completed") {
-    return "border border-primary bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground"
+    return "border-primary bg-primary text-primary-foreground"
   }
 
-  return "border border-border bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground"
+  return "border-border bg-muted text-muted-foreground"
 }
 
-function FocusEditPanel({
-  focus,
-  onCancel,
-}: {
-  focus: PracticeFocus
-  onCancel: () => void
-}) {
+function formatMeta(focus: PracticeFocus) {
+  const tuneCount = focus.tunes.length
+  const tuneLabel = tuneCount === 1 ? "1 tune" : `${tuneCount} tunes`
+
+  if (focus.target_date) {
+    return `${tuneLabel} · target ${focus.target_date}`
+  }
+
+  return tuneLabel
+}
+
+function MobileFocusRow({ focus }: { focus: PracticeFocus }) {
   return (
-    <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
-        Edit focus
-      </p>
-
-      <form action={updatePracticeFocus} className="mt-4 grid gap-4">
-        <input type="hidden" name="focus_id" value={focus.id} />
-        <input type="hidden" name="redirect_to" value="/review/foci" />
-
-        <label className="grid gap-2 text-sm font-medium text-foreground">
-          Title
-          <input
-            name="title"
-            required
-            defaultValue={focus.title}
-            className="min-w-0 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
-          />
-        </label>
-
-        <label className="grid gap-2 text-sm font-medium text-foreground">
-          Description
-          <textarea
-            name="description"
-            rows={4}
-            defaultValue={focus.description ?? ""}
-            className="min-w-0 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
-          />
-        </label>
-
-        <label className="grid gap-2 text-sm font-medium text-foreground">
-          Optional target date
-          <input
-            name="target_date"
-            type="date"
-            defaultValue={focus.target_date ?? ""}
-            className="min-w-0 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
-          />
-        </label>
-
-        <div className="flex flex-wrap gap-3">
-          <SubmitButton
-            label="Save focus"
-            pendingLabel="Saving..."
-            className={buttonStyles.primary}
-          />
-
-          <button
-            type="button"
-            className={buttonStyles.secondary}
-            onClick={onCancel}
+    <li className="border-b border-border py-4 last:border-b-0">
+      <div className="flex min-w-0 items-start justify-between gap-3">
+        <div className="min-w-0">
+          <Link
+            href={`/review/foci/${focus.id}`}
+            className="break-words font-medium text-foreground underline-offset-4 hover:underline"
           >
-            Cancel
-          </button>
+            {focus.title}
+          </Link>
+
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">
+            {formatMeta(focus)}
+          </p>
+
+          {focus.description ? (
+            <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
+              {focus.description}
+            </p>
+          ) : null}
         </div>
-      </form>
 
-      <div className="mt-5 rounded-2xl border border-destructive/40 bg-destructive/10 p-4">
-        <p className="text-sm font-semibold text-destructive">Danger zone</p>
-
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Delete this focus permanently. This removes the focus and its tune
-          links, but does not remove tunes from practice and does not delete
-          diary notes.
-        </p>
-
-        <form
-          action={deletePracticeFocus}
-          className="mt-4"
-          onSubmit={(event) => {
-            const confirmed = window.confirm(
-              `Delete "${focus.title}" permanently? This cannot be undone.`
-            )
-
-            if (!confirmed) {
-              event.preventDefault()
-            }
-          }}
+        <span
+          className={joinClasses(
+            "shrink-0 rounded-full border px-2.5 py-1 text-[0.7rem] font-semibold",
+            getStatusClasses(focus.status)
+          )}
         >
-          <input type="hidden" name="focus_id" value={focus.id} />
-          <input type="hidden" name="redirect_to" value="/review/foci" />
-
-          <SubmitButton
-            label="Delete focus"
-            pendingLabel="Deleting..."
-            className={buttonStyles.destructive}
-          />
-        </form>
+          {getStatusLabel(focus.status)}
+        </span>
       </div>
-    </div>
+
+      <div className="mt-3">
+        <Link
+          href={`/review/foci/${focus.id}`}
+          className={`${buttonStyles.secondaryStrong} !px-3 !py-1.5 text-xs`}
+        >
+          Open
+        </Link>
+      </div>
+    </li>
   )
 }
 
-function FocusCard({
-  focus,
-  activePracticeTunes,
-}: {
-  focus: PracticeFocus
-  activePracticeTunes: ActivePracticeTuneOption[]
-}) {
-  const [isEditing, setIsEditing] = useState(false)
-
+function DesktopFocusCard({ focus }: { focus: PracticeFocus }) {
   return (
-    <article className="min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-sm md:rounded-3xl md:p-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+    <article className="min-w-0 rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="min-w-0 break-words font-serif text-2xl font-bold leading-tight text-foreground">
               {focus.title}
             </h2>
 
-            <span className={getStatusClasses(focus.status)}>
+            <span
+              className={joinClasses(
+                "rounded-full border px-3 py-1 text-xs font-semibold",
+                getStatusClasses(focus.status)
+              )}
+            >
               {getStatusLabel(focus.status)}
             </span>
           </div>
 
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            {formatMeta(focus)}
+          </p>
+
           {focus.description ? (
-            <p className="mt-2 max-w-3xl break-words text-sm leading-6 text-muted-foreground">
+            <p className="mt-3 max-w-3xl break-words text-sm leading-6 text-muted-foreground">
               {focus.description}
             </p>
           ) : (
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
               No description yet.
             </p>
           )}
-
-          {focus.target_date ? (
-            <p className="mt-2 text-sm text-muted-foreground">
-              Target date: {focus.target_date}
-            </p>
-          ) : null}
         </div>
 
-        <div className="flex shrink-0 flex-wrap gap-2">
-          <button
-            type="button"
-            className={buttonStyles.secondary}
-            onClick={() => setIsEditing((current) => !current)}
-          >
-            {isEditing ? "Close edit" : "Edit focus"}
-          </button>
-
-          {focus.status === "active" ? (
-            <form action={archivePracticeFocus}>
-              <input type="hidden" name="focus_id" value={focus.id} />
-              <input type="hidden" name="redirect_to" value="/review/foci" />
-
-              <SubmitButton
-                label="Archive focus"
-                pendingLabel="Archiving..."
-                className={buttonStyles.secondary}
-              />
-            </form>
-          ) : null}
-        </div>
+        <Link
+          href={`/review/foci/${focus.id}`}
+          className={buttonStyles.secondaryStrong}
+        >
+          Open focus
+        </Link>
       </div>
-
-      {isEditing ? (
-        <FocusEditPanel focus={focus} onCancel={() => setIsEditing(false)} />
-      ) : null}
-
-      <PracticeFocusTuneManager
-        focus={focus}
-        activePracticeTunes={activePracticeTunes}
-      />
     </article>
   )
 }
@@ -222,32 +135,39 @@ function FocusGroup({
   title,
   emptyMessage,
   foci,
-  activePracticeTunes,
   defaultOpen = true,
 }: {
   title: string
   emptyMessage?: string
   foci: PracticeFocus[]
-  activePracticeTunes: ActivePracticeTuneOption[]
   defaultOpen?: boolean
 }) {
   if (foci.length === 0 && !emptyMessage) {
     return null
   }
 
-  const content =
+  const mobileContent =
     foci.length === 0 ? (
-      <div className="rounded-2xl border border-border bg-card p-4 text-sm leading-6 text-muted-foreground shadow-sm md:rounded-3xl md:p-6">
+      <p className="py-4 text-sm leading-6 text-muted-foreground">
+        {emptyMessage}
+      </p>
+    ) : (
+      <ul>
+        {foci.map((focus) => (
+          <MobileFocusRow key={focus.id} focus={focus} />
+        ))}
+      </ul>
+    )
+
+  const desktopContent =
+    foci.length === 0 ? (
+      <div className="rounded-3xl border border-border bg-card p-6 text-sm leading-6 text-muted-foreground shadow-sm">
         {emptyMessage}
       </div>
     ) : (
       <div className="grid gap-4">
         {foci.map((focus) => (
-          <FocusCard
-            key={focus.id}
-            focus={focus}
-            activePracticeTunes={activePracticeTunes}
-          />
+          <DesktopFocusCard key={focus.id} focus={focus} />
         ))}
       </div>
     )
@@ -259,18 +179,22 @@ function FocusGroup({
           {title} ({foci.length})
         </summary>
 
-        <div className="mt-4">{content}</div>
+        <div className="mt-2 md:mt-4">
+          <div className="md:hidden">{mobileContent}</div>
+          <div className="hidden md:block">{desktopContent}</div>
+        </div>
       </details>
     )
   }
 
   return (
-    <section className="grid gap-4">
-      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <section className="grid gap-2 md:gap-4">
+      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         {title}
-      </p>
+      </h2>
 
-      {content}
+      <div className="md:hidden">{mobileContent}</div>
+      <div className="hidden md:block">{desktopContent}</div>
     </section>
   )
 }
@@ -280,35 +204,26 @@ export default function PracticeFocusList({
   pausedFoci,
   completedFoci,
   archivedFoci,
-  activePracticeTunes,
 }: PracticeFocusListProps) {
   return (
-    <div className="grid min-w-0 gap-6">
+    <div className="grid min-w-0 gap-7 md:gap-6">
       <FocusGroup
         title="Active foci"
         emptyMessage="No active foci yet. Create one when a few tunes are connected by the same musical problem or preparation goal."
         foci={activeFoci}
-        activePracticeTunes={activePracticeTunes}
       />
 
-      <FocusGroup
-        title="Paused foci"
-        foci={pausedFoci}
-        activePracticeTunes={activePracticeTunes}
-        defaultOpen={false}
-      />
+      <FocusGroup title="Paused foci" foci={pausedFoci} defaultOpen={false} />
 
       <FocusGroup
         title="Completed foci"
         foci={completedFoci}
-        activePracticeTunes={activePracticeTunes}
         defaultOpen={false}
       />
 
       <FocusGroup
         title="Archived foci"
         foci={archivedFoci}
-        activePracticeTunes={activePracticeTunes}
         defaultOpen={false}
       />
     </div>

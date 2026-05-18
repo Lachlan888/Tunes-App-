@@ -1,3 +1,6 @@
+"use client"
+
+import { useMemo, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import {
@@ -12,6 +15,7 @@ import type {
 type PracticeFocusTuneManagerProps = {
   focus: PracticeFocus
   activePracticeTunes: ActivePracticeTuneOption[]
+  redirectTo: string
 }
 
 function getPieceMeta(piece: {
@@ -26,9 +30,260 @@ function getPieceMeta(piece: {
   ].join(" · ")
 }
 
+function normaliseSearch(value: string) {
+  return value.toLowerCase().trim()
+}
+
+function AddTuneDesktopForm({
+  focus,
+  availableTunes,
+  redirectTo,
+}: {
+  focus: PracticeFocus
+  availableTunes: ActivePracticeTuneOption[]
+  redirectTo: string
+}) {
+  return (
+    <details className="hidden md:block md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4">
+      <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
+        Add active-practice tune
+      </summary>
+
+      {availableTunes.length === 0 ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          No more active-practice tunes are available for this focus.
+        </p>
+      ) : (
+        <form action={addTuneToPracticeFocus} className="mt-4">
+          <input type="hidden" name="focus_id" value={focus.id} />
+          <input type="hidden" name="redirect_to" value={redirectTo} />
+
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            Tune
+            <select
+              name="piece_id"
+              required
+              className="min-w-0 max-w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+              defaultValue=""
+            >
+              <option value="" disabled>
+                Choose a tune
+              </option>
+
+              {availableTunes.map((tune) => (
+                <option key={tune.piece_id} value={tune.piece_id}>
+                  {tune.title} — Stage {tune.stage}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="mt-4">
+            <SubmitButton
+              label="Add tune"
+              pendingLabel="Adding..."
+              className={buttonStyles.secondaryStrong}
+            />
+          </div>
+        </form>
+      )}
+    </details>
+  )
+}
+
+function MobileTunePickerSheet({
+  focus,
+  availableTunes,
+  redirectTo,
+  isOpen,
+  onClose,
+}: {
+  focus: PracticeFocus
+  availableTunes: ActivePracticeTuneOption[]
+  redirectTo: string
+  isOpen: boolean
+  onClose: () => void
+}) {
+  const [search, setSearch] = useState("")
+
+  const filteredTunes = useMemo(() => {
+    const normalisedSearch = normaliseSearch(search)
+
+    if (normalisedSearch === "") {
+      return availableTunes
+    }
+
+    return availableTunes.filter((tune) =>
+      normaliseSearch(
+        [
+          tune.title,
+          tune.key ?? "",
+          tune.style ?? "",
+          tune.time_signature ?? "",
+          `stage ${tune.stage}`,
+        ].join(" ")
+      ).includes(normalisedSearch)
+    )
+  }, [availableTunes, search])
+
+  if (!isOpen) {
+    return null
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end bg-foreground/40 px-0 sm:items-center sm:px-4"
+      role="presentation"
+      onClick={onClose}
+    >
+      <section
+        className="max-h-[88vh] w-full overflow-hidden rounded-t-3xl border border-border bg-background shadow-xl sm:mx-auto sm:max-w-lg sm:rounded-3xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-focus-tune-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="border-b border-border px-4 py-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Add tune
+              </p>
+
+              <h3
+                id="add-focus-tune-title"
+                className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground"
+              >
+                Active-practice tunes
+              </h3>
+            </div>
+
+            <button
+              type="button"
+              className={buttonStyles.text}
+              onClick={onClose}
+            >
+              Close
+            </button>
+          </div>
+
+          <label className="mt-4 block">
+            <span className="sr-only">Search active-practice tunes</span>
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search tunes..."
+              className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+            />
+          </label>
+        </div>
+
+        <div className="max-h-[58vh] overflow-y-auto px-4">
+          {availableTunes.length === 0 ? (
+            <p className="py-5 text-sm leading-6 text-muted-foreground">
+              No more active-practice tunes are available for this focus.
+            </p>
+          ) : filteredTunes.length === 0 ? (
+            <p className="py-5 text-sm leading-6 text-muted-foreground">
+              No matching active-practice tunes.
+            </p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {filteredTunes.map((tune) => (
+                <li
+                  key={tune.piece_id}
+                  className="flex min-w-0 items-center justify-between gap-3 py-4"
+                >
+                  <div className="min-w-0">
+                    <p className="break-words font-medium text-foreground">
+                      {tune.title}
+                    </p>
+
+                    <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                      Stage {tune.stage}
+                      {tune.key ? ` · Key: ${tune.key}` : ""}
+                      {tune.style ? ` · ${tune.style}` : ""}
+                    </p>
+                  </div>
+
+                  <form action={addTuneToPracticeFocus} className="shrink-0">
+                    <input type="hidden" name="focus_id" value={focus.id} />
+                    <input
+                      type="hidden"
+                      name="piece_id"
+                      value={tune.piece_id}
+                    />
+                    <input
+                      type="hidden"
+                      name="redirect_to"
+                      value={redirectTo}
+                    />
+
+                    <SubmitButton
+                      label="Add"
+                      pendingLabel="Adding..."
+                      className={`${buttonStyles.secondaryStrong} !px-3 !py-1.5 text-xs`}
+                    />
+                  </form>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function AddTuneMobilePicker({
+  focus,
+  availableTunes,
+  redirectTo,
+}: {
+  focus: PracticeFocus
+  availableTunes: ActivePracticeTuneOption[]
+  redirectTo: string
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <div className="md:hidden">
+      <div className="grid gap-3">
+        <button
+          type="button"
+          className={`${buttonStyles.secondaryStrong} w-full`}
+          onClick={() => setIsOpen(true)}
+        >
+          Add active-practice tune
+        </button>
+
+        {availableTunes.length === 0 ? (
+          <p className="text-sm leading-6 text-muted-foreground">
+            No more active-practice tunes are available for this focus.
+          </p>
+        ) : (
+          <p className="text-sm leading-6 text-muted-foreground">
+            Choose from {availableTunes.length} active-practice{" "}
+            {availableTunes.length === 1 ? "tune" : "tunes"}.
+          </p>
+        )}
+      </div>
+
+      <MobileTunePickerSheet
+        focus={focus}
+        availableTunes={availableTunes}
+        redirectTo={redirectTo}
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+      />
+    </div>
+  )
+}
+
 export default function PracticeFocusTuneManager({
   focus,
   activePracticeTunes,
+  redirectTo,
 }: PracticeFocusTuneManagerProps) {
   const focusPieceIds = new Set(focus.tunes.map((tune) => tune.piece_id))
   const availableTunes = activePracticeTunes.filter(
@@ -36,107 +291,66 @@ export default function PracticeFocusTuneManager({
   )
 
   return (
-    <div className="mt-5 grid min-w-0 gap-4">
+    <div className="grid min-w-0 gap-5">
       {focus.status === "active" ? (
-        <details className="rounded-2xl border border-border bg-background/70 p-4">
-          <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
-            Add active-practice tune
-          </summary>
+        <>
+          <AddTuneMobilePicker
+            focus={focus}
+            availableTunes={availableTunes}
+            redirectTo={redirectTo}
+          />
 
-          {availableTunes.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">
-              No more active-practice tunes are available for this focus.
-            </p>
-          ) : (
-            <form action={addTuneToPracticeFocus} className="mt-4">
-              <input type="hidden" name="focus_id" value={focus.id} />
-              <input type="hidden" name="redirect_to" value="/review/foci" />
-
-              <label className="grid gap-2 text-sm font-medium text-foreground">
-                Tune
-                <select
-                  name="piece_id"
-                  required
-                  className="min-w-0 max-w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
-                  defaultValue=""
-                >
-                  <option value="" disabled>
-                    Choose a tune
-                  </option>
-
-                  {availableTunes.map((tune) => (
-                    <option key={tune.piece_id} value={tune.piece_id}>
-                      {tune.title} — Stage {tune.stage}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <div className="mt-4">
-                <SubmitButton
-                  label="Add tune"
-                  pendingLabel="Adding..."
-                  className={buttonStyles.secondaryStrong}
-                />
-              </div>
-            </form>
-          )}
-        </details>
+          <AddTuneDesktopForm
+            focus={focus}
+            availableTunes={availableTunes}
+            redirectTo={redirectTo}
+          />
+        </>
       ) : null}
 
-      <div className="min-w-0">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
-          Tunes in this focus ({focus.tunes.length})
+      {focus.tunes.length === 0 ? (
+        <p className="border-t border-border pt-4 text-sm text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-4">
+          No tunes added yet.
         </p>
+      ) : (
+        <ul className="divide-y divide-border">
+          {focus.tunes.map((focusTune) => (
+            <li
+              key={focusTune.id}
+              className="flex min-w-0 flex-col gap-3 py-4 md:flex-row md:items-start md:justify-between"
+            >
+              <div className="min-w-0">
+                <p className="break-words font-medium text-foreground">
+                  {focusTune.piece?.title ?? "Untitled tune"}
+                </p>
 
-        {focus.tunes.length === 0 ? (
-          <p className="mt-3 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-            No tunes added yet.
-          </p>
-        ) : (
-          <ul className="mt-3 space-y-3">
-            {focus.tunes.map((focusTune) => (
-              <li
-                key={focusTune.id}
-                className="flex min-w-0 flex-col gap-3 rounded-2xl border border-border bg-background/70 p-4 shadow-sm md:flex-row md:items-start md:justify-between"
-              >
-                <div className="min-w-0">
-                  <p className="break-words font-medium text-foreground">
-                    {focusTune.piece?.title ?? "Untitled tune"}
-                  </p>
+                <p className="mt-1 break-words text-sm leading-5 text-muted-foreground">
+                  {focusTune.piece
+                    ? getPieceMeta(focusTune.piece)
+                    : "Tune details unavailable"}
+                </p>
+              </div>
 
-                  <p className="mt-1 break-words text-sm leading-5 text-muted-foreground">
-                    {focusTune.piece
-                      ? getPieceMeta(focusTune.piece)
-                      : "Tune details unavailable"}
-                  </p>
-                </div>
+              {focus.status === "active" ? (
+                <form action={removeTuneFromPracticeFocus}>
+                  <input
+                    type="hidden"
+                    name="focus_tune_id"
+                    value={focusTune.id}
+                  />
+                  <input type="hidden" name="redirect_to" value={redirectTo} />
 
-                {focus.status === "active" ? (
-                  <form action={removeTuneFromPracticeFocus}>
-                    <input
-                      type="hidden"
-                      name="focus_tune_id"
-                      value={focusTune.id}
-                    />
-                    <input
-                      type="hidden"
-                      name="redirect_to"
-                      value="/review/foci"
-                    />
-
-                    <SubmitButton
-                      label="Remove"
-                      pendingLabel="Removing..."
-                      className={buttonStyles.secondary}
-                    />
-                  </form>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                  <SubmitButton
+                    label="Remove"
+                    pendingLabel="Removing..."
+                    className={buttonStyles.secondary}
+                  />
+                </form>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

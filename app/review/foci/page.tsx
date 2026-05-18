@@ -39,26 +39,37 @@ export default async function PracticeFociPage({
   const resolvedSearchParams = await searchParams
   const statusMessage = getFociStatusMessage(resolvedSearchParams?.foci)
 
-  const {
-    activeFoci,
-    pausedFoci,
-    completedFoci,
-    archivedFoci,
-    activePracticeTunes,
-  } = await loadPracticeFociPageData()
+  const { activeFoci, pausedFoci, completedFoci, archivedFoci } =
+    await loadPracticeFociPageData()
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      <section className="mb-5 rounded-2xl border border-border bg-card p-4 shadow-sm md:mb-6 md:rounded-3xl md:p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
+      <section className="mb-5 md:hidden">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Practice
         </p>
 
-        <h1 className="mt-2 font-serif text-3xl font-bold leading-tight tracking-tight md:text-5xl">
+        <h1 className="mt-2 font-serif text-3xl font-bold leading-tight tracking-tight">
           Practice foci
         </h1>
 
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground md:text-base">
+        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+          Broader musical projects for the tunes you are actively practising.
+        </p>
+
+        <PracticeDiaryNav active="foci" />
+      </section>
+
+      <section className="mb-6 hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Practice
+        </p>
+
+        <h1 className="mt-2 font-serif text-5xl font-bold leading-tight tracking-tight">
+          Practice foci
+        </h1>
+
+        <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
           Group active-practice tunes around broader musical projects, without
           changing Stage, due dates, streaks, or diary history.
         </p>
@@ -72,14 +83,13 @@ export default async function PracticeFociPage({
         </div>
       ) : null}
 
-      <section className="grid gap-5 xl:grid-cols-[minmax(320px,0.85fr)_minmax(0,1.15fr)] xl:gap-6">
+      <section className="grid gap-7 xl:grid-cols-[minmax(320px,0.85fr)_minmax(0,1.15fr)] xl:gap-6">
         <div className="min-w-0 xl:order-2">
           <PracticeFocusList
             activeFoci={activeFoci}
             pausedFoci={pausedFoci}
             completedFoci={completedFoci}
             archivedFoci={archivedFoci}
-            activePracticeTunes={activePracticeTunes}
           />
         </div>
 
