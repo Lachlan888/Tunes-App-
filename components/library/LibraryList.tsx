@@ -34,18 +34,6 @@ type LibraryListProps = {
   hasActiveFilters: boolean
 }
 
-const statusTriggerClass = buttonStyles.statusTrigger
-const emptyStatusTriggerClass = buttonStyles.statusTriggerEmpty
-
-const secondaryButtonClass =
-  "inline-flex min-w-[132px] items-center justify-center rounded-xl border border-border bg-background/70 px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
-
-const menuSubmitButtonClass = buttonStyles.menuItem
-const destructiveMenuButtonClass = buttonStyles.destructiveMenuItem
-
-const moderatorDeleteTriggerClass =
-  "grid h-8 w-8 place-items-center rounded-lg border border-destructive bg-background/70 text-lg font-medium leading-none text-destructive shadow-sm transition hover:-translate-y-0.5 hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-
 function canUseModeratorTools(role: UserRole) {
   return role === "moderator" || role === "admin"
 }
@@ -111,7 +99,9 @@ function StatusDropdown({
       <button
         type="button"
         className={
-          hasUserRelationship ? statusTriggerClass : emptyStatusTriggerClass
+          hasUserRelationship
+            ? buttonStyles.statusTrigger
+            : buttonStyles.statusTriggerEmpty
         }
         aria-expanded={isOpen}
         onClick={onToggle}
@@ -171,7 +161,7 @@ function StatusDropdown({
               <SubmitButton
                 label="Start Practice"
                 pendingLabel="Starting..."
-                className={menuSubmitButtonClass}
+                className={buttonStyles.menuItem}
               />
             </form>
           ) : null}
@@ -196,7 +186,7 @@ function StatusDropdown({
               <SubmitButton
                 label={isAlreadyInPractice ? "Set as known" : "Mark as known"}
                 pendingLabel="Saving..."
-                className={menuSubmitButtonClass}
+                className={buttonStyles.menuItem}
               />
             </form>
           ) : null}
@@ -223,7 +213,7 @@ function StatusDropdown({
               <SubmitButton
                 label="Remove from practice"
                 pendingLabel="Removing..."
-                className={menuSubmitButtonClass}
+                className={buttonStyles.menuItem}
               />
             </form>
           ) : null}
@@ -249,7 +239,7 @@ function StatusDropdown({
                 <SubmitButton
                   label="Remove from my library"
                   pendingLabel="Removing..."
-                  className={destructiveMenuButtonClass}
+                  className={buttonStyles.destructiveMenuItem}
                 />
               </form>
             </>
@@ -258,7 +248,7 @@ function StatusDropdown({
           <button
             type="button"
             onClick={onClose}
-            className="mt-2 w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className={buttonStyles.menuItem}
           >
             Close menu
           </button>
@@ -397,7 +387,7 @@ export default function LibraryList({
                   isModerator ? (
                     <button
                       type="button"
-                      className={moderatorDeleteTriggerClass}
+                      className={buttonStyles.iconDestructive}
                       title="Moderator only. Review the warning before deleting this shared tune for everyone."
                       aria-label={`Delete canonical tune ${piece.title}`}
                       onClick={() => setDeletePiece(piece)}
@@ -426,7 +416,7 @@ export default function LibraryList({
 
                   <button
                     type="button"
-                    className={secondaryButtonClass}
+                    className={buttonStyles.secondaryStrong}
                     onClick={() => {
                       setSelectedPiece(piece)
                       setSelectedListId("")

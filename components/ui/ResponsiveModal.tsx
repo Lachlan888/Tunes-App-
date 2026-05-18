@@ -163,7 +163,7 @@ export default function ResponsiveModal({
                 type="button"
                 onClick={requestClose}
                 disabled={closeDisabled}
-                className={buttonStyles.secondary}
+                className={buttonStyles.modalClose}
               >
                 {closeLabel}
               </button>

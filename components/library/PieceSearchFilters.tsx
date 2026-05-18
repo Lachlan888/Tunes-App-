@@ -10,6 +10,7 @@ import {
   useTransition,
   type FormEvent,
 } from "react"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 
 type PreservedParamValue = string | string[]
 
@@ -65,9 +66,6 @@ function formatFilterLabel(group: "key" | "style" | "time_signature") {
 function buildChipId(group: "key" | "style" | "time_signature", value: string) {
   return `${group}:${value}`
 }
-
-const buttonBase =
-  "rounded-full border px-4 py-2 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 export default function PieceSearchFilters({
   basePath,
@@ -320,7 +318,7 @@ export default function PieceSearchFilters({
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="submit"
-              className={`${buttonBase} border-primary bg-primary text-primary-foreground hover:bg-primary-hover`}
+              className={buttonStyles.filterPrimary}
               disabled={isPending}
             >
               {isPending ? "Searching..." : "Search"}
@@ -329,7 +327,7 @@ export default function PieceSearchFilters({
             <button
               type="button"
               onClick={() => setIsPanelOpen((current) => !current)}
-              className={`${buttonBase} border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground`}
+              className={buttonStyles.filterTrigger}
               disabled={isPending}
               aria-expanded={isPanelOpen}
               aria-controls="piece-filter-panel"
@@ -344,7 +342,7 @@ export default function PieceSearchFilters({
             {hasActiveFilters && (
               <Link
                 href={clearFiltersHref}
-                className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+                className={buttonStyles.text}
               >
                 Clear filters
               </Link>
@@ -365,7 +363,7 @@ export default function PieceSearchFilters({
                 key={chip.id}
                 type="button"
                 onClick={() => handleRemoveSingleFilter(chip.group, chip.value)}
-                className="rounded-full border border-border bg-background/70 px-3 py-1 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                className="rounded-full border border-border bg-background/70 px-3 py-1 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isPending}
               >
                 {chip.groupLabel}: {chip.value} ×
@@ -395,7 +393,7 @@ export default function PieceSearchFilters({
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className={`${buttonBase} border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground`}
+                  className={buttonStyles.filterTrigger}
                   disabled={isPending}
                 >
                   Clear all
@@ -405,7 +403,7 @@ export default function PieceSearchFilters({
               <button
                 type="button"
                 onClick={() => setIsPanelOpen(false)}
-                className={`${buttonBase} border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground`}
+                className={buttonStyles.modalClose}
               >
                 Close
               </button>
@@ -434,7 +432,11 @@ export default function PieceSearchFilters({
                         value={key}
                         checked={safeSelectedKeys.includes(key)}
                         onChange={(event) =>
-                          handleMultiCheckboxChange("key", key, event.target.checked)
+                          handleMultiCheckboxChange(
+                            "key",
+                            key,
+                            event.target.checked
+                          )
                         }
                       />
                       <span>{key}</span>
@@ -501,7 +503,9 @@ export default function PieceSearchFilters({
                         type="checkbox"
                         name="time_signature"
                         value={timeSignature}
-                        checked={safeSelectedTimeSignatures.includes(timeSignature)}
+                        checked={safeSelectedTimeSignatures.includes(
+                          timeSignature
+                        )}
                         onChange={(event) =>
                           handleMultiCheckboxChange(
                             "time_signature",
