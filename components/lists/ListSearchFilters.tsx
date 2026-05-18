@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter, useSearchParams } from "next/navigation"
 import {
   useEffect,
   useMemo,
@@ -8,7 +9,10 @@ import {
   useTransition,
   type FormEvent,
 } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import FilterChip from "@/components/filters/FilterChip"
+import FilterPanel from "@/components/filters/FilterPanel"
+import FilterSection from "@/components/filters/FilterSection"
+import FilterShell from "@/components/filters/FilterShell"
 
 type ListSearchFiltersProps = {
   basePath: string
@@ -62,9 +66,6 @@ const VISIBILITY_OPTIONS = [
   { value: "public", label: "Public" },
   { value: "private", label: "Private" },
 ] as const
-
-const buttonBase =
-  "rounded-full border px-4 py-2 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 export default function ListSearchFilters({
   basePath,
@@ -230,19 +231,7 @@ export default function ListSearchFilters({
       return
     }
 
-    if (chip.group === "size") {
-      params.delete("size")
-      navigateWithParams(params)
-      return
-    }
-
-    if (chip.group === "source") {
-      params.delete("source")
-      navigateWithParams(params)
-      return
-    }
-
-    params.delete("visibility")
+    params.delete(chip.group)
     navigateWithParams(params)
   }
 
@@ -304,241 +293,147 @@ export default function ListSearchFilters({
   )
 
   return (
-    <div
-      ref={panelRef}
-      className={`relative mb-8 transition-opacity ${
-        isPending ? "opacity-80" : "opacity-100"
-      }`}
-    >
-      <form
-        onSubmit={handleSearchSubmit}
-        className="rounded-2xl border border-border bg-card p-5 shadow-sm"
-      >
-        <div className="flex flex-col gap-3 md:flex-row md:items-end">
-          <div className="min-w-0 flex-1">
-            <label
-              htmlFor="q"
-              className="mb-2 block text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground"
-            >
-              {searchLabel}
-            </label>
-            <input
-              id="q"
-              name="q"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={searchPlaceholder}
-              className="w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-              aria-busy={isPending}
-            />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="submit"
-              className={`${buttonBase} border-primary bg-primary text-primary-foreground hover:bg-primary-hover`}
-              disabled={isPending}
-            >
-              {isPending ? "Searching..." : "Search"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsPanelOpen((current) => !current)}
-              className={`${buttonBase} border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground`}
-              disabled={isPending}
-              aria-expanded={isPanelOpen}
-              aria-controls="list-filter-panel"
-            >
-              {isPending
-                ? "Updating..."
-                : activeFilterCount > 0
-                  ? `Filters (${activeFilterCount})`
-                  : "Filters"}
-            </button>
-
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={handleClearAll}
-                className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
-                disabled={isPending}
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
-        </div>
-
-        {isPending && (
-          <p className="mt-3 text-sm text-muted-foreground">
-            Updating filters...
-          </p>
-        )}
-
-        {activeChips.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {activeChips.map((chip) => (
-              <button
+    <FilterShell
+      panelRef={panelRef}
+      searchLabel={searchLabel}
+      searchPlaceholder={searchPlaceholder}
+      searchValue={query}
+      onSearchValueChange={setQuery}
+      onSearchSubmit={handleSearchSubmit}
+      isPending={isPending}
+      isPanelOpen={isPanelOpen}
+      onTogglePanel={() => setIsPanelOpen((current) => !current)}
+      panelId="list-filter-panel"
+      activeFilterCount={activeFilterCount}
+      hasActiveFilters={hasActiveFilters}
+      onClearFilters={handleClearAll}
+      activeChips={
+        activeChips.length > 0
+          ? activeChips.map((chip) => (
+              <FilterChip
                 key={chip.id}
-                type="button"
-                onClick={() => handleRemoveChip(chip)}
-                className="rounded-full border border-border bg-background/70 px-3 py-1 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                label={chip.label}
+                onRemove={() => handleRemoveChip(chip)}
                 disabled={isPending}
-              >
-                {chip.label} ×
-              </button>
-            ))}
-          </div>
-        )}
-      </form>
-
-      {isPanelOpen && (
-        <div
+              />
+            ))
+          : null
+      }
+      panel={
+        <FilterPanel
           id="list-filter-panel"
-          className="absolute left-0 right-0 z-20 mt-2 rounded-3xl border border-border bg-card p-5 shadow-lg"
+          title="Filter lists"
+          description="Narrow your list overview by size, style, source, or visibility."
+          hasActiveFilters={hasActiveFilters}
+          isPending={isPending}
+          onClearAll={handleClearAll}
+          onClose={() => setIsPanelOpen(false)}
         >
-          <div className="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <h3 className="font-serif text-2xl font-bold text-foreground">
-                Filter lists
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Narrow your list overview by size, style, source, or visibility.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={handleClearAll}
-                  className={`${buttonBase} border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground`}
-                  disabled={isPending}
-                >
-                  Clear all
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setIsPanelOpen(false)}
-                className={`${buttonBase} border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground`}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <fieldset
-              className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
+            <FilterSection
+              title="Size"
+              count={selectedSize ? 1 : 0}
               disabled={isPending}
             >
-              <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Size {selectedSize ? "(1)" : "(0)"}
-              </legend>
-              <div className="mt-3 space-y-2">
-                {SIZE_OPTIONS.map((option) => (
-                  <label key={option.value} className="flex items-center gap-2 text-sm">
+              {SIZE_OPTIONS.map((option) => (
+                <label
+                  key={option.value}
+                  className="flex items-center gap-2 text-sm"
+                >
+                  <input
+                    type="radio"
+                    name="size"
+                    value={option.value}
+                    checked={selectedSize === option.value}
+                    onChange={() =>
+                      handleSingleSelectChange("size", option.value)
+                    }
+                  />
+                  <span>{option.label}</span>
+                </label>
+              ))}
+            </FilterSection>
+
+            <FilterSection
+              title="Style"
+              count={selectedStyles.length}
+              disabled={isPending}
+            >
+              {availableStyles.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No styles available.
+                </p>
+              ) : (
+                availableStyles.map((style) => (
+                  <label
+                    key={style}
+                    className="flex items-center gap-2 text-sm"
+                  >
                     <input
-                      type="radio"
-                      name="size"
-                      value={option.value}
-                      checked={selectedSize === option.value}
-                      onChange={() =>
-                        handleSingleSelectChange("size", option.value)
+                      type="checkbox"
+                      name="style"
+                      value={style}
+                      checked={selectedStyles.includes(style)}
+                      onChange={(event) =>
+                        handleStyleChange(style, event.target.checked)
                       }
                     />
-                    <span>{option.label}</span>
+                    <span>{style}</span>
                   </label>
-                ))}
-              </div>
-            </fieldset>
+                ))
+              )}
+            </FilterSection>
 
-            <fieldset
-              className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
+            <FilterSection
+              title="Source"
+              count={selectedSource ? 1 : 0}
               disabled={isPending}
             >
-              <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Style ({selectedStyles.length})
-              </legend>
-              <div className="mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
-                {availableStyles.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No styles available.
-                  </p>
-                ) : (
-                  availableStyles.map((style) => (
-                    <label key={style} className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        name="style"
-                        value={style}
-                        checked={selectedStyles.includes(style)}
-                        onChange={(event) =>
-                          handleStyleChange(style, event.target.checked)
-                        }
-                      />
-                      <span>{style}</span>
-                    </label>
-                  ))
-                )}
-              </div>
-            </fieldset>
+              {SOURCE_OPTIONS.map((option) => (
+                <label
+                  key={option.value}
+                  className="flex items-center gap-2 text-sm"
+                >
+                  <input
+                    type="radio"
+                    name="source"
+                    value={option.value}
+                    checked={selectedSource === option.value}
+                    onChange={() =>
+                      handleSingleSelectChange("source", option.value)
+                    }
+                  />
+                  <span>{option.label}</span>
+                </label>
+              ))}
+            </FilterSection>
 
-            <fieldset
-              className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
+            <FilterSection
+              title="Visibility"
+              count={selectedVisibility ? 1 : 0}
               disabled={isPending}
             >
-              <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Source {selectedSource ? "(1)" : "(0)"}
-              </legend>
-              <div className="mt-3 space-y-2">
-                {SOURCE_OPTIONS.map((option) => (
-                  <label key={option.value} className="flex items-center gap-2 text-sm">
-                    <input
-                      type="radio"
-                      name="source"
-                      value={option.value}
-                      checked={selectedSource === option.value}
-                      onChange={() =>
-                        handleSingleSelectChange("source", option.value)
-                      }
-                    />
-                    <span>{option.label}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-
-            <fieldset
-              className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
-              disabled={isPending}
-            >
-              <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Visibility {selectedVisibility ? "(1)" : "(0)"}
-              </legend>
-              <div className="mt-3 space-y-2">
-                {VISIBILITY_OPTIONS.map((option) => (
-                  <label key={option.value} className="flex items-center gap-2 text-sm">
-                    <input
-                      type="radio"
-                      name="visibility"
-                      value={option.value}
-                      checked={selectedVisibility === option.value}
-                      onChange={() =>
-                        handleSingleSelectChange("visibility", option.value)
-                      }
-                    />
-                    <span>{option.label}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
+              {VISIBILITY_OPTIONS.map((option) => (
+                <label
+                  key={option.value}
+                  className="flex items-center gap-2 text-sm"
+                >
+                  <input
+                    type="radio"
+                    name="visibility"
+                    value={option.value}
+                    checked={selectedVisibility === option.value}
+                    onChange={() =>
+                      handleSingleSelectChange("visibility", option.value)
+                    }
+                  />
+                  <span>{option.label}</span>
+                </label>
+              ))}
+            </FilterSection>
           </div>
-        </div>
-      )}
-    </div>
+        </FilterPanel>
+      }
+    />
   )
 }
