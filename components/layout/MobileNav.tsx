@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useTransition } from "react"
-import { usePathname, useRouter } from "next/navigation"
+import { useState } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import LogoutButton from "@/components/LogoutButton"
 
 type MobileNavProps = {
@@ -41,22 +42,50 @@ function InlineBadge({ count }: { count: number }) {
   )
 }
 
+function MobileNavLink({
+  href,
+  label,
+  badgeCount = 0,
+  isActive,
+  onNavigate,
+}: {
+  href: string
+  label: string
+  badgeCount?: number
+  isActive?: boolean
+  onNavigate?: () => void
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={isActive ? "page" : undefined}
+      onClick={onNavigate}
+      className={`relative flex min-h-9 min-w-0 items-center justify-center rounded-full border px-1.5 text-[0.78rem] font-semibold leading-none transition ${
+        isActive
+          ? "border-primary bg-primary text-primary-foreground shadow-sm"
+          : "border-transparent text-foreground hover:border-border hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+      }`}
+    >
+      <span className="whitespace-nowrap">{label}</span>
+      <FloatingBadge count={badgeCount} />
+    </Link>
+  )
+}
+
 function MobileNavButton({
   label,
   badgeCount = 0,
   isActive,
-  isPending,
-  disableWhenActive = true,
+  disableWhenActive = false,
   onClick,
 }: {
   label: string
   badgeCount?: number
   isActive?: boolean
-  isPending?: boolean
   disableWhenActive?: boolean
   onClick: () => void
 }) {
-  const isDisabled = Boolean(isPending || (disableWhenActive && isActive))
+  const isDisabled = Boolean(disableWhenActive && isActive)
 
   return (
     <button
@@ -70,7 +99,7 @@ function MobileNavButton({
           : "border-transparent text-foreground hover:border-border hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
       }`}
     >
-      <span className="whitespace-nowrap">{isPending ? "Loading" : label}</span>
+      <span className="whitespace-nowrap">{label}</span>
       <FloatingBadge count={badgeCount} />
     </button>
   )
@@ -79,16 +108,14 @@ function MobileNavButton({
 function MobilePanel({
   title,
   items,
-  isPending,
   pathname,
   onNavigate,
   children,
 }: {
   title: string
   items: MobileNavItem[]
-  isPending: boolean
   pathname: string
-  onNavigate: (href: string) => void
+  onNavigate: () => void
   children?: React.ReactNode
 }) {
   return (
@@ -102,13 +129,12 @@ function MobilePanel({
           const itemIsActive = pathname === item.href
 
           return (
-            <button
+            <Link
               key={item.href}
-              type="button"
-              disabled={isPending || itemIsActive}
+              href={item.href}
               aria-current={itemIsActive ? "page" : undefined}
-              onClick={() => onNavigate(item.href)}
-              className={`flex min-h-10 items-center justify-between gap-2 rounded-xl px-3 text-left text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70 ${
+              onClick={onNavigate}
+              className={`flex min-h-10 items-center justify-between gap-2 rounded-xl px-3 text-left text-sm font-medium transition ${
                 itemIsActive
                   ? "bg-primary text-primary-foreground"
                   : "text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
@@ -116,7 +142,7 @@ function MobilePanel({
             >
               <span className="truncate">{item.label}</span>
               <InlineBadge count={item.badgeCount ?? 0} />
-            </button>
+            </Link>
           )
         })}
       </div>
@@ -136,9 +162,7 @@ export default function MobileNav({
   canModerate,
   canAccessDev,
 }: MobileNavProps) {
-  const router = useRouter()
   const pathname = usePathname()
-  const [isPending, startTransition] = useTransition()
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null)
 
   const socialItems: MobileNavItem[] = [
@@ -204,14 +228,8 @@ export default function MobileNav({
   const socialIsActive = socialItems.some((item) => pathname === item.href)
   const moreIsActive = moreItems.some((item) => pathname === item.href)
 
-  function handleNavigate(href: string) {
-    if (isPending || pathname === href) return
-
+  function closePanel() {
     setOpenPanel(null)
-
-    startTransition(() => {
-      router.push(href)
-    })
   }
 
   function togglePanel(panel: Exclude<OpenPanel, null>) {
@@ -222,11 +240,11 @@ export default function MobileNav({
     return (
       <nav className="md:hidden">
         <div className="grid grid-cols-1 gap-1 text-sm">
-          <MobileNavButton
+          <MobileNavLink
+            href="/login"
             label="Login"
             isActive={pathname === "/login"}
-            isPending={isPending}
-            onClick={() => handleNavigate("/login")}
+            onNavigate={closePanel}
           />
         </div>
       </nav>
@@ -236,42 +254,38 @@ export default function MobileNav({
   return (
     <nav className="md:hidden">
       <div className="grid grid-cols-[1fr_1.2fr_1fr_1fr_1fr] gap-1 text-sm">
-        <MobileNavButton
+        <MobileNavLink
+          href="/"
           label="Home"
           isActive={pathname === "/"}
-          isPending={isPending}
-          onClick={() => handleNavigate("/")}
+          onNavigate={closePanel}
         />
 
-        <MobileNavButton
+        <MobileNavLink
+          href="/review"
           label="Practice"
           badgeCount={overduePracticeCount}
           isActive={pathname === "/review"}
-          isPending={isPending}
-          onClick={() => handleNavigate("/review")}
+          onNavigate={closePanel}
         />
 
-        <MobileNavButton
+        <MobileNavLink
+          href="/library"
           label="Tunes"
           isActive={pathname === "/library"}
-          isPending={isPending}
-          onClick={() => handleNavigate("/library")}
+          onNavigate={closePanel}
         />
 
         <MobileNavButton
           label={openPanel === "social" ? "Close" : "Social"}
           badgeCount={unreadTotalCount}
           isActive={socialIsActive || openPanel === "social"}
-          isPending={false}
-          disableWhenActive={false}
           onClick={() => togglePanel("social")}
         />
 
         <MobileNavButton
           label={openPanel === "more" ? "Close" : "More"}
           isActive={moreIsActive || openPanel === "more"}
-          isPending={false}
-          disableWhenActive={false}
           onClick={() => togglePanel("more")}
         />
       </div>
@@ -280,9 +294,8 @@ export default function MobileNav({
         <MobilePanel
           title="Social"
           items={socialItems}
-          isPending={isPending}
           pathname={pathname}
-          onNavigate={handleNavigate}
+          onNavigate={closePanel}
         />
       ) : null}
 
@@ -290,9 +303,8 @@ export default function MobileNav({
         <MobilePanel
           title="More"
           items={moreItems}
-          isPending={isPending}
           pathname={pathname}
-          onNavigate={handleNavigate}
+          onNavigate={closePanel}
         >
           <LogoutButton />
         </MobilePanel>
