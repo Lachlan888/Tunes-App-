@@ -17,7 +17,9 @@ export default function FloatingFeedbackButton() {
         Feedback
       </button>
 
-      <BetaFeedbackModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      {isOpen ? (
+        <BetaFeedbackModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      ) : null}
     </>
   )
 }
