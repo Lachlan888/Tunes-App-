@@ -5,6 +5,7 @@ import AddToListModal from "@/components/AddToListModal"
 import EmptyState from "@/components/EmptyState"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
+import DeleteCanonicalTuneModal from "@/components/library/DeleteCanonicalTuneModal"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { markAsKnown } from "@/lib/actions/known-pieces"
 import { removeFromPractice } from "@/lib/actions/user-pieces"
@@ -33,25 +34,17 @@ type LibraryListProps = {
   hasActiveFilters: boolean
 }
 
-const statusTriggerClass =
-  "inline-flex min-w-[180px] items-center justify-between gap-3 rounded-xl border border-border bg-background/70 px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-
-const emptyStatusTriggerClass =
-  "inline-flex min-w-[180px] items-center justify-between gap-3 rounded-xl border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+const statusTriggerClass = buttonStyles.statusTrigger
+const emptyStatusTriggerClass = buttonStyles.statusTriggerEmpty
 
 const secondaryButtonClass =
   "inline-flex min-w-[132px] items-center justify-center rounded-xl border border-border bg-background/70 px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
-const menuSubmitButtonClass =
-  "w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
-
+const menuSubmitButtonClass = buttonStyles.menuItem
 const destructiveMenuButtonClass = buttonStyles.destructiveMenuItem
 
 const moderatorDeleteTriggerClass =
   "grid h-8 w-8 place-items-center rounded-lg border border-destructive bg-background/70 text-lg font-medium leading-none text-destructive shadow-sm transition hover:-translate-y-0.5 hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-
-const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 function canUseModeratorTools(role: UserRole) {
   return role === "moderator" || role === "admin"
@@ -271,91 +264,6 @@ function StatusDropdown({
           </button>
         </div>
       ) : null}
-    </div>
-  )
-}
-
-function DeleteCanonicalTuneModal({
-  piece,
-  redirectTo,
-  deleteCanonicalTuneAsModerator,
-  onClose,
-}: {
-  piece: Piece
-  redirectTo: string
-  deleteCanonicalTuneAsModerator: (formData: FormData) => Promise<void>
-  onClose: () => void
-}) {
-  const confirmationText = `DELETE ${piece.title}`
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/35 px-4 py-8 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-destructive bg-card p-6 shadow-xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-destructive">
-              Moderator destructive action
-            </p>
-
-            <h3 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
-              Delete canonical tune
-            </h3>
-
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-              This permanently removes this tune from the shared catalogue for
-              everyone. It may also remove connected practice state, known
-              status, list entries, comments, lore, media links, moderation
-              requests, and notifications.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-          >
-            Close
-          </button>
-        </div>
-
-        <div className="mt-6 rounded-2xl border border-border bg-background/70 p-4">
-          <p className="text-sm text-muted-foreground">
-            To confirm, type this exactly:
-          </p>
-          <p className="mt-2 break-words font-mono text-sm font-semibold text-foreground">
-            {confirmationText}
-          </p>
-        </div>
-
-        <form action={deleteCanonicalTuneAsModerator} className="mt-5 space-y-3">
-          <input type="hidden" name="piece_id" value={piece.id} />
-          <input type="hidden" name="redirect_to" value={redirectTo} />
-
-          <input
-            name="confirmation"
-            placeholder={confirmationText}
-            className={inputClassName}
-            autoComplete="off"
-            required
-          />
-
-          <div className="grid gap-2 pt-2">
-            <SubmitButton
-              label="Delete canonical tune"
-              pendingLabel="Deleting..."
-              className="w-full rounded-xl border border-destructive bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-            />
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   )
 }

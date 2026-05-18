@@ -31,6 +31,8 @@ export default function CreateListModal() {
         isOpen={isOpen}
         onClose={handleClose}
         closeDisabled={isSubmitting}
+        closeOnOverlayClick={!isSubmitting}
+        closeOnEscape={!isSubmitting}
         mobileMode="sheet"
         desktopMaxWidth="md:max-w-xl"
         eyebrow="Lists"

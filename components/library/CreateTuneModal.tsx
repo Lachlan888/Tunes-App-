@@ -50,6 +50,8 @@ export default function CreateTuneModal({
         isOpen={isOpen}
         onClose={handleClose}
         closeDisabled={isSubmitting}
+        closeOnOverlayClick={!isSubmitting}
+        closeOnEscape={!isSubmitting}
         mobileMode="full-screen"
         desktopMaxWidth="md:max-w-4xl"
         eyebrow="Catalogue"

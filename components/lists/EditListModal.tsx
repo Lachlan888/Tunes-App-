@@ -3,6 +3,7 @@
 import { useState } from "react"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import SubmitButton from "@/components/SubmitButton"
+import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { statusStyles } from "@/components/ui/statusStyles"
 import type { Piece } from "@/lib/types"
@@ -43,47 +44,32 @@ export default function EditListModal({
     setIsOpen(false)
   }
 
-  if (!isOpen) {
-    return (
+  return (
+    <>
       <button
         type="button"
         className={buttonStyles.secondary}
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setIsBusy(false)
+          setIsOpen(true)
+        }}
       >
         {triggerLabel}
       </button>
-    )
-  }
 
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/35 p-4 backdrop-blur-sm"
-      onClick={closeModal}
-    >
-      <div
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-lg"
-        onClick={(event) => event.stopPropagation()}
+      <ResponsiveModal
+        isOpen={isOpen}
+        onClose={closeModal}
+        closeDisabled={isBusy}
+        closeOnOverlayClick={!isBusy}
+        closeOnEscape={!isBusy}
+        mobileMode="full-screen"
+        desktopMaxWidth="md:max-w-2xl"
+        eyebrow="Lists"
+        title="Manage List"
+        description="Edit this list container, remove tunes from this list only, or delete the list."
+        bodyClassName="min-h-0 flex-1 overflow-y-auto p-5 md:p-6"
       >
-        <div className="mb-6 flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Lists
-            </p>
-            <h2 className="mt-2 font-serif text-3xl font-bold text-foreground">
-              Manage List
-            </h2>
-          </div>
-
-          <button
-            type="button"
-            className={buttonStyles.secondary}
-            onClick={closeModal}
-            disabled={isBusy}
-          >
-            Close
-          </button>
-        </div>
-
         <div className="space-y-8">
           <section>
             <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -161,7 +147,7 @@ export default function EditListModal({
                 {tunes.map((tune) => (
                   <div
                     key={tune.id}
-                    className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background/70 p-4"
+                    className="flex flex-col gap-3 rounded-2xl border border-border bg-background/70 p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="min-w-0 text-sm">
                       <PendingLinkButton
@@ -170,6 +156,7 @@ export default function EditListModal({
                         pendingLabel={`Opening ${tune.title}...`}
                         className="cursor-pointer text-left font-medium underline underline-offset-4"
                       />
+
                       <div className="mt-1 text-muted-foreground">
                         {[
                           tune.key ? `Key ${tune.key}` : null,
@@ -210,15 +197,14 @@ export default function EditListModal({
             )}
           </section>
 
-          <section
-            className={`rounded-2xl border p-4 ${statusStyles.error}`}
-          >
+          <section className={`rounded-2xl border p-4 ${statusStyles.error}`}>
             <h3 className="text-sm font-semibold uppercase tracking-[0.16em]">
               Danger zone
             </h3>
+
             <p className="mt-2 text-sm leading-6">
-              Delete this list container. This will not delete the tunes from
-              your app.
+              Delete this list container. This removes the list and its list
+              memberships only. It will not delete the tunes from your app.
             </p>
 
             <form
@@ -244,7 +230,7 @@ export default function EditListModal({
             </form>
           </section>
         </div>
-      </div>
-    </div>
+      </ResponsiveModal>
+    </>
   )
 }

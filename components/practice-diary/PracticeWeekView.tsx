@@ -4,18 +4,20 @@ import { useState } from "react"
 import Link from "next/link"
 import PracticeCategorySummaryList from "@/components/practice-diary/PracticeCategorySummaryList"
 import PracticeDueTuneMiniList from "@/components/practice-diary/PracticeDueTuneMiniList"
+import PracticeFocusSummaryList from "@/components/practice-diary/PracticeFocusSummaryList"
 import PracticeTuneSummaryList from "@/components/practice-diary/PracticeTuneSummaryList"
 import { joinClasses } from "@/components/ui/buttonStyles"
 import type {
-  PracticeDiaryWeekData,
+  PracticeDiaryFocusSummary,
   PracticeDiaryWeekCategorySummary,
+  PracticeDiaryWeekData,
 } from "@/lib/loaders/practice-diary"
 
 type PracticeWeekViewProps = {
   data: PracticeDiaryWeekData
 }
 
-type MobileWeekPanel = "week" | "categories"
+type MobileWeekPanel = "week" | "foci" | "categories"
 
 function formatDateOnly(dateOnly: string) {
   const [year, month, day] = dateOnly.split("-")
@@ -89,6 +91,14 @@ function getDueTuneTitle(
   dueTune: PracticeDiaryWeekData["dueTunes"][number]
 ) {
   return dueTune.piece?.title ?? "Unknown tune"
+}
+
+function formatFocusDate(dateOnly: string) {
+  return formatDateOnly(dateOnly)
+}
+
+function pluralise(count: number, singular: string, plural: string) {
+  return count === 1 ? singular : plural
 }
 
 function DayActivitySummary({
@@ -202,31 +212,44 @@ function MobileWeekHeader({
         <WeekNavLinks data={data} />
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl border border-border bg-background/70 p-1">
+      <div className="mt-4 grid grid-cols-3 gap-1 rounded-2xl border border-border bg-background/70 p-1">
         <button
           type="button"
           onClick={() => onChangePanel("week")}
           className={joinClasses(
-            "rounded-xl px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
+            "rounded-xl px-2 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
             activePanel === "week"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
-          Week at a glance
+          Week
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onChangePanel("foci")}
+          className={joinClasses(
+            "rounded-xl px-2 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
+            activePanel === "foci"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          )}
+        >
+          Foci
         </button>
 
         <button
           type="button"
           onClick={() => onChangePanel("categories")}
           className={joinClasses(
-            "rounded-xl px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
+            "rounded-xl px-2 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
             activePanel === "categories"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
-          Category patterns
+          Notes
         </button>
       </div>
     </section>
@@ -334,6 +357,79 @@ function MobileWeekAtAGlance({ data }: { data: PracticeDiaryWeekData }) {
   )
 }
 
+function MobileFocusPatterns({
+  summaries,
+}: {
+  summaries: PracticeDiaryFocusSummary[]
+}) {
+  const visibleSummaries = [...summaries]
+    .sort((a, b) => b.noteCount - a.noteCount)
+    .slice(0, 8)
+
+  return (
+    <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:hidden">
+      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        Foci touched
+      </h2>
+
+      {visibleSummaries.length === 0 ? (
+        <p className="mt-4 rounded-xl border border-border bg-background/70 p-3 text-sm leading-6 text-muted-foreground">
+          No focus-linked notes this week.
+        </p>
+      ) : (
+        <ul className="mt-4 divide-y divide-border">
+          {visibleSummaries.map((summary) => {
+            const latestNote = summary.notes[0] ?? null
+
+            return (
+              <li key={summary.focusId} className="py-4 first:pt-0 last:pb-0">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <Link
+                      href={`/review/foci/${summary.focusId}`}
+                      className="font-medium text-foreground underline-offset-4 hover:underline"
+                    >
+                      {summary.focusTitle}
+                    </Link>
+
+                    <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                      {summary.noteCount}{" "}
+                      {pluralise(summary.noteCount, "note", "notes")} ·{" "}
+                      {summary.tuneCount}{" "}
+                      {pluralise(summary.tuneCount, "tune", "tunes")} · latest{" "}
+                      {formatFocusDate(summary.latestDate)}
+                    </p>
+                  </div>
+
+                  <Link
+                    href={`/review/foci/${summary.focusId}`}
+                    className="shrink-0 rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground"
+                  >
+                    Open
+                  </Link>
+                </div>
+
+                {latestNote ? (
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
+                    {latestNote.tuneTitle ? `${latestNote.tuneTitle}: ` : ""}
+                    {latestNote.body}
+                  </p>
+                ) : null}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
+      {summaries.length > visibleSummaries.length ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          Showing {visibleSummaries.length} of {summaries.length} foci.
+        </p>
+      ) : null}
+    </section>
+  )
+}
+
 function MobileCategoryPatterns({
   summaries,
 }: {
@@ -346,7 +442,7 @@ function MobileCategoryPatterns({
   return (
     <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:hidden">
       <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        Category patterns
+        Note categories
       </h2>
 
       {visibleSummaries.length === 0 ? (
@@ -385,7 +481,8 @@ function MobileCategoryPatterns({
 
       {summaries.length > visibleSummaries.length ? (
         <p className="mt-3 text-sm text-muted-foreground">
-          Showing {visibleSummaries.length} of {summaries.length} categories.
+          Showing {visibleSummaries.length} of {summaries.length} note
+          categories.
         </p>
       ) : null}
     </section>
@@ -405,6 +502,8 @@ function MobileWeekView({ data }: { data: PracticeDiaryWeekData }) {
 
       {activePanel === "week" ? (
         <MobileWeekAtAGlance data={data} />
+      ) : activePanel === "foci" ? (
+        <MobileFocusPatterns summaries={data.focusSummaries} />
       ) : (
         <MobileCategoryPatterns summaries={data.categorySummaries} />
       )}
@@ -435,7 +534,7 @@ function DesktopWeekSummary({ data }: { data: PracticeDiaryWeekData }) {
         <WeekNavLinks data={data} />
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-7">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-8">
         <SummaryCard
           label="Active days"
           value={data.summary.activeDays}
@@ -473,9 +572,15 @@ function DesktopWeekSummary({ data }: { data: PracticeDiaryWeekData }) {
         />
 
         <SummaryCard
-          label="Categories"
+          label="Note categories"
           value={data.summary.categoriesUsed}
           helper="Used this week"
+        />
+
+        <SummaryCard
+          label="Foci touched"
+          value={data.summary.fociTouched}
+          helper="Linked this week"
         />
       </div>
     </section>
@@ -550,7 +655,7 @@ export default function PracticeWeekView({ data }: PracticeWeekViewProps) {
       <DesktopWeekSummary data={data} />
       <DesktopWeekAtAGlance data={data} />
 
-      <section className="hidden gap-6 md:grid xl:grid-cols-[1.35fr_0.85fr]">
+      <section className="hidden gap-6 md:grid xl:grid-cols-[1.2fr_0.8fr_0.8fr]">
         <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Tunes touched this week
@@ -569,7 +674,23 @@ export default function PracticeWeekView({ data }: PracticeWeekViewProps) {
 
         <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Category patterns
+            Foci touched
+          </h2>
+
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Active practice intentions that received focus-linked notes this
+            week.
+          </p>
+
+          <PracticeFocusSummaryList
+            summaries={data.focusSummaries}
+            emptyMessage="No focus-linked notes this week."
+          />
+        </section>
+
+        <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Note categories
           </h2>
 
           <p className="mt-3 text-sm leading-6 text-muted-foreground">

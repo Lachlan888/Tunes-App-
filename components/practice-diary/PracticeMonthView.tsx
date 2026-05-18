@@ -4,9 +4,11 @@ import { useState } from "react"
 import Link from "next/link"
 import PracticeCategorySummaryList from "@/components/practice-diary/PracticeCategorySummaryList"
 import PracticeDueTuneMiniList from "@/components/practice-diary/PracticeDueTuneMiniList"
+import PracticeFocusSummaryList from "@/components/practice-diary/PracticeFocusSummaryList"
 import PracticeTuneSummaryList from "@/components/practice-diary/PracticeTuneSummaryList"
 import { joinClasses } from "@/components/ui/buttonStyles"
 import type {
+  PracticeDiaryFocusSummary,
   PracticeDiaryMonthData,
   PracticeDiaryWeekCategorySummary,
 } from "@/lib/loaders/practice-diary"
@@ -15,7 +17,7 @@ type PracticeMonthViewProps = {
   data: PracticeDiaryMonthData
 }
 
-type MobileMonthPanel = "month" | "tunes" | "categories"
+type MobileMonthPanel = "month" | "tunes" | "foci" | "categories"
 
 function formatMonthLabel(dateOnly: string) {
   const [year, month] = dateOnly.split("-").map(Number)
@@ -26,6 +28,16 @@ function formatMonthLabel(dateOnly: string) {
     year: "numeric",
     timeZone: "UTC",
   }).format(date)
+}
+
+function formatDateOnly(dateOnly: string) {
+  const [year, month, day] = dateOnly.split("-")
+
+  if (!year || !month || !day) {
+    return dateOnly
+  }
+
+  return `${day}/${month}/${year}`
 }
 
 function getDayNumber(dateOnly: string) {
@@ -116,12 +128,6 @@ function getCompactActivityText(
   }
 
   return activityLines.join(" · ")
-}
-
-function getDueTuneTitle(
-  dueTune: PracticeDiaryMonthData["dueTunes"][number]
-) {
-  return dueTune.piece?.title ?? "Unknown tune"
 }
 
 function DayActivitySummary({
@@ -234,45 +240,27 @@ function MobileMonthHeader({
         <MonthNavLinks data={data} />
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-1 rounded-2xl border border-border bg-background/70 p-1">
-        <button
-          type="button"
-          onClick={() => onChangePanel("month")}
-          className={joinClasses(
-            "rounded-xl px-2 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
-            activePanel === "month"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-        >
-          Month
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onChangePanel("tunes")}
-          className={joinClasses(
-            "rounded-xl px-2 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
-            activePanel === "tunes"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-        >
-          Tunes
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onChangePanel("categories")}
-          className={joinClasses(
-            "rounded-xl px-2 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
-            activePanel === "categories"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-        >
-          Categories
-        </button>
+      <div className="mt-4 grid grid-cols-4 gap-1 rounded-2xl border border-border bg-background/70 p-1">
+        {[
+          ["month", "Month"],
+          ["tunes", "Tunes"],
+          ["foci", "Foci"],
+          ["categories", "Notes"],
+        ].map(([panel, label]) => (
+          <button
+            key={panel}
+            type="button"
+            onClick={() => onChangePanel(panel as MobileMonthPanel)}
+            className={joinClasses(
+              "rounded-xl px-1 py-2 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
+              activePanel === panel
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            {label}
+          </button>
+        ))}
       </div>
     </section>
   )
@@ -337,10 +325,10 @@ function MobileMonthCalendar({ data }: { data: PracticeDiaryMonthData }) {
 
         <div className="rounded-xl border border-border bg-background/70 p-3">
           <p className="text-xs font-semibold uppercase tracking-[0.12em]">
-            Tunes touched
+            Foci touched
           </p>
           <p className="mt-1 font-serif text-2xl font-bold text-foreground">
-            {data.summary.uniqueTunesTouched}
+            {data.summary.fociTouched}
           </p>
         </div>
       </div>
@@ -428,6 +416,79 @@ function MobileMostPractisedTunes({ data }: { data: PracticeDiaryMonthData }) {
   )
 }
 
+function MobileFocusDistribution({
+  summaries,
+}: {
+  summaries: PracticeDiaryFocusSummary[]
+}) {
+  const visibleSummaries = [...summaries]
+    .sort((a, b) => b.noteCount - a.noteCount)
+    .slice(0, 10)
+
+  return (
+    <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:hidden">
+      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        Foci touched
+      </h2>
+
+      {visibleSummaries.length === 0 ? (
+        <p className="mt-4 rounded-xl border border-border bg-background/70 p-3 text-sm leading-6 text-muted-foreground">
+          No focus-linked notes this month.
+        </p>
+      ) : (
+        <ul className="mt-4 divide-y divide-border">
+          {visibleSummaries.map((summary) => {
+            const latestNote = summary.notes[0] ?? null
+
+            return (
+              <li key={summary.focusId} className="py-4 first:pt-0 last:pb-0">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <Link
+                      href={`/review/foci/${summary.focusId}`}
+                      className="font-medium text-foreground underline-offset-4 hover:underline"
+                    >
+                      {summary.focusTitle}
+                    </Link>
+
+                    <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                      {summary.noteCount}{" "}
+                      {pluralise(summary.noteCount, "note", "notes")} ·{" "}
+                      {summary.tuneCount}{" "}
+                      {pluralise(summary.tuneCount, "tune", "tunes")} · latest{" "}
+                      {formatDateOnly(summary.latestDate)}
+                    </p>
+                  </div>
+
+                  <Link
+                    href={`/review/foci/${summary.focusId}`}
+                    className="shrink-0 rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground"
+                  >
+                    Open
+                  </Link>
+                </div>
+
+                {latestNote ? (
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
+                    {latestNote.tuneTitle ? `${latestNote.tuneTitle}: ` : ""}
+                    {latestNote.body}
+                  </p>
+                ) : null}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
+      {summaries.length > visibleSummaries.length ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          Showing {visibleSummaries.length} of {summaries.length} foci.
+        </p>
+      ) : null}
+    </section>
+  )
+}
+
 function MobileCategoryDistribution({
   summaries,
 }: {
@@ -440,7 +501,7 @@ function MobileCategoryDistribution({
   return (
     <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:hidden">
       <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        Category distribution
+        Note categories
       </h2>
 
       {visibleSummaries.length === 0 ? (
@@ -479,7 +540,8 @@ function MobileCategoryDistribution({
 
       {summaries.length > visibleSummaries.length ? (
         <p className="mt-3 text-sm text-muted-foreground">
-          Showing {visibleSummaries.length} of {summaries.length} categories.
+          Showing {visibleSummaries.length} of {summaries.length} note
+          categories.
         </p>
       ) : null}
     </section>
@@ -501,6 +563,8 @@ function MobileMonthView({ data }: { data: PracticeDiaryMonthData }) {
         <MobileMonthCalendar data={data} />
       ) : activePanel === "tunes" ? (
         <MobileMostPractisedTunes data={data} />
+      ) : activePanel === "foci" ? (
+        <MobileFocusDistribution summaries={data.focusSummaries} />
       ) : (
         <MobileCategoryDistribution summaries={data.categorySummaries} />
       )}
@@ -530,7 +594,7 @@ function DesktopMonthSummary({ data }: { data: PracticeDiaryMonthData }) {
         <MonthNavLinks data={data} />
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-7">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-8">
         <SummaryCard
           label="Active days"
           value={data.summary.activeDays}
@@ -568,9 +632,15 @@ function DesktopMonthSummary({ data }: { data: PracticeDiaryMonthData }) {
         />
 
         <SummaryCard
-          label="Categories"
+          label="Note categories"
           value={data.summary.categoriesUsed}
           helper="Used this month"
+        />
+
+        <SummaryCard
+          label="Foci touched"
+          value={data.summary.fociTouched}
+          helper="Linked this month"
         />
       </div>
     </section>
@@ -651,7 +721,7 @@ export default function PracticeMonthView({ data }: PracticeMonthViewProps) {
       <DesktopMonthSummary data={data} />
       <DesktopMonthCalendar data={data} />
 
-      <section className="hidden gap-6 md:grid xl:grid-cols-[1.35fr_0.85fr]">
+      <section className="hidden gap-6 md:grid xl:grid-cols-[1.2fr_0.8fr_0.8fr]">
         <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Most practised tunes
@@ -670,7 +740,22 @@ export default function PracticeMonthView({ data }: PracticeMonthViewProps) {
 
         <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Category distribution
+            Foci touched
+          </h2>
+
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Practice intentions that received focus-linked notes this month.
+          </p>
+
+          <PracticeFocusSummaryList
+            summaries={data.focusSummaries}
+            emptyMessage="No focus-linked notes this month."
+          />
+        </section>
+
+        <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Note categories
           </h2>
 
           <p className="mt-3 text-sm leading-6 text-muted-foreground">

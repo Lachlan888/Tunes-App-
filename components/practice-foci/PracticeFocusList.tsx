@@ -1,12 +1,22 @@
 import Link from "next/link"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
-import type { PracticeFocus } from "@/lib/loaders/practice-foci"
+import type {
+  PracticeFocus,
+  PracticeFocusStatus,
+} from "@/lib/loaders/practice-foci"
 
 type PracticeFocusListProps = {
   activeFoci: PracticeFocus[]
   pausedFoci: PracticeFocus[]
   completedFoci: PracticeFocus[]
   archivedFoci: PracticeFocus[]
+}
+
+type FocusGroupConfig = {
+  status: PracticeFocusStatus
+  title: string
+  emptyMessage: string
+  foci: PracticeFocus[]
 }
 
 function getStatusLabel(status: PracticeFocus["status"]) {
@@ -29,12 +39,25 @@ function getStatusClasses(status: PracticeFocus["status"]) {
   return "border-border bg-muted text-muted-foreground"
 }
 
+function formatDateOnly(dateOnly: string | null) {
+  if (!dateOnly) return null
+
+  const [year, month, day] = dateOnly.split("-")
+
+  if (!year || !month || !day) {
+    return dateOnly
+  }
+
+  return `${day}/${month}/${year}`
+}
+
 function formatMeta(focus: PracticeFocus) {
   const tuneCount = focus.tunes.length
   const tuneLabel = tuneCount === 1 ? "1 tune" : `${tuneCount} tunes`
+  const targetDate = formatDateOnly(focus.target_date)
 
-  if (focus.target_date) {
-    return `${tuneLabel} · target ${focus.target_date}`
+  if (targetDate) {
+    return `${tuneLabel} · target ${targetDate}`
   }
 
   return tuneLabel
@@ -131,6 +154,44 @@ function DesktopFocusCard({ focus }: { focus: PracticeFocus }) {
   )
 }
 
+function FocusRows({
+  foci,
+  emptyMessage,
+}: {
+  foci: PracticeFocus[]
+  emptyMessage: string
+}) {
+  if (foci.length === 0) {
+    return (
+      <>
+        <p className="py-4 text-sm leading-6 text-muted-foreground md:hidden">
+          {emptyMessage}
+        </p>
+
+        <div className="hidden rounded-3xl border border-border bg-card p-6 text-sm leading-6 text-muted-foreground shadow-sm md:block">
+          {emptyMessage}
+        </div>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <ul className="md:hidden">
+        {foci.map((focus) => (
+          <MobileFocusRow key={focus.id} focus={focus} />
+        ))}
+      </ul>
+
+      <div className="hidden md:grid md:gap-4">
+        {foci.map((focus) => (
+          <DesktopFocusCard key={focus.id} focus={focus} />
+        ))}
+      </div>
+    </>
+  )
+}
+
 function FocusGroup({
   title,
   emptyMessage,
@@ -138,40 +199,10 @@ function FocusGroup({
   defaultOpen = true,
 }: {
   title: string
-  emptyMessage?: string
+  emptyMessage: string
   foci: PracticeFocus[]
   defaultOpen?: boolean
 }) {
-  if (foci.length === 0 && !emptyMessage) {
-    return null
-  }
-
-  const mobileContent =
-    foci.length === 0 ? (
-      <p className="py-4 text-sm leading-6 text-muted-foreground">
-        {emptyMessage}
-      </p>
-    ) : (
-      <ul>
-        {foci.map((focus) => (
-          <MobileFocusRow key={focus.id} focus={focus} />
-        ))}
-      </ul>
-    )
-
-  const desktopContent =
-    foci.length === 0 ? (
-      <div className="rounded-3xl border border-border bg-card p-6 text-sm leading-6 text-muted-foreground shadow-sm">
-        {emptyMessage}
-      </div>
-    ) : (
-      <div className="grid gap-4">
-        {foci.map((focus) => (
-          <DesktopFocusCard key={focus.id} focus={focus} />
-        ))}
-      </div>
-    )
-
   if (!defaultOpen) {
     return (
       <details className="grid gap-4">
@@ -180,8 +211,7 @@ function FocusGroup({
         </summary>
 
         <div className="mt-2 md:mt-4">
-          <div className="md:hidden">{mobileContent}</div>
-          <div className="hidden md:block">{desktopContent}</div>
+          <FocusRows foci={foci} emptyMessage={emptyMessage} />
         </div>
       </details>
     )
@@ -189,12 +219,17 @@ function FocusGroup({
 
   return (
     <section className="grid gap-2 md:gap-4">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        {title}
-      </h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          {title}
+        </h2>
 
-      <div className="md:hidden">{mobileContent}</div>
-      <div className="hidden md:block">{desktopContent}</div>
+        <p className="text-sm font-medium text-muted-foreground">
+          {foci.length}
+        </p>
+      </div>
+
+      <FocusRows foci={foci} emptyMessage={emptyMessage} />
     </section>
   )
 }
@@ -205,27 +240,45 @@ export default function PracticeFocusList({
   completedFoci,
   archivedFoci,
 }: PracticeFocusListProps) {
+  const groups: FocusGroupConfig[] = [
+    {
+      status: "active",
+      title: "Active foci",
+      emptyMessage:
+        "No active foci yet. Create one when a few tunes are connected by the same musical problem or preparation goal.",
+      foci: activeFoci,
+    },
+    {
+      status: "paused",
+      title: "Paused foci",
+      emptyMessage: "No paused foci.",
+      foci: pausedFoci,
+    },
+    {
+      status: "completed",
+      title: "Completed foci",
+      emptyMessage: "No completed foci.",
+      foci: completedFoci,
+    },
+    {
+      status: "archived",
+      title: "Archived foci",
+      emptyMessage: "No archived foci.",
+      foci: archivedFoci,
+    },
+  ]
+
   return (
     <div className="grid min-w-0 gap-7 md:gap-6">
-      <FocusGroup
-        title="Active foci"
-        emptyMessage="No active foci yet. Create one when a few tunes are connected by the same musical problem or preparation goal."
-        foci={activeFoci}
-      />
-
-      <FocusGroup title="Paused foci" foci={pausedFoci} defaultOpen={false} />
-
-      <FocusGroup
-        title="Completed foci"
-        foci={completedFoci}
-        defaultOpen={false}
-      />
-
-      <FocusGroup
-        title="Archived foci"
-        foci={archivedFoci}
-        defaultOpen={false}
-      />
+      {groups.map((group) => (
+        <FocusGroup
+          key={group.status}
+          title={group.title}
+          emptyMessage={group.emptyMessage}
+          foci={group.foci}
+          defaultOpen={group.status === "active"}
+        />
+      ))}
     </div>
   )
 }

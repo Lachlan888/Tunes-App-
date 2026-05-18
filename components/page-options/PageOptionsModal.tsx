@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
+import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import { updatePagePreferences } from "@/lib/actions/page-preferences"
 import type {
@@ -90,11 +91,17 @@ export default function PageOptionsModal({
   const [visibleSections, setVisibleSections] = useState<PageVisibleSections>(
     () => cloneVisibleSections(preferences.visibleSections)
   )
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const selectedPreset = useMemo(
     () => config.presets.find((preset) => preset.id === layoutPreset),
     [config.presets, layoutPreset]
   )
+
+  function closeModal() {
+    if (isSubmitting) return
+    setIsOpen(false)
+  }
 
   function applyPreset(presetId: PageLayoutPresetId) {
     const preset = config.presets.find((item) => item.id === presetId)
@@ -118,250 +125,236 @@ export default function PageOptionsModal({
     <>
       <button
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setIsSubmitting(false)
+          setIsOpen(true)
+        }}
         className={buttonStyles.secondaryStrong}
       >
         {buttonLabel}
       </button>
 
-      {isOpen ? (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-foreground/30 px-4 py-8 backdrop-blur-sm"
-          role="presentation"
+      <ResponsiveModal
+        isOpen={isOpen}
+        onClose={closeModal}
+        closeDisabled={isSubmitting}
+        closeOnOverlayClick={!isSubmitting}
+        closeOnEscape={!isSubmitting}
+        mobileMode="full-screen"
+        desktopMaxWidth="md:max-w-4xl"
+        eyebrow="Page Options"
+        title={config.title}
+        description={config.description}
+      >
+        <form
+          action={async (formData: FormData) => {
+            setIsSubmitting(true)
+            await updatePagePreferences(formData)
+          }}
+          className="space-y-7"
         >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={`${config.pageKey}-page-options-title`}
-            className="w-full max-w-4xl rounded-3xl border border-border bg-card p-6 shadow-xl"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Page Options
-                </p>
+          <input type="hidden" name="page_key" value={config.pageKey} />
+          <input type="hidden" name="redirect_to" value={redirectTo} />
 
-                <h2
-                  id={`${config.pageKey}-page-options-title`}
-                  className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground"
+          <section>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Layout preset
+            </h3>
+
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              {config.presets.map((preset) => (
+                <label
+                  key={preset.id}
+                  className={joinClasses(
+                    "cursor-pointer rounded-2xl border p-4 transition hover:bg-muted",
+                    layoutPreset === preset.id
+                      ? "border-primary bg-muted"
+                      : "border-border bg-background/70"
+                  )}
                 >
-                  {config.title}
-                </h2>
+                  <input
+                    type="radio"
+                    name="layout_preset"
+                    value={preset.id}
+                    checked={layoutPreset === preset.id}
+                    onChange={() => applyPreset(preset.id)}
+                    className="sr-only"
+                  />
 
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                  {config.description}
-                </p>
-              </div>
+                  <span className="block text-sm font-semibold text-foreground">
+                    {preset.label}
+                  </span>
 
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className={buttonStyles.secondary}
-              >
-                Close
-              </button>
+                  <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+                    {preset.description}
+                  </span>
+                </label>
+              ))}
             </div>
 
-            <form action={updatePagePreferences} className="mt-6 space-y-7">
-              <input type="hidden" name="page_key" value={config.pageKey} />
-              <input type="hidden" name="redirect_to" value={redirectTo} />
-
-              <section>
-                <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Layout preset
-                </h3>
-
-                <div className="mt-3 grid gap-3 md:grid-cols-2">
-                  {config.presets.map((preset) => (
-                    <label
-                      key={preset.id}
-                      className={joinClasses(
-                        "cursor-pointer rounded-2xl border p-4 transition hover:bg-muted",
-                        layoutPreset === preset.id
-                          ? "border-primary bg-muted"
-                          : "border-border bg-background/70"
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="layout_preset"
-                        value={preset.id}
-                        checked={layoutPreset === preset.id}
-                        onChange={() => applyPreset(preset.id)}
-                        className="sr-only"
-                      />
-
-                      <span className="block text-sm font-semibold text-foreground">
-                        {preset.label}
-                      </span>
-
-                      <span className="mt-1 block text-sm leading-6 text-muted-foreground">
-                        {preset.description}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-
-                {selectedPreset ? (
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    Current preset:{" "}
-                    <span className="font-medium text-foreground">
-                      {selectedPreset.label}
-                    </span>
-                  </p>
-                ) : null}
-              </section>
-
-              {config.allowColumns ? (
-                <section>
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Columns
-                  </h3>
-
-                  <div className="mt-3 grid gap-3 md:grid-cols-2">
-                    {columnOptions.map((option) => (
-                      <label
-                        key={option.value}
-                        className="flex gap-3 rounded-2xl border border-border bg-background/70 p-4"
-                      >
-                        <input
-                          type="radio"
-                          name="column_mode"
-                          value={option.value}
-                          checked={columnMode === option.value}
-                          onChange={() => setColumnMode(option.value)}
-                          className="mt-1 h-4 w-4 accent-primary"
-                        />
-
-                        <span>
-                          <span className="block text-sm font-semibold text-foreground">
-                            {option.label}
-                          </span>
-                          <span className="mt-1 block text-sm leading-6 text-muted-foreground">
-                            {option.description}
-                          </span>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </section>
-              ) : (
-                <input type="hidden" name="column_mode" value={columnMode} />
-              )}
-
-              {config.allowDensity ? (
-                <section>
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Density
-                  </h3>
-
-                  <div className="mt-3 grid gap-3 md:grid-cols-3">
-                    {densityOptions.map((option) => (
-                      <label
-                        key={option.value}
-                        className="flex gap-3 rounded-2xl border border-border bg-background/70 p-4"
-                      >
-                        <input
-                          type="radio"
-                          name="density"
-                          value={option.value}
-                          checked={density === option.value}
-                          onChange={() => setDensity(option.value)}
-                          className="mt-1 h-4 w-4 accent-primary"
-                        />
-
-                        <span>
-                          <span className="block text-sm font-semibold text-foreground">
-                            {option.label}
-                          </span>
-                          <span className="mt-1 block text-sm leading-6 text-muted-foreground">
-                            {option.description}
-                          </span>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </section>
-              ) : (
-                <input type="hidden" name="density" value={density} />
-              )}
-
-              <section>
-                <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Sections shown
-                </h3>
-
-                <div className="mt-3 grid gap-3 md:grid-cols-2">
-                  {config.sections.map((section) => (
-                    <label
-                      key={section.id}
-                      className="flex gap-3 rounded-2xl border border-border bg-background/70 p-4"
-                    >
-                      <input
-                        type="checkbox"
-                        name={`section_${section.id}`}
-                        value="true"
-                        checked={Boolean(visibleSections[section.id])}
-                        onChange={() => toggleSection(section.id)}
-                        className="mt-1 h-4 w-4 rounded border-border accent-primary"
-                      />
-
-                      <span>
-                        <span className="block text-sm font-semibold text-foreground">
-                          {section.label}
-                          {section.isCore ? (
-                            <span className="ml-2 rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                              Core
-                            </span>
-                          ) : null}
-                        </span>
-
-                        <span className="mt-1 block text-sm leading-6 text-muted-foreground">
-                          {section.description}
-                        </span>
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </section>
-
-              <p className="rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
-                {config.helperText}
+            {selectedPreset ? (
+              <p className="mt-3 text-sm text-muted-foreground">
+                Current preset:{" "}
+                <span className="font-medium text-foreground">
+                  {selectedPreset.label}
+                </span>
               </p>
+            ) : null}
+          </section>
 
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <SubmitButton
-                  label="Save Page Options"
-                  pendingLabel="Saving..."
-                  className={buttonStyles.primary}
-                />
+          {config.allowColumns ? (
+            <section>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Columns
+              </h3>
 
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsOpen(false)}
-                    className={buttonStyles.secondary}
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                {columnOptions.map((option) => (
+                  <label
+                    key={option.value}
+                    className="flex gap-3 rounded-2xl border border-border bg-background/70 p-4"
                   >
-                    Cancel
-                  </button>
-                </div>
+                    <input
+                      type="radio"
+                      name="column_mode"
+                      value={option.value}
+                      checked={columnMode === option.value}
+                      onChange={() => setColumnMode(option.value)}
+                      className="mt-1 h-4 w-4 accent-primary"
+                    />
+
+                    <span>
+                      <span className="block text-sm font-semibold text-foreground">
+                        {option.label}
+                      </span>
+                      <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+                        {option.description}
+                      </span>
+                    </span>
+                  </label>
+                ))}
               </div>
-            </form>
+            </section>
+          ) : (
+            <input type="hidden" name="column_mode" value={columnMode} />
+          )}
 
-            <form action={updatePagePreferences} className="mt-3">
-              <input type="hidden" name="page_key" value={config.pageKey} />
-              <input type="hidden" name="redirect_to" value={redirectTo} />
-              <input type="hidden" name="reset_preferences" value="true" />
+          {config.allowDensity ? (
+            <section>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Density
+              </h3>
 
-              <SubmitButton
-                label="Reset to default"
-                pendingLabel="Resetting..."
-                className={buttonStyles.text}
-              />
-            </form>
+              <div className="mt-3 grid gap-3 md:grid-cols-3">
+                {densityOptions.map((option) => (
+                  <label
+                    key={option.value}
+                    className="flex gap-3 rounded-2xl border border-border bg-background/70 p-4"
+                  >
+                    <input
+                      type="radio"
+                      name="density"
+                      value={option.value}
+                      checked={density === option.value}
+                      onChange={() => setDensity(option.value)}
+                      className="mt-1 h-4 w-4 accent-primary"
+                    />
+
+                    <span>
+                      <span className="block text-sm font-semibold text-foreground">
+                        {option.label}
+                      </span>
+                      <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+                        {option.description}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </section>
+          ) : (
+            <input type="hidden" name="density" value={density} />
+          )}
+
+          <section>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Sections shown
+            </h3>
+
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              {config.sections.map((section) => (
+                <label
+                  key={section.id}
+                  className="flex gap-3 rounded-2xl border border-border bg-background/70 p-4"
+                >
+                  <input
+                    type="checkbox"
+                    name={`section_${section.id}`}
+                    value="true"
+                    checked={Boolean(visibleSections[section.id])}
+                    onChange={() => toggleSection(section.id)}
+                    className="mt-1 h-4 w-4 rounded border-border accent-primary"
+                  />
+
+                  <span>
+                    <span className="block text-sm font-semibold text-foreground">
+                      {section.label}
+                      {section.isCore ? (
+                        <span className="ml-2 rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                          Core
+                        </span>
+                      ) : null}
+                    </span>
+
+                    <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+                      {section.description}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </section>
+
+          <p className="rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+            {config.helperText}
+          </p>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <SubmitButton
+              label="Save Page Options"
+              pendingLabel="Saving..."
+              className={buttonStyles.primary}
+            />
+
+            <button
+              type="button"
+              onClick={closeModal}
+              className={buttonStyles.secondary}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
           </div>
-        </div>
-      ) : null}
+        </form>
+
+        <form
+          action={async (formData: FormData) => {
+            setIsSubmitting(true)
+            await updatePagePreferences(formData)
+          }}
+          className="mt-3"
+        >
+          <input type="hidden" name="page_key" value={config.pageKey} />
+          <input type="hidden" name="redirect_to" value={redirectTo} />
+          <input type="hidden" name="reset_preferences" value="true" />
+
+          <SubmitButton
+            label="Reset to default"
+            pendingLabel="Resetting..."
+            className={buttonStyles.text}
+          />
+        </form>
+      </ResponsiveModal>
     </>
   )
 }

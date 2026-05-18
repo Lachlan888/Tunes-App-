@@ -1,12 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import PracticeProgress from "@/components/practice/PracticeProgress"
 import ReferenceMediaLink from "@/components/ReferenceMediaLink"
 import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeButton"
 import SubmitButton from "@/components/SubmitButton"
+import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { createPracticeNoteCategory } from "@/lib/actions/practice-diary"
 import { markFailed, markShaky, markSolid } from "@/lib/actions/reviews"
@@ -85,11 +86,7 @@ function getReviewButtonClassName(className: string) {
   return `${className} !min-w-0 flex-1 !px-1.5 !py-2 text-[0.8rem] leading-none sm:!min-w-[104px] sm:flex-none sm:!px-4 sm:!py-2 sm:text-sm`
 }
 
-function ActivePracticeFoci({
-  foci,
-}: {
-  foci: PracticeFocusForReview[]
-}) {
+function ActivePracticeFoci({ foci }: { foci: PracticeFocusForReview[] }) {
   const [isOpen, setIsOpen] = useState(false)
 
   if (foci.length === 0) {
@@ -276,7 +273,7 @@ function DiaryReviewButtons({
   )
 }
 
-function AddCategoryInReviewModal({
+function AddCategoryInReviewDisclosure({
   redirectTo,
 }: {
   redirectTo: string
@@ -369,6 +366,7 @@ function ReviewNoteModal({
   onClose: () => void
 }) {
   const [selectedFocusId, setSelectedFocusId] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const linkedFocusIds = useMemo(
     () => new Set(userPiece.active_practice_foci.map((focus) => focus.id)),
@@ -384,156 +382,127 @@ function ReviewNoteModal({
   const shouldShowAddTuneToFocus =
     selectedFocusId !== "" && !selectedFocusIsAlreadyLinked
 
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose()
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown)
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [onClose])
+  function closeModal() {
+    if (isSubmitting) return
+    onClose()
+  }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 px-4 py-8"
-      role="presentation"
-      onClick={onClose}
+    <ResponsiveModal
+      isOpen
+      onClose={closeModal}
+      closeDisabled={isSubmitting}
+      closeOnOverlayClick={!isSubmitting}
+      closeOnEscape={!isSubmitting}
+      mobileMode="sheet"
+      desktopMaxWidth="md:max-w-lg"
+      eyebrow="Practice diary"
+      title={selectedOutcome.modalTitle}
+      description={`Add an optional note for ${title}. Saving will also record the ${selectedOutcome.label.toLowerCase()} review result.`}
     >
-      <div
-        className="max-h-[calc(100vh-4rem)] w-full max-w-lg overflow-y-auto rounded-3xl border border-border bg-card p-5 shadow-xl sm:p-6"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="review-note-modal-title"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Practice diary
-            </p>
+      <div className="space-y-4">
+        <AddCategoryInReviewDisclosure redirectTo={redirectTo} />
 
-            <h3
-              id="review-note-modal-title"
-              className="mt-2 font-serif text-2xl font-bold text-foreground"
+        <form
+          action={async (formData: FormData) => {
+            setIsSubmitting(true)
+            await selectedOutcome.action(formData)
+          }}
+          className="space-y-4"
+        >
+          <input type="hidden" name="userPieceId" value={userPiece.id} />
+          <input type="hidden" name="redirectTo" value={redirectTo} />
+
+          <label className="block">
+            <span className="text-sm font-semibold text-foreground">
+              Category
+            </span>
+
+            <select
+              name="category_id"
+              defaultValue=""
+              className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              disabled={isSubmitting}
             >
-              {selectedOutcome.modalTitle}
-            </h3>
+              <option value="">No category</option>
+              {noteCategories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Add an optional note for {title}. Saving will also record the{" "}
-              {selectedOutcome.label.toLowerCase()} review result.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            className={buttonStyles.text}
-            onClick={onClose}
-          >
-            Close
-          </button>
-        </div>
-
-        <div className="mt-5 space-y-4">
-          <AddCategoryInReviewModal redirectTo={redirectTo} />
-
-          <form action={selectedOutcome.action} className="space-y-4">
-            <input type="hidden" name="userPieceId" value={userPiece.id} />
-            <input type="hidden" name="redirectTo" value={redirectTo} />
-
+          {userPiece.practice_focus_options.length > 0 ? (
             <label className="block">
               <span className="text-sm font-semibold text-foreground">
-                Category
+                Focus
               </span>
 
               <select
-                name="category_id"
-                defaultValue=""
+                name="focus_id"
+                value={selectedFocusId}
+                onChange={(event) => setSelectedFocusId(event.target.value)}
                 className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                disabled={isSubmitting}
               >
-                <option value="">No category</option>
-                {noteCategories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
+                <option value="">No focus</option>
+                {userPiece.practice_focus_options.map((focus) => (
+                  <option key={focus.id} value={focus.id}>
+                    {focus.title}
+                    {linkedFocusIds.has(focus.id) ? " (already linked)" : ""}
                   </option>
                 ))}
               </select>
             </label>
+          ) : null}
 
-            {userPiece.practice_focus_options.length > 0 ? (
-              <label className="block">
-                <span className="text-sm font-semibold text-foreground">
-                  Focus
-                </span>
-
-                <select
-                  name="focus_id"
-                  value={selectedFocusId}
-                  onChange={(event) => setSelectedFocusId(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                >
-                  <option value="">No focus</option>
-                  {userPiece.practice_focus_options.map((focus) => (
-                    <option key={focus.id} value={focus.id}>
-                      {focus.title}
-                      {linkedFocusIds.has(focus.id) ? " (already linked)" : ""}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ) : null}
-
-            {shouldShowAddTuneToFocus ? (
-              <label className="flex gap-3 rounded-2xl border border-border bg-background/70 p-3 text-sm leading-6 text-muted-foreground">
-                <input
-                  type="checkbox"
-                  name="add_tune_to_focus"
-                  defaultChecked
-                  className="mt-1"
-                />
-                <span>
-                  Also add this tune to the selected focus from now on.
-                </span>
-              </label>
-            ) : null}
-
-            <label className="block">
-              <span className="text-sm font-semibold text-foreground">
-                Optional note
-              </span>
-
-              <textarea
-                name="practice_note"
-                rows={5}
-                placeholder="What happened with this tune today?"
-                className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm leading-6 text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          {shouldShowAddTuneToFocus ? (
+            <label className="flex gap-3 rounded-2xl border border-border bg-background/70 p-3 text-sm leading-6 text-muted-foreground">
+              <input
+                type="checkbox"
+                name="add_tune_to_focus"
+                defaultChecked
+                className="mt-1"
+                disabled={isSubmitting}
               />
+              <span>Also add this tune to the selected focus from now on.</span>
             </label>
+          ) : null}
 
-            <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
-              <SubmitButton
-                label={`Save ${selectedOutcome.label}`}
-                pendingLabel="Saving..."
-                className={`${selectedOutcome.className} w-full sm:w-auto`}
-              />
+          <label className="block">
+            <span className="text-sm font-semibold text-foreground">
+              Optional note
+            </span>
 
-              <button
-                type="button"
-                className={`${buttonStyles.secondary} w-full sm:w-auto`}
-                onClick={onClose}
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
+            <textarea
+              name="practice_note"
+              rows={5}
+              placeholder="What happened with this tune today?"
+              className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm leading-6 text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              disabled={isSubmitting}
+            />
+          </label>
+
+          <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
+            <SubmitButton
+              label={`Save ${selectedOutcome.label}`}
+              pendingLabel="Saving..."
+              className={`${selectedOutcome.className} w-full sm:w-auto`}
+            />
+
+            <button
+              type="button"
+              className={`${buttonStyles.secondary} w-full sm:w-auto`}
+              onClick={closeModal}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
-    </div>
+    </ResponsiveModal>
   )
 }
 
