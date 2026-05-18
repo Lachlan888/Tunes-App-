@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
-import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
+import ResponsiveModal from "@/components/ui/ResponsiveModal"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 
 type FilterPanelProps = {
   id: string
@@ -25,49 +26,44 @@ export default function FilterPanel({
   className,
 }: FilterPanelProps) {
   return (
-    <div
-      id={id}
-      className={joinClasses(
-        "absolute left-0 right-0 z-20 mt-2 rounded-3xl border border-border bg-card p-5 shadow-lg",
-        className
-      )}
-    >
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-serif text-2xl font-bold text-foreground">
-            {title}
-          </h3>
+    <ResponsiveModal
+      isOpen
+      onClose={onClose}
+      closeDisabled={isPending}
+      closeOnOverlayClick={!isPending}
+      closeOnEscape={!isPending}
+      mobileMode="full-screen"
+      desktopMaxWidth="md:max-w-4xl"
+      eyebrow="Filters"
+      title={title}
+      description={description}
+      panelClassName={className}
+      bodyClassName="min-h-0 flex-1 overflow-y-auto p-5 md:p-6"
+      footer={
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className={buttonStyles.secondary}
+            disabled={isPending}
+          >
+            Close
+          </button>
 
-          {description ? (
-            <p className="mt-1 text-sm text-muted-foreground">
-              {description}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="flex items-center gap-2">
           {hasActiveFilters && onClearAll ? (
             <button
               type="button"
               onClick={onClearAll}
-              className={buttonStyles.filterTrigger}
+              className={buttonStyles.secondaryStrong}
               disabled={isPending}
             >
               Clear all
             </button>
           ) : null}
-
-          <button
-            type="button"
-            onClick={onClose}
-            className={buttonStyles.modalClose}
-          >
-            Close
-          </button>
         </div>
-      </div>
-
-      {children}
-    </div>
+      }
+    >
+      <div id={id}>{children}</div>
+    </ResponsiveModal>
   )
 }
