@@ -6,6 +6,7 @@ import EmptyState from "@/components/EmptyState"
 import TuneCard from "@/components/TuneCard"
 import DeleteCanonicalTuneModal from "@/components/library/DeleteCanonicalTuneModal"
 import LibraryTuneCardActions from "@/components/library/LibraryTuneCardActions"
+import FindReferenceModal from "@/components/reference-media/FindReferenceModal"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import useScrollToPiece from "@/hooks/useScrollToPiece"
 import type {
@@ -28,6 +29,7 @@ type LibraryListProps = {
   addToLearningList: (formData: FormData) => Promise<void>
   removeTuneFromMyApp: (formData: FormData) => Promise<void>
   deleteCanonicalTuneAsModerator: (formData: FormData) => Promise<void>
+  addReferenceUrlToPiece: (formData: FormData) => Promise<void>
   redirectTo: string
   scrollPieceId: string
   hasActiveFilters: boolean
@@ -98,6 +100,7 @@ export default function LibraryList({
   addToLearningList,
   removeTuneFromMyApp,
   deleteCanonicalTuneAsModerator,
+  addReferenceUrlToPiece,
   redirectTo,
   scrollPieceId,
   hasActiveFilters,
@@ -108,6 +111,7 @@ export default function LibraryList({
     null
   )
   const [deletePiece, setDeletePiece] = useState<Piece | null>(null)
+  const [referencePiece, setReferencePiece] = useState<Piece | null>(null)
 
   const allPieces = pieces ?? []
   const isModerator = canUseModeratorTools(currentUserRole)
@@ -185,6 +189,7 @@ export default function LibraryList({
                 style={piece.style}
                 timeSignature={piece.time_signature}
                 referenceUrl={piece.reference_url}
+                pieceStyles={piece.piece_styles}
                 listNames={listNames}
                 topRightAction={
                   isModerator ? (
@@ -217,6 +222,10 @@ export default function LibraryList({
                     setSelectedListId("")
                     setOpenStatusPieceId(null)
                   }}
+                  onOpenFindReference={() => {
+                    setReferencePiece(piece)
+                    setOpenStatusPieceId(null)
+                  }}
                   startLearning={startLearning}
                   removeTuneFromMyApp={removeTuneFromMyApp}
                 />
@@ -242,6 +251,15 @@ export default function LibraryList({
             setSelectedPiece(null)
             setSelectedListId("")
           }}
+        />
+      ) : null}
+
+      {referencePiece ? (
+        <FindReferenceModal
+          piece={referencePiece}
+          redirectTo={buildPieceRedirectTo(redirectTo, referencePiece.id)}
+          addReferenceUrlToPiece={addReferenceUrlToPiece}
+          onClose={() => setReferencePiece(null)}
         />
       ) : null}
 

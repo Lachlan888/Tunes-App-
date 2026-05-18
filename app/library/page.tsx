@@ -10,6 +10,7 @@ import {
   deleteCanonicalTuneAsModerator,
   removeTuneFromMyApp,
 } from "@/lib/actions/pieces"
+import { addReferenceUrlToPiece } from "@/lib/actions/reference-media"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadLibraryData } from "@/lib/loaders/library"
 import { loadPagePreferences } from "@/lib/loaders/page-preferences"
@@ -29,6 +30,7 @@ type LibraryPageProps = {
     page?: SearchParamValue
     import?: SearchParamValue
     list_add?: SearchParamValue
+    reference_url?: SearchParamValue
     create_tune?: SearchParamValue
     bulk_upload?: SearchParamValue
     row?: SearchParamValue
@@ -132,6 +134,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   )
 
   const listAddStatus = firstParam(resolvedSearchParams?.list_add)
+  const referenceUrlStatus = firstParam(resolvedSearchParams?.reference_url)
   const createTuneStatus = firstParam(resolvedSearchParams?.create_tune)
   const bulkUploadStatus = firstParam(resolvedSearchParams?.bulk_upload)
   const bulkUploadRow = firstParam(resolvedSearchParams?.row)
@@ -264,6 +267,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
         <LibraryStatusMessages
           createTuneStatus={createTuneStatus}
           listAddStatus={listAddStatus}
+          referenceUrlStatus={referenceUrlStatus}
           removeTuneStatus={removeTuneStatus}
           removeFromPracticeStatus={removeFromPracticeStatus}
           deleteTuneStatus={deleteTuneStatus}
@@ -314,6 +318,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
           addToLearningList={addToLearningList}
           removeTuneFromMyApp={removeTuneFromMyApp}
           deleteCanonicalTuneAsModerator={deleteCanonicalTuneAsModerator}
+          addReferenceUrlToPiece={addReferenceUrlToPiece}
           redirectTo={redirectTo}
           scrollPieceId={scrollPieceId}
           hasActiveFilters={hasActiveFilters}

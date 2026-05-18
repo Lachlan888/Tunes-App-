@@ -1,9 +1,8 @@
 "use client"
 
 import { useMemo } from "react"
-import ReferenceMediaEmbed, {
-  getYouTubeVideoId,
-} from "@/components/library/ReferenceMediaEmbed"
+import ReferenceMediaEmbed from "@/components/library/ReferenceMediaEmbed"
+import { getYouTubeVideoId } from "@/lib/youtube"
 
 type ReferenceMediaLinkProps = {
   referenceUrl: string

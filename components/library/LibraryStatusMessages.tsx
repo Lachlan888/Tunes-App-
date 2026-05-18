@@ -5,6 +5,7 @@ import { statusStyles, type StatusTone } from "@/components/ui/statusStyles"
 type LibraryStatusMessagesProps = {
   createTuneStatus: string
   listAddStatus: string
+  referenceUrlStatus: string
   removeTuneStatus: string
   removeFromPracticeStatus: string
   deleteTuneStatus: string
@@ -38,6 +39,7 @@ function StatusBanner({
 export default function LibraryStatusMessages({
   createTuneStatus,
   listAddStatus,
+  referenceUrlStatus,
   removeTuneStatus,
   removeFromPracticeStatus,
   deleteTuneStatus,
@@ -88,6 +90,38 @@ export default function LibraryStatusMessages({
         <StatusBanner tone="neutral">
           That tune is already in this list.
         </StatusBanner>
+      )}
+
+      {referenceUrlStatus === "added" && (
+        <StatusBanner tone="success">Reference added.</StatusBanner>
+      )}
+
+      {referenceUrlStatus === "already_present" && (
+        <StatusBanner tone="neutral">
+          This tune already has a reference.
+        </StatusBanner>
+      )}
+
+      {referenceUrlStatus === "missing_piece" && (
+        <StatusBanner tone="warning">
+          Could not tell which tune to update.
+        </StatusBanner>
+      )}
+
+      {referenceUrlStatus === "invalid_url" && (
+        <StatusBanner tone="warning">
+          That does not look like a valid URL.
+        </StatusBanner>
+      )}
+
+      {referenceUrlStatus === "not_youtube" && (
+        <StatusBanner tone="warning">
+          Choose a YouTube video URL for this reference.
+        </StatusBanner>
+      )}
+
+      {referenceUrlStatus === "error" && (
+        <StatusBanner tone="error">Could not add reference.</StatusBanner>
       )}
 
       {removeTuneStatus === "success" && (

@@ -1,12 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import ReferenceMediaEmbed, {
-  getYouTubeVideoId,
-} from "@/components/library/ReferenceMediaEmbed"
 import SubmitButton from "@/components/SubmitButton"
+import ReferenceMediaEmbed from "@/components/library/ReferenceMediaEmbed"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import type { UserPieceMediaLoop } from "@/lib/loaders/tune-detail"
+import { getYouTubeVideoId } from "@/lib/youtube"
 
 type PieceMediaLink = {
   id: number

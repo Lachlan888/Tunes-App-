@@ -15,6 +15,7 @@ type LibraryTuneCardActionsProps = {
   onToggleStatus: () => void
   onCloseStatus: () => void
   onOpenAddToList: () => void
+  onOpenFindReference: () => void
   startLearning: (formData: FormData) => Promise<void>
   removeTuneFromMyApp: (formData: FormData) => Promise<void>
 }
@@ -30,9 +31,12 @@ export default function LibraryTuneCardActions({
   onToggleStatus,
   onCloseStatus,
   onOpenAddToList,
+  onOpenFindReference,
   startLearning,
   removeTuneFromMyApp,
 }: LibraryTuneCardActionsProps) {
+  const hasReferenceUrl = Boolean(piece.reference_url)
+
   return (
     <div className="flex w-full flex-wrap items-start gap-3">
       <TuneStatusDropdown
@@ -56,6 +60,16 @@ export default function LibraryTuneCardActions({
       >
         Add to list
       </button>
+
+      {!hasReferenceUrl ? (
+        <button
+          type="button"
+          className={buttonStyles.secondary}
+          onClick={onOpenFindReference}
+        >
+          Find reference
+        </button>
+      ) : null}
     </div>
   )
 }
