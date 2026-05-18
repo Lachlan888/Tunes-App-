@@ -44,9 +44,9 @@ export default function ReferenceMediaModal({
   return (
     <>
       {showHeading ? (
-        <section className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <section className="w-full max-w-full overflow-hidden rounded-2xl border border-border bg-background/70 p-4 shadow-sm">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="min-w-0 break-words text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               {heading}
             </h2>
 
@@ -65,9 +65,10 @@ export default function ReferenceMediaModal({
         eyebrow="Reference media"
         title={title}
         bodyClassName={joinClasses(
-          "min-h-0 flex-1 overflow-y-auto p-4",
-          "md:p-6"
+          "min-h-0 min-w-0 flex-1 overflow-y-auto p-3",
+          "sm:p-4 md:p-6"
         )}
+        panelClassName="max-w-full"
       >
         <YouTubeLoopPlayer
           videoId={videoId}

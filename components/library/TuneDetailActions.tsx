@@ -40,31 +40,31 @@ export default function TuneDetailActions({
   ).length
 
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+    <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
       <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         Tune state
       </h2>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-border bg-background/70 p-4">
+      <div className="mt-5 grid min-w-0 gap-3 sm:grid-cols-3">
+        <div className="min-w-0 rounded-2xl border border-border bg-background/70 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Practice
           </p>
-          <p className="mt-2 text-lg font-semibold text-foreground">
+          <p className="mt-2 min-w-0 break-words text-lg font-semibold text-foreground">
             {isAlreadyInPractice ? "Already in practice" : "Not in practice"}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-background/70 p-4">
+        <div className="min-w-0 rounded-2xl border border-border bg-background/70 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Known
           </p>
-          <p className="mt-2 text-lg font-semibold text-foreground">
+          <p className="mt-2 min-w-0 break-words text-lg font-semibold text-foreground">
             {isKnown ? "Known" : "Not known"}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-background/70 p-4">
+        <div className="min-w-0 rounded-2xl border border-border bg-background/70 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Lists
           </p>
@@ -75,12 +75,12 @@ export default function TuneDetailActions({
       </div>
 
       {isAlreadyInPractice && currentStage ? (
-        <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
+        <div className="mt-5 min-w-0 rounded-2xl border border-border bg-background/70 p-4">
           <PracticeProgress stage={currentStage} />
         </div>
       ) : null}
 
-      <div className="mt-5 flex flex-wrap items-center gap-3">
+      <div className="mt-5 grid gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
         {!isAlreadyInPractice ? (
           <StartPracticeButton
             pieceId={piece.id}
@@ -89,7 +89,7 @@ export default function TuneDetailActions({
             className={buttonStyles.primary}
           />
         ) : (
-          <span className="rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm">
+          <span className="inline-flex w-full items-center justify-center rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm sm:w-auto">
             Already in practice
           </span>
         )}
@@ -102,7 +102,7 @@ export default function TuneDetailActions({
             className={buttonStyles.secondary}
           />
         ) : isKnown ? (
-          <span className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm">
+          <span className="inline-flex w-full items-center justify-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm sm:w-auto">
             Known
           </span>
         ) : (

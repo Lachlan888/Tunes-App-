@@ -10,6 +10,7 @@ type PracticeNoteFormProps = {
   pieceId?: number | null
   reviewEventId?: number | null
   label?: string
+  labelTuneName?: string
   placeholder?: string
 }
 
@@ -27,6 +28,7 @@ export default function PracticeNoteForm({
   pieceId = null,
   reviewEventId = null,
   label = "Add practice note",
+  labelTuneName,
   placeholder = "What do you want to remember for next time?",
 }: PracticeNoteFormProps) {
   return (
@@ -49,9 +51,18 @@ export default function PracticeNoteForm({
       ) : null}
 
       <label className="block">
-        <span className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-          {label}
-        </span>
+        {labelTuneName ? (
+          <span className="mb-2 block text-sm font-semibold tracking-[0.12em] text-muted-foreground">
+            <span className="uppercase">Add note for </span>
+            <span className="font-serif text-base font-semibold italic normal-case tracking-normal text-muted-foreground">
+              {labelTuneName}
+            </span>
+          </span>
+        ) : (
+          <span className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            {label}
+          </span>
+        )}
 
         <textarea
           name="body"

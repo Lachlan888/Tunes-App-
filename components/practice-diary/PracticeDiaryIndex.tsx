@@ -231,16 +231,16 @@ function PracticeFocusSummaryRow({
   const latestNote = focus.recentNotes[0] ?? null
 
   return (
-    <li className="border-b border-border py-4 last:border-b-0">
-      <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="min-w-0">
+    <li className="py-2 md:border-b md:border-border md:py-4 md:last:border-b-0">
+      <Link
+        href={`/review/foci/${focus.id}`}
+        className="block rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:border-0 md:bg-transparent md:p-0 md:shadow-none md:hover:bg-transparent"
+      >
+        <div className="grid gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={`/review/foci/${focus.id}`}
-              className="break-words font-medium text-foreground underline-offset-4 hover:underline"
-            >
+            <p className="break-words text-lg font-semibold leading-tight text-foreground underline decoration-border decoration-2 underline-offset-4 transition hover:text-primary hover:decoration-primary md:text-base">
               {focus.title}
-            </Link>
+            </p>
 
             <span
               className={joinClasses(
@@ -252,32 +252,25 @@ function PracticeFocusSummaryRow({
             </span>
           </div>
 
-          <p className="mt-1 text-sm leading-5 text-muted-foreground">
+          <p className="text-sm leading-6 text-muted-foreground">
             {focus.tuneCount} {pluralise(focus.tuneCount, "tune", "tunes")} ·{" "}
             {focus.noteCount} {pluralise(focus.noteCount, "note", "notes")} ·{" "}
             last touched {formatDateOnly(focus.lastTouchedDate)}
           </p>
 
           {latestNote ? (
-            <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
+            <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
               <span className="font-medium text-foreground">Latest: </span>
               {latestNote.piece ? `${latestNote.piece.title}: ` : ""}
               {latestNote.body}
             </p>
           ) : focus.description ? (
-            <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
+            <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
               {focus.description}
             </p>
           ) : null}
         </div>
-
-        <Link
-          href={`/review/foci/${focus.id}`}
-          className={`${buttonStyles.secondaryStrong} shrink-0 !px-3 !py-1.5 text-xs`}
-        >
-          Open
-        </Link>
-      </div>
+      </Link>
     </li>
   )
 }
@@ -297,7 +290,7 @@ function PracticeIndexFociSection({ data }: PracticeDiaryIndexProps) {
           same musical problem or preparation goal.
         </p>
       ) : (
-        <ul className="md:rounded-2xl md:border md:border-border md:bg-background/70 md:px-4">
+        <ul className="grid gap-3 md:block md:rounded-2xl md:border md:border-border md:bg-background/70 md:px-4">
           {data.focusSummaries.map((focus) => (
             <PracticeFocusSummaryRow key={focus.id} focus={focus} />
           ))}
@@ -312,7 +305,7 @@ function getCategoryHref(group: PracticeIndexCategoryGroup) {
     return "/review/diary/index"
   }
 
-  return `/review/diary/index/categories/${group.categoryId}`
+  return `/review/diary/categories/${group.categoryId}`
 }
 
 function PracticeCategorySummaryRow({
@@ -322,18 +315,44 @@ function PracticeCategorySummaryRow({
 }) {
   const categoryHref = getCategoryHref(group)
 
-  return (
-    <li className="border-b border-border py-4 last:border-b-0">
-      <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="min-w-0">
-          <Link
-            href={categoryHref}
-            className="break-words font-medium text-foreground underline-offset-4 hover:underline"
-          >
-            {group.categoryName}
-          </Link>
+  if (!group.categoryId) {
+    return (
+      <li className="py-2 md:border-b md:border-border md:py-4 md:last:border-b-0">
+        <article className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm md:border-0 md:bg-transparent md:p-0 md:shadow-none">
+          <div className="grid gap-2">
+            <p className="break-words text-lg font-semibold leading-tight text-foreground md:text-base">
+              {group.categoryName}
+            </p>
 
-          <p className="mt-1 text-sm leading-5 text-muted-foreground">
+            <p className="text-sm leading-6 text-muted-foreground">
+              {group.noteCount} {pluralise(group.noteCount, "note", "notes")}
+              {group.tuneCount > 0
+                ? ` · ${group.tuneCount} ${pluralise(
+                    group.tuneCount,
+                    "tune",
+                    "tunes"
+                  )}`
+                : ""}
+              {" · "}latest {formatDateOnly(group.latestDate)}
+            </p>
+          </div>
+        </article>
+      </li>
+    )
+  }
+
+  return (
+    <li className="py-2 md:border-b md:border-border md:py-4 md:last:border-b-0">
+      <Link
+        href={categoryHref}
+        className="block rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:border-0 md:bg-transparent md:p-0 md:shadow-none md:hover:bg-transparent"
+      >
+        <div className="grid gap-2">
+          <p className="break-words text-lg font-semibold leading-tight text-foreground underline decoration-border decoration-2 underline-offset-4 transition hover:text-primary hover:decoration-primary md:text-base">
+            {group.categoryName}
+          </p>
+
+          <p className="text-sm leading-6 text-muted-foreground">
             {group.noteCount} {pluralise(group.noteCount, "note", "notes")}
             {group.tuneCount > 0
               ? ` · ${group.tuneCount} ${pluralise(
@@ -345,16 +364,7 @@ function PracticeCategorySummaryRow({
             {" · "}latest {formatDateOnly(group.latestDate)}
           </p>
         </div>
-
-        {group.categoryId ? (
-          <Link
-            href={categoryHref}
-            className={`${buttonStyles.secondaryStrong} shrink-0 !px-3 !py-1.5 text-xs`}
-          >
-            Open
-          </Link>
-        ) : null}
-      </div>
+      </Link>
     </li>
   )
 }
@@ -369,7 +379,7 @@ function PracticeIndexCategoriesSection({ data }: PracticeDiaryIndexProps) {
       </div>
 
       {data.categoryGroups.length > 0 ? (
-        <ul className="md:rounded-2xl md:border md:border-border md:bg-background/70 md:px-4">
+        <ul className="grid gap-3 md:block md:rounded-2xl md:border md:border-border md:bg-background/70 md:px-4">
           {data.categoryGroups.map((group) => (
             <PracticeCategorySummaryRow key={group.key} group={group} />
           ))}

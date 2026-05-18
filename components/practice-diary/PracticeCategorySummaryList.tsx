@@ -34,7 +34,7 @@ function PracticeCategoryNoteCard({ note }: PracticeCategoryNoteCardProps) {
       {note.pieceId && note.tuneTitle ? (
         <Link
           href={`/library/${note.pieceId}`}
-          className="text-sm font-semibold text-foreground transition hover:text-primary"
+          className="text-sm font-semibold text-foreground underline decoration-border decoration-2 underline-offset-4 transition hover:text-primary hover:decoration-primary"
         >
           {note.tuneTitle}
         </Link>
@@ -72,13 +72,20 @@ function PracticeCategorySummaryCard({
   return (
     <article className="rounded-2xl border border-border bg-background/70 p-4">
       <div className="flex items-start justify-between gap-3">
-        <h3 className="text-sm font-semibold text-foreground">
+        <Link
+          href={`/review/diary/categories/${summary.categoryId}`}
+          className="min-w-0 text-sm font-semibold text-foreground underline decoration-border decoration-2 underline-offset-4 transition hover:text-primary hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        >
           {summary.categoryName}
-        </h3>
+        </Link>
 
-        <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <Link
+          href={`/review/diary/categories/${summary.categoryId}`}
+          className="shrink-0 rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground transition hover:border-primary hover:bg-card hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          aria-label={`Open ${summary.categoryName} category`}
+        >
           {summary.noteCount}
-        </span>
+        </Link>
       </div>
 
       <div className="mt-3 space-y-3">

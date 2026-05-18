@@ -43,7 +43,7 @@ export default async function PracticeFocusDetailPage({
   const resolvedSearchParams = await searchParams
   const focusId = Number(resolvedParams.id)
 
-  const { focus, activePracticeTunes, recentNotes } =
+  const { focus, allFoci, activePracticeTunes, recentNotes } =
     await loadPracticeFocusDetailPageData(focusId)
 
   const statusMessage = getFociStatusMessage(resolvedSearchParams?.foci)
@@ -106,6 +106,7 @@ export default async function PracticeFocusDetailPage({
 
       <PracticeFocusDetail
         focus={focus}
+        allFoci={allFoci}
         activePracticeTunes={activePracticeTunes}
         recentNotes={recentNotes}
         redirectTo={redirectTo}

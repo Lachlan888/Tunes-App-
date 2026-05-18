@@ -45,7 +45,7 @@ export default function ResponsiveModal({
   mobileMode = "sheet",
   tone = "default",
   desktopMaxWidth = "md:max-w-xl",
-  bodyClassName = "min-h-0 flex-1 overflow-y-auto p-5 md:p-6",
+  bodyClassName = "min-h-0 min-w-0 flex-1 overflow-y-auto p-4 md:p-6",
   panelClassName = "",
   headerClassName = "",
   footerClassName = "",
@@ -96,8 +96,8 @@ export default function ResponsiveModal({
 
   const mobilePanelClass =
     mobileMode === "full-screen"
-      ? "h-[100dvh] w-full rounded-none"
-      : "max-h-[calc(100dvh-1rem)] w-full rounded-t-3xl"
+      ? "h-[100dvh] w-full max-w-full rounded-none"
+      : "max-h-[calc(100dvh-1rem)] w-full max-w-full rounded-t-3xl"
 
   const toneClasses =
     tone === "destructive" ? "border-destructive/50" : "border-border"
@@ -107,7 +107,7 @@ export default function ResponsiveModal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[1000] flex items-end justify-center bg-foreground/35 p-0 backdrop-blur-sm md:items-center md:p-4"
+      className="fixed inset-0 z-[1000] flex min-w-0 items-end justify-center overflow-hidden bg-foreground/35 p-0 backdrop-blur-sm md:items-center md:p-4"
       onClick={() => {
         if (closeOnOverlayClick) {
           requestClose()
@@ -120,7 +120,7 @@ export default function ResponsiveModal({
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
         className={joinClasses(
-          "flex min-h-0 flex-col overflow-hidden border bg-card shadow-xl md:max-h-[90vh] md:w-full md:rounded-3xl",
+          "flex min-h-0 min-w-0 flex-col overflow-hidden border bg-card shadow-xl md:max-h-[90vh] md:w-full md:rounded-3xl",
           desktopMaxWidth,
           mobilePanelClass,
           toneClasses,
@@ -130,11 +130,11 @@ export default function ResponsiveModal({
       >
         <header
           className={joinClasses(
-            "shrink-0 border-b border-border bg-card px-5 py-4 md:px-6 md:py-5",
+            "shrink-0 border-b border-border bg-card px-4 py-4 md:px-6 md:py-5",
             headerClassName
           )}
         >
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex min-w-0 items-start justify-between gap-3 sm:gap-4">
             <div className="min-w-0">
               {eyebrow ? (
                 <p
@@ -149,7 +149,7 @@ export default function ResponsiveModal({
 
               <h2
                 id={titleId}
-                className="mt-1 font-serif text-2xl font-bold leading-tight tracking-tight text-foreground md:mt-2 md:text-3xl"
+                className="mt-1 min-w-0 break-words font-serif text-2xl font-bold leading-tight tracking-tight text-foreground md:mt-2 md:text-3xl"
               >
                 {title}
               </h2>
@@ -182,7 +182,7 @@ export default function ResponsiveModal({
         {footer ? (
           <footer
             className={joinClasses(
-              "shrink-0 border-t border-border bg-card px-5 py-4 md:px-6",
+              "shrink-0 border-t border-border bg-card px-4 py-4 md:px-6",
               footerClassName
             )}
           >

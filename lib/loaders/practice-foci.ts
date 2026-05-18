@@ -175,6 +175,56 @@ async function requireUser() {
   }
 }
 
+function focusSelectQuery() {
+  return `
+    id,
+    user_id,
+    title,
+    description,
+    status,
+    started_at,
+    target_date,
+    created_at,
+    updated_at,
+    completed_at,
+    archived_at,
+    practice_focus_tunes (
+      id,
+      focus_id,
+      piece_id,
+      created_at,
+      pieces (
+        id,
+        title,
+        key,
+        style,
+        time_signature,
+        reference_url
+      )
+    )
+  `
+}
+
+async function loadAllFociForUser(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string
+) {
+  const { data: focusRows, error: focusError } = await supabase
+    .from("practice_foci")
+    .select(focusSelectQuery())
+    .eq("user_id", userId)
+    .order("status", { ascending: true })
+    .order("created_at", { ascending: false })
+
+  if (focusError) {
+    throw new Error(focusError.message)
+  }
+
+  return ((focusRows ?? []) as unknown as PracticeFocusRow[]).map(
+    mapPracticeFocus
+  )
+}
+
 async function loadActivePracticeTunes(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string
@@ -274,53 +324,10 @@ async function loadRecentNotesForFocus({
     .filter((note): note is PracticeFocusRecentNote => note !== null)
 }
 
-function focusSelectQuery() {
-  return `
-    id,
-    user_id,
-    title,
-    description,
-    status,
-    started_at,
-    target_date,
-    created_at,
-    updated_at,
-    completed_at,
-    archived_at,
-    practice_focus_tunes (
-      id,
-      focus_id,
-      piece_id,
-      created_at,
-      pieces (
-        id,
-        title,
-        key,
-        style,
-        time_signature,
-        reference_url
-      )
-    )
-  `
-}
-
 export async function loadPracticeFociPageData() {
   const { supabase, user } = await requireUser()
 
-  const { data: focusRows, error: focusError } = await supabase
-    .from("practice_foci")
-    .select(focusSelectQuery())
-    .eq("user_id", user.id)
-    .order("status", { ascending: true })
-    .order("created_at", { ascending: false })
-
-  if (focusError) {
-    throw new Error(focusError.message)
-  }
-
-  const foci = ((focusRows ?? []) as unknown as PracticeFocusRow[]).map(
-    mapPracticeFocus
-  )
+  const foci = await loadAllFociForUser(supabase, user.id)
 
   return {
     user,
@@ -354,6 +361,7 @@ export async function loadPracticeFocusDetailPageData(focusId: number) {
     notFound()
   }
 
+  const allFoci = await loadAllFociForUser(supabase, user.id)
   const activePracticeTunes = await loadActivePracticeTunes(supabase, user.id)
   const recentNotes = await loadRecentNotesForFocus({
     supabase,
@@ -364,6 +372,7 @@ export async function loadPracticeFocusDetailPageData(focusId: number) {
   return {
     user,
     focus: mapPracticeFocus(focusRow as unknown as PracticeFocusRow),
+    allFoci,
     activePracticeTunes,
     recentNotes,
   }

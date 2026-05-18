@@ -52,6 +52,29 @@ function normaliseOptionalNumber(value: FormDataEntryValue | null) {
   return parsed
 }
 
+function normalisePagePath(value: FormDataEntryValue | null) {
+  const pagePath = String(value ?? "").trim()
+
+  if (!pagePath) return "/"
+
+  if (!pagePath.startsWith("/")) return "/"
+
+  if (pagePath.startsWith("//")) return "/"
+
+  return pagePath.slice(0, 1000)
+}
+
+function normaliseOptionalText(
+  value: FormDataEntryValue | null,
+  maxLength: number
+) {
+  const text = String(value ?? "").trim()
+
+  if (!text) return null
+
+  return text.slice(0, maxLength)
+}
+
 export async function submitBetaFeedback(
   _prevState: BetaFeedbackFormState,
   formData: FormData
@@ -72,9 +95,9 @@ export async function submitBetaFeedback(
   const category = normaliseCategory(formData.get("category"))
   const severity = normaliseSeverity(formData.get("severity"))
   const message = String(formData.get("message") ?? "").trim()
-  const pagePath = String(formData.get("page_path") ?? "").trim() || "/"
-  const pageUrl = String(formData.get("page_url") ?? "").trim() || null
-  const browser = String(formData.get("browser") ?? "").trim() || null
+  const pagePath = normalisePagePath(formData.get("page_path"))
+  const pageUrl = normaliseOptionalText(formData.get("page_url"), 2000)
+  const browser = normaliseOptionalText(formData.get("browser"), 1000)
   const viewportWidth = normaliseOptionalNumber(formData.get("viewport_width"))
   const viewportHeight = normaliseOptionalNumber(formData.get("viewport_height"))
 
@@ -85,17 +108,21 @@ export async function submitBetaFeedback(
     }
   }
 
-  const { error } = await supabase.from("beta_feedback").insert({
-    user_id: user.id,
-    category,
-    severity,
-    page_path: pagePath,
-    page_url: pageUrl,
-    message,
-    browser,
-    viewport_width: viewportWidth,
-    viewport_height: viewportHeight,
-  })
+  const { data, error } = await supabase
+    .from("beta_feedback")
+    .insert({
+      user_id: user.id,
+      category,
+      severity,
+      page_path: pagePath,
+      page_url: pageUrl,
+      message,
+      browser,
+      viewport_width: viewportWidth,
+      viewport_height: viewportHeight,
+    })
+    .select("id")
+    .single()
 
   if (error) {
     console.error("Error submitting beta feedback:", error)
@@ -112,6 +139,7 @@ export async function submitBetaFeedback(
     eventType: "submitted_feedback",
     pagePath,
     entityType: "beta_feedback",
+    entityId: data?.id ? String(data.id) : null,
     metadata: {
       category,
       severity,

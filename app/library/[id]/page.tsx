@@ -48,9 +48,9 @@ function DetailErrorShell({
   children: ReactNode
 }) {
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
-      <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+    <main className="mx-auto w-full max-w-[1500px] px-4 py-6 text-foreground sm:px-6 sm:py-8">
+      <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
+        <h1 className="min-w-0 break-words font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
           {title}
         </h1>
 
@@ -142,7 +142,7 @@ export default async function PiecePage({
     typedTunePagePreferences.visibleSections[sectionId] ?? true
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+    <main className="mx-auto w-full max-w-[1500px] px-4 py-6 text-foreground sm:px-6 sm:py-8">
       <div className="mb-5">
         <Link
           href="/library"
@@ -153,29 +153,31 @@ export default async function PiecePage({
       </div>
 
       {statusMessage ? (
-        <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+        <div className="mb-6 w-full max-w-full overflow-hidden rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
           {statusMessage}
         </div>
       ) : null}
 
-      <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-5">
-          <div>
-            <h1 className="max-w-5xl font-serif text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
+      <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
+        <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="max-w-5xl break-words font-serif text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
               {typedPiece.title}
             </h1>
           </div>
 
-          <PageOptionsModal
-            config={TUNE_DETAIL_PAGE_OPTIONS_CONFIG}
-            preferences={typedTunePagePreferences}
-            redirectTo={redirectTo}
-          />
+          <div className="shrink-0">
+            <PageOptionsModal
+              config={TUNE_DETAIL_PAGE_OPTIONS_CONFIG}
+              preferences={typedTunePagePreferences}
+              redirectTo={redirectTo}
+            />
+          </div>
         </div>
       </section>
 
-      <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-2 2xl:grid-cols-3">
-        <div className="space-y-8">
+      <div className="mt-6 grid min-w-0 grid-cols-1 gap-6 sm:mt-8 sm:gap-8 xl:grid-cols-2 2xl:grid-cols-3">
+        <div className="min-w-0 space-y-6 sm:space-y-8">
           {showTuneSection("tune_state") ? (
             <TuneDetailActions
               piece={typedPiece}
@@ -209,7 +211,7 @@ export default async function PiecePage({
           ) : null}
         </div>
 
-        <div className="space-y-8">
+        <div className="min-w-0 space-y-6 sm:space-y-8">
           {showTuneSection("my_notes") ? (
             <TunePrivateNotesSection
               pieceId={pieceId}
@@ -245,9 +247,9 @@ export default async function PiecePage({
           ) : null}
         </div>
 
-        <div className="space-y-8 xl:col-span-2 2xl:col-span-1">
+        <div className="min-w-0 space-y-6 sm:space-y-8 xl:col-span-2 2xl:col-span-1">
           {showTuneSection("lore") ? (
-            <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
               <PieceLoreSection
                 pieceId={pieceId}
                 loreEntries={typedPieceLoreEntries}
@@ -259,7 +261,7 @@ export default async function PiecePage({
           ) : null}
 
           {showTuneSection("comments") ? (
-            <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
               <PieceCommentsSection
                 pieceId={pieceId}
                 comments={typedPieceComments}

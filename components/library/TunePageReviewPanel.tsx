@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import { logTunePracticeCheck } from "@/lib/actions/practice-diary"
 import { markFailed, markShaky, markSolid } from "@/lib/actions/reviews"
-import { buttonStyles } from "@/components/ui/buttonStyles"
+import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type { Piece, UserPiece } from "@/lib/types"
 
@@ -128,26 +128,26 @@ function ReviewNoteModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 px-4 py-8"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 px-3 py-3 sm:items-center sm:px-4 sm:py-8"
       role="presentation"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-3xl border border-border bg-card p-6 shadow-xl"
+        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-border bg-card p-4 shadow-xl sm:p-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="tune-page-review-note-modal-title"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div>
+        <div className="flex min-w-0 items-start justify-between gap-4">
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Practice diary
             </p>
 
             <h3
               id="tune-page-review-note-modal-title"
-              className="mt-2 font-serif text-2xl font-bold text-foreground"
+              className="mt-2 break-words font-serif text-2xl font-bold text-foreground"
             >
               {selectedOutcome.modalTitle}
             </h3>
@@ -216,16 +216,16 @@ function ReviewNoteModal({
             />
           </label>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
             <SubmitButton
               label={`Save ${selectedOutcome.label}`}
               pendingLabel="Saving..."
-              className={selectedOutcome.className}
+              className={joinClasses(selectedOutcome.className, "w-full sm:w-auto")}
             />
 
             <button
               type="button"
-              className={buttonStyles.secondary}
+              className={joinClasses(buttonStyles.secondary, "w-full sm:w-auto")}
               onClick={onClose}
             >
               Cancel
@@ -245,7 +245,7 @@ function DirectFormalReviewForms({
   redirectTo: string
 }) {
   return (
-    <div className="mt-4 flex flex-wrap gap-3">
+    <div className="mt-4 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3">
       {FORMAL_REVIEW_OUTCOMES.map((reviewOutcome) => (
         <form key={reviewOutcome.outcome} action={reviewOutcome.action}>
           <input type="hidden" name="userPieceId" value={userPieceId} />
@@ -278,7 +278,7 @@ export default function TunePageReviewPanel({
     : DIARY_PRACTICE_OUTCOMES
 
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+    <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
       <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         Review / practice check
       </h2>
@@ -297,7 +297,7 @@ export default function TunePageReviewPanel({
           </p>
         </div>
       ) : practiceDiaryEnabled ? (
-        <div className="mt-4 flex flex-wrap gap-3">
+        <div className="mt-4 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3">
           {reviewOutcomes.map((reviewOutcome) => (
             <button
               key={`${reviewOutcome.mode}-${reviewOutcome.outcome}`}
@@ -310,7 +310,10 @@ export default function TunePageReviewPanel({
           ))}
         </div>
       ) : userPiece ? (
-        <DirectFormalReviewForms userPieceId={userPiece.id} redirectTo={redirectTo} />
+        <DirectFormalReviewForms
+          userPieceId={userPiece.id}
+          redirectTo={redirectTo}
+        />
       ) : null}
 
       {selectedOutcome ? (

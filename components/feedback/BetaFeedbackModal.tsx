@@ -23,6 +23,10 @@ const inputClassName =
 const textareaClassName =
   "min-h-32 w-full rounded-2xl border border-border bg-background/80 px-4 py-3 text-sm leading-6 text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
+function getCurrentPagePath() {
+  return `${window.location.pathname}${window.location.search}${window.location.hash}`
+}
+
 export default function BetaFeedbackModal({
   isOpen,
   onClose,
@@ -37,12 +41,24 @@ export default function BetaFeedbackModal({
   useEffect(() => {
     if (!isOpen) return
 
-    setPagePath(window.location.pathname)
+    setPagePath(getCurrentPagePath())
     setPageUrl(window.location.href)
     setBrowser(window.navigator.userAgent)
     setViewportWidth(String(window.innerWidth))
     setViewportHeight(String(window.innerHeight))
   }, [isOpen])
+
+  useEffect(() => {
+    if (state.status === "success") {
+      const timeoutId = window.setTimeout(() => {
+        onClose()
+      }, 900)
+
+      return () => window.clearTimeout(timeoutId)
+    }
+
+    return undefined
+  }, [state.status, onClose])
 
   if (!isOpen) {
     return null
@@ -50,7 +66,7 @@ export default function BetaFeedbackModal({
 
   return (
     <div className="fixed inset-0 z-[300] flex items-end justify-center bg-foreground/25 px-3 py-4 md:items-center md:px-6">
-      <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-card shadow-2xl">
+      <div className="max-h-[92vh] w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-card shadow-2xl">
         <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -60,7 +76,8 @@ export default function BetaFeedbackModal({
               Send feedback
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              This will include the page you are on so the issue has context.
+              This includes the exact page path so the issue can be opened from
+              the Dev Cockpit.
             </p>
           </div>
 
@@ -73,12 +90,22 @@ export default function BetaFeedbackModal({
           </button>
         </div>
 
-        <form action={formAction} className="space-y-4 px-5 py-5">
+        <form
+          action={formAction}
+          className="max-h-[calc(92vh-7rem)] space-y-4 overflow-y-auto px-5 py-5"
+        >
           <input type="hidden" name="page_path" value={pagePath} />
           <input type="hidden" name="page_url" value={pageUrl} />
           <input type="hidden" name="browser" value={browser} />
           <input type="hidden" name="viewport_width" value={viewportWidth} />
           <input type="hidden" name="viewport_height" value={viewportHeight} />
+
+          <div className="rounded-2xl border border-border bg-background/70 p-3 text-xs leading-5 text-muted-foreground">
+            <p className="font-semibold uppercase tracking-[0.14em]">
+              Captured page
+            </p>
+            <p className="mt-1 break-all">{pagePath}</p>
+          </div>
 
           <label className="block">
             <span className="text-sm font-semibold text-foreground">

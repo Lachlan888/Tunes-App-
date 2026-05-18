@@ -167,7 +167,7 @@ function clampTime(value: number, duration: number) {
 }
 
 function compactButton(className: string) {
-  return `${className} px-3 py-2 text-xs sm:px-4 sm:text-sm`
+  return joinClasses(className, "px-3 py-2 text-xs sm:px-4 sm:text-sm")
 }
 
 function numericInputValue(value: number | null) {
@@ -440,41 +440,50 @@ export default function YouTubeLoopPlayer({
   }
 
   return (
-    <div className={joinClasses("space-y-3 sm:space-y-4", className)}>
-      <div className="aspect-video w-full overflow-hidden rounded-2xl border border-border bg-foreground/10">
+    <div
+      className={joinClasses(
+        "min-w-0 max-w-full space-y-3 sm:space-y-4",
+        className
+      )}
+    >
+      <div className="aspect-video w-full max-w-full overflow-hidden rounded-2xl border border-border bg-foreground/10">
         <div ref={containerRef} title={title} className="h-full w-full" />
       </div>
 
-      <div className="bg-transparent p-0 sm:rounded-2xl sm:border sm:border-border sm:bg-background/70 sm:p-4">
-        <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0 bg-transparent p-0 sm:rounded-2xl sm:border sm:border-border sm:bg-background/70 sm:p-4">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-foreground">
               Reference controls
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
               Current time: {formatTime(currentTime, true)}
               {duration > 0 ? ` / ${formatTime(duration, true)}` : ""}
             </p>
           </div>
 
-          <button
-            type="button"
-            className={joinClasses(
-              compactButton(
-                showLoopControls ? buttonStyles.primary : buttonStyles.secondary
-              ),
-              "shrink-0 whitespace-nowrap"
-            )}
-            onClick={() => setShowLoopControls((current) => !current)}
-            disabled={!isReady}
-            aria-expanded={showLoopControls}
-          >
-            {showLoopControls ? "Hide loops" : "Show loops"}
-          </button>
+          <div className="px-0.5 pb-0.5 sm:px-0 sm:pb-0">
+            <button
+              type="button"
+              className={joinClasses(
+                compactButton(
+                  showLoopControls
+                    ? buttonStyles.primary
+                    : buttonStyles.secondary
+                ),
+                "shrink-0 whitespace-nowrap"
+              )}
+              onClick={() => setShowLoopControls((current) => !current)}
+              disabled={!isReady}
+              aria-expanded={showLoopControls}
+            >
+              {showLoopControls ? "Hide loops" : "Show loops"}
+            </button>
+          </div>
         </div>
 
         {savedLoops.length > 0 ? (
-          <div className="mt-4 rounded-2xl border border-border bg-card/50 p-3">
+          <div className="mt-4 min-w-0 rounded-2xl border border-border bg-card/50 p-3">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Saved loops
             </p>
@@ -483,11 +492,11 @@ export default function YouTubeLoopPlayer({
               {savedLoops.map((loop) => (
                 <li
                   key={loop.id}
-                  className="rounded-xl border border-border bg-background/70 p-3"
+                  className="min-w-0 rounded-xl border border-border bg-background/70 p-3"
                 >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">
+                  <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="min-w-0 break-words text-sm font-semibold text-foreground">
                         {loop.label}
                       </p>
                       <p className="mt-1 text-sm text-muted-foreground">
@@ -496,13 +505,13 @@ export default function YouTubeLoopPlayer({
                         {Number(loop.playback_rate)}x
                       </p>
                       {loop.notes ? (
-                        <p className="mt-2 text-sm leading-5 text-muted-foreground">
+                        <p className="mt-2 break-words text-sm leading-5 text-muted-foreground">
                           {loop.notes}
                         </p>
                       ) : null}
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid gap-2 sm:flex sm:flex-wrap">
                       <button
                         type="button"
                         className={compactButton(buttonStyles.secondaryStrong)}
@@ -554,7 +563,7 @@ export default function YouTubeLoopPlayer({
         ) : null}
 
         {showLoopControls ? (
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 min-w-0 space-y-4">
             <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
               <button
                 type="button"
@@ -613,8 +622,8 @@ export default function YouTubeLoopPlayer({
               </div>
             </div>
 
-            <div className="rounded-2xl border border-border bg-background/40 p-3 sm:p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0 rounded-2xl border border-border bg-background/40 p-3 sm:p-4">
+              <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   Adjust loop
                 </p>
@@ -638,7 +647,7 @@ export default function YouTubeLoopPlayer({
               </div>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="grid grid-cols-[3.5rem_1fr_1fr] items-center gap-2">
+                <div className="grid min-w-0 grid-cols-[3.5rem_1fr_1fr] items-center gap-2">
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     In
                   </p>
@@ -662,7 +671,7 @@ export default function YouTubeLoopPlayer({
                   </button>
                 </div>
 
-                <div className="grid grid-cols-[3.5rem_1fr_1fr] items-center gap-2">
+                <div className="grid min-w-0 grid-cols-[3.5rem_1fr_1fr] items-center gap-2">
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     Out
                   </p>
@@ -708,7 +717,7 @@ export default function YouTubeLoopPlayer({
               </div>
             </div>
 
-            <div>
+            <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Speed
               </p>
@@ -738,10 +747,10 @@ export default function YouTubeLoopPlayer({
               </div>
             </div>
 
-            {canSaveLoops ? (
+            {canSaveLoops && pieceId && redirectTo ? (
               <form
                 action={createMediaLoop}
-                className="space-y-3 rounded-2xl border border-border bg-card/50 p-3"
+                className="min-w-0 space-y-3 rounded-2xl border border-border bg-card/50 p-3"
               >
                 <input type="hidden" name="piece_id" value={pieceId} />
                 <input type="hidden" name="redirect_to" value={redirectTo} />
@@ -775,7 +784,7 @@ export default function YouTubeLoopPlayer({
                 <input
                   name="label"
                   placeholder="Label, eg B part"
-                  className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className="w-full min-w-0 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
                   required
                   disabled={!hasValidLoop}
                 />
@@ -784,17 +793,15 @@ export default function YouTubeLoopPlayer({
                   name="notes"
                   placeholder="Optional note"
                   rows={3}
-                  className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className="w-full min-w-0 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
                   disabled={!hasValidLoop}
                 />
 
-                <button
-                  type="submit"
+                <SubmitButton
+                  label="Save loop"
+                  pendingLabel="Saving..."
                   className={buttonStyles.primary}
-                  disabled={!hasValidLoop}
-                >
-                  Save loop
-                </button>
+                />
               </form>
             ) : null}
 

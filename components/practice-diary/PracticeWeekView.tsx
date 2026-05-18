@@ -377,22 +377,23 @@ function MobileFocusPatterns({
           No focus-linked notes this week.
         </p>
       ) : (
-        <ul className="mt-4 divide-y divide-border">
+        <div className="mt-4 space-y-3">
           {visibleSummaries.map((summary) => {
             const latestNote = summary.notes[0] ?? null
 
             return (
-              <li key={summary.focusId} className="py-4 first:pt-0 last:pb-0">
+              <Link
+                key={summary.focusId}
+                href={`/review/foci/${summary.focusId}`}
+                className="block rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <Link
-                      href={`/review/foci/${summary.focusId}`}
-                      className="font-medium text-foreground underline-offset-4 hover:underline"
-                    >
+                    <p className="break-words text-lg font-semibold leading-tight text-foreground underline decoration-border decoration-2 underline-offset-4 transition hover:text-primary hover:decoration-primary">
                       {summary.focusTitle}
-                    </Link>
+                    </p>
 
-                    <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
                       {summary.noteCount}{" "}
                       {pluralise(summary.noteCount, "note", "notes")} ·{" "}
                       {summary.tuneCount}{" "}
@@ -401,24 +402,24 @@ function MobileFocusPatterns({
                     </p>
                   </div>
 
-                  <Link
-                    href={`/review/foci/${summary.focusId}`}
-                    className="shrink-0 rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground"
+                  <span
+                    aria-hidden="true"
+                    className="shrink-0 text-lg text-muted-foreground"
                   >
-                    Open
-                  </Link>
+                    →
+                  </span>
                 </div>
 
                 {latestNote ? (
-                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
+                  <p className="mt-3 line-clamp-2 text-sm leading-6 text-muted-foreground">
                     {latestNote.tuneTitle ? `${latestNote.tuneTitle}: ` : ""}
                     {latestNote.body}
                   </p>
                 ) : null}
-              </li>
+              </Link>
             )
           })}
-        </ul>
+        </div>
       )}
 
       {summaries.length > visibleSummaries.length ? (
@@ -450,31 +451,42 @@ function MobileCategoryPatterns({
           No categorised notes this week.
         </p>
       ) : (
-        <div className="mt-4 space-y-2">
+        <div className="mt-4 space-y-3">
           {visibleSummaries.map((summary) => (
-            <div
+            <Link
               key={summary.categoryId}
-              className="rounded-xl border border-border bg-background/70 p-3"
+              href={`/review/diary/categories/${summary.categoryId}`}
+              className="block rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             >
               <div className="flex items-start justify-between gap-3">
-                <p className="min-w-0 text-sm font-semibold text-foreground">
-                  {summary.categoryName}
-                </p>
+                <div className="min-w-0">
+                  <p className="break-words text-lg font-semibold leading-tight text-foreground underline decoration-border decoration-2 underline-offset-4 transition hover:text-primary hover:decoration-primary">
+                    {summary.categoryName}
+                  </p>
 
-                <span className="shrink-0 rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
-                  {summary.noteCount}
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {summary.noteCount}{" "}
+                    {pluralise(summary.noteCount, "note", "notes")}
+                  </p>
+                </div>
+
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 text-lg text-muted-foreground"
+                >
+                  →
                 </span>
               </div>
 
               {summary.notes[0] ? (
-                <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
+                <p className="mt-3 line-clamp-2 text-sm leading-6 text-muted-foreground">
                   {summary.notes[0].tuneTitle
                     ? `${summary.notes[0].tuneTitle}: `
                     : ""}
                   {summary.notes[0].body}
                 </p>
               ) : null}
-            </div>
+            </Link>
           ))}
         </div>
       )}

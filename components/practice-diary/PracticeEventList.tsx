@@ -61,10 +61,10 @@ function formatTime(value: string) {
 }
 
 function NoteContextLabels({
-  categoryName,
+  category,
   focus,
 }: {
-  categoryName: string | null
+  category: PracticeNoteCategory | null
   focus: {
     id: number
     title: string
@@ -72,22 +72,26 @@ function NoteContextLabels({
     status: string
   } | null
 }) {
-  if (!categoryName && !focus) {
+  if (!category && !focus) {
     return null
   }
 
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-      {categoryName ? (
-        <span className="rounded-full border border-border bg-muted px-2.5 py-1">
-          {categoryName}
-        </span>
+      {category ? (
+        <Link
+          href={`/review/diary/categories/${category.id}`}
+          className="rounded-full border border-border bg-muted px-2.5 py-1 text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          title={category.prompt ?? undefined}
+        >
+          {category.name}
+        </Link>
       ) : null}
 
       {focus ? (
         <Link
           href={`/review/foci/${focus.id}`}
-          className="rounded-full border border-border bg-background/70 px-2.5 py-1 text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground"
+          className="rounded-full border border-border bg-background/70 px-2.5 py-1 text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           title={focus.description ?? undefined}
         >
           Focus: {focus.title}
@@ -121,24 +125,28 @@ export default function PracticeEventList({
 
   return (
     <section className="space-y-4 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Reviewed tunes
           </h2>
 
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+          <p className="mt-2 text-sm font-medium text-muted-foreground md:hidden">
+            {events.length} {events.length === 1 ? "event" : "events"}
+          </p>
+
+          <p className="mt-3 hidden text-sm leading-6 text-muted-foreground md:block">
             Tune-specific practice records for this date.
           </p>
         </div>
 
-        <p className="text-sm font-medium text-muted-foreground">
+        <p className="hidden text-sm font-medium text-muted-foreground md:block">
           {events.length} {events.length === 1 ? "event" : "events"}
         </p>
       </div>
 
-      <div className="divide-y divide-border/70 md:mt-5 md:space-y-3 md:divide-y-0">
-        {events.map((event) => {
+      <div className="md:mt-5 md:space-y-3">
+        {events.map((event, index) => {
           const title = event.piece?.title ?? "Unknown tune"
           const outcome = getOutcomeLabel(getDisplayOutcome(event))
           const eventType = getEventTypeLabel(event)
@@ -146,38 +154,38 @@ export default function PracticeEventList({
           return (
             <article
               key={event.id}
-              className="space-y-4 py-5 first:pt-1 last:pb-0 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm"
+              className={[
+                "-mx-4 space-y-4 px-4 py-6 md:mx-0 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm",
+                index === 0 ? "pt-1" : "border-t border-border",
+              ].join(" ")}
             >
-              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div className="space-y-3">
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                    {eventType} · {formatTime(event.created_at)}
-                  </p>
-
                   {event.piece ? (
                     <Link
                       href={`/library/${event.piece.id}`}
-                      className="mt-1 inline-flex max-w-full font-serif text-3xl font-bold leading-tight text-foreground transition hover:text-primary md:text-2xl"
+                      className="group inline-flex max-w-full items-baseline gap-2 font-serif text-2xl font-bold leading-tight text-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 md:text-2xl"
                     >
-                      <span className="break-words">{title}</span>
+                      <span className="break-words underline decoration-border decoration-2 underline-offset-4 transition group-hover:decoration-primary">
+                        {title}
+                      </span>
+
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 text-base font-bold text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary"
+                      >
+                        ↗
+                      </span>
                     </Link>
                   ) : (
-                    <h3 className="mt-1 font-serif text-3xl font-bold leading-tight text-foreground md:text-2xl">
+                    <h3 className="font-serif text-2xl font-bold leading-tight text-foreground md:text-2xl">
                       {title}
                     </h3>
                   )}
 
-                  {event.piece && (
-                    <p className="mt-2 break-words text-sm text-muted-foreground">
-                      {[
-                        event.piece.key,
-                        event.piece.style,
-                        event.piece.time_signature,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ") || "No metadata yet"}
-                    </p>
-                  )}
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    {eventType} · {formatTime(event.created_at)}
+                  </p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -201,18 +209,24 @@ export default function PracticeEventList({
               </div>
 
               {event.notes.length > 0 ? (
-                <div className="space-y-3 md:mt-4">
+                <div className="space-y-3">
                   {event.notes.map((note) => (
                     <div
                       key={note.id}
-                      className="border-t border-border pt-3 md:rounded-2xl md:border md:bg-card md:p-4"
+                      className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm md:bg-card"
                     >
-                      <NoteContextLabels
-                        categoryName={note.category?.name ?? null}
-                        focus={note.focus}
-                      />
+                      <div className="mb-3 flex flex-col gap-2">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                          Note
+                        </p>
 
-                      <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground">
+                        <NoteContextLabels
+                          category={note.category}
+                          focus={note.focus}
+                        />
+                      </div>
+
+                      <p className="whitespace-pre-wrap text-lg leading-8 text-foreground md:text-base md:leading-7">
                         {note.body}
                       </p>
                     </div>
@@ -220,15 +234,17 @@ export default function PracticeEventList({
                 </div>
               ) : null}
 
-              <PracticeNoteForm
-                practiceDate={practiceDate}
-                redirectTo={redirectTo}
-                categories={categories}
-                practiceEventId={event.id}
-                pieceId={event.piece_id}
-                reviewEventId={event.review_event_id}
-                label="Add note for this tune"
-              />
+              <div className="pt-2">
+                <PracticeNoteForm
+                  practiceDate={practiceDate}
+                  redirectTo={redirectTo}
+                  categories={categories}
+                  practiceEventId={event.id}
+                  pieceId={event.piece_id}
+                  reviewEventId={event.review_event_id}
+                  labelTuneName={title}
+                />
+              </div>
             </article>
           )
         })}

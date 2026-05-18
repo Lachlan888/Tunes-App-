@@ -25,7 +25,7 @@ type PieceMediaLinksSectionProps = {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full min-w-0 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function PieceMediaLinksSection({
   pieceId,
@@ -39,9 +39,9 @@ export default function PieceMediaLinksSection({
   const [openMediaId, setOpenMediaId] = useState<number | null>(null)
 
   return (
-    <div className="space-y-8">
+    <div className="min-w-0 space-y-6 sm:space-y-8">
       {referenceUrl ? (
-        <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
           <ReferenceMediaEmbed
             referenceUrl={referenceUrl}
             title={referenceTitle}
@@ -53,7 +53,7 @@ export default function PieceMediaLinksSection({
         </section>
       ) : null}
 
-      <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Other media
         </h2>
@@ -94,14 +94,14 @@ export default function PieceMediaLinksSection({
               return (
                 <li
                   key={link.id}
-                  className="rounded-2xl border border-border bg-background/70 p-4"
+                  className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
                 >
-                  <div className="space-y-3">
-                    <p className="text-sm font-medium text-foreground">
+                  <div className="min-w-0 space-y-3">
+                    <p className="min-w-0 break-words text-sm font-medium text-foreground">
                       {label}
                     </p>
 
-                    <div className="flex flex-wrap gap-3 text-sm">
+                    <div className="grid gap-2 text-sm sm:flex sm:flex-wrap sm:gap-3">
                       {videoId ? (
                         <button
                           type="button"
@@ -127,7 +127,7 @@ export default function PieceMediaLinksSection({
                     </div>
 
                     {videoId && isOpen ? (
-                      <div className="rounded-2xl border border-border bg-card/60 p-3">
+                      <div className="min-w-0 overflow-hidden rounded-2xl border border-border bg-card/60 p-3">
                         <ReferenceMediaEmbed
                           referenceUrl={link.url}
                           title={label}

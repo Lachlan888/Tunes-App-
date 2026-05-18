@@ -10,6 +10,7 @@ import {
 import type {
   ActivePracticeTuneOption,
   PracticeFocus,
+  PracticeFocusTune,
 } from "@/lib/loaders/practice-foci"
 
 type PracticeFocusTuneManagerProps = {
@@ -280,6 +281,121 @@ function AddTuneMobilePicker({
   )
 }
 
+function RemoveTuneFromFocusModal({
+  focusTune,
+  redirectTo,
+  onClose,
+}: {
+  focusTune: PracticeFocusTune
+  redirectTo: string
+  onClose: () => void
+}) {
+  const tuneTitle = focusTune.piece?.title ?? "this tune"
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end bg-foreground/40 px-0 sm:items-center sm:px-4"
+      role="presentation"
+      onClick={onClose}
+    >
+      <section
+        className="w-full rounded-t-3xl border border-border bg-background p-4 shadow-xl sm:mx-auto sm:max-w-md sm:rounded-3xl sm:p-5"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="remove-focus-tune-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-destructive">
+              Remove tune
+            </p>
+
+            <h3
+              id="remove-focus-tune-title"
+              className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground"
+            >
+              Remove from this focus?
+            </h3>
+          </div>
+
+          <button
+            type="button"
+            className={buttonStyles.text}
+            onClick={onClose}
+          >
+            Close
+          </button>
+        </div>
+
+        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+          This will remove <span className="font-medium text-foreground">{tuneTitle}</span>{" "}
+          from this practice focus only. It will not remove the tune from
+          practice, lists, known tunes, or the library.
+        </p>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            className={`${buttonStyles.secondary} w-full`}
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+
+          <form action={removeTuneFromPracticeFocus} className="w-full">
+            <input
+              type="hidden"
+              name="focus_tune_id"
+              value={focusTune.id}
+            />
+            <input type="hidden" name="redirect_to" value={redirectTo} />
+
+            <SubmitButton
+              label="Remove"
+              pendingLabel="Removing..."
+              className={`${buttonStyles.destructiveSecondary} w-full`}
+            />
+          </form>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function FocusTuneRemoveButton({
+  focusTune,
+  redirectTo,
+}: {
+  focusTune: PracticeFocusTune
+  redirectTo: string
+}) {
+  const [isConfirming, setIsConfirming] = useState(false)
+  const tuneTitle = focusTune.piece?.title ?? "this tune"
+
+  return (
+    <>
+      <button
+        type="button"
+        className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-background/70 text-lg font-semibold leading-none text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-destructive hover:bg-destructive/10 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        onClick={() => setIsConfirming(true)}
+        aria-label={`Remove ${tuneTitle} from this focus`}
+        title={`Remove ${tuneTitle} from this focus`}
+      >
+        ×
+      </button>
+
+      {isConfirming ? (
+        <RemoveTuneFromFocusModal
+          focusTune={focusTune}
+          redirectTo={redirectTo}
+          onClose={() => setIsConfirming(false)}
+        />
+      ) : null}
+    </>
+  )
+}
+
 export default function PracticeFocusTuneManager({
   focus,
   activePracticeTunes,
@@ -317,7 +433,7 @@ export default function PracticeFocusTuneManager({
           {focus.tunes.map((focusTune) => (
             <li
               key={focusTune.id}
-              className="flex min-w-0 flex-col gap-3 py-4 md:flex-row md:items-start md:justify-between"
+              className="flex min-w-0 items-start justify-between gap-3 py-4"
             >
               <div className="min-w-0">
                 <p className="break-words font-medium text-foreground">
@@ -332,20 +448,10 @@ export default function PracticeFocusTuneManager({
               </div>
 
               {focus.status === "active" ? (
-                <form action={removeTuneFromPracticeFocus}>
-                  <input
-                    type="hidden"
-                    name="focus_tune_id"
-                    value={focusTune.id}
-                  />
-                  <input type="hidden" name="redirect_to" value={redirectTo} />
-
-                  <SubmitButton
-                    label="Remove"
-                    pendingLabel="Removing..."
-                    className={buttonStyles.secondary}
-                  />
-                </form>
+                <FocusTuneRemoveButton
+                  focusTune={focusTune}
+                  redirectTo={redirectTo}
+                />
               ) : null}
             </li>
           ))}

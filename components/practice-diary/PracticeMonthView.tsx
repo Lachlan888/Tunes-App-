@@ -442,38 +442,37 @@ function MobileFocusDistribution({
 
             return (
               <li key={summary.focusId} className="py-4 first:pt-0 last:pb-0">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <Link
-                      href={`/review/foci/${summary.focusId}`}
-                      className="font-medium text-foreground underline-offset-4 hover:underline"
-                    >
-                      {summary.focusTitle}
-                    </Link>
+                <Link
+                  href={`/review/foci/${summary.focusId}`}
+                  className="group block rounded-xl transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground underline decoration-border decoration-2 underline-offset-4 transition group-hover:text-primary group-hover:decoration-primary">
+                        {summary.focusTitle}
+                      </p>
 
-                    <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                      {summary.noteCount}{" "}
-                      {pluralise(summary.noteCount, "note", "notes")} ·{" "}
-                      {summary.tuneCount}{" "}
-                      {pluralise(summary.tuneCount, "tune", "tunes")} · latest{" "}
-                      {formatDateOnly(summary.latestDate)}
-                    </p>
+                      <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                        {summary.noteCount}{" "}
+                        {pluralise(summary.noteCount, "note", "notes")} ·{" "}
+                        {summary.tuneCount}{" "}
+                        {pluralise(summary.tuneCount, "tune", "tunes")} · latest{" "}
+                        {formatDateOnly(summary.latestDate)}
+                      </p>
+                    </div>
+
+                    <span className="shrink-0 rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground transition group-hover:border-primary group-hover:bg-card group-hover:text-primary">
+                      Open
+                    </span>
                   </div>
 
-                  <Link
-                    href={`/review/foci/${summary.focusId}`}
-                    className="shrink-0 rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground"
-                  >
-                    Open
-                  </Link>
-                </div>
-
-                {latestNote ? (
-                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
-                    {latestNote.tuneTitle ? `${latestNote.tuneTitle}: ` : ""}
-                    {latestNote.body}
-                  </p>
-                ) : null}
+                  {latestNote ? (
+                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
+                      {latestNote.tuneTitle ? `${latestNote.tuneTitle}: ` : ""}
+                      {latestNote.body}
+                    </p>
+                  ) : null}
+                </Link>
               </li>
             )
           })}
@@ -511,12 +510,13 @@ function MobileCategoryDistribution({
       ) : (
         <div className="mt-4 space-y-2">
           {visibleSummaries.map((summary) => (
-            <div
+            <Link
               key={summary.categoryId}
-              className="rounded-xl border border-border bg-background/70 p-3"
+              href={`/review/diary/categories/${summary.categoryId}`}
+              className="block rounded-xl border border-border bg-background/70 p-3 transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             >
               <div className="flex items-start justify-between gap-3">
-                <p className="min-w-0 text-sm font-semibold text-foreground">
+                <p className="min-w-0 text-sm font-semibold text-foreground underline decoration-border decoration-2 underline-offset-4 transition hover:text-primary hover:decoration-primary">
                   {summary.categoryName}
                 </p>
 
@@ -533,7 +533,7 @@ function MobileCategoryDistribution({
                   {summary.notes[0].body}
                 </p>
               ) : null}
-            </div>
+            </Link>
           ))}
         </div>
       )}
