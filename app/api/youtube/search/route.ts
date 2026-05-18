@@ -2,7 +2,9 @@ import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { getCanonicalYouTubeWatchUrl } from "@/lib/youtube"
 
-const DAILY_YOUTUBE_SEARCH_LIMIT = 50
+const GLOBAL_DAILY_YOUTUBE_SEARCH_LIMIT = 50
+const USER_DAILY_YOUTUBE_SEARCH_LIMIT = 5
+const USER_SEARCH_COOLDOWN_SECONDS = 60
 
 type YouTubeSearchApiItem = {
   id?: {
@@ -35,8 +37,17 @@ type YouTubeSearchApiResponse = {
 
 type QuotaResult = {
   allowed: boolean
-  search_count: number
-  daily_limit: number
+  reason:
+    | "allowed"
+    | "cooldown"
+    | "user_daily_limit"
+    | "global_daily_limit"
+    | string
+  global_search_count: number
+  user_search_count: number
+  global_daily_limit: number
+  user_daily_limit: number
+  retry_after_seconds: number
 }
 
 export type YouTubeSearchResult = {
@@ -81,6 +92,30 @@ function getUtcDateOnly() {
   return new Date().toISOString().slice(0, 10)
 }
 
+function getRetryMessage(seconds: number) {
+  if (seconds <= 1) {
+    return "YouTube search is limited to one search per minute. Try again in a second."
+  }
+
+  return `YouTube search is limited to one search per minute. Try again in ${seconds} seconds.`
+}
+
+function getQuotaMessage(quota: QuotaResult) {
+  if (quota.reason === "cooldown") {
+    return getRetryMessage(quota.retry_after_seconds)
+  }
+
+  if (quota.reason === "user_daily_limit") {
+    return `You have used today's ${quota.user_daily_limit} YouTube searches. Try again tomorrow.`
+  }
+
+  if (quota.reason === "global_daily_limit") {
+    return `The app has reached today's shared YouTube search limit of ${quota.global_daily_limit} searches. Try again tomorrow.`
+  }
+
+  return "YouTube search is temporarily limited. Try again shortly."
+}
+
 async function consumeSearchQuota() {
   const supabase = await createClient()
 
@@ -99,7 +134,11 @@ async function consumeSearchQuota() {
   const { data, error } = await supabase
     .rpc("try_consume_youtube_search_quota", {
       p_usage_date: getUtcDateOnly(),
-      p_daily_limit: DAILY_YOUTUBE_SEARCH_LIMIT,
+      p_user_id: user.id,
+      p_now: new Date().toISOString(),
+      p_global_daily_limit: GLOBAL_DAILY_YOUTUBE_SEARCH_LIMIT,
+      p_user_daily_limit: USER_DAILY_YOUTUBE_SEARCH_LIMIT,
+      p_cooldown_seconds: USER_SEARCH_COOLDOWN_SECONDS,
     })
     .single()
 
@@ -119,7 +158,7 @@ async function consumeSearchQuota() {
     return {
       allowed: false,
       status: 429,
-      message: `Daily YouTube search limit reached for this app. Try again tomorrow. Limit: ${quota.daily_limit} searches per day.`,
+      message: getQuotaMessage(quota),
     }
   }
 
