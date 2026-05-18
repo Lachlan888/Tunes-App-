@@ -5,14 +5,26 @@ export const cardStyles = {
   innerPanel:
     "rounded-2xl border border-border bg-background/70 p-5 shadow-sm",
 
-  passiveCard:
+  displayCard:
     "rounded-2xl border border-border bg-background/70 p-5 shadow-sm",
 
   clickableCard:
-    "cursor-pointer rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted/70 hover:shadow-md focus-within:ring-2 focus-within:ring-[var(--focus-ring)]",
+    "cursor-pointer rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted/70 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus-within:ring-2 focus-within:ring-[var(--focus-ring)]",
 
   compactClickableCard:
-    "cursor-pointer rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted/70 hover:shadow-md focus-within:ring-2 focus-within:ring-[var(--focus-ring)]",
+    "cursor-pointer rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted/70 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus-within:ring-2 focus-within:ring-[var(--focus-ring)]",
+
+  actionCard:
+    "rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:bg-muted/70",
+
+  reviewCard:
+    "relative min-w-0 overflow-hidden rounded-2xl border border-border bg-background/70 p-3 shadow-sm transition hover:bg-muted/70 sm:p-5",
+
+  summaryCard:
+    "rounded-2xl border border-border bg-background/70 p-4 shadow-sm",
+
+  passiveCard:
+    "rounded-2xl border border-border bg-background/70 p-5 shadow-sm",
 
   modal:
     "max-h-[90vh] w-full overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-lg",

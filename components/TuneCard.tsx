@@ -1,9 +1,9 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import type { ReactNode } from "react"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import ReferenceMediaLink from "@/components/ReferenceMediaLink"
-import { cardStyles } from "@/components/ui/cardStyles"
+import ClickableCard from "@/components/ui/ClickableCard"
 import { getStyleLabelsFromPiece } from "@/lib/search-filters"
 import type { Piece } from "@/lib/types"
 
@@ -16,30 +16,8 @@ type TuneCardProps = {
   referenceUrl?: Piece["reference_url"]
   pieceStyles?: Piece["piece_styles"]
   listNames?: string[]
-  topRightAction?: React.ReactNode
-  children?: React.ReactNode
-}
-
-function clickedInsideInteractiveElement(target: EventTarget | null) {
-  if (!(target instanceof Element)) return false
-
-  return Boolean(
-    target.closest(
-      [
-        "a",
-        "button",
-        "input",
-        "select",
-        "textarea",
-        "label",
-        "summary",
-        "details",
-        "form",
-        "[role='button']",
-        "[data-card-action]",
-      ].join(", ")
-    )
-  )
+  topRightAction?: ReactNode
+  children?: ReactNode
 }
 
 export default function TuneCard({
@@ -54,8 +32,6 @@ export default function TuneCard({
   topRightAction,
   children,
 }: TuneCardProps) {
-  const router = useRouter()
-
   const visibleListNames = listNames.slice(0, 3)
   const remainingListCount = Math.max(
     listNames.length - visibleListNames.length,
@@ -78,17 +54,11 @@ export default function TuneCard({
     timeSignature ? `Time: ${timeSignature}` : null,
   ].filter(Boolean)
 
-  function openTunePage(event: React.MouseEvent<HTMLElement>) {
-    if (clickedInsideInteractiveElement(event.target)) return
-
-    router.push(`/library/${id}`)
-  }
-
   return (
-    <article
-      className={cardStyles.clickableCard}
-      onClick={openTunePage}
-      aria-label={`Open tune page for ${title}`}
+    <ClickableCard
+      href={`/library/${id}`}
+      ariaLabel={`Open tune page for ${title}`}
+      as="article"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -137,6 +107,6 @@ export default function TuneCard({
           {children}
         </div>
       )}
-    </article>
+    </ClickableCard>
   )
 }

@@ -1,7 +1,8 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { useEffect, useId } from "react"
+import { useEffect, useId, useState } from "react"
+import { createPortal } from "react-dom"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 
 type ResponsiveModalMode = "sheet" | "full-screen"
@@ -53,6 +54,7 @@ export default function ResponsiveModal({
   const modalId = useId()
   const titleId = `${modalId}-title`
   const descriptionId = description ? `${modalId}-description` : undefined
+  const [isMounted, setIsMounted] = useState(false)
 
   function requestClose() {
     if (closeDisabled) return
@@ -60,11 +62,15 @@ export default function ResponsiveModal({
   }
 
   useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
     if (!isOpen || closeDisabled || !closeOnEscape) return
 
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        requestClose()
+        onClose()
       }
     }
 
@@ -86,7 +92,7 @@ export default function ResponsiveModal({
     }
   }, [isOpen])
 
-  if (!isOpen) return null
+  if (!isMounted || !isOpen) return null
 
   const mobilePanelClass =
     mobileMode === "full-screen"
@@ -99,9 +105,9 @@ export default function ResponsiveModal({
   const eyebrowClasses =
     tone === "destructive" ? "text-destructive" : "text-muted-foreground"
 
-  return (
+  const modalContent = (
     <div
-      className="fixed inset-0 z-[300] flex items-end justify-center bg-foreground/35 p-0 backdrop-blur-sm md:items-center md:p-4"
+      className="fixed inset-0 z-[1000] flex items-end justify-center bg-foreground/35 p-0 backdrop-blur-sm md:items-center md:p-4"
       onClick={() => {
         if (closeOnOverlayClick) {
           requestClose()
@@ -186,4 +192,6 @@ export default function ResponsiveModal({
       </section>
     </div>
   )
+
+  return createPortal(modalContent, document.body)
 }

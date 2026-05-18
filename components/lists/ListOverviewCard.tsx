@@ -1,8 +1,9 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import EditListModal from "@/components/lists/EditListModal"
+import ClickableCard from "@/components/ui/ClickableCard"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import { cardStyles } from "@/components/ui/cardStyles"
 import type { FilterableLearningList } from "@/lib/types"
 
@@ -14,28 +15,6 @@ type ListOverviewCardProps = {
   deleteList: (formData: FormData) => Promise<void>
 }
 
-function clickedInsideInteractiveElement(target: EventTarget | null) {
-  if (!(target instanceof Element)) return false
-
-  return Boolean(
-    target.closest(
-      [
-        "a",
-        "button",
-        "input",
-        "select",
-        "textarea",
-        "label",
-        "summary",
-        "details",
-        "form",
-        "[role='button']",
-        "[data-card-action]",
-      ].join(", ")
-    )
-  )
-}
-
 export default function ListOverviewCard({
   list,
   redirectTo,
@@ -43,20 +22,14 @@ export default function ListOverviewCard({
   removeTuneFromList,
   deleteList,
 }: ListOverviewCardProps) {
-  const router = useRouter()
   const visibilityLabel = list.visibility === "public" ? "Public" : "Private"
   const listHref = `/learning-lists/${list.id}`
 
-  function openListPage(event: React.MouseEvent<HTMLElement>) {
-    if (clickedInsideInteractiveElement(event.target)) return
-    router.push(listHref)
-  }
-
   return (
-    <section
-      className={cardStyles.clickableCard}
-      onClick={openListPage}
-      aria-label={`Open list ${list.name}`}
+    <ClickableCard
+      href={listHref}
+      ariaLabel={`Open list ${list.name}`}
+      as="section"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -80,7 +53,7 @@ export default function ListOverviewCard({
               href={listHref}
               label="View List"
               pendingLabel="Loading..."
-              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className={buttonStyles.primary}
             />
 
             <div data-card-action>
@@ -107,10 +80,7 @@ export default function ListOverviewCard({
 
               <div className="flex flex-wrap gap-2">
                 {list.stylesPresent.map((style) => (
-                  <span
-                    key={style}
-                    className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground"
-                  >
+                  <span key={style} className={cardStyles.statusBadge}>
                     {style}
                   </span>
                 ))}
@@ -120,9 +90,7 @@ export default function ListOverviewCard({
         </div>
 
         <div className="shrink-0 text-right text-sm text-muted-foreground">
-          <div className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium">
-            {visibilityLabel}
-          </div>
+          <div className={cardStyles.statusBadge}>{visibilityLabel}</div>
 
           {list.is_imported && <div className="mt-2">Imported</div>}
 
@@ -131,6 +99,6 @@ export default function ListOverviewCard({
           </div>
         </div>
       </div>
-    </section>
+    </ClickableCard>
   )
 }

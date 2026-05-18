@@ -5,12 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation"
 import {
   useEffect,
   useMemo,
-  useRef,
   useState,
   useTransition,
   type FormEvent,
 } from "react"
-import { buttonStyles } from "@/components/ui/buttonStyles"
+import ResponsiveModal from "@/components/ui/ResponsiveModal"
 
 type PreservedParamValue = string | string[]
 
@@ -35,6 +34,8 @@ type PieceSearchFiltersProps = {
   preservedParams?: Record<string, PreservedParamValue>
 }
 
+type FilterGroup = "key" | "style" | "time_signature"
+
 function toSafeArray(value: string[] | string | undefined) {
   if (!value) return []
   return Array.isArray(value) ? value : [value]
@@ -57,15 +58,18 @@ function appendPreservedParams(
   }
 }
 
-function formatFilterLabel(group: "key" | "style" | "time_signature") {
+function formatFilterLabel(group: FilterGroup) {
   if (group === "key") return "Key"
   if (group === "style") return "Style"
   return "Time"
 }
 
-function buildChipId(group: "key" | "style" | "time_signature", value: string) {
+function buildChipId(group: FilterGroup, value: string) {
   return `${group}:${value}`
 }
+
+const buttonBase =
+  "rounded-full border px-4 py-2 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 export default function PieceSearchFilters({
   basePath,
@@ -90,9 +94,8 @@ export default function PieceSearchFilters({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
-  const [isPanelOpen, setIsPanelOpen] = useState(false)
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
   const [query, setQuery] = useState(searchValue)
-  const panelRef = useRef<HTMLDivElement | null>(null)
 
   const safeSelectedKeys =
     selectedKeys && selectedKeys.length > 0
@@ -112,31 +115,6 @@ export default function PieceSearchFilters({
   useEffect(() => {
     setQuery(searchValue)
   }, [searchValue])
-
-  useEffect(() => {
-    function handlePointerDown(event: MouseEvent) {
-      if (!isPanelOpen) return
-      if (!panelRef.current) return
-
-      if (!panelRef.current.contains(event.target as Node)) {
-        setIsPanelOpen(false)
-      }
-    }
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setIsPanelOpen(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handlePointerDown)
-    document.addEventListener("keydown", handleEscape)
-
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown)
-      document.removeEventListener("keydown", handleEscape)
-    }
-  }, [isPanelOpen])
 
   function navigateWithParams(params: URLSearchParams) {
     const href = params.toString() ? `${basePath}?${params.toString()}` : basePath
@@ -180,7 +158,7 @@ export default function PieceSearchFilters({
   }
 
   function handleMultiCheckboxChange(
-    groupName: "key" | "style" | "time_signature",
+    groupName: FilterGroup,
     value: string,
     checked: boolean
   ) {
@@ -227,10 +205,7 @@ export default function PieceSearchFilters({
     navigateWithParams(params)
   }
 
-  function handleRemoveSingleFilter(
-    groupName: "key" | "style" | "time_signature",
-    value: string
-  ) {
+  function handleRemoveSingleFilter(groupName: FilterGroup, value: string) {
     const params = buildParamsFromCurrentSearch()
     const existingValues = params.getAll(groupName).filter(Boolean)
 
@@ -251,7 +226,7 @@ export default function PieceSearchFilters({
     appendPreservedParams(params, preservedParams)
 
     navigateWithParams(params)
-    setIsPanelOpen(false)
+    setIsFilterModalOpen(false)
   }
 
   const clearFiltersHref = buildClearFiltersHref()
@@ -287,8 +262,7 @@ export default function PieceSearchFilters({
 
   return (
     <div
-      ref={panelRef}
-      className={`relative mb-8 transition-opacity ${
+      className={`mb-8 transition-opacity ${
         isPending ? "opacity-80" : "opacity-100"
       }`}
     >
@@ -318,7 +292,7 @@ export default function PieceSearchFilters({
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="submit"
-              className={buttonStyles.filterPrimary}
+              className={`${buttonBase} border-primary bg-primary text-primary-foreground hover:bg-primary-hover`}
               disabled={isPending}
             >
               {isPending ? "Searching..." : "Search"}
@@ -326,11 +300,10 @@ export default function PieceSearchFilters({
 
             <button
               type="button"
-              onClick={() => setIsPanelOpen((current) => !current)}
-              className={buttonStyles.filterTrigger}
+              onClick={() => setIsFilterModalOpen(true)}
+              className={`${buttonBase} border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground`}
               disabled={isPending}
-              aria-expanded={isPanelOpen}
-              aria-controls="piece-filter-panel"
+              aria-expanded={isFilterModalOpen}
             >
               {isPending
                 ? "Updating..."
@@ -339,190 +312,191 @@ export default function PieceSearchFilters({
                   : "Filters"}
             </button>
 
-            {hasActiveFilters && (
+            {hasActiveFilters ? (
               <Link
                 href={clearFiltersHref}
-                className={buttonStyles.text}
+                className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
               >
                 Clear filters
               </Link>
-            )}
+            ) : null}
           </div>
         </div>
 
-        {isPending && (
+        {isPending ? (
           <p className="mt-3 text-sm text-muted-foreground">
             Updating filters...
           </p>
-        )}
+        ) : null}
 
-        {activeChips.length > 0 && (
+        {activeChips.length > 0 ? (
           <div className="mt-4 flex flex-wrap gap-2">
             {activeChips.map((chip) => (
               <button
                 key={chip.id}
                 type="button"
                 onClick={() => handleRemoveSingleFilter(chip.group, chip.value)}
-                className="rounded-full border border-border bg-background/70 px-3 py-1 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-full border border-border bg-background/70 px-3 py-1 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
                 disabled={isPending}
               >
                 {chip.groupLabel}: {chip.value} ×
               </button>
             ))}
           </div>
-        )}
+        ) : null}
       </form>
 
-      {isPanelOpen && (
-        <div
-          id="piece-filter-panel"
-          className="absolute left-0 right-0 z-20 mt-2 rounded-3xl border border-border bg-card p-5 shadow-lg"
-        >
-          <div className="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <h3 className="font-serif text-2xl font-bold text-foreground">
-                Filter tunes
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Select as many filters as you like.
-              </p>
-            </div>
+      <ResponsiveModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        closeDisabled={isPending}
+        closeOnOverlayClick={!isPending}
+        closeOnEscape={!isPending}
+        mobileMode="full-screen"
+        desktopMaxWidth="md:max-w-5xl"
+        eyebrow="Filters"
+        title="Filter tunes"
+        description="Select as many filters as you like. Changes apply immediately."
+      >
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            {activeFilterCount > 0
+              ? `${activeFilterCount} filter${
+                  activeFilterCount === 1 ? "" : "s"
+                } selected.`
+              : "No filters selected."}
+          </p>
 
-            <div className="flex items-center gap-2">
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={handleClearAll}
-                  className={buttonStyles.filterTrigger}
-                  disabled={isPending}
-                >
-                  Clear all
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setIsPanelOpen(false)}
-                className={buttonStyles.modalClose}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <fieldset
-              className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
+          {hasActiveFilters ? (
+            <button
+              type="button"
+              onClick={handleClearAll}
+              className={`${buttonBase} border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground`}
               disabled={isPending}
             >
-              <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Key ({safeSelectedKeys.length})
-              </legend>
-              <div className="mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
-                {availableKeys.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No keys available.
-                  </p>
-                ) : (
-                  availableKeys.map((key) => (
-                    <label key={key} className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        name="key"
-                        value={key}
-                        checked={safeSelectedKeys.includes(key)}
-                        onChange={(event) =>
-                          handleMultiCheckboxChange(
-                            "key",
-                            key,
-                            event.target.checked
-                          )
-                        }
-                      />
-                      <span>{key}</span>
-                    </label>
-                  ))
-                )}
-              </div>
-            </fieldset>
-
-            <fieldset
-              className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
-              disabled={isPending}
-            >
-              <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Style ({safeSelectedStyles.length})
-              </legend>
-              <div className="mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
-                {availableStyles.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No styles available.
-                  </p>
-                ) : (
-                  availableStyles.map((style) => (
-                    <label key={style} className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        name="style"
-                        value={style}
-                        checked={safeSelectedStyles.includes(style)}
-                        onChange={(event) =>
-                          handleMultiCheckboxChange(
-                            "style",
-                            style,
-                            event.target.checked
-                          )
-                        }
-                      />
-                      <span>{style}</span>
-                    </label>
-                  ))
-                )}
-              </div>
-            </fieldset>
-
-            <fieldset
-              className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
-              disabled={isPending}
-            >
-              <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Time ({safeSelectedTimeSignatures.length})
-              </legend>
-              <div className="mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
-                {availableTimeSignatures.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No time signatures available.
-                  </p>
-                ) : (
-                  availableTimeSignatures.map((timeSignature) => (
-                    <label
-                      key={timeSignature}
-                      className="flex items-center gap-2 text-sm"
-                    >
-                      <input
-                        type="checkbox"
-                        name="time_signature"
-                        value={timeSignature}
-                        checked={safeSelectedTimeSignatures.includes(
-                          timeSignature
-                        )}
-                        onChange={(event) =>
-                          handleMultiCheckboxChange(
-                            "time_signature",
-                            timeSignature,
-                            event.target.checked
-                          )
-                        }
-                      />
-                      <span>{timeSignature}</span>
-                    </label>
-                  ))
-                )}
-              </div>
-            </fieldset>
-          </div>
+              Clear all
+            </button>
+          ) : null}
         </div>
-      )}
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <fieldset
+            className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
+            disabled={isPending}
+          >
+            <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Key ({safeSelectedKeys.length})
+            </legend>
+
+            <div className="mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
+              {availableKeys.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No keys available.
+                </p>
+              ) : (
+                availableKeys.map((key) => (
+                  <label key={key} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      name="key"
+                      value={key}
+                      checked={safeSelectedKeys.includes(key)}
+                      onChange={(event) =>
+                        handleMultiCheckboxChange(
+                          "key",
+                          key,
+                          event.target.checked
+                        )
+                      }
+                    />
+                    <span>{key}</span>
+                  </label>
+                ))
+              )}
+            </div>
+          </fieldset>
+
+          <fieldset
+            className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
+            disabled={isPending}
+          >
+            <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Style ({safeSelectedStyles.length})
+            </legend>
+
+            <div className="mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
+              {availableStyles.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No styles available.
+                </p>
+              ) : (
+                availableStyles.map((style) => (
+                  <label
+                    key={style}
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      name="style"
+                      value={style}
+                      checked={safeSelectedStyles.includes(style)}
+                      onChange={(event) =>
+                        handleMultiCheckboxChange(
+                          "style",
+                          style,
+                          event.target.checked
+                        )
+                      }
+                    />
+                    <span>{style}</span>
+                  </label>
+                ))
+              )}
+            </div>
+          </fieldset>
+
+          <fieldset
+            className="min-w-0 rounded-2xl border border-border bg-background/70 p-4"
+            disabled={isPending}
+          >
+            <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Time ({safeSelectedTimeSignatures.length})
+            </legend>
+
+            <div className="mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
+              {availableTimeSignatures.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No time signatures available.
+                </p>
+              ) : (
+                availableTimeSignatures.map((timeSignature) => (
+                  <label
+                    key={timeSignature}
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      name="time_signature"
+                      value={timeSignature}
+                      checked={safeSelectedTimeSignatures.includes(
+                        timeSignature
+                      )}
+                      onChange={(event) =>
+                        handleMultiCheckboxChange(
+                          "time_signature",
+                          timeSignature,
+                          event.target.checked
+                        )
+                      }
+                    />
+                    <span>{timeSignature}</span>
+                  </label>
+                ))
+              )}
+            </div>
+          </fieldset>
+        </div>
+      </ResponsiveModal>
     </div>
   )
 }
