@@ -60,6 +60,43 @@ function formatTime(value: string) {
   }).format(new Date(value))
 }
 
+function NoteContextLabels({
+  categoryName,
+  focus,
+}: {
+  categoryName: string | null
+  focus: {
+    id: number
+    title: string
+    description: string | null
+    status: string
+  } | null
+}) {
+  if (!categoryName && !focus) {
+    return null
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+      {categoryName ? (
+        <span className="rounded-full border border-border bg-muted px-2.5 py-1">
+          {categoryName}
+        </span>
+      ) : null}
+
+      {focus ? (
+        <Link
+          href={`/review/foci/${focus.id}`}
+          className="rounded-full border border-border bg-background/70 px-2.5 py-1 text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground"
+          title={focus.description ?? undefined}
+        >
+          Focus: {focus.title}
+        </Link>
+      ) : null}
+    </div>
+  )
+}
+
 export default function PracticeEventList({
   events,
   categories,
@@ -168,13 +205,12 @@ export default function PracticeEventList({
                   {event.notes.map((note) => (
                     <div
                       key={note.id}
-                      className="rounded-2xl border border-border bg-card/60 p-4 md:bg-card"
+                      className="border-t border-border pt-3 md:rounded-2xl md:border md:bg-card md:p-4"
                     >
-                      {note.category ? (
-                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                          {note.category.name}
-                        </p>
-                      ) : null}
+                      <NoteContextLabels
+                        categoryName={note.category?.name ?? null}
+                        focus={note.focus}
+                      />
 
                       <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground">
                         {note.body}

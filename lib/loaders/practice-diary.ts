@@ -27,6 +27,13 @@ export type PracticeNoteCategory = {
   updated_at: string | null
 }
 
+export type PracticeFocusForDiaryNote = {
+  id: number
+  title: string
+  description: string | null
+  status: string
+}
+
 export type PracticeNote = {
   id: number
   user_id: string
@@ -35,10 +42,12 @@ export type PracticeNote = {
   piece_id: number | null
   review_event_id: number | null
   category_id: number | null
+  focus_id: number | null
   body: string
   created_at: string
   updated_at: string | null
   category: PracticeNoteCategory | null
+  focus: PracticeFocusForDiaryNote | null
 }
 
 export type PracticeDueTune = {
@@ -191,8 +200,9 @@ type PracticeEventRow = PracticeEvent & {
     | null
 }
 
-type PracticeNoteRow = Omit<PracticeNote, "category"> & {
+type PracticeNoteRow = Omit<PracticeNote, "category" | "focus"> & {
   practice_note_categories: PracticeNoteCategory | PracticeNoteCategory[] | null
+  practice_foci: PracticeFocusForDiaryNote | PracticeFocusForDiaryNote[] | null
 }
 
 type PracticeDayRow = PracticeDay
@@ -324,10 +334,12 @@ function mapPracticeNote(row: PracticeNoteRow): PracticeNote {
     piece_id: row.piece_id,
     review_event_id: row.review_event_id,
     category_id: row.category_id,
+    focus_id: row.focus_id,
     body: row.body,
     created_at: row.created_at,
     updated_at: row.updated_at,
     category: getSingleJoinedRow(row.practice_note_categories),
+    focus: getSingleJoinedRow(row.practice_foci),
   }
 }
 
@@ -469,7 +481,9 @@ function buildCategorySummaries({
 }
 
 async function loadPracticeNoteCategoriesForUser(
-  supabase: Awaited<ReturnType<typeof import("@/lib/supabase/server").createClient>>,
+  supabase: Awaited<
+    ReturnType<typeof import("@/lib/supabase/server").createClient>
+  >,
   userId: string
 ): Promise<PracticeNoteCategory[]> {
   const { data, error } = await supabase
@@ -509,7 +523,9 @@ async function loadPracticeDaysForRange({
   userId: string
   startDate: string
   endDate: string
-  supabase: Awaited<ReturnType<typeof import("@/lib/supabase/server").createClient>>
+  supabase: Awaited<
+    ReturnType<typeof import("@/lib/supabase/server").createClient>
+  >
 }) {
   const { data, error } = await supabase
     .from("practice_days")
@@ -533,7 +549,9 @@ async function loadPracticeEventsForDayIds({
 }: {
   userId: string
   practiceDayIds: number[]
-  supabase: Awaited<ReturnType<typeof import("@/lib/supabase/server").createClient>>
+  supabase: Awaited<
+    ReturnType<typeof import("@/lib/supabase/server").createClient>
+  >
 }) {
   if (practiceDayIds.length === 0) {
     return []
@@ -587,7 +605,9 @@ async function loadPracticeNotesForDayIds({
 }: {
   userId: string
   practiceDayIds: number[]
-  supabase: Awaited<ReturnType<typeof import("@/lib/supabase/server").createClient>>
+  supabase: Awaited<
+    ReturnType<typeof import("@/lib/supabase/server").createClient>
+  >
 }) {
   if (practiceDayIds.length === 0) {
     return []
@@ -604,6 +624,7 @@ async function loadPracticeNotesForDayIds({
         piece_id,
         review_event_id,
         category_id,
+        focus_id,
         body,
         created_at,
         updated_at,
@@ -618,6 +639,12 @@ async function loadPracticeNotesForDayIds({
           is_active,
           created_at,
           updated_at
+        ),
+        practice_foci (
+          id,
+          title,
+          description,
+          status
         )
       `
     )
@@ -629,7 +656,7 @@ async function loadPracticeNotesForDayIds({
     throw new Error(error.message)
   }
 
-  return ((data ?? []) as PracticeNoteRow[]).map(mapPracticeNote)
+  return ((data ?? []) as unknown as PracticeNoteRow[]).map(mapPracticeNote)
 }
 
 async function loadDueTunesForRange({
@@ -641,7 +668,9 @@ async function loadDueTunesForRange({
   userId: string
   startDate: string
   endDate: string
-  supabase: Awaited<ReturnType<typeof import("@/lib/supabase/server").createClient>>
+  supabase: Awaited<
+    ReturnType<typeof import("@/lib/supabase/server").createClient>
+  >
 }) {
   const { data, error } = await supabase
     .from("user_pieces")
