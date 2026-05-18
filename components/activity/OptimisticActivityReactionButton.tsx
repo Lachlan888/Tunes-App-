@@ -28,13 +28,8 @@ export default function OptimisticActivityReactionButton({
   function handleClick() {
     if (isPending) return
 
-    const previousIsActive = isActive
-    const previousCount = count
-
-    const nextIsActive = !previousIsActive
-    const nextCount = nextIsActive
-      ? previousCount + 1
-      : Math.max(previousCount - 1, 0)
+    const nextIsActive = !isActive
+    const nextCount = nextIsActive ? count + 1 : Math.max(count - 1, 0)
 
     setIsActive(nextIsActive)
     setCount(nextCount)
@@ -48,16 +43,14 @@ export default function OptimisticActivityReactionButton({
       })
 
       if (!result.ok) {
-        setIsActive(previousIsActive)
-        setCount(previousCount)
         setErrorMessage(result.message)
       }
     })
   }
 
   const buttonClassName = isActive
-    ? "inline-flex items-center gap-2 rounded-full border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-default disabled:opacity-75"
-    : "inline-flex items-center gap-2 rounded-full border border-border bg-background/70 px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-default disabled:opacity-75"
+    ? "inline-flex items-center gap-2 rounded-full border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-default"
+    : "inline-flex items-center gap-2 rounded-full border border-border bg-background/70 px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-default"
 
   const countClassName = isActive
     ? "rounded-full bg-background/20 px-2 py-0.5 text-[11px] font-bold leading-none text-primary-foreground"
@@ -74,13 +67,15 @@ export default function OptimisticActivityReactionButton({
         onClick={handleClick}
         className={buttonClassName}
       >
-        <span>{isPending ? "Updating..." : label}</span>
+        <span>{label}</span>
 
         {count > 0 ? <span className={countClassName}>{count}</span> : null}
       </button>
 
       {errorMessage ? (
-        <p className="text-xs font-medium text-destructive">{errorMessage}</p>
+        <p className="text-xs font-medium text-destructive">
+          Could not sync reaction. It may update after refresh.
+        </p>
       ) : null}
     </div>
   )

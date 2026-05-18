@@ -4,7 +4,6 @@ import { useRouter, useSearchParams } from "next/navigation"
 import {
   useEffect,
   useMemo,
-  useRef,
   useState,
   useTransition,
   type FormEvent,
@@ -94,7 +93,6 @@ export default function PieceSearchFilters({
   const [isPending, startTransition] = useTransition()
   const [isPanelOpen, setIsPanelOpen] = useState(false)
   const [query, setQuery] = useState(searchValue)
-  const panelRef = useRef<HTMLDivElement | null>(null)
 
   const safeSelectedKeys =
     selectedKeys && selectedKeys.length > 0
@@ -114,31 +112,6 @@ export default function PieceSearchFilters({
   useEffect(() => {
     setQuery(searchValue)
   }, [searchValue])
-
-  useEffect(() => {
-    function handlePointerDown(event: MouseEvent) {
-      if (!isPanelOpen) return
-      if (!panelRef.current) return
-
-      if (!panelRef.current.contains(event.target as Node)) {
-        setIsPanelOpen(false)
-      }
-    }
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setIsPanelOpen(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handlePointerDown)
-    document.addEventListener("keydown", handleEscape)
-
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown)
-      document.removeEventListener("keydown", handleEscape)
-    }
-  }, [isPanelOpen])
 
   function navigateWithParams(params: URLSearchParams) {
     const href = params.toString() ? `${basePath}?${params.toString()}` : basePath
@@ -279,7 +252,6 @@ export default function PieceSearchFilters({
 
   return (
     <FilterShell
-      panelRef={panelRef}
       searchLabel={searchLabel}
       searchPlaceholder={searchPlaceholder}
       searchValue={query}
