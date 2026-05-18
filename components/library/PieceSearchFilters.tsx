@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import {
   useEffect,
   useMemo,
@@ -36,6 +36,8 @@ type PieceSearchFiltersProps = {
   preservedParams?: Record<string, PreservedParamValue>
 }
 
+type FilterGroup = "key" | "style" | "time_signature"
+
 function toSafeArray(value: string[] | string | undefined) {
   if (!value) return []
   return Array.isArray(value) ? value : [value]
@@ -58,14 +60,31 @@ function appendPreservedParams(
   }
 }
 
-function formatFilterLabel(group: "key" | "style" | "time_signature") {
+function formatFilterLabel(group: FilterGroup) {
   if (group === "key") return "Key"
   if (group === "style") return "Style"
   return "Time"
 }
 
-function buildChipId(group: "key" | "style" | "time_signature", value: string) {
+function buildChipId(group: FilterGroup, value: string) {
   return `${group}:${value}`
+}
+
+function toggleValue(values: string[], value: string, checked: boolean) {
+  if (checked) {
+    return Array.from(new Set([...values, value]))
+  }
+
+  return values.filter((existingValue) => existingValue !== value)
+}
+
+function arraysMatch(first: string[], second: string[]) {
+  if (first.length !== second.length) return false
+
+  const firstSorted = [...first].sort()
+  const secondSorted = [...second].sort()
+
+  return firstSorted.every((value, index) => value === secondSorted[index])
 }
 
 export default function PieceSearchFilters({
@@ -89,29 +108,95 @@ export default function PieceSearchFilters({
   preservedParams = {},
 }: PieceSearchFiltersProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
   const [isPanelOpen, setIsPanelOpen] = useState(false)
   const [query, setQuery] = useState(searchValue)
 
-  const safeSelectedKeys =
-    selectedKeys && selectedKeys.length > 0
-      ? selectedKeys
-      : toSafeArray(selectedKey)
+  const serverSelectedKeys = useMemo(
+    () =>
+      selectedKeys && selectedKeys.length > 0
+        ? selectedKeys
+        : toSafeArray(selectedKey),
+    [selectedKeys, selectedKey]
+  )
 
-  const safeSelectedStyles =
-    selectedStyles && selectedStyles.length > 0
-      ? selectedStyles
-      : toSafeArray(selectedStyle)
+  const serverSelectedStyles = useMemo(
+    () =>
+      selectedStyles && selectedStyles.length > 0
+        ? selectedStyles
+        : toSafeArray(selectedStyle),
+    [selectedStyles, selectedStyle]
+  )
 
-  const safeSelectedTimeSignatures =
-    selectedTimeSignatures && selectedTimeSignatures.length > 0
-      ? selectedTimeSignatures
-      : toSafeArray(selectedTimeSignature)
+  const serverSelectedTimeSignatures = useMemo(
+    () =>
+      selectedTimeSignatures && selectedTimeSignatures.length > 0
+        ? selectedTimeSignatures
+        : toSafeArray(selectedTimeSignature),
+    [selectedTimeSignatures, selectedTimeSignature]
+  )
+
+  const [draftKeys, setDraftKeys] = useState(serverSelectedKeys)
+  const [draftStyles, setDraftStyles] = useState(serverSelectedStyles)
+  const [draftTimeSignatures, setDraftTimeSignatures] = useState(
+    serverSelectedTimeSignatures
+  )
 
   useEffect(() => {
     setQuery(searchValue)
   }, [searchValue])
+
+  useEffect(() => {
+    if (!arraysMatch(draftKeys, serverSelectedKeys)) {
+      setDraftKeys(serverSelectedKeys)
+    }
+
+    if (!arraysMatch(draftStyles, serverSelectedStyles)) {
+      setDraftStyles(serverSelectedStyles)
+    }
+
+    if (!arraysMatch(draftTimeSignatures, serverSelectedTimeSignatures)) {
+      setDraftTimeSignatures(serverSelectedTimeSignatures)
+    }
+    // The draft values are intentionally omitted here.
+    // This effect syncs local optimistic state when the server URL state changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverSelectedKeys, serverSelectedStyles, serverSelectedTimeSignatures])
+
+  function buildParamsFromSelections({
+    nextQuery,
+    keys,
+    styles,
+    timeSignatures,
+  }: {
+    nextQuery: string
+    keys: string[]
+    styles: string[]
+    timeSignatures: string[]
+  }) {
+    const params = new URLSearchParams()
+
+    appendPreservedParams(params, preservedParams)
+
+    const trimmedQuery = nextQuery.trim()
+    if (trimmedQuery) {
+      params.set("q", trimmedQuery)
+    }
+
+    for (const key of keys) {
+      if (key) params.append("key", key)
+    }
+
+    for (const style of styles) {
+      if (style) params.append("style", style)
+    }
+
+    for (const timeSignature of timeSignatures) {
+      if (timeSignature) params.append("time_signature", timeSignature)
+    }
+
+    return params
+  }
 
   function navigateWithParams(params: URLSearchParams) {
     const href = params.toString() ? `${basePath}?${params.toString()}` : basePath
@@ -121,133 +206,136 @@ export default function PieceSearchFilters({
     })
   }
 
-  function buildParamsFromCurrentSearch() {
-    const params = new URLSearchParams()
+  function navigateWithDraftSelections({
+    keys = draftKeys,
+    styles = draftStyles,
+    timeSignatures = draftTimeSignatures,
+    nextQuery = query,
+  }: {
+    keys?: string[]
+    styles?: string[]
+    timeSignatures?: string[]
+    nextQuery?: string
+  }) {
+    const params = buildParamsFromSelections({
+      nextQuery,
+      keys,
+      styles,
+      timeSignatures,
+    })
 
-    appendPreservedParams(params, preservedParams)
-
-    const currentQuery = searchParams.get("q")
-    if (currentQuery) {
-      params.set("q", currentQuery)
-    }
-
-    for (const key of searchParams.getAll("key")) {
-      if (key) params.append("key", key)
-    }
-
-    for (const style of searchParams.getAll("style")) {
-      if (style) params.append("style", style)
-    }
-
-    for (const timeSignature of searchParams.getAll("time_signature")) {
-      if (timeSignature) params.append("time_signature", timeSignature)
-    }
-
-    return params
+    navigateWithParams(params)
   }
 
   function handleMultiCheckboxChange(
-    groupName: "key" | "style" | "time_signature",
+    groupName: FilterGroup,
     value: string,
     checked: boolean
   ) {
-    const params = buildParamsFromCurrentSearch()
-
-    const existingValues = params.getAll(groupName).filter(Boolean)
-    params.delete(groupName)
-
-    const nextValues = checked
-      ? Array.from(new Set([...existingValues, value]))
-      : existingValues.filter((existingValue) => existingValue !== value)
-
-    for (const nextValue of nextValues) {
-      params.append(groupName, nextValue)
+    if (groupName === "key") {
+      const nextKeys = toggleValue(draftKeys, value, checked)
+      setDraftKeys(nextKeys)
+      navigateWithDraftSelections({ keys: nextKeys })
+      return
     }
 
-    navigateWithParams(params)
+    if (groupName === "style") {
+      const nextStyles = toggleValue(draftStyles, value, checked)
+      setDraftStyles(nextStyles)
+      navigateWithDraftSelections({ styles: nextStyles })
+      return
+    }
+
+    const nextTimeSignatures = toggleValue(
+      draftTimeSignatures,
+      value,
+      checked
+    )
+    setDraftTimeSignatures(nextTimeSignatures)
+    navigateWithDraftSelections({ timeSignatures: nextTimeSignatures })
   }
 
   function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    const params = new URLSearchParams()
-
-    appendPreservedParams(params, preservedParams)
-
     const trimmedQuery = query.trim()
-    if (trimmedQuery) {
-      params.set("q", trimmedQuery)
-    }
+    setQuery(trimmedQuery)
 
-    for (const key of safeSelectedKeys) {
-      params.append("key", key)
-    }
-
-    for (const style of safeSelectedStyles) {
-      params.append("style", style)
-    }
-
-    for (const timeSignature of safeSelectedTimeSignatures) {
-      params.append("time_signature", timeSignature)
-    }
-
-    navigateWithParams(params)
+    navigateWithDraftSelections({
+      nextQuery: trimmedQuery,
+    })
   }
 
-  function handleRemoveSingleFilter(
-    groupName: "key" | "style" | "time_signature",
-    value: string
-  ) {
-    const params = buildParamsFromCurrentSearch()
-    const existingValues = params.getAll(groupName).filter(Boolean)
-
-    params.delete(groupName)
-
-    for (const existingValue of existingValues) {
-      if (existingValue !== value) {
-        params.append(groupName, existingValue)
-      }
+  function handleRemoveSingleFilter(groupName: FilterGroup, value: string) {
+    if (groupName === "key") {
+      const nextKeys = draftKeys.filter(
+        (existingValue) => existingValue !== value
+      )
+      setDraftKeys(nextKeys)
+      navigateWithDraftSelections({ keys: nextKeys })
+      return
     }
 
-    navigateWithParams(params)
+    if (groupName === "style") {
+      const nextStyles = draftStyles.filter(
+        (existingValue) => existingValue !== value
+      )
+      setDraftStyles(nextStyles)
+      navigateWithDraftSelections({ styles: nextStyles })
+      return
+    }
+
+    const nextTimeSignatures = draftTimeSignatures.filter(
+      (existingValue) => existingValue !== value
+    )
+    setDraftTimeSignatures(nextTimeSignatures)
+    navigateWithDraftSelections({ timeSignatures: nextTimeSignatures })
   }
 
   function handleClearAll() {
-    const params = new URLSearchParams()
+    setQuery("")
+    setDraftKeys([])
+    setDraftStyles([])
+    setDraftTimeSignatures([])
 
-    appendPreservedParams(params, preservedParams)
+    const params = buildParamsFromSelections({
+      nextQuery: "",
+      keys: [],
+      styles: [],
+      timeSignatures: [],
+    })
 
     navigateWithParams(params)
     setIsPanelOpen(false)
   }
 
   const activeFilterCount =
-    safeSelectedKeys.length +
-    safeSelectedStyles.length +
-    safeSelectedTimeSignatures.length
+    draftKeys.length + draftStyles.length + draftTimeSignatures.length
+
+  const optimisticHasActiveFilters = query.trim() !== "" || activeFilterCount > 0
 
   const activeChips = useMemo(
     () => [
-      ...safeSelectedKeys.map((value) => ({
+      ...draftKeys.map((value) => ({
         id: buildChipId("key", value),
         group: "key" as const,
         groupLabel: formatFilterLabel("key"),
         value,
       })),
-      ...safeSelectedStyles.map((value) => ({
+      ...draftStyles.map((value) => ({
         id: buildChipId("style", value),
         group: "style" as const,
         groupLabel: formatFilterLabel("style"),
         value,
       })),
-      ...safeSelectedTimeSignatures.map((value) => ({
+      ...draftTimeSignatures.map((value) => ({
         id: buildChipId("time_signature", value),
         group: "time_signature" as const,
         groupLabel: formatFilterLabel("time_signature"),
         value,
       })),
     ],
-    [safeSelectedKeys, safeSelectedStyles, safeSelectedTimeSignatures]
+    [draftKeys, draftStyles, draftTimeSignatures]
   )
 
   return (
@@ -262,7 +350,7 @@ export default function PieceSearchFilters({
       onTogglePanel={() => setIsPanelOpen((current) => !current)}
       panelId="piece-filter-panel"
       activeFilterCount={activeFilterCount}
-      hasActiveFilters={hasActiveFilters}
+      hasActiveFilters={optimisticHasActiveFilters || hasActiveFilters}
       onClearFilters={handleClearAll}
       activeChips={
         activeChips.length > 0
@@ -271,7 +359,7 @@ export default function PieceSearchFilters({
                 key={chip.id}
                 label={`${chip.groupLabel}: ${chip.value}`}
                 onRemove={() => handleRemoveSingleFilter(chip.group, chip.value)}
-                disabled={isPending}
+                disabled={false}
               />
             ))
           : null
@@ -281,17 +369,13 @@ export default function PieceSearchFilters({
           id="piece-filter-panel"
           title="Filter tunes"
           description="Select as many filters as you like."
-          hasActiveFilters={hasActiveFilters}
+          hasActiveFilters={optimisticHasActiveFilters || hasActiveFilters}
           isPending={isPending}
           onClearAll={handleClearAll}
           onClose={() => setIsPanelOpen(false)}
         >
           <div className="grid gap-4 md:grid-cols-3">
-            <FilterSection
-              title="Key"
-              count={safeSelectedKeys.length}
-              disabled={isPending}
-            >
+            <FilterSection title="Key" count={draftKeys.length} disabled={false}>
               {availableKeys.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   No keys available.
@@ -303,7 +387,7 @@ export default function PieceSearchFilters({
                       type="checkbox"
                       name="key"
                       value={key}
-                      checked={safeSelectedKeys.includes(key)}
+                      checked={draftKeys.includes(key)}
                       onChange={(event) =>
                         handleMultiCheckboxChange(
                           "key",
@@ -320,8 +404,8 @@ export default function PieceSearchFilters({
 
             <FilterSection
               title="Style"
-              count={safeSelectedStyles.length}
-              disabled={isPending}
+              count={draftStyles.length}
+              disabled={false}
             >
               {availableStyles.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
@@ -334,7 +418,7 @@ export default function PieceSearchFilters({
                       type="checkbox"
                       name="style"
                       value={style}
-                      checked={safeSelectedStyles.includes(style)}
+                      checked={draftStyles.includes(style)}
                       onChange={(event) =>
                         handleMultiCheckboxChange(
                           "style",
@@ -351,8 +435,8 @@ export default function PieceSearchFilters({
 
             <FilterSection
               title="Time"
-              count={safeSelectedTimeSignatures.length}
-              disabled={isPending}
+              count={draftTimeSignatures.length}
+              disabled={false}
             >
               {availableTimeSignatures.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
@@ -368,9 +452,7 @@ export default function PieceSearchFilters({
                       type="checkbox"
                       name="time_signature"
                       value={timeSignature}
-                      checked={safeSelectedTimeSignatures.includes(
-                        timeSignature
-                      )}
+                      checked={draftTimeSignatures.includes(timeSignature)}
                       onChange={(event) =>
                         handleMultiCheckboxChange(
                           "time_signature",
