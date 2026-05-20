@@ -1,22 +1,12 @@
 import PracticeDiaryIndex from "@/components/practice-diary/PracticeDiaryIndex"
 import PracticeDiaryNav from "@/components/practice-diary/PracticeDiaryNav"
-import {
-  loadPracticeIndexData,
-  type PracticeIndexSearchParams,
-} from "@/lib/loaders/practice-index"
+import { loadPracticeIndexData } from "@/lib/loaders/practice-index"
 import { requirePracticeDiaryEnabled } from "@/lib/loaders/practice-diary"
 
-type PracticeDiaryIndexPageProps = {
-  searchParams?: Promise<PracticeIndexSearchParams>
-}
-
-export default async function PracticeDiaryIndexPage({
-  searchParams,
-}: PracticeDiaryIndexPageProps) {
+export default async function PracticeDiaryIndexPage() {
   await requirePracticeDiaryEnabled()
 
-  const resolvedSearchParams = await searchParams
-  const indexData = await loadPracticeIndexData(resolvedSearchParams)
+  const indexData = await loadPracticeIndexData()
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
@@ -30,8 +20,8 @@ export default async function PracticeDiaryIndexPage({
         </h1>
 
         <p className="mt-3 hidden max-w-3xl text-base leading-7 text-muted-foreground md:block">
-          Find practice foci, categories, tune notes, review notes, and daily
-          reflections without digging through the diary day by day.
+          Search across foci, note categories, and recent practice notes without
+          digging through the diary day by day.
         </p>
 
         <PracticeDiaryNav active="index" />

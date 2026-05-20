@@ -24,6 +24,7 @@ export type PracticeIndexFilters = {
 export type PracticeIndexCategoryOption = {
   id: number
   name: string
+  prompt: string | null
 }
 
 export type PracticeIndexItemKind =
@@ -31,6 +32,13 @@ export type PracticeIndexItemKind =
   | "review_note"
   | "tune_note"
   | "general_note"
+
+export type PracticeIndexItemFocus = {
+  id: number
+  title: string
+  description: string | null
+  status: string
+}
 
 export type PracticeIndexItem = {
   id: string
@@ -45,6 +53,8 @@ export type PracticeIndexItem = {
   reviewEventId: number | null
   categoryId: number | null
   categoryName: string | null
+  categoryPrompt: string | null
+  focus: PracticeIndexItemFocus | null
   piece: Piece | null
 }
 
@@ -52,6 +62,7 @@ export type PracticeIndexCategoryGroup = {
   key: string
   categoryId: number | null
   categoryName: string
+  categoryPrompt: string | null
   noteCount: number
   tuneCount: number
   latestDate: string
@@ -81,6 +92,7 @@ export type PracticeIndexFocusSummary = {
   status: PracticeIndexFocusStatus
   targetDate: string | null
   tuneCount: number
+  tuneTitles: string[]
   noteCount: number
   lastTouchedDate: string | null
   lastTouchedAt: string | null
@@ -151,12 +163,20 @@ type PracticeDayRow = {
 type PracticeNoteCategoryRow = {
   id: number
   name: string
+  prompt: string | null
 }
 
 type PracticeCategoryDetailRow = {
   id: number
   name: string
   prompt: string | null
+}
+
+type PracticeNoteFocusRow = {
+  id: number
+  title: string
+  description: string | null
+  status: string
 }
 
 type PracticeNoteRow = {
@@ -167,6 +187,7 @@ type PracticeNoteRow = {
   piece_id: number | null
   review_event_id: number | null
   category_id: number | null
+  focus_id: number | null
   body: string
   created_at: string
   updated_at: string | null
@@ -174,10 +195,12 @@ type PracticeNoteRow = {
     | {
         id: number
         name: string
+        prompt: string | null
       }
     | {
         id: number
         name: string
+        prompt: string | null
       }[]
     | null
   pieces: Piece | Piece[] | null
@@ -218,6 +241,14 @@ type PracticeFocusRow = {
 type PracticeFocusTuneRow = {
   focus_id: number
   piece_id: number
+  pieces:
+    | {
+        title: string | null
+      }
+    | {
+        title: string | null
+      }[]
+    | null
 }
 
 type PracticeFocusNoteRow = {
@@ -317,6 +348,9 @@ function itemMatchesSearch({
   const searchableText = [
     item.body,
     item.categoryName,
+    item.categoryPrompt,
+    item.focus?.title,
+    item.focus?.description,
     item.piece?.title,
     item.piece?.key,
     item.piece?.style,
@@ -353,6 +387,7 @@ function buildCategoryGroups({
   for (const note of notes) {
     const key = note.categoryId ? String(note.categoryId) : "uncategorised"
     const categoryName = note.categoryName ?? "Uncategorised"
+    const categoryPrompt = note.categoryPrompt ?? null
 
     const existing = groupsByKey.get(key)
 
@@ -361,6 +396,7 @@ function buildCategoryGroups({
         key,
         categoryId: note.categoryId,
         categoryName,
+        categoryPrompt,
         noteCount: 1,
         tuneCount: note.piece ? 1 : 0,
         latestDate: note.noteDate,
@@ -372,6 +408,10 @@ function buildCategoryGroups({
 
     existing.noteCount += 1
     existing.notes.push(note)
+
+    if (!existing.categoryPrompt && categoryPrompt) {
+      existing.categoryPrompt = categoryPrompt
+    }
 
     const tuneIds = new Set(
       existing.notes
@@ -450,13 +490,22 @@ function buildFocusSummaries({
   focusTunes: PracticeFocusTuneRow[]
   focusNotes: PracticeIndexFocusNoteWithFocusId[]
 }) {
-  const tuneCountsByFocusId = new Map<number, Set<number>>()
+  const tuneIdsByFocusId = new Map<number, Set<number>>()
+  const tuneTitlesByFocusId = new Map<number, Set<string>>()
   const notesByFocusId = new Map<number, PracticeIndexFocusNote[]>()
 
   for (const focusTune of focusTunes) {
-    const existing = tuneCountsByFocusId.get(focusTune.focus_id) ?? new Set()
-    existing.add(focusTune.piece_id)
-    tuneCountsByFocusId.set(focusTune.focus_id, existing)
+    const tuneIds = tuneIdsByFocusId.get(focusTune.focus_id) ?? new Set()
+    tuneIds.add(focusTune.piece_id)
+    tuneIdsByFocusId.set(focusTune.focus_id, tuneIds)
+
+    const title = getSingleJoinedRow(focusTune.pieces)?.title?.trim()
+
+    if (title) {
+      const titles = tuneTitlesByFocusId.get(focusTune.focus_id) ?? new Set()
+      titles.add(title)
+      tuneTitlesByFocusId.set(focusTune.focus_id, titles)
+    }
   }
 
   for (const note of focusNotes) {
@@ -478,6 +527,9 @@ function buildFocusSummaries({
       })
 
       const latestNote = notes[0] ?? null
+      const tuneTitles = Array.from(
+        tuneTitlesByFocusId.get(focus.id) ?? []
+      ).sort((a, b) => a.localeCompare(b))
 
       return {
         id: focus.id,
@@ -485,7 +537,8 @@ function buildFocusSummaries({
         description: focus.description,
         status: focus.status,
         targetDate: focus.target_date,
-        tuneCount: tuneCountsByFocusId.get(focus.id)?.size ?? 0,
+        tuneCount: tuneIdsByFocusId.get(focus.id)?.size ?? 0,
+        tuneTitles,
         noteCount: notes.length,
         lastTouchedDate: latestNote?.noteDate ?? null,
         lastTouchedAt: latestNote?.createdAt ?? null,
@@ -598,7 +651,9 @@ async function loadPracticeFocusSummaries({
   supabase,
   userId,
 }: {
-  supabase: Awaited<ReturnType<typeof import("@/lib/supabase/server").createClient>>
+  supabase: Awaited<
+    ReturnType<typeof import("@/lib/supabase/server").createClient>
+  >
   userId: string
 }) {
   const { data: focusData, error: focusError } = await supabase
@@ -631,7 +686,15 @@ async function loadPracticeFocusSummaries({
 
   const { data: focusTuneData, error: focusTuneError } = await supabase
     .from("practice_focus_tunes")
-    .select("focus_id, piece_id")
+    .select(
+      `
+        focus_id,
+        piece_id,
+        pieces (
+          title
+        )
+      `
+    )
     .in("focus_id", focusIds)
 
   if (focusTuneError) {
@@ -738,7 +801,7 @@ export async function loadPracticeIndexData(
 
   const { data: categoriesData, error: categoriesError } = await supabase
     .from("practice_note_categories")
-    .select("id, name")
+    .select("id, name, prompt")
     .eq("user_id", user.id)
     .eq("is_active", true)
     .order("sort_order", { ascending: true })
@@ -764,12 +827,14 @@ export async function loadPracticeIndexData(
           piece_id,
           review_event_id,
           category_id,
+          focus_id,
           body,
           created_at,
           updated_at,
           practice_note_categories (
             id,
-            name
+            name,
+            prompt
           ),
           pieces (
             id,
@@ -798,6 +863,35 @@ export async function loadPracticeIndexData(
     noteRows.push(...((notesData ?? []) as unknown as PracticeNoteRow[]))
   }
 
+  const focusIds = Array.from(
+    new Set(
+      noteRows
+        .map((note) => note.focus_id)
+        .filter((focusId): focusId is number => typeof focusId === "number")
+    )
+  )
+
+  let fociById = new Map<number, PracticeNoteFocusRow>()
+
+  if (focusIds.length > 0) {
+    const { data: focusRows, error: focusRowsError } = await supabase
+      .from("practice_foci")
+      .select("id, title, description, status")
+      .eq("user_id", user.id)
+      .in("id", focusIds)
+
+    if (focusRowsError) {
+      throw new Error(focusRowsError.message)
+    }
+
+    fociById = new Map(
+      ((focusRows ?? []) as PracticeNoteFocusRow[]).map((focus) => [
+        focus.id,
+        focus,
+      ])
+    )
+  }
+
   const noteItems: PracticeIndexItem[] = []
 
   for (const note of noteRows) {
@@ -808,6 +902,7 @@ export async function loadPracticeIndexData(
     }
 
     const category = getSingleJoinedRow(note.practice_note_categories)
+    const focus = note.focus_id ? fociById.get(note.focus_id) ?? null : null
     const piece = getSingleJoinedRow(note.pieces)
 
     noteItems.push({
@@ -823,6 +918,15 @@ export async function loadPracticeIndexData(
       reviewEventId: note.review_event_id,
       categoryId: category?.id ?? null,
       categoryName: category?.name ?? null,
+      categoryPrompt: category?.prompt ?? null,
+      focus: focus
+        ? {
+            id: focus.id,
+            title: focus.title,
+            description: focus.description,
+            status: focus.status,
+          }
+        : null,
       piece,
     })
   }
@@ -842,6 +946,8 @@ export async function loadPracticeIndexData(
       reviewEventId: null,
       categoryId: null,
       categoryName: null,
+      categoryPrompt: null,
+      focus: null,
       piece: null,
     }))
 

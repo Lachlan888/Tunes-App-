@@ -136,7 +136,7 @@ export default function LibraryResultsHeader({
     <section
       className={
         isBottom
-          ? "mt-8 rounded-2xl border border-border bg-card p-5 shadow-sm"
+          ? "mt-8 hidden rounded-2xl border border-border bg-card p-5 shadow-sm md:block"
           : "mb-5"
       }
     >
@@ -147,6 +147,7 @@ export default function LibraryResultsHeader({
               <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Catalogue
               </p>
+
               <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
                 All tunes
               </h2>
@@ -166,9 +167,15 @@ export default function LibraryResultsHeader({
               ? `, page ${currentPage} of ${totalPages}`
               : ""}
           </p>
+
+          {!isBottom && displayedCount > 1 ? (
+            <p className="mt-1 text-sm text-muted-foreground md:hidden">
+              Swipe or use Previous / Next to move through these results.
+            </p>
+          ) : null}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="hidden flex-wrap items-center justify-between gap-4 md:flex">
           {hasMultiplePages ? (
             <nav
               aria-label="Tune catalogue pages"

@@ -1,7 +1,9 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import CardPager from "@/components/ui/CardPager"
 import PracticeReviewCard from "@/components/practice/PracticeReviewCard"
+import { joinClasses } from "@/components/ui/buttonStyles"
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 import type { BacklogGroupSummary, BacklogTier } from "@/lib/types"
@@ -13,6 +15,14 @@ type CatchUpSectionProps = {
   defaultOpen?: boolean
   practiceDiaryEnabled: boolean
   noteCategories: PracticeNoteCategory[]
+}
+
+type CatchUpFilter = "all" | BacklogTier
+
+type FilterOption = {
+  value: CatchUpFilter
+  label: string
+  count: number
 }
 
 function getStatusBadgeClasses(label: string | null) {
@@ -31,6 +41,17 @@ function getStatusBadgeClasses(label: string | null) {
 function getSummaryFilterLabel(tier: BacklogTier) {
   switch (tier) {
     case "due_now":
+      return "1–7"
+    case "overdue":
+      return "8–21"
+    case "overdue_longest":
+      return "22+"
+  }
+}
+
+function getLongFilterLabel(tier: BacklogTier) {
+  switch (tier) {
+    case "due_now":
       return "1–7 days late"
     case "overdue":
       return "8–21 days late"
@@ -39,15 +60,59 @@ function getSummaryFilterLabel(tier: BacklogTier) {
   }
 }
 
-function getActiveFilterText(tier: BacklogTier) {
-  switch (tier) {
-    case "due_now":
-      return "Due now, 1–7 days late"
-    case "overdue":
-      return "Overdue, 8–21 days late"
-    case "overdue_longest":
-      return "Overdue, 22+ days late"
+function getFilterDescription(activeFilter: CatchUpFilter) {
+  if (activeFilter === "all") {
+    return "Showing all catch-up tunes."
   }
+
+  return `Showing ${getLongFilterLabel(activeFilter)}.`
+}
+
+function getBacklogCount(
+  backlogSummary: BacklogGroupSummary[],
+  tier: BacklogTier
+) {
+  return backlogSummary.find((group) => group.tier === tier)?.count ?? 0
+}
+
+function CatchUpReviewPager({
+  queue,
+  redirectTo,
+  practiceDiaryEnabled,
+  noteCategories,
+  emptyMessage,
+}: {
+  queue: ReviewQueueItem[]
+  redirectTo: string
+  practiceDiaryEnabled: boolean
+  noteCategories: PracticeNoteCategory[]
+  emptyMessage: string
+}) {
+  return (
+    <CardPager
+      items={queue}
+      getKey={(userPiece) => userPiece.id}
+      label="Catch-up review queue"
+      previousLabel="Previous"
+      nextLabel="Next"
+      unstyledCard
+      emptyState={
+        <p className="rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+          {emptyMessage}
+        </p>
+      }
+      renderItem={(userPiece) => (
+        <PracticeReviewCard
+          userPiece={userPiece}
+          redirectTo={redirectTo}
+          badgeLabel={userPiece.backlog_label ?? "Overdue"}
+          badgeClassName={getStatusBadgeClasses(userPiece.backlog_label)}
+          practiceDiaryEnabled={practiceDiaryEnabled}
+          noteCategories={noteCategories}
+        />
+      )}
+    />
+  )
 }
 
 export default function CatchUpSection({
@@ -58,102 +123,136 @@ export default function CatchUpSection({
   practiceDiaryEnabled,
   noteCategories,
 }: CatchUpSectionProps) {
-  const [activeTier, setActiveTier] = useState<BacklogTier | null>(null)
+  const [activeFilter, setActiveFilter] = useState<CatchUpFilter>("all")
 
   const visibleCatchUpQueue = useMemo(() => {
-    if (!activeTier) {
+    if (activeFilter === "all") {
       return catchUpQueue
     }
 
     return catchUpQueue.filter(
-      (userPiece) => userPiece.backlog_tier === activeTier
+      (userPiece) => userPiece.backlog_tier === activeFilter
     )
-  }, [activeTier, catchUpQueue])
+  }, [activeFilter, catchUpQueue])
+
+  const filterOptions: FilterOption[] = [
+    {
+      value: "all",
+      label: "All",
+      count: catchUpQueue.length,
+    },
+    {
+      value: "due_now",
+      label: getSummaryFilterLabel("due_now"),
+      count: getBacklogCount(backlogSummary, "due_now"),
+    },
+    {
+      value: "overdue",
+      label: getSummaryFilterLabel("overdue"),
+      count: getBacklogCount(backlogSummary, "overdue"),
+    },
+    {
+      value: "overdue_longest",
+      label: getSummaryFilterLabel("overdue_longest"),
+      count: getBacklogCount(backlogSummary, "overdue_longest"),
+    },
+  ]
 
   return (
-    <section
-      id="catch-up"
-      className="mt-5 rounded-2xl border border-border bg-card p-4 shadow-sm md:mt-8 md:rounded-3xl md:p-6"
-    >
-      <details open={defaultOpen}>
-        <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
+    <section id="catch-up" className="mt-6 md:mt-8">
+      <div className="md:hidden">
+        <h2 className="px-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Catch up ({catchUpQueue.length})
-        </summary>
-
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Catch up on overdue tunes.
-        </p>
+        </h2>
 
         {catchUpQueue.length === 0 ? (
           <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
             Nothing overdue right now.
           </p>
         ) : (
-          <>
-            <ul className="mt-4 grid gap-2 md:mt-5 md:grid-cols-3 md:gap-3">
-              {backlogSummary.map((group) => {
-                const isActive = activeTier === group.tier
+          <div className="mt-4 grid gap-4">
+            <p className="px-1 text-sm leading-6 text-muted-foreground">
+              {catchUpQueue.length} overdue tune
+              {catchUpQueue.length === 1 ? "" : "s"}. Work through one at a
+              time.
+            </p>
 
-                return (
-                  <li key={group.tier}>
+            <CatchUpReviewPager
+              queue={catchUpQueue}
+              redirectTo={redirectTo}
+              practiceDiaryEnabled={practiceDiaryEnabled}
+              noteCategories={noteCategories}
+              emptyMessage="Nothing overdue right now."
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="hidden md:block">
+        <details open={defaultOpen}>
+          <summary className="cursor-pointer px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Catch up ({catchUpQueue.length})
+          </summary>
+
+          {catchUpQueue.length === 0 ? (
+            <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+              Nothing overdue right now.
+            </p>
+          ) : (
+            <div className="mt-4 grid gap-4">
+              <p className="px-1 text-sm leading-6 text-muted-foreground">
+                Catch up on overdue tunes one at a time.
+              </p>
+
+              <div
+                className="grid grid-cols-4 rounded-full border border-border bg-background/70 p-1 shadow-sm"
+                role="tablist"
+                aria-label="Catch-up backlog filter"
+              >
+                {filterOptions.map((option) => {
+                  const isActive = activeFilter === option.value
+
+                  return (
                     <button
+                      key={option.value}
                       type="button"
-                      aria-pressed={isActive}
-                      onClick={() =>
-                        setActiveTier((currentTier) =>
-                          currentTier === group.tier ? null : group.tier
-                        )
-                      }
-                      className={`flex w-full items-center justify-between rounded-2xl border border-border bg-background/70 px-3 py-3 text-left transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:px-4 ${
-                        isActive ? "ring-2 ring-[var(--focus-ring)]" : ""
-                      }`}
+                      role="tab"
+                      aria-selected={isActive}
+                      onClick={() => setActiveFilter(option.value)}
+                      className={joinClasses(
+                        "min-h-10 rounded-full px-2 py-2 text-center text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
                     >
-                      <span className="text-sm font-semibold text-foreground">
-                        {getSummaryFilterLabel(group.tier)}
+                      <span className="block leading-tight">
+                        {option.label}
                       </span>
-                      <span className="text-sm font-medium text-muted-foreground">
-                        {group.count}
+                      <span className="block text-[0.68rem] leading-tight opacity-80">
+                        {option.count}
                       </span>
                     </button>
-                  </li>
-                )
-              })}
-            </ul>
+                  )
+                })}
+              </div>
 
-            {activeTier ? (
-              <p className="mt-4 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-muted-foreground">
-                Filter applied:{" "}
-                <span className="font-semibold text-foreground">
-                  {getActiveFilterText(activeTier)}
-                </span>
-                . Showing {visibleCatchUpQueue.length} of {catchUpQueue.length}{" "}
-                catch-up tunes. Click the same filter again to show all.
+              <p className="px-1 text-sm leading-6 text-muted-foreground">
+                {getFilterDescription(activeFilter)}{" "}
+                {visibleCatchUpQueue.length} of {catchUpQueue.length} tunes.
               </p>
-            ) : (
-              <p className="mt-4 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-muted-foreground">
-                No filter applied. Showing all {catchUpQueue.length} catch-up
-                tunes.
-              </p>
-            )}
 
-            <div className="mt-4 grid gap-4 md:mt-6 md:grid-cols-2 xl:grid-cols-3">
-              {visibleCatchUpQueue.map((userPiece) => (
-                <PracticeReviewCard
-                  key={userPiece.id}
-                  userPiece={userPiece}
-                  redirectTo={redirectTo}
-                  badgeLabel={userPiece.backlog_label ?? "Overdue"}
-                  badgeClassName={getStatusBadgeClasses(
-                    userPiece.backlog_label
-                  )}
-                  practiceDiaryEnabled={practiceDiaryEnabled}
-                  noteCategories={noteCategories}
-                />
-              ))}
+              <CatchUpReviewPager
+                queue={visibleCatchUpQueue}
+                redirectTo={redirectTo}
+                practiceDiaryEnabled={practiceDiaryEnabled}
+                noteCategories={noteCategories}
+                emptyMessage="No catch-up tunes match this filter."
+              />
             </div>
-          </>
-        )}
-      </details>
+          )}
+        </details>
+      </div>
     </section>
   )
 }

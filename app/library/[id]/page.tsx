@@ -7,6 +7,7 @@ import PieceMediaLinksSection from "@/components/library/PieceMediaLinksSection"
 import PieceSheetMusicSection from "@/components/library/PieceSheetMusicSection"
 import TuneCanonicalDetailsCard from "@/components/library/TuneCanonicalDetailsCard"
 import TuneDetailActions from "@/components/library/TuneDetailActions"
+import TuneDetailMobileSwitcher from "@/components/library/TuneDetailMobileSwitcher"
 import TunePageReviewPanel from "@/components/library/TunePageReviewPanel"
 import TunePrivateNotesSection from "@/components/library/TunePrivateNotesSection"
 import TunePracticeHistorySection from "@/components/practice-diary/TunePracticeHistorySection"
@@ -16,6 +17,7 @@ import {
   addPieceSheetMusicLink,
 } from "@/lib/actions/piece-links"
 import { addToLearningList } from "@/lib/actions/lists"
+import { addReferenceUrlToPiece } from "@/lib/actions/reference-media"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadTuneDetailData } from "@/lib/loaders/tune-detail"
 import { TUNE_DETAIL_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
@@ -176,7 +178,39 @@ export default async function PiecePage({
         </div>
       </section>
 
-      <div className="mt-6 grid min-w-0 grid-cols-1 gap-6 sm:mt-8 sm:gap-8 xl:grid-cols-2 2xl:grid-cols-3">
+      <div className="mt-5 md:mt-8">
+        <TuneDetailMobileSwitcher
+          pieceId={pieceId}
+          currentUserId={user.id}
+          currentUserRole={currentUserRole}
+          redirectTo={redirectTo}
+          piece={typedPiece}
+          userPiece={typedUserPiece}
+          userKnownPiece={typedUserKnownPiece}
+          userPieceMetadata={typedUserPieceMetadata}
+          sheetMusicLinks={typedSheetMusicLinks}
+          mediaLinks={typedMediaLinks}
+          mediaLoops={typedMediaLoops}
+          pieceComments={typedPieceComments}
+          pieceLoreEntries={typedPieceLoreEntries}
+          learningLists={typedLearningLists}
+          learningListItems={typedLearningListItems}
+          practiceNotes={typedPracticeNotes}
+          tunePagePreferences={typedTunePagePreferences}
+          practiceDiaryEnabled={practiceDiaryEnabled}
+          practiceNoteCategories={practiceNoteCategories}
+          styleOptions={styleOptions}
+          profileMap={profileMap}
+          startLearning={startLearning}
+          addToLearningList={addToLearningList}
+          upsertUserPieceNotes={upsertUserPieceNotes}
+          addPieceMediaLink={addPieceMediaLink}
+          addPieceSheetMusicLink={addPieceSheetMusicLink}
+          addReferenceUrlToPiece={addReferenceUrlToPiece}
+        />
+      </div>
+
+      <div className="mt-6 hidden min-w-0 grid-cols-1 gap-6 sm:mt-8 sm:gap-8 md:grid xl:grid-cols-2 2xl:grid-cols-3">
         <div className="min-w-0 space-y-6 sm:space-y-8">
           {showTuneSection("tune_state") ? (
             <TuneDetailActions

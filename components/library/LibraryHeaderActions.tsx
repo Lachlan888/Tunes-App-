@@ -12,7 +12,7 @@ export default function LibraryHeaderActions({
   learningLists,
 }: LibraryHeaderActionsProps) {
   return (
-    <div className="mb-8 flex flex-wrap items-center gap-3">
+    <div className="mb-6 grid gap-3 md:mb-8 md:flex md:flex-wrap md:items-center">
       <CreateTuneModal
         styleOptions={styleOptions}
         learningLists={learningLists}

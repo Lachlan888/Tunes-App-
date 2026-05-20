@@ -3,7 +3,7 @@
 import { useState } from "react"
 import CreateTuneForm from "@/components/library/CreateTuneForm"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
-import { buttonStyles } from "@/components/ui/buttonStyles"
+import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import { createTune } from "@/lib/actions/pieces"
 
 type StyleOption = {
@@ -41,8 +41,12 @@ export default function CreateTuneModal({
   }
 
   return (
-    <section>
-      <button type="button" onClick={handleOpen} className={buttonStyles.primary}>
+    <section className="w-full md:w-auto">
+      <button
+        type="button"
+        onClick={handleOpen}
+        className={joinClasses(buttonStyles.primary, "w-full md:w-auto")}
+      >
         Create Tune
       </button>
 

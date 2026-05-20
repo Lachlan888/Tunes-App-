@@ -1,3 +1,6 @@
+"use client"
+
+import CardPager from "@/components/ui/CardPager"
 import PracticeReviewCard from "@/components/practice/PracticeReviewCard"
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
@@ -16,11 +19,8 @@ export default function DueTodaySection({
   noteCategories,
 }: DueTodaySectionProps) {
   return (
-    <section
-      id="due-today"
-      className="mt-5 rounded-2xl border border-border bg-card p-4 shadow-sm md:mt-8 md:rounded-3xl md:p-6"
-    >
-      <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
+    <section id="due-today" className="mt-6 md:mt-8">
+      <h2 className="px-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
         Due today
       </h2>
 
@@ -30,15 +30,27 @@ export default function DueTodaySection({
         </p>
       ) : (
         <>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground md:mt-4">
+          <p className="mt-3 px-1 text-sm leading-6 text-muted-foreground md:mt-4">
             {dueTodayPieces.length} tune
-            {dueTodayPieces.length === 1 ? "" : "s"} due today.
+            {dueTodayPieces.length === 1 ? "" : "s"} due today. Work through one
+            tune at a time.
           </p>
 
-          <div className="mt-4 grid min-w-0 grid-cols-1 gap-4 md:mt-6 md:grid-cols-2 xl:grid-cols-3">
-            {dueTodayPieces.map((userPiece) => (
+          <CardPager
+            className="mt-4 md:mt-6"
+            items={dueTodayPieces}
+            getKey={(userPiece) => userPiece.id}
+            label="Due today review queue"
+            previousLabel="Previous"
+            nextLabel="Next"
+            unstyledCard
+            emptyState={
+              <p className="rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+                No tunes due today.
+              </p>
+            }
+            renderItem={(userPiece) => (
               <PracticeReviewCard
-                key={userPiece.id}
                 userPiece={userPiece}
                 redirectTo={redirectTo}
                 badgeLabel="Due today"
@@ -46,8 +58,8 @@ export default function DueTodaySection({
                 practiceDiaryEnabled={practiceDiaryEnabled}
                 noteCategories={noteCategories}
               />
-            ))}
-          </div>
+            )}
+          />
         </>
       )}
     </section>

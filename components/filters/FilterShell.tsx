@@ -46,16 +46,16 @@ export default function FilterShell({
     <div
       ref={panelRef}
       className={joinClasses(
-        "relative mb-8 transition-opacity",
+        "relative mb-5 transition-opacity md:mb-8",
         isPending ? "opacity-80" : "opacity-100",
         className
       )}
     >
       <form
         onSubmit={onSearchSubmit}
-        className="rounded-2xl border border-border bg-card p-5 shadow-sm"
+        className="md:rounded-2xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm"
       >
-        <div className="flex flex-col gap-3 md:flex-row md:items-end">
+        <div className="grid gap-3 md:flex md:items-end">
           <div className="min-w-0 flex-1">
             <label
               htmlFor={`${panelId}-search`}
@@ -75,7 +75,7 @@ export default function FilterShell({
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:items-center">
             <button
               type="submit"
               className={buttonStyles.filterPrimary}
@@ -103,7 +103,7 @@ export default function FilterShell({
               <button
                 type="button"
                 onClick={onClearFilters}
-                className={buttonStyles.text}
+                className={joinClasses(buttonStyles.text, "col-span-2 md:col-span-1")}
                 disabled={isPending}
               >
                 Clear filters

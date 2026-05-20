@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useMemo, useState } from "react"
+import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import {
   formatFriendActivityRelativeTime,
   renderFriendActivityText,
@@ -68,25 +69,17 @@ function getLearningQueueMeta(options: {
 
 function MobileSectionHeading({
   title,
-  description,
   action,
 }: {
   title: string
-  description?: string
   action?: React.ReactNode
 }) {
   return (
-    <div className="flex items-start justify-between gap-4">
-      <div className="min-w-0">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          {title}
-        </h2>
-        {description ? (
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            {description}
-          </p>
-        ) : null}
-      </div>
+    <div className="flex items-start justify-between gap-4 px-1">
+      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        {title}
+      </h2>
+
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>
   )
@@ -116,6 +109,7 @@ function MobileStatGrid({
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             {item.label}
           </p>
+
           <p className="mt-2 font-serif text-3xl font-bold leading-none text-foreground">
             {item.value}
           </p>
@@ -146,9 +140,11 @@ function MobileRow({
         <p className="line-clamp-2 text-base font-semibold leading-6 text-foreground">
           {title}
         </p>
+
         {meta ? (
           <p className="mt-1 text-sm leading-5 text-muted-foreground">{meta}</p>
         ) : null}
+
         {detail ? (
           <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted-foreground">
             {detail}
@@ -210,36 +206,6 @@ function MobileSwitcher({
   )
 }
 
-function MobileStreaks({ streakSummary }: { streakSummary: StreakSummary }) {
-  return (
-    <div className="grid grid-cols-2 gap-2">
-      <div className="rounded-2xl border border-border bg-background/60 p-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Revision
-        </p>
-        <p className="mt-2 font-serif text-3xl font-bold leading-none text-foreground">
-          {streakSummary.current_revision_streak}
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Longest {streakSummary.longest_revision_streak}
-        </p>
-      </div>
-
-      <div className="rounded-2xl border border-border bg-background/60 p-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Practice
-        </p>
-        <p className="mt-2 font-serif text-3xl font-bold leading-none text-foreground">
-          {streakSummary.current_practice_streak}
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Longest {streakSummary.longest_practice_streak}
-        </p>
-      </div>
-    </div>
-  )
-}
-
 function TodayPanel({
   summary,
   streakSummary,
@@ -258,11 +224,6 @@ function TodayPanel({
         <MobilePanel>
           <MobileSectionHeading
             title="Today"
-            description={
-              summary.dueTodayCount === 0 && summary.needsAttentionCount === 0
-                ? "Nothing urgent today."
-                : "Reviews and catch-up work needing attention."
-            }
             action={
               <Link href="/review" className={buttonStyles.primary}>
                 Practice
@@ -290,37 +251,27 @@ function TodayPanel({
       ) : null}
 
       {isSectionVisible(homePreferences, "streaks") ? (
-        <MobilePanel>
-          <MobileSectionHeading title="Streaks" />
-          <div className="mt-4">
-            <MobileStreaks streakSummary={streakSummary} />
-          </div>
-        </MobilePanel>
+        <StreakSummarySection streakSummary={streakSummary} />
       ) : null}
 
       {isSectionVisible(homePreferences, "due_next") ? (
         <section className="space-y-2">
-          <MobileSectionHeading
-            title="Due next"
-            description={
-              summary.dueTodayPreview.length === 0
-                ? "No due tunes waiting."
-                : "The first few tunes waiting in Practice."
-            }
-          />
+          <MobileSectionHeading title="Due next" />
 
           {summary.dueTodayPreview.length === 0 ? (
             <MobileEmptyBlock>Nothing due today.</MobileEmptyBlock>
           ) : (
             <div className="rounded-3xl border border-border bg-card/70 px-4">
-              {summary.dueTodayPreview.slice(0, previewLimit).map((userPiece) => (
-                <MobileRow
-                  key={userPiece.user_piece_id}
-                  href={`/library/${userPiece.piece_id}`}
-                  title={userPiece.title}
-                  meta={`Stage ${userPiece.stage}`}
-                />
-              ))}
+              {summary.dueTodayPreview
+                .slice(0, previewLimit)
+                .map((userPiece) => (
+                  <MobileRow
+                    key={userPiece.user_piece_id}
+                    href={`/library/${userPiece.piece_id}`}
+                    title={userPiece.title}
+                    meta={`Stage ${userPiece.stage}`}
+                  />
+                ))}
             </div>
           )}
         </section>
@@ -361,10 +312,8 @@ function RepertoirePanel({
     <div className="space-y-5">
       {isSectionVisible(homePreferences, "repertoire_state") ? (
         <MobilePanel>
-          <MobileSectionHeading
-            title="Repertoire state"
-            description="Known tunes, active practice, and collections."
-          />
+          <MobileSectionHeading title="Repertoire state" />
+
           <div className="mt-4">
             <MobileStatGrid
               items={[
@@ -396,24 +345,22 @@ function RepertoirePanel({
 
       {isSectionVisible(homePreferences, "currently_in_practice") ? (
         <section className="space-y-2">
-          <MobileSectionHeading
-            title="Currently in practice"
-            description={`${summary.practiceCount} tune${
-              summary.practiceCount === 1 ? "" : "s"
-            } in the review system.`}
-          />
+          <MobileSectionHeading title="Currently in practice" />
+
           {summary.inPracticePreview.length === 0 ? (
             <MobileEmptyBlock>No tunes in practice yet.</MobileEmptyBlock>
           ) : (
             <div className="rounded-3xl border border-border bg-card/70 px-4">
-              {summary.inPracticePreview.slice(0, previewLimit).map((userPiece) => (
-                <MobileRow
-                  key={userPiece.user_piece_id}
-                  href={`/library/${userPiece.piece_id}`}
-                  title={userPiece.title}
-                  meta={`Stage ${userPiece.stage}`}
-                />
-              ))}
+              {summary.inPracticePreview
+                .slice(0, previewLimit)
+                .map((userPiece) => (
+                  <MobileRow
+                    key={userPiece.user_piece_id}
+                    href={`/library/${userPiece.piece_id}`}
+                    title={userPiece.title}
+                    meta={`Stage ${userPiece.stage}`}
+                  />
+                ))}
             </div>
           )}
         </section>
@@ -421,27 +368,27 @@ function RepertoirePanel({
 
       {isSectionVisible(homePreferences, "learning_queue") ? (
         <section className="space-y-2">
-          <MobileSectionHeading
-            title="Learning queue"
-            description="Tunes saved in lists before starting Practice."
-          />
+          <MobileSectionHeading title="Learning queue" />
+
           {summary.learningQueuePreview.length === 0 ? (
             <MobileEmptyBlock>
               Add tunes to lists before starting Practice to build this queue.
             </MobileEmptyBlock>
           ) : (
             <div className="rounded-3xl border border-border bg-card/70 px-4">
-              {summary.learningQueuePreview.slice(0, previewLimit).map((queueTune) => (
-                <MobileRow
-                  key={queueTune.piece_id}
-                  href={`/library/${queueTune.piece_id}`}
-                  title={queueTune.title}
-                  meta={getLearningQueueMeta({
-                    firstListName: queueTune.firstListName,
-                    listNames: queueTune.listNames,
-                  })}
-                />
-              ))}
+              {summary.learningQueuePreview
+                .slice(0, previewLimit)
+                .map((queueTune) => (
+                  <MobileRow
+                    key={queueTune.piece_id}
+                    href={`/library/${queueTune.piece_id}`}
+                    title={queueTune.title}
+                    meta={getLearningQueueMeta({
+                      firstListName: queueTune.firstListName,
+                      listNames: queueTune.listNames,
+                    })}
+                  />
+                ))}
             </div>
           )}
         </section>
@@ -451,15 +398,13 @@ function RepertoirePanel({
         <section className="space-y-2">
           <MobileSectionHeading
             title="Your lists"
-            description={`${summary.listCount} collection${
-              summary.listCount === 1 ? "" : "s"
-            }`}
             action={
               <Link href="/learning-lists" className={buttonStyles.secondary}>
                 View
               </Link>
             }
           />
+
           {summary.listPreview.length === 0 ? (
             <MobileEmptyBlock>No lists yet.</MobileEmptyBlock>
           ) : (
@@ -480,13 +425,13 @@ function RepertoirePanel({
         <section className="space-y-2">
           <MobileSectionHeading
             title="Badges"
-            description={`${summary.badgeSummary.receivedCount} received · ${summary.badgeSummary.createdCount} created`}
             action={
               <Link href="/badges" className={buttonStyles.secondary}>
                 View
               </Link>
             }
           />
+
           {recentBadges.length === 0 ? (
             <MobileEmptyBlock>No badges yet.</MobileEmptyBlock>
           ) : (
@@ -517,10 +462,8 @@ function SocialPanel({
   return (
     <div className="space-y-5">
       <MobilePanel>
-        <MobileSectionHeading
-          title="Social"
-          description="Friend activity, repertoire comparison, and shared discovery."
-        />
+        <MobileSectionHeading title="Social" />
+
         <div className="mt-4 flex flex-wrap gap-2">
           <Link href="/friends" className={buttonStyles.primary}>
             Friends
@@ -536,16 +479,8 @@ function SocialPanel({
 
       {isSectionVisible(homePreferences, "friend_activity") ? (
         <section className="space-y-2">
-          <MobileSectionHeading
-            title="Friend activity"
-            description={
-              recentFriendActivity.length === 0
-                ? "No recent friend activity yet."
-                : `${recentFriendActivity.length} recent item${
-                    recentFriendActivity.length === 1 ? "" : "s"
-                  }`
-            }
-          />
+          <MobileSectionHeading title="Friend activity" />
+
           {recentFriendActivity.length === 0 ? (
             <MobileEmptyBlock>No recent friend activity yet.</MobileEmptyBlock>
           ) : (
@@ -558,6 +493,7 @@ function SocialPanel({
                   <p className="leading-6 text-foreground">
                     {renderFriendActivityText(item)}
                   </p>
+
                   <p className="mt-1 text-xs font-medium text-muted-foreground">
                     {formatFriendActivityRelativeTime(item.created_at)}
                   </p>

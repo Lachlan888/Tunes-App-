@@ -63,6 +63,7 @@ function MobileReviewModeLink({
       >
         {label}
       </p>
+
       <p className="mt-2 font-serif text-3xl font-bold leading-none">
         {count}
       </p>
@@ -135,11 +136,6 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
             />
           </div>
 
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Choose a review mode, then use the review cards below. Diary and
-            Foci are separate practice tools.
-          </p>
-
           {showSection("practice_nav") ? (
             <div className="mt-4">
               <PracticeDiaryNav active="review" />
@@ -182,12 +178,6 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         ) : null}
       </section>
 
-      <div className="mt-5 md:hidden">
-        {showSection("streaks") ? (
-          <StreakSummarySection streakSummary={streakSummary} />
-        ) : null}
-      </div>
-
       {showSection("status_messages") ? (
         <PracticeStatusMessages
           practiceUpdate={practiceUpdate}
@@ -226,6 +216,12 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           />
         </div>
       ) : null}
+
+      <div className="mt-6 md:hidden">
+        {showSection("streaks") ? (
+          <StreakSummarySection streakSummary={streakSummary} />
+        ) : null}
+      </div>
 
       {showSection("active_practice") ? (
         <ActivePracticeSection
