@@ -7,6 +7,12 @@ import ClickableCard from "@/components/ui/ClickableCard"
 import { getStyleLabelsFromPiece } from "@/lib/search-filters"
 import type { Piece } from "@/lib/types"
 
+export type TuneCardListLink = {
+  id: number | string
+  name: string
+  href: string
+}
+
 type TuneCardProps = {
   id: Piece["id"]
   title: Piece["title"]
@@ -16,6 +22,7 @@ type TuneCardProps = {
   referenceUrl?: Piece["reference_url"]
   pieceStyles?: Piece["piece_styles"]
   listNames?: string[]
+  listLinks?: TuneCardListLink[]
   topRightAction?: ReactNode
   children?: ReactNode
 }
@@ -29,12 +36,20 @@ export default function TuneCard({
   referenceUrl,
   pieceStyles,
   listNames = [],
+  listLinks = [],
   topRightAction,
   children,
 }: TuneCardProps) {
-  const visibleListNames = listNames.slice(0, 3)
+  const fallbackListLinks = listNames.map((name, index) => ({
+    id: `fallback-${index}-${name}`,
+    name,
+    href: "",
+  }))
+
+  const allListLinks = listLinks.length > 0 ? listLinks : fallbackListLinks
+  const visibleListLinks = allListLinks.slice(0, 3)
   const remainingListCount = Math.max(
-    listNames.length - visibleListNames.length,
+    allListLinks.length - visibleListLinks.length,
     0
   )
 
@@ -95,10 +110,33 @@ export default function TuneCard({
         </div>
       )}
 
-      {listNames.length > 0 && (
-        <p className="mt-3 text-sm text-muted-foreground">
-          In: {visibleListNames.join(", ")}
-          {remainingListCount > 0 ? ` +${remainingListCount} more` : ""}
+      {allListLinks.length > 0 && (
+        <p
+          data-card-action
+          className="mt-3 text-sm leading-6 text-muted-foreground"
+        >
+          <span>In: </span>
+
+          {visibleListLinks.map((list, index) => (
+            <span key={list.id}>
+              {index > 0 ? <span>, </span> : null}
+
+              {list.href ? (
+                <Link
+                  href={list.href}
+                  className="font-medium underline underline-offset-4 transition hover:text-foreground"
+                >
+                  {list.name}
+                </Link>
+              ) : (
+                <span>{list.name}</span>
+              )}
+            </span>
+          ))}
+
+          {remainingListCount > 0 ? (
+            <span> +{remainingListCount} more</span>
+          ) : null}
         </p>
       )}
 

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
 import EditListModal from "@/components/lists/EditListModal"
+import ReferenceMediaLink from "@/components/ReferenceMediaLink"
 import RemoveTuneButton from "@/components/RemoveTuneButton"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
@@ -12,6 +13,7 @@ import {
 import { markAsKnown } from "@/lib/actions/known-pieces"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadLearningListDetailData } from "@/lib/loaders/list-detail"
+import { getStyleLabelsFromPiece } from "@/lib/search-filters"
 import type { Piece } from "@/lib/types"
 
 type LearningListDetailPageProps = {
@@ -57,19 +59,188 @@ function StatusMessage({
   )
 }
 
-const actionPillBase =
+function getPieceMetadataParts(piece: Piece) {
+  const styleLabels = getStyleLabelsFromPiece(piece)
+
+  return [
+    piece.key ? `Key: ${piece.key}` : null,
+    styleLabels.length > 0 ? `Style: ${styleLabels.join(", ")}` : null,
+    piece.time_signature ? `Time: ${piece.time_signature}` : null,
+  ].filter(Boolean)
+}
+
+const desktopActionPillBase =
   "inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2 text-sm font-semibold shadow-sm"
 
-const primaryActionClassName = `${actionPillBase} border border-primary bg-primary text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]`
+const desktopPrimaryActionClassName = `${desktopActionPillBase} border border-primary bg-primary text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]`
 
-const secondaryActionClassName = `${actionPillBase} border border-border bg-card text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]`
+const desktopSecondaryActionClassName = `${desktopActionPillBase} border border-border bg-card text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]`
 
-const successStatusClassName = `${actionPillBase} border border-success bg-success text-success-foreground`
+const desktopSuccessStatusClassName = `${desktopActionPillBase} border border-success bg-success text-success-foreground`
 
-const passiveStatusClassName = `${actionPillBase} border border-border bg-card text-muted-foreground`
+const desktopPassiveStatusClassName = `${desktopActionPillBase} border border-border bg-card text-muted-foreground`
 
-const removeTuneClassName =
+const desktopRemoveTuneClassName =
   "inline-flex min-h-11 items-center justify-center rounded-full border border-destructive bg-background/70 px-5 py-2 text-sm font-semibold text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+
+const mobileButtonBase =
+  "inline-flex min-h-10 items-center justify-center rounded-full px-4 py-2 text-sm font-semibold shadow-sm"
+
+const mobilePrimaryActionClassName = `${mobileButtonBase} border border-primary bg-primary text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]`
+
+const mobileSecondaryActionClassName = `${mobileButtonBase} border border-border bg-background/70 text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]`
+
+const mobileRemoveTuneClassName =
+  "inline-flex min-h-10 items-center justify-center rounded-full border border-destructive bg-background/70 px-4 py-2 text-sm font-semibold text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+
+function MobileTuneRow({
+  piece,
+  isAlreadyInPractice,
+  isKnown,
+  redirectTo,
+}: {
+  piece: Piece
+  isAlreadyInPractice: boolean
+  isKnown: boolean
+  redirectTo: string
+}) {
+  const metadataParts = getPieceMetadataParts(piece)
+
+  return (
+    <article className="py-5">
+      <div className="min-w-0">
+        <h3 className="font-serif text-2xl font-bold leading-tight tracking-tight text-foreground">
+          <Link
+            href={`/library/${piece.id}`}
+            className="decoration-primary decoration-2 underline-offset-4 hover:underline"
+          >
+            {piece.title}
+          </Link>
+        </h3>
+
+        {metadataParts.length > 0 && (
+          <p className="mt-2 text-sm font-medium leading-6 text-muted-foreground">
+            {metadataParts.join(" | ")}
+          </p>
+        )}
+
+        {piece.reference_url ? (
+          <div className="mt-3">
+            <ReferenceMediaLink
+              referenceUrl={piece.reference_url}
+              title={piece.title}
+              className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+            />
+          </div>
+        ) : null}
+
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          {isAlreadyInPractice ? (
+            <span className="rounded-full border border-success bg-success px-3 py-1 text-success-foreground">
+              In practice
+            </span>
+          ) : null}
+
+          {isKnown ? (
+            <span className="rounded-full border border-border bg-background/70 px-3 py-1 text-muted-foreground">
+              Known
+            </span>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {!isAlreadyInPractice ? (
+          <form action={startLearning}>
+            <input type="hidden" name="piece_id" value={piece.id} />
+            <input type="hidden" name="redirect_to" value={redirectTo} />
+
+            <SubmitButton
+              label="Start Practice"
+              pendingLabel="Starting..."
+              className={mobilePrimaryActionClassName}
+            />
+          </form>
+        ) : null}
+
+        {!isKnown ? (
+          <form action={markAsKnown}>
+            <input type="hidden" name="piece_id" value={piece.id} />
+            <input type="hidden" name="redirect_to" value={redirectTo} />
+
+            <SubmitButton
+              label={isAlreadyInPractice ? "Set as known" : "Mark known"}
+              pendingLabel="Saving..."
+              className={mobileSecondaryActionClassName}
+            />
+          </form>
+        ) : null}
+
+        <RemoveTuneButton
+          pieceId={piece.id}
+          redirectTo={redirectTo}
+          label="Remove"
+          pendingLabel="Removing..."
+          className={mobileRemoveTuneClassName}
+        />
+      </div>
+    </article>
+  )
+}
+
+function DesktopTuneActions({
+  piece,
+  isAlreadyInPractice,
+  isKnown,
+  redirectTo,
+}: {
+  piece: Piece
+  isAlreadyInPractice: boolean
+  isKnown: boolean
+  redirectTo: string
+}) {
+  return (
+    <div className="flex w-full flex-wrap items-center gap-3">
+      {isAlreadyInPractice ? (
+        <span className={desktopSuccessStatusClassName}>
+          Already in practice
+        </span>
+      ) : (
+        <form action={startLearning}>
+          <input type="hidden" name="piece_id" value={piece.id} />
+          <input type="hidden" name="redirect_to" value={redirectTo} />
+
+          <SubmitButton
+            label="Start Practice"
+            pendingLabel="Starting..."
+            className={desktopPrimaryActionClassName}
+          />
+        </form>
+      )}
+
+      {isKnown ? (
+        <span className={desktopPassiveStatusClassName}>Known</span>
+      ) : (
+        <form action={markAsKnown}>
+          <input type="hidden" name="piece_id" value={piece.id} />
+          <input type="hidden" name="redirect_to" value={redirectTo} />
+
+          <SubmitButton
+            label={isAlreadyInPractice ? "Set as known" : "Mark as known"}
+            pendingLabel="Saving..."
+            className={desktopSecondaryActionClassName}
+          />
+        </form>
+      )}
+
+      <RemoveTuneButton
+        pieceId={piece.id}
+        redirectTo={redirectTo}
+        className={desktopRemoveTuneClassName}
+      />
+    </div>
+  )
+}
 
 export default async function LearningListDetailPage({
   params,
@@ -89,6 +260,16 @@ export default async function LearningListDetailPage({
     knownPieceIds,
     redirectTo,
   } = await loadLearningListDetailData(id)
+
+  const visibleItems = typedItems
+    .map((item) => ({
+      item,
+      piece: extractPiece(item.pieces),
+    }))
+    .filter(
+      (entry): entry is { item: typeof entry.item; piece: Piece } =>
+        entry.piece !== null
+    )
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
@@ -213,22 +394,47 @@ export default async function LearningListDetailPage({
         <StatusMessage tone="error">Could not update list.</StatusMessage>
       )}
 
-      <section className="mt-8 rounded-3xl border border-border bg-card p-5 shadow-sm md:p-6">
+      <section className="mt-8 md:hidden">
+        <h2 className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Tunes
+        </h2>
+
+        {visibleItems.length === 0 ? (
+          <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+            This list has no tunes yet.
+          </p>
+        ) : (
+          <div className="mt-4 divide-y divide-border/70 border-y border-border/70">
+            {visibleItems.map(({ item, piece }) => {
+              const isAlreadyInPractice = activePieceIds.has(piece.id)
+              const isKnown = knownPieceIds.has(piece.id)
+
+              return (
+                <MobileTuneRow
+                  key={item.id}
+                  piece={piece}
+                  isAlreadyInPractice={isAlreadyInPractice}
+                  isKnown={isKnown}
+                  redirectTo={redirectTo}
+                />
+              )
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="mt-8 hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Tunes
         </h2>
 
-        {typedItems.length === 0 ? (
+        {visibleItems.length === 0 ? (
           <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
             This list has no tunes yet.
           </p>
         ) : (
           <div className="mt-5 space-y-4">
-            {typedItems.map((item) => {
-              const piece = extractPiece(item.pieces)
-
-              if (!piece) return null
-
+            {visibleItems.map(({ item, piece }) => {
               const isAlreadyInPractice = activePieceIds.has(piece.id)
               const isKnown = knownPieceIds.has(piece.id)
 
@@ -242,57 +448,14 @@ export default async function LearningListDetailPage({
                   timeSignature={piece.time_signature}
                   referenceUrl={piece.reference_url}
                   pieceStyles={piece.piece_styles}
-                  listNames={[]}
+                  listLinks={[]}
                 >
-                  <div className="flex w-full flex-wrap items-center gap-3">
-                    {isAlreadyInPractice ? (
-                      <span className={successStatusClassName}>
-                        Already in practice
-                      </span>
-                    ) : (
-                      <form action={startLearning}>
-                        <input type="hidden" name="piece_id" value={piece.id} />
-                        <input
-                          type="hidden"
-                          name="redirect_to"
-                          value={redirectTo}
-                        />
-                        <SubmitButton
-                          label="Start Practice"
-                          pendingLabel="Starting..."
-                          className={primaryActionClassName}
-                        />
-                      </form>
-                    )}
-
-                    {isKnown ? (
-                      <span className={passiveStatusClassName}>Known</span>
-                    ) : (
-                      <form action={markAsKnown}>
-                        <input type="hidden" name="piece_id" value={piece.id} />
-                        <input
-                          type="hidden"
-                          name="redirect_to"
-                          value={redirectTo}
-                        />
-                        <SubmitButton
-                          label={
-                            isAlreadyInPractice
-                              ? "Set as known"
-                              : "Mark as known"
-                          }
-                          pendingLabel="Saving..."
-                          className={secondaryActionClassName}
-                        />
-                      </form>
-                    )}
-
-                    <RemoveTuneButton
-                      pieceId={piece.id}
-                      redirectTo={redirectTo}
-                      className={removeTuneClassName}
-                    />
-                  </div>
+                  <DesktopTuneActions
+                    piece={piece}
+                    isAlreadyInPractice={isAlreadyInPractice}
+                    isKnown={isKnown}
+                    redirectTo={redirectTo}
+                  />
                 </TuneCard>
               )
             })}
