@@ -1,173 +1,313 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
-import type { ReactNode, TouchEvent } from "react"
-import { joinClasses } from "@/components/ui/buttonStyles"
+import { useEffect, useState } from "react"
+import AddToListModal from "@/components/AddToListModal"
+import EmptyState from "@/components/EmptyState"
+import TuneCard from "@/components/TuneCard"
+import DeleteCanonicalTuneModal from "@/components/library/DeleteCanonicalTuneModal"
+import LibraryTuneCardActions from "@/components/library/LibraryTuneCardActions"
+import FindReferenceModal from "@/components/reference-media/FindReferenceModal"
+import CardPager from "@/components/ui/CardPager"
+import { buttonStyles } from "@/components/ui/buttonStyles"
+import useScrollToPiece from "@/hooks/useScrollToPiece"
+import type {
+  LearningList,
+  LearningListItemMembership,
+  Piece,
+  UserKnownPiece,
+  UserPiece,
+  UserRole,
+} from "@/lib/types"
 
-type CardPagerProps<T> = {
-  items?: T[]
-  getKey: (item: T) => string | number
-  renderItem: (item: T, index: number) => ReactNode
-  emptyState: ReactNode
-  label: string
-  className?: string
-  cardClassName?: string
-  controlsClassName?: string
-  previousLabel?: string
-  nextLabel?: string
-  unstyledCard?: boolean
+type LibraryListProps = {
+  pieces: Piece[] | null
+  userPieces: UserPiece[] | null
+  userKnownPieces: UserKnownPiece[] | null
+  learningLists: LearningList[] | null
+  learningListItems: LearningListItemMembership[] | null
+  currentUserRole: UserRole
+  startLearning: (formData: FormData) => Promise<void>
+  addToLearningList: (formData: FormData) => Promise<void>
+  removeTuneFromMyApp: (formData: FormData) => Promise<void>
+  deleteCanonicalTuneAsModerator: (formData: FormData) => Promise<void>
+  addReferenceUrlToPiece: (formData: FormData) => Promise<void>
+  redirectTo: string
+  scrollPieceId: string
+  hasActiveFilters: boolean
 }
 
-const minimumSwipeDistance = 48
+function canUseModeratorTools(role: UserRole) {
+  return role === "moderator" || role === "admin"
+}
 
-export default function CardPager<T>({
-  items = [],
-  getKey,
-  renderItem,
-  emptyState,
-  label,
-  className,
-  cardClassName,
-  controlsClassName,
-  previousLabel = "Previous",
-  nextLabel = "Next",
-  unstyledCard = false,
-}: CardPagerProps<T>) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const touchStartX = useRef<number | null>(null)
-  const touchStartY = useRef<number | null>(null)
+function buildPieceRedirectTo(redirectTo: string, pieceId: number) {
+  const separator = redirectTo.includes("?") ? "&" : "?"
+  return `${redirectTo}${separator}scroll_piece=${pieceId}`
+}
+
+function getListNamesForPiece(
+  pieceId: number,
+  learningListItems: LearningListItemMembership[] | null
+) {
+  const listItemsForPiece = (learningListItems ?? []).filter(
+    (item) => item.piece_id === pieceId
+  )
+
+  return Array.from(
+    new Set(listItemsForPiece.map((item) => item.learning_lists.name))
+  )
+}
+
+function getExistingListIdsForPiece(
+  pieceId: number,
+  learningListItems: LearningListItemMembership[] | null
+) {
+  return Array.from(
+    new Set(
+      (learningListItems ?? [])
+        .filter((item) => item.piece_id === pieceId)
+        .map((item) => item.learning_list_id)
+    )
+  )
+}
+
+function getActiveUserPiece(pieceId: number, userPieces: UserPiece[] | null) {
+  return (
+    (userPieces ?? []).find((userPiece) => userPiece.piece_id === pieceId) ??
+    null
+  )
+}
+
+function getIsKnown(
+  pieceId: number,
+  userKnownPieces: UserKnownPiece[] | null
+) {
+  return (userKnownPieces ?? []).some(
+    (userKnownPiece) => userKnownPiece.piece_id === pieceId
+  )
+}
+
+export default function LibraryList({
+  pieces,
+  userPieces,
+  userKnownPieces,
+  learningLists,
+  learningListItems,
+  currentUserRole,
+  startLearning,
+  addToLearningList,
+  removeTuneFromMyApp,
+  deleteCanonicalTuneAsModerator,
+  addReferenceUrlToPiece,
+  redirectTo,
+  scrollPieceId,
+  hasActiveFilters,
+}: LibraryListProps) {
+  const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
+  const [selectedListId, setSelectedListId] = useState("")
+  const [openStatusPieceId, setOpenStatusPieceId] = useState<number | null>(
+    null
+  )
+  const [deletePiece, setDeletePiece] = useState<Piece | null>(null)
+  const [referencePiece, setReferencePiece] = useState<Piece | null>(null)
+
+  const allPieces = pieces ?? []
+  const isModerator = canUseModeratorTools(currentUserRole)
+
+  useScrollToPiece(scrollPieceId)
 
   useEffect(() => {
-    setCurrentIndex(0)
-  }, [items])
+    if (openStatusPieceId === null) return
 
-  const safeIndex = useMemo(() => {
-    if (items.length === 0) return 0
-    return Math.min(currentIndex, items.length - 1)
-  }, [currentIndex, items.length])
-
-  const currentItem = items[safeIndex] ?? null
-  const canGoPrevious = safeIndex > 0
-  const canGoNext = safeIndex < items.length - 1
-
-  function goPrevious() {
-    if (!canGoPrevious) return
-    setCurrentIndex((index) => Math.max(0, index - 1))
-  }
-
-  function goNext() {
-    if (!canGoNext) return
-    setCurrentIndex((index) => Math.min(items.length - 1, index + 1))
-  }
-
-  function handleTouchStart(event: TouchEvent<HTMLDivElement>) {
-    const touch = event.touches[0]
-
-    if (!touch) return
-
-    touchStartX.current = touch.clientX
-    touchStartY.current = touch.clientY
-  }
-
-  function handleTouchEnd(event: TouchEvent<HTMLDivElement>) {
-    const touch = event.changedTouches[0]
-
-    if (!touch || touchStartX.current === null || touchStartY.current === null) {
-      touchStartX.current = null
-      touchStartY.current = null
-      return
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpenStatusPieceId(null)
+      }
     }
 
-    const deltaX = touch.clientX - touchStartX.current
-    const deltaY = touch.clientY - touchStartY.current
+    document.addEventListener("keydown", handleKeyDown)
 
-    touchStartX.current = null
-    touchStartY.current = null
-
-    if (Math.abs(deltaY) > Math.abs(deltaX)) return
-    if (Math.abs(deltaX) < minimumSwipeDistance) return
-
-    if (deltaX < 0) {
-      goNext()
-      return
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown)
     }
+  }, [openStatusPieceId])
 
-    goPrevious()
+  function renderTuneCard(piece: Piece) {
+    const pieceRedirectTo = buildPieceRedirectTo(redirectTo, piece.id)
+    const activeUserPiece = getActiveUserPiece(piece.id, userPieces)
+    const isAlreadyInPractice = Boolean(activeUserPiece)
+    const isKnown = getIsKnown(piece.id, userKnownPieces)
+    const listNames = getListNamesForPiece(piece.id, learningListItems)
+    const isInAList = listNames.length > 0
+    const isStatusOpen = openStatusPieceId === piece.id
+
+    return (
+      <TuneCard
+        id={piece.id}
+        title={piece.title}
+        keyValue={piece.key}
+        style={piece.style}
+        timeSignature={piece.time_signature}
+        referenceUrl={piece.reference_url}
+        pieceStyles={piece.piece_styles}
+        listNames={listNames}
+        topRightAction={
+          isModerator ? (
+            <button
+              type="button"
+              className={buttonStyles.iconDestructive}
+              title="Moderator only. Review the warning before deleting this shared tune for everyone."
+              aria-label={`Delete canonical tune ${piece.title}`}
+              onClick={() => setDeletePiece(piece)}
+            >
+              ×
+            </button>
+          ) : null
+        }
+      >
+        <LibraryTuneCardActions
+          piece={piece}
+          activeUserPiece={activeUserPiece}
+          isAlreadyInPractice={isAlreadyInPractice}
+          isKnown={isKnown}
+          isInAList={isInAList}
+          isStatusOpen={isStatusOpen}
+          redirectTo={pieceRedirectTo}
+          onToggleStatus={() =>
+            setOpenStatusPieceId(isStatusOpen ? null : piece.id)
+          }
+          onCloseStatus={() => setOpenStatusPieceId(null)}
+          onOpenAddToList={() => {
+            setSelectedPiece(piece)
+            setSelectedListId("")
+            setOpenStatusPieceId(null)
+          }}
+          onOpenFindReference={() => {
+            setReferencePiece(piece)
+            setOpenStatusPieceId(null)
+          }}
+          startLearning={startLearning}
+          removeTuneFromMyApp={removeTuneFromMyApp}
+        />
+      </TuneCard>
+    )
   }
 
-  if (!currentItem) {
-    return <>{emptyState}</>
+  if (allPieces.length === 0) {
+    return hasActiveFilters ? (
+      <EmptyState
+        title="No tunes match this search"
+        description="Try removing a filter, changing the title search, or creating the tune if it is genuinely missing."
+        primaryActionHref="/library"
+        primaryActionLabel="Reset filters"
+      />
+    ) : (
+      <EmptyState
+        title="No tunes in the library yet"
+        description="Use Create Tune or Bulk Import Known Tunes above to start building the canonical tune library."
+      />
+    )
   }
 
   return (
-    <section
-      className={joinClasses("grid gap-3", className)}
-      aria-label={label}
-    >
-      <div
-        className={joinClasses(
+    <>
+      {openStatusPieceId !== null ? (
+        <button
+          type="button"
+          aria-label="Close status menu"
+          className="fixed inset-0 z-40 cursor-default bg-transparent"
+          onClick={() => setOpenStatusPieceId(null)}
+          tabIndex={-1}
+        />
+      ) : null}
+
+      <div className="md:hidden">
+        <CardPager
+          items={allPieces}
+          getKey={(piece) => piece.id}
+          label="Tune catalogue results"
+          previousLabel="Previous"
+          nextLabel="Next"
           unstyledCard
-            ? ""
-            : "rounded-2xl border border-border bg-background/70 p-4 shadow-sm",
-          cardClassName
-        )}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        {renderItem(currentItem, safeIndex)}
+          emptyState={
+            <EmptyState
+              title="No tunes match this search"
+              description="Try removing a filter, changing the title search, or creating the tune if it is genuinely missing."
+              primaryActionHref="/library"
+              primaryActionLabel="Reset filters"
+            />
+          }
+          renderItem={(piece) => (
+            <div
+              id={`piece-${piece.id}`}
+              className={
+                openStatusPieceId === piece.id
+                  ? "relative z-50 scroll-mt-28"
+                  : "relative z-0 scroll-mt-28"
+              }
+            >
+              {renderTuneCard(piece)}
+            </div>
+          )}
+        />
       </div>
 
-      <div
-        className={joinClasses(
-          "grid grid-cols-[1fr_auto_1fr] items-center gap-3",
-          controlsClassName
-        )}
-      >
-        <button
-          type="button"
-          onClick={goPrevious}
-          disabled={!canGoPrevious}
-          className="min-h-11 rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-45"
-        >
-          {previousLabel}
-        </button>
+      <ul className="hidden grid-cols-1 gap-4 md:grid md:grid-cols-2">
+        {allPieces.map((piece) => {
+          const isStatusOpen = openStatusPieceId === piece.id
 
-        <p className="text-sm font-semibold text-muted-foreground">
-          {safeIndex + 1} / {items.length}
-        </p>
+          return (
+            <li
+              key={piece.id}
+              id={`piece-${piece.id}`}
+              className={
+                isStatusOpen
+                  ? "relative z-50 scroll-mt-28"
+                  : "relative z-0 scroll-mt-28"
+              }
+            >
+              {renderTuneCard(piece)}
+            </li>
+          )
+        })}
+      </ul>
 
-        <button
-          type="button"
-          onClick={goNext}
-          disabled={!canGoNext}
-          className="min-h-11 rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-45"
-        >
-          {nextLabel}
-        </button>
-      </div>
+      {selectedPiece ? (
+        <AddToListModal
+          selectedPiece={selectedPiece}
+          selectedListId={selectedListId}
+          learningLists={learningLists}
+          existingListIds={getExistingListIdsForPiece(
+            selectedPiece.id,
+            learningListItems
+          )}
+          redirectTo={buildPieceRedirectTo(redirectTo, selectedPiece.id)}
+          addToLearningList={addToLearningList}
+          onChangeSelectedListId={setSelectedListId}
+          onClose={() => {
+            setSelectedPiece(null)
+            setSelectedListId("")
+          }}
+        />
+      ) : null}
 
-      <div className="flex justify-center gap-1.5" aria-hidden="true">
-        {items.slice(0, 12).map((item, index) => (
-          <button
-            key={getKey(item)}
-            type="button"
-            onClick={() => setCurrentIndex(index)}
-            className={joinClasses(
-              "h-2 rounded-full transition",
-              index === safeIndex
-                ? "w-5 bg-primary"
-                : "w-2 bg-border hover:bg-muted-foreground"
-            )}
-            tabIndex={-1}
-          />
-        ))}
+      {referencePiece ? (
+        <FindReferenceModal
+          piece={referencePiece}
+          redirectTo={buildPieceRedirectTo(redirectTo, referencePiece.id)}
+          addReferenceUrlToPiece={addReferenceUrlToPiece}
+          onClose={() => setReferencePiece(null)}
+        />
+      ) : null}
 
-        {items.length > 12 ? (
-          <span className="ml-1 text-xs font-semibold text-muted-foreground">
-            +{items.length - 12}
-          </span>
-        ) : null}
-      </div>
-    </section>
+      {deletePiece ? (
+        <DeleteCanonicalTuneModal
+          piece={deletePiece}
+          redirectTo={redirectTo}
+          deleteCanonicalTuneAsModerator={deleteCanonicalTuneAsModerator}
+          onClose={() => setDeletePiece(null)}
+        />
+      ) : null}
+    </>
   )
 }
