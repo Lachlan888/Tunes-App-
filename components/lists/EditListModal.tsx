@@ -44,6 +44,10 @@ export default function EditListModal({
     setIsOpen(false)
   }
 
+  const nextVisibility = visibility === "public" ? "private" : "public"
+  const visibilityLabel =
+    visibility === "public" ? "Make Private" : "Make Public"
+
   return (
     <>
       <button
@@ -72,9 +76,44 @@ export default function EditListModal({
       >
         <div className="space-y-8">
           <section>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              List details
-            </h3>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  List details
+                </h3>
+
+                <p className="mt-2 text-sm font-medium text-muted-foreground">
+                  {visibility === "public" ? "Public" : "Private"}
+                </p>
+              </div>
+
+              <form
+                action={async (formData: FormData) => {
+                  setIsBusy(true)
+                  await updateList(formData)
+                }}
+              >
+                <input type="hidden" name="learning_list_id" value={listId} />
+                <input type="hidden" name="redirect_to" value={redirectTo} />
+                <input type="hidden" name="name" value={name} />
+                <input
+                  type="hidden"
+                  name="description"
+                  value={description ?? ""}
+                />
+                <input
+                  type="hidden"
+                  name="visibility"
+                  value={nextVisibility}
+                />
+
+                <SubmitButton
+                  label={visibilityLabel}
+                  pendingLabel="Saving..."
+                  className={buttonStyles.secondary}
+                />
+              </form>
+            </div>
 
             <form
               action={async (formData: FormData) => {
@@ -85,6 +124,7 @@ export default function EditListModal({
             >
               <input type="hidden" name="learning_list_id" value={listId} />
               <input type="hidden" name="redirect_to" value={redirectTo} />
+              <input type="hidden" name="visibility" value={visibility} />
 
               <div>
                 <label className="mb-2 block text-sm font-medium">Name</label>
@@ -110,21 +150,6 @@ export default function EditListModal({
                 />
               </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Visibility
-                </label>
-                <select
-                  name="visibility"
-                  defaultValue={visibility}
-                  className={inputClass}
-                  disabled={isBusy}
-                >
-                  <option value="private">Private</option>
-                  <option value="public">Public</option>
-                </select>
-              </div>
-
               <SubmitButton
                 label="Save List Details"
                 pendingLabel="Saving..."
@@ -143,11 +168,11 @@ export default function EditListModal({
                 This list has no tunes.
               </p>
             ) : (
-              <div className="mt-4 space-y-2">
+              <div className="mt-4 divide-y divide-border/70 border-y border-border/70 md:space-y-2 md:divide-y-0 md:border-y-0">
                 {tunes.map((tune) => (
                   <div
                     key={tune.id}
-                    className="flex flex-col gap-3 rounded-2xl border border-border bg-background/70 p-4 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-3 py-4 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="min-w-0 text-sm">
                       <PendingLinkButton
@@ -185,6 +210,7 @@ export default function EditListModal({
                         name="redirect_to"
                         value={redirectTo}
                       />
+
                       <SubmitButton
                         label="Remove from List"
                         pendingLabel="Removing..."
@@ -222,6 +248,7 @@ export default function EditListModal({
             >
               <input type="hidden" name="learning_list_id" value={listId} />
               <input type="hidden" name="redirect_to" value="/learning-lists" />
+
               <SubmitButton
                 label="Delete List"
                 pendingLabel="Deleting..."

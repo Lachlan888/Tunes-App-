@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
 import EmptyState from "@/components/EmptyState"
-import TuneCard from "@/components/TuneCard"
+import TuneCard, { type TuneCardListLink } from "@/components/TuneCard"
 import DeleteCanonicalTuneModal from "@/components/library/DeleteCanonicalTuneModal"
 import LibraryTuneCardActions from "@/components/library/LibraryTuneCardActions"
 import FindReferenceModal from "@/components/reference-media/FindReferenceModal"
@@ -46,16 +46,30 @@ function buildPieceRedirectTo(redirectTo: string, pieceId: number) {
   return `${redirectTo}${separator}scroll_piece=${pieceId}`
 }
 
-function getListNamesForPiece(
+function getListLinksForPiece(
   pieceId: number,
   learningListItems: LearningListItemMembership[] | null
-) {
+): TuneCardListLink[] {
   const listItemsForPiece = (learningListItems ?? []).filter(
     (item) => item.piece_id === pieceId
   )
 
-  return Array.from(
-    new Set(listItemsForPiece.map((item) => item.learning_lists.name))
+  const uniqueLists = new Map<number, TuneCardListLink>()
+
+  for (const item of listItemsForPiece) {
+    const list = item.learning_lists
+
+    if (!list) continue
+
+    uniqueLists.set(list.id, {
+      id: list.id,
+      name: list.name,
+      href: `/learning-lists/${list.id}`,
+    })
+  }
+
+  return Array.from(uniqueLists.values()).sort((a, b) =>
+    a.name.localeCompare(b.name)
   )
 }
 
@@ -140,8 +154,8 @@ export default function LibraryList({
     const activeUserPiece = getActiveUserPiece(piece.id, userPieces)
     const isAlreadyInPractice = Boolean(activeUserPiece)
     const isKnown = getIsKnown(piece.id, userKnownPieces)
-    const listNames = getListNamesForPiece(piece.id, learningListItems)
-    const isInAList = listNames.length > 0
+    const listLinks = getListLinksForPiece(piece.id, learningListItems)
+    const isInAList = listLinks.length > 0
     const isStatusOpen = openStatusPieceId === piece.id
 
     return (
@@ -153,7 +167,7 @@ export default function LibraryList({
         timeSignature={piece.time_signature}
         referenceUrl={piece.reference_url}
         pieceStyles={piece.piece_styles}
-        listNames={listNames}
+        listLinks={listLinks}
         topRightAction={
           isModerator ? (
             <button

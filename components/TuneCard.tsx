@@ -103,7 +103,10 @@ export default function TuneCard({
       )}
 
       {children && (
-        <div data-card-action className="mt-5 flex flex-wrap items-center gap-3">
+        <div
+          data-card-action
+          className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-3"
+        >
           {children}
         </div>
       )}

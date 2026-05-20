@@ -57,6 +57,20 @@ function StatusMessage({
   )
 }
 
+const actionPillBase =
+  "inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2 text-sm font-semibold shadow-sm"
+
+const primaryActionClassName = `${actionPillBase} border border-primary bg-primary text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]`
+
+const secondaryActionClassName = `${actionPillBase} border border-border bg-card text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]`
+
+const successStatusClassName = `${actionPillBase} border border-success bg-success text-success-foreground`
+
+const passiveStatusClassName = `${actionPillBase} border border-border bg-card text-muted-foreground`
+
+const removeTuneClassName =
+  "inline-flex min-h-11 items-center justify-center rounded-full border border-destructive bg-background/70 px-5 py-2 text-sm font-semibold text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+
 export default async function LearningListDetailPage({
   params,
   searchParams,
@@ -77,7 +91,7 @@ export default async function LearningListDetailPage({
   } = await loadLearningListDetailData(id)
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+    <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       <div className="mb-5">
         <Link
           href="/learning-lists"
@@ -87,7 +101,7 @@ export default async function LearningListDetailPage({
         </Link>
       </div>
 
-      <header className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <header className="rounded-3xl border border-border bg-card p-5 shadow-sm md:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
@@ -176,9 +190,7 @@ export default async function LearningListDetailPage({
       )}
 
       {editListStatus === "missing_name" && (
-        <StatusMessage tone="warning">
-          Please enter a list name.
-        </StatusMessage>
+        <StatusMessage tone="warning">Please enter a list name.</StatusMessage>
       )}
 
       {editListStatus === "missing_item" && (
@@ -201,7 +213,7 @@ export default async function LearningListDetailPage({
         <StatusMessage tone="error">Could not update list.</StatusMessage>
       )}
 
-      <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <section className="mt-8 rounded-3xl border border-border bg-card p-5 shadow-sm md:p-6">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Tunes
         </h2>
@@ -232,52 +244,55 @@ export default async function LearningListDetailPage({
                   pieceStyles={piece.piece_styles}
                   listNames={[]}
                 >
-                  {isAlreadyInPractice ? (
-                    <span className="rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm">
-                      Already in practice
-                    </span>
-                  ) : (
-                    <form action={startLearning}>
-                      <input type="hidden" name="piece_id" value={piece.id} />
-                      <input
-                        type="hidden"
-                        name="redirect_to"
-                        value={redirectTo}
-                      />
-                      <SubmitButton
-                        label="Start Practice"
-                        pendingLabel="Starting..."
-                        className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                      />
-                    </form>
-                  )}
+                  <div className="flex w-full flex-wrap items-center gap-3">
+                    {isAlreadyInPractice ? (
+                      <span className={successStatusClassName}>
+                        Already in practice
+                      </span>
+                    ) : (
+                      <form action={startLearning}>
+                        <input type="hidden" name="piece_id" value={piece.id} />
+                        <input
+                          type="hidden"
+                          name="redirect_to"
+                          value={redirectTo}
+                        />
+                        <SubmitButton
+                          label="Start Practice"
+                          pendingLabel="Starting..."
+                          className={primaryActionClassName}
+                        />
+                      </form>
+                    )}
 
-                  {isKnown ? (
-                    <span className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm">
-                      Known
-                    </span>
-                  ) : (
-                    <form action={markAsKnown}>
-                      <input type="hidden" name="piece_id" value={piece.id} />
-                      <input
-                        type="hidden"
-                        name="redirect_to"
-                        value={redirectTo}
-                      />
-                      <SubmitButton
-                        label={
-                          isAlreadyInPractice ? "Set as known" : "Mark as known"
-                        }
-                        pendingLabel="Saving..."
-                        className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                      />
-                    </form>
-                  )}
+                    {isKnown ? (
+                      <span className={passiveStatusClassName}>Known</span>
+                    ) : (
+                      <form action={markAsKnown}>
+                        <input type="hidden" name="piece_id" value={piece.id} />
+                        <input
+                          type="hidden"
+                          name="redirect_to"
+                          value={redirectTo}
+                        />
+                        <SubmitButton
+                          label={
+                            isAlreadyInPractice
+                              ? "Set as known"
+                              : "Mark as known"
+                          }
+                          pendingLabel="Saving..."
+                          className={secondaryActionClassName}
+                        />
+                      </form>
+                    )}
 
-                  <RemoveTuneButton
-                    pieceId={piece.id}
-                    redirectTo={redirectTo}
-                  />
+                    <RemoveTuneButton
+                      pieceId={piece.id}
+                      redirectTo={redirectTo}
+                      className={removeTuneClassName}
+                    />
+                  </div>
                 </TuneCard>
               )
             })}
