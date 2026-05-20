@@ -111,6 +111,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     user,
     currentUserRole,
     pieces,
+    mobilePieces,
     filterOptionPieces,
     totalPieceCount,
     currentPage,
@@ -181,6 +182,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     : "/library"
 
   const loaderPieces = (pieces ?? []) as Piece[]
+  const mobileLoaderPieces = (mobilePieces ?? loaderPieces) as Piece[]
   const optionPieces = (filterOptionPieces ?? []) as Piece[]
 
   const {
@@ -226,13 +228,16 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Tunes
             </p>
+
             <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
               Browse the tune catalogue
             </h1>
+
             <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
               Search the shared tune library, add tunes to lists, mark known
               repertoire, or deliberately move tunes into practice.
             </p>
+
             <p className="mt-4 text-sm text-muted-foreground">
               Logged in as {user.email}
             </p>
@@ -329,6 +334,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
       {showSection("tune_results") ? (
         <LibraryList
           pieces={loaderPieces}
+          mobilePieces={mobileLoaderPieces}
           userPieces={userPieces as UserPiece[] | null}
           userKnownPieces={userKnownPieces as UserKnownPiece[]}
           learningLists={learningLists as LearningList[] | null}

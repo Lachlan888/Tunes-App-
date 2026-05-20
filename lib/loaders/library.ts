@@ -64,6 +64,15 @@ function getRangeForPage(page: number, visibleCount: number) {
   return { from, to }
 }
 
+function getUniquePieceIds(pieces: any[], mobilePieces: any[]) {
+  return Array.from(
+    new Set([
+      ...(pieces ?? []).map((piece) => piece.id),
+      ...(mobilePieces ?? []).map((piece) => piece.id),
+    ])
+  )
+}
+
 export async function loadLibraryData({
   searchQuery,
   selectedKeys = [],
@@ -87,6 +96,7 @@ export async function loadLibraryData({
   const requestedPage = normalisePage(page)
 
   let pieces: any[] = []
+  let mobilePieces: any[] = []
   let totalPieceCount = 0
   let currentPage = requestedPage
 
@@ -148,6 +158,7 @@ export async function loadLibraryData({
     })
 
     totalPieceCount = styleFilteredPieces.length
+    mobilePieces = styleFilteredPieces
 
     const totalPages = getTotalPages(totalPieceCount, visibleCount)
     currentPage =
@@ -232,6 +243,53 @@ export async function loadLibraryData({
     }
 
     pieces = pieceRows ?? []
+
+    let mobilePiecesQuery = supabase
+      .from("pieces")
+      .select(`
+        id,
+        title,
+        key,
+        style,
+        time_signature,
+        reference_url,
+        piece_styles (
+          style_id,
+          styles (
+            id,
+            slug,
+            label
+          )
+        )
+      `)
+      .order("title")
+
+    if (trimmedSearchQuery) {
+      mobilePiecesQuery = mobilePiecesQuery.ilike(
+        "title",
+        `%${trimmedSearchQuery}%`
+      )
+    }
+
+    if (selectedKeys.length > 0) {
+      mobilePiecesQuery = mobilePiecesQuery.in("key", selectedKeys)
+    }
+
+    if (selectedTimeSignatures.length > 0) {
+      mobilePiecesQuery = mobilePiecesQuery.in(
+        "time_signature",
+        selectedTimeSignatures
+      )
+    }
+
+    const { data: mobilePieceRows, error: mobilePiecesError } =
+      await mobilePiecesQuery
+
+    if (mobilePiecesError) {
+      throw new Error(mobilePiecesError.message)
+    }
+
+    mobilePieces = mobilePieceRows ?? []
   }
 
   let filterOptionPiecesQuery = supabase.from("pieces").select(`
@@ -283,7 +341,7 @@ export async function loadLibraryData({
     throw new Error(learningListsError.message)
   }
 
-  const displayPieceIds = (pieces ?? []).map((piece) => piece.id)
+  const displayPieceIds = getUniquePieceIds(pieces, mobilePieces)
 
   let userPieces: {
     id: number
@@ -349,6 +407,7 @@ export async function loadLibraryData({
     user,
     currentUserRole,
     pieces,
+    mobilePieces,
     filterOptionPieces: (filterOptionPiecesRows ?? []) as PieceFilterOption[],
     totalPieceCount,
     currentPage,

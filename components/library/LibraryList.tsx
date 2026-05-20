@@ -21,6 +21,7 @@ import type {
 
 type LibraryListProps = {
   pieces: Piece[] | null
+  mobilePieces?: Piece[] | null
   userPieces: UserPiece[] | null
   userKnownPieces: UserKnownPiece[] | null
   learningLists: LearningList[] | null
@@ -89,6 +90,7 @@ function getIsKnown(
 
 export default function LibraryList({
   pieces,
+  mobilePieces,
   userPieces,
   userKnownPieces,
   learningLists,
@@ -111,7 +113,8 @@ export default function LibraryList({
   const [deletePiece, setDeletePiece] = useState<Piece | null>(null)
   const [referencePiece, setReferencePiece] = useState<Piece | null>(null)
 
-  const allPieces = pieces ?? []
+  const desktopPieces = pieces ?? []
+  const mobilePagerPieces = mobilePieces ?? desktopPieces
   const isModerator = canUseModeratorTools(currentUserRole)
 
   useScrollToPiece(scrollPieceId)
@@ -193,7 +196,7 @@ export default function LibraryList({
     )
   }
 
-  if (allPieces.length === 0) {
+  if (desktopPieces.length === 0 && mobilePagerPieces.length === 0) {
     return hasActiveFilters ? (
       <EmptyState
         title="No tunes match this search"
@@ -222,8 +225,12 @@ export default function LibraryList({
       ) : null}
 
       <div className="md:hidden">
+        <p className="mb-3 px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Catalogue
+        </p>
+
         <CardPager
-          items={allPieces}
+          items={mobilePagerPieces}
           getKey={(piece) => piece.id}
           label="Tune catalogue results"
           previousLabel="Previous"
@@ -253,7 +260,7 @@ export default function LibraryList({
       </div>
 
       <ul className="hidden grid-cols-1 gap-4 md:grid md:grid-cols-2">
-        {allPieces.map((piece) => {
+        {desktopPieces.map((piece) => {
           const isStatusOpen = openStatusPieceId === piece.id
 
           return (
