@@ -1,233 +1,330 @@
-import { redirect } from "next/navigation"
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
-import PageOptionsModal from "@/components/page-options/PageOptionsModal"
-import ActivePracticeSection from "@/components/practice/ActivePracticeSection"
-import CatchUpSection from "@/components/practice/CatchUpSection"
-import DueTodaySection from "@/components/practice/DueTodaySection"
-import PracticeStatusMessages from "@/components/practice/PracticeStatusMessages"
-import StreakSummarySection from "@/components/practice/StreakSummarySection"
-import PracticeDiaryNav from "@/components/practice-diary/PracticeDiaryNav"
-import { joinClasses } from "@/components/ui/buttonStyles"
-import { loadPagePreferences } from "@/lib/loaders/page-preferences"
-import { loadReviewPageData } from "@/lib/loaders/review"
-import { PRACTICE_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
+import { usePathname } from "next/navigation"
+import LogoutButton from "@/components/LogoutButton"
 
-type ReviewPageProps = {
-  searchParams?: Promise<{
-    mode?: string
-    remove_from_practice?: string
-    practice_update?: string
-    page_options?: string | string[]
-  }>
+type MobileNavProps = {
+  isSignedIn: boolean
+  overduePracticeCount: number
+  unreadTotalCount: number
+  pendingModerationCount: number
+  canModerate: boolean
+  canAccessDev: boolean
 }
 
-function getSingleValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] ?? "" : value ?? ""
+type MobileNavItem = {
+  href: string
+  label: string
+  badgeCount?: number
 }
 
-function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Practice page options saved."
-  if (status === "reset") return "Practice page options reset."
-  if (status === "error") return "Could not save Practice page options."
+type OpenPanel = "social" | "more" | null
 
-  return null
+const topNavTextStyle = {
+  fontFamily:
+    'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  fontSize: "0.78rem",
+  fontWeight: 700,
+  lineHeight: 1,
+  letterSpacing: "-0.01em",
+} as const
+
+const panelNavTextStyle = {
+  fontFamily:
+    'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  fontSize: "0.78rem",
+  fontWeight: 700,
+  lineHeight: 1,
+  letterSpacing: "-0.01em",
+} as const
+
+function FloatingBadge({ count }: { count: number }) {
+  if (count <= 0) return null
+
+  return (
+    <span className="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full bg-destructive px-1 py-0.5 text-[0.65rem] font-semibold leading-none text-destructive-foreground shadow-sm">
+      {count > 99 ? "99+" : count}
+    </span>
+  )
 }
 
-function MobileReviewModeLink({
+function InlineBadge({ count }: { count: number }) {
+  if (count <= 0) return null
+
+  return (
+    <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 py-0.5 text-[0.65rem] font-semibold leading-none text-destructive-foreground">
+      {count > 99 ? "99+" : count}
+    </span>
+  )
+}
+
+function MobileNavLink({
   href,
   label,
-  count,
+  badgeCount = 0,
   isActive,
+  onNavigate,
 }: {
   href: string
   label: string
-  count: number
-  isActive: boolean
+  badgeCount?: number
+  isActive?: boolean
+  onNavigate?: () => void
 }) {
   return (
     <Link
       href={href}
       aria-current={isActive ? "page" : undefined}
-      className={joinClasses(
-        "rounded-2xl border p-4 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
+      onClick={onNavigate}
+      style={topNavTextStyle}
+      className={`relative flex min-h-9 min-w-0 appearance-none items-center justify-center rounded-full border px-1.5 no-underline transition ${
         isActive
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-background/70 text-foreground hover:bg-muted"
-      )}
+          ? "border-primary bg-primary text-primary-foreground shadow-sm"
+          : "border-transparent text-foreground hover:border-border hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+      }`}
     >
-      <p
-        className={joinClasses(
-          "text-xs font-semibold uppercase tracking-[0.14em]",
-          isActive ? "text-primary-foreground/85" : "text-muted-foreground"
-        )}
-      >
+      <span style={topNavTextStyle} className="whitespace-nowrap">
         {label}
-      </p>
-      <p className="mt-2 font-serif text-3xl font-bold leading-none">
-        {count}
-      </p>
+      </span>
+      <FloatingBadge count={badgeCount} />
     </Link>
   )
 }
 
-export default async function ReviewPage({ searchParams }: ReviewPageProps) {
-  const resolvedSearchParams = await searchParams
-  const pagePreferences = await loadPagePreferences(
-    PRACTICE_PAGE_OPTIONS_CONFIG.pageKey
+function MobileNavButton({
+  label,
+  badgeCount = 0,
+  isActive,
+  disableWhenActive = false,
+  onClick,
+}: {
+  label: string
+  badgeCount?: number
+  isActive?: boolean
+  disableWhenActive?: boolean
+  onClick: () => void
+}) {
+  const isDisabled = Boolean(disableWhenActive && isActive)
+
+  return (
+    <button
+      type="button"
+      disabled={isDisabled}
+      aria-current={isActive ? "page" : undefined}
+      onClick={onClick}
+      style={topNavTextStyle}
+      className={`relative flex min-h-9 min-w-0 appearance-none items-center justify-center rounded-full border bg-transparent px-1.5 transition disabled:cursor-not-allowed disabled:opacity-70 ${
+        isActive
+          ? "border-primary bg-primary text-primary-foreground shadow-sm"
+          : "border-transparent text-foreground hover:border-border hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+      }`}
+    >
+      <span style={topNavTextStyle} className="whitespace-nowrap">
+        {label}
+      </span>
+      <FloatingBadge count={badgeCount} />
+    </button>
   )
+}
 
-  const showSection = (sectionId: string) =>
-    pagePreferences.visibleSections[sectionId] ?? true
+function MobilePanel({
+  title,
+  items,
+  pathname,
+  onNavigate,
+  children,
+}: {
+  title: string
+  items: MobileNavItem[]
+  pathname: string
+  onNavigate: () => void
+  children?: React.ReactNode
+}) {
+  return (
+    <div className="mt-2 rounded-2xl border border-border bg-card p-2 shadow-lg">
+      <div className="mb-2 px-2 pt-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        {title}
+      </div>
 
-  const mode = resolvedSearchParams?.mode ?? ""
-  const mobileReviewMode = mode === "catch-up" ? "catch-up" : "due-today"
-  const removeFromPracticeStatus =
-    resolvedSearchParams?.remove_from_practice ?? ""
-  const practiceUpdate = resolvedSearchParams?.practice_update ?? ""
-  const pageOptionsMessage = getPageOptionsMessage(
-    getSingleValue(resolvedSearchParams?.page_options)
+      <div className="grid grid-cols-2 gap-1">
+        {items.map((item) => {
+          const itemIsActive = pathname === item.href
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={itemIsActive ? "page" : undefined}
+              onClick={onNavigate}
+              style={panelNavTextStyle}
+              className={`flex min-h-10 items-center justify-between gap-2 rounded-xl px-3 text-left no-underline transition ${
+                itemIsActive
+                  ? "bg-primary text-primary-foreground"
+                  : "text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              }`}
+            >
+              <span style={panelNavTextStyle} className="truncate">
+                {item.label}
+              </span>
+              <InlineBadge count={item.badgeCount ?? 0} />
+            </Link>
+          )
+        })}
+      </div>
+
+      {children ? (
+        <div className="mt-2 border-t border-border pt-2">{children}</div>
+      ) : null}
+    </div>
   )
+}
 
-  const {
-    practiceDiaryEnabled,
-    noteCategories,
-    streakSummary,
-    practiceItems,
-    dueTodayPieces,
-    catchUpQueue,
-    backlogSummary,
-  } = await loadReviewPageData()
+export default function MobileNav({
+  isSignedIn,
+  overduePracticeCount,
+  unreadTotalCount,
+  pendingModerationCount,
+  canModerate,
+  canAccessDev,
+}: MobileNavProps) {
+  const pathname = usePathname()
+  const [openPanel, setOpenPanel] = useState<OpenPanel>(null)
 
-  const redirectTo = "/review"
-  const shouldOpenCatchUp = mode === "catch-up"
+  const socialItems: MobileNavItem[] = [
+    {
+      href: "/friends",
+      label: "Friends",
+    },
+    {
+      href: "/inbox",
+      label: "Inbox",
+      badgeCount: unreadTotalCount,
+    },
+    {
+      href: "/compare",
+      label: "Compare",
+    },
+    {
+      href: "/public-lists",
+      label: "Shared",
+    },
+    {
+      href: "/setlists",
+      label: "Setlists",
+    },
+    {
+      href: "/badges",
+      label: "Badges",
+    },
+  ]
 
-  if (!streakSummary) {
-    redirect("/login")
+  const moreItems: MobileNavItem[] = [
+    {
+      href: "/learning-lists",
+      label: "Lists",
+    },
+    {
+      href: "/trends",
+      label: "Trends",
+    },
+    ...(canModerate
+      ? [
+          {
+            href: "/moderator",
+            label: "Moderator",
+            badgeCount: pendingModerationCount,
+          },
+        ]
+      : []),
+    ...(canAccessDev
+      ? [
+          {
+            href: "/dev",
+            label: "Dev",
+          },
+        ]
+      : []),
+    {
+      href: "/dashboard",
+      label: "Profile",
+    },
+  ]
+
+  const socialIsActive = socialItems.some((item) => pathname === item.href)
+  const moreIsActive = moreItems.some((item) => pathname === item.href)
+
+  function closePanel() {
+    setOpenPanel(null)
+  }
+
+  function togglePanel(panel: Exclude<OpenPanel, null>) {
+    setOpenPanel((current) => (current === panel ? null : panel))
+  }
+
+  if (!isSignedIn) {
+    return null
   }
 
   return (
-    <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      {pageOptionsMessage ? (
-        <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
-          {pageOptionsMessage}
-        </div>
-      ) : null}
+    <nav className="md:hidden">
+      <div className="grid grid-cols-[1fr_1.2fr_1fr_1fr_1fr] gap-1">
+        <MobileNavLink
+          href="/"
+          label="Home"
+          isActive={pathname === "/"}
+          onNavigate={closePanel}
+        />
 
-      <section className="mb-5 md:hidden">
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Practice
-          </p>
+        <MobileNavLink
+          href="/review"
+          label="Practice"
+          badgeCount={overduePracticeCount}
+          isActive={pathname === "/review"}
+          onNavigate={closePanel}
+        />
 
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <MobileReviewModeLink
-              href="/review#due-today"
-              label="Due today"
-              count={dueTodayPieces.length}
-              isActive={mobileReviewMode === "due-today"}
-            />
+        <MobileNavLink
+          href="/library"
+          label="Tunes"
+          isActive={pathname === "/library"}
+          onNavigate={closePanel}
+        />
 
-            <MobileReviewModeLink
-              href="/review?mode=catch-up#catch-up"
-              label="Catch-up"
-              count={catchUpQueue.length}
-              isActive={mobileReviewMode === "catch-up"}
-            />
-          </div>
+        <MobileNavButton
+          label={openPanel === "social" ? "Close" : "Social"}
+          badgeCount={unreadTotalCount}
+          isActive={socialIsActive || openPanel === "social"}
+          onClick={() => togglePanel("social")}
+        />
 
-          {showSection("practice_nav") ? (
-            <div className="mt-4">
-              <PracticeDiaryNav active="review" />
-            </div>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="hidden gap-6 md:grid xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Practice
-              </p>
-
-              <h1 className="mt-2 font-serif text-4xl font-bold">
-                Review your tunes
-              </h1>
-
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-                Review tunes and rate recall.
-              </p>
-            </div>
-
-            <PageOptionsModal
-              config={PRACTICE_PAGE_OPTIONS_CONFIG}
-              preferences={pagePreferences}
-              redirectTo="/review"
-            />
-          </div>
-
-          {showSection("practice_nav") ? (
-            <PracticeDiaryNav active="review" />
-          ) : null}
-        </section>
-
-        {showSection("streaks") ? (
-          <StreakSummarySection streakSummary={streakSummary} />
-        ) : null}
-      </section>
-
-      <div className="mt-5 md:hidden">
-        {showSection("streaks") ? (
-          <StreakSummarySection streakSummary={streakSummary} />
-        ) : null}
+        <MobileNavButton
+          label={openPanel === "more" ? "Close" : "More"}
+          isActive={moreIsActive || openPanel === "more"}
+          onClick={() => togglePanel("more")}
+        />
       </div>
 
-      {showSection("status_messages") ? (
-        <PracticeStatusMessages
-          practiceUpdate={practiceUpdate}
-          removeFromPracticeStatus={removeFromPracticeStatus}
+      {openPanel === "social" ? (
+        <MobilePanel
+          title="Social"
+          items={socialItems}
+          pathname={pathname}
+          onNavigate={closePanel}
         />
       ) : null}
 
-      {showSection("due_today") ? (
-        <div
-          className={
-            mobileReviewMode === "catch-up" ? "hidden md:block" : undefined
-          }
+      {openPanel === "more" ? (
+        <MobilePanel
+          title="More"
+          items={moreItems}
+          pathname={pathname}
+          onNavigate={closePanel}
         >
-          <DueTodaySection
-            dueTodayPieces={dueTodayPieces}
-            redirectTo={redirectTo}
-            practiceDiaryEnabled={practiceDiaryEnabled}
-            noteCategories={noteCategories}
-          />
-        </div>
+          <LogoutButton />
+        </MobilePanel>
       ) : null}
-
-      {showSection("catch_up") ? (
-        <div
-          className={
-            mobileReviewMode === "due-today" ? "hidden md:block" : undefined
-          }
-        >
-          <CatchUpSection
-            catchUpQueue={catchUpQueue}
-            backlogSummary={backlogSummary}
-            redirectTo={redirectTo}
-            defaultOpen={shouldOpenCatchUp}
-            practiceDiaryEnabled={practiceDiaryEnabled}
-            noteCategories={noteCategories}
-          />
-        </div>
-      ) : null}
-
-      {showSection("active_practice") ? (
-        <ActivePracticeSection
-          practiceItems={practiceItems}
-          redirectTo={redirectTo}
-        />
-      ) : null}
-    </main>
+    </nav>
   )
 }

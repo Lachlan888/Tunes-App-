@@ -4,6 +4,7 @@ export type TuneDetailStatusMessageInput = {
   loreReport: string
   lore: string
   moderatorEdit: string
+  referenceUrl: string
   diary: string
   loop: string
   pageOptions: string
@@ -21,6 +22,7 @@ export function getTuneDetailStatusMessage({
   loreReport,
   lore,
   moderatorEdit,
+  referenceUrl,
   diary,
   loop,
   pageOptions,
@@ -53,6 +55,15 @@ export function getTuneDetailStatusMessage({
   if (moderatorEdit === "invalid_key") return "That key is not valid."
   if (moderatorEdit === "invalid_url") return "That reference URL is not valid."
   if (moderatorEdit === "error") return "Could not save canonical details."
+
+  if (referenceUrl === "added") return "Reference recording saved."
+  if (referenceUrl === "missing_piece") return "Could not find that tune."
+  if (referenceUrl === "invalid_url") return "That reference URL is not valid."
+  if (referenceUrl === "not_youtube")
+    return "Reference recordings currently need to be YouTube links."
+  if (referenceUrl === "already_present")
+    return "This tune already has a primary reference recording."
+  if (referenceUrl === "error") return "Could not save reference recording."
 
   if (diary === "note_saved") return "Practice note saved."
   if (diary === "note_deleted") return "Practice note deleted."

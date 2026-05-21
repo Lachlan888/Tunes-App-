@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import FindReferenceModal from "@/components/reference-media/FindReferenceModal"
 import PieceCommentsSection from "@/components/library/PieceCommentsSection"
 import PieceLoreSection from "@/components/library/PieceLoreSection"
 import PieceMediaLinksSection from "@/components/library/PieceMediaLinksSection"
@@ -11,7 +10,7 @@ import TuneDetailActions from "@/components/library/TuneDetailActions"
 import TunePageReviewPanel from "@/components/library/TunePageReviewPanel"
 import TunePrivateNotesSection from "@/components/library/TunePrivateNotesSection"
 import TunePracticeHistorySection from "@/components/practice-diary/TunePracticeHistorySection"
-import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
+import { joinClasses } from "@/components/ui/buttonStyles"
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type {
   CommentAuthor,
@@ -133,39 +132,6 @@ function EmptyMobileSection({
   )
 }
 
-function FindReferencePrompt({
-  piece,
-  onOpen,
-}: {
-  piece: Piece
-  onOpen: () => void
-}) {
-  if (piece.reference_url) {
-    return null
-  }
-
-  return (
-    <section className="rounded-3xl border border-border bg-card p-4 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        Reference media
-      </h2>
-
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">
-        No reference recording has been saved for this tune yet. Search YouTube
-        and choose a useful public reference.
-      </p>
-
-      <button
-        type="button"
-        onClick={onOpen}
-        className={joinClasses(buttonStyles.primary, "mt-4 w-full")}
-      >
-        Find reference
-      </button>
-    </section>
-  )
-}
-
 export default function TuneDetailMobileSwitcher({
   pieceId,
   currentUserId,
@@ -196,7 +162,6 @@ export default function TuneDetailMobileSwitcher({
   addReferenceUrlToPiece,
 }: TuneDetailMobileSwitcherProps) {
   const [activeTab, setActiveTab] = useState<TuneDetailMobileTab>("media")
-  const [isFindReferenceOpen, setIsFindReferenceOpen] = useState(false)
 
   const showMediaLinks = isSectionVisible(
     tunePagePreferences,
@@ -233,22 +198,14 @@ export default function TuneDetailMobileSwitcher({
       {activeTab === "media" ? (
         <div className="space-y-5">
           {showMediaLinks ? (
-            <>
-              <FindReferencePrompt
-                piece={piece}
-                onOpen={() => setIsFindReferenceOpen(true)}
-              />
-
-              <PieceMediaLinksSection
-                pieceId={pieceId}
-                redirectTo={redirectTo}
-                mediaLinks={mediaLinks}
-                savedLoops={mediaLoops}
-                referenceUrl={piece.reference_url}
-                referenceTitle={piece.title}
-                addPieceMediaLink={addPieceMediaLink}
-              />
-            </>
+            <PieceMediaLinksSection
+              piece={piece}
+              redirectTo={redirectTo}
+              mediaLinks={mediaLinks}
+              savedLoops={mediaLoops}
+              addPieceMediaLink={addPieceMediaLink}
+              addReferenceUrlToPiece={addReferenceUrlToPiece}
+            />
           ) : null}
 
           {showSheetMusic ? (
@@ -369,15 +326,6 @@ export default function TuneDetailMobileSwitcher({
             </EmptyMobileSection>
           ) : null}
         </div>
-      ) : null}
-
-      {isFindReferenceOpen ? (
-        <FindReferenceModal
-          piece={piece}
-          redirectTo={redirectTo}
-          addReferenceUrlToPiece={addReferenceUrlToPiece}
-          onClose={() => setIsFindReferenceOpen(false)}
-        />
       ) : null}
     </section>
   )

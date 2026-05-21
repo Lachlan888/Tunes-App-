@@ -36,6 +36,7 @@ type PiecePageProps = {
     lore_report?: string | string[]
     lore?: string | string[]
     moderator_edit?: string | string[]
+    reference_url?: string | string[]
     diary?: string | string[]
     loop?: string | string[]
     page_options?: string | string[]
@@ -132,6 +133,9 @@ export default async function PiecePage({
     lore: getSingleSearchParamValue(resolvedSearchParams?.lore),
     moderatorEdit: getSingleSearchParamValue(
       resolvedSearchParams?.moderator_edit
+    ),
+    referenceUrl: getSingleSearchParamValue(
+      resolvedSearchParams?.reference_url
     ),
     diary: getSingleSearchParamValue(resolvedSearchParams?.diary),
     loop: getSingleSearchParamValue(resolvedSearchParams?.loop),
@@ -261,13 +265,12 @@ export default async function PiecePage({
 
           {showTuneSection("media_links") ? (
             <PieceMediaLinksSection
-              pieceId={pieceId}
+              piece={typedPiece}
               redirectTo={redirectTo}
               mediaLinks={typedMediaLinks}
               savedLoops={typedMediaLoops}
-              referenceUrl={typedPiece.reference_url}
-              referenceTitle={typedPiece.title}
               addPieceMediaLink={addPieceMediaLink}
+              addReferenceUrlToPiece={addReferenceUrlToPiece}
             />
           ) : null}
 
