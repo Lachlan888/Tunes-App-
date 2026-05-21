@@ -1,330 +1,113 @@
-"use client"
+import PracticeDiaryNav from "@/components/practice-diary/PracticeDiaryNav"
+import PracticeDiaryViewSwitcher from "@/components/practice-diary/PracticeDiaryViewSwitcher"
+import PracticeDayView from "@/components/practice-diary/PracticeDayView"
+import PracticeMonthView from "@/components/practice-diary/PracticeMonthView"
+import PracticeWeekView from "@/components/practice-diary/PracticeWeekView"
+import {
+  loadPracticeDiaryDayData,
+  loadPracticeDiaryMonthData,
+  loadPracticeDiaryWeekData,
+  requirePracticeDiaryEnabled,
+} from "@/lib/loaders/practice-diary"
+import { getToday } from "@/lib/review"
 
-import { useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import LogoutButton from "@/components/LogoutButton"
+type PracticeDiaryView = "day" | "week" | "month"
 
-type MobileNavProps = {
-  isSignedIn: boolean
-  overduePracticeCount: number
-  unreadTotalCount: number
-  pendingModerationCount: number
-  canModerate: boolean
-  canAccessDev: boolean
+type PracticeDiaryPageProps = {
+  searchParams?: Promise<{
+    date?: string
+    view?: string
+  }>
 }
 
-type MobileNavItem = {
-  href: string
-  label: string
-  badgeCount?: number
+function isValidDateOnly(value: string | undefined): value is string {
+  if (!value) return false
+
+  return /^\d{4}-\d{2}-\d{2}$/.test(value)
 }
 
-type OpenPanel = "social" | "more" | null
-
-const topNavTextStyle = {
-  fontFamily:
-    'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-  fontSize: "0.78rem",
-  fontWeight: 700,
-  lineHeight: 1,
-  letterSpacing: "-0.01em",
-} as const
-
-const panelNavTextStyle = {
-  fontFamily:
-    'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-  fontSize: "0.78rem",
-  fontWeight: 700,
-  lineHeight: 1,
-  letterSpacing: "-0.01em",
-} as const
-
-function FloatingBadge({ count }: { count: number }) {
-  if (count <= 0) return null
-
-  return (
-    <span className="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full bg-destructive px-1 py-0.5 text-[0.65rem] font-semibold leading-none text-destructive-foreground shadow-sm">
-      {count > 99 ? "99+" : count}
-    </span>
-  )
-}
-
-function InlineBadge({ count }: { count: number }) {
-  if (count <= 0) return null
-
-  return (
-    <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 py-0.5 text-[0.65rem] font-semibold leading-none text-destructive-foreground">
-      {count > 99 ? "99+" : count}
-    </span>
-  )
-}
-
-function MobileNavLink({
-  href,
-  label,
-  badgeCount = 0,
-  isActive,
-  onNavigate,
-}: {
-  href: string
-  label: string
-  badgeCount?: number
-  isActive?: boolean
-  onNavigate?: () => void
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={isActive ? "page" : undefined}
-      onClick={onNavigate}
-      style={topNavTextStyle}
-      className={`relative flex min-h-9 min-w-0 appearance-none items-center justify-center rounded-full border px-1.5 no-underline transition ${
-        isActive
-          ? "border-primary bg-primary text-primary-foreground shadow-sm"
-          : "border-transparent text-foreground hover:border-border hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-      }`}
-    >
-      <span style={topNavTextStyle} className="whitespace-nowrap">
-        {label}
-      </span>
-      <FloatingBadge count={badgeCount} />
-    </Link>
-  )
-}
-
-function MobileNavButton({
-  label,
-  badgeCount = 0,
-  isActive,
-  disableWhenActive = false,
-  onClick,
-}: {
-  label: string
-  badgeCount?: number
-  isActive?: boolean
-  disableWhenActive?: boolean
-  onClick: () => void
-}) {
-  const isDisabled = Boolean(disableWhenActive && isActive)
-
-  return (
-    <button
-      type="button"
-      disabled={isDisabled}
-      aria-current={isActive ? "page" : undefined}
-      onClick={onClick}
-      style={topNavTextStyle}
-      className={`relative flex min-h-9 min-w-0 appearance-none items-center justify-center rounded-full border bg-transparent px-1.5 transition disabled:cursor-not-allowed disabled:opacity-70 ${
-        isActive
-          ? "border-primary bg-primary text-primary-foreground shadow-sm"
-          : "border-transparent text-foreground hover:border-border hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-      }`}
-    >
-      <span style={topNavTextStyle} className="whitespace-nowrap">
-        {label}
-      </span>
-      <FloatingBadge count={badgeCount} />
-    </button>
-  )
-}
-
-function MobilePanel({
-  title,
-  items,
-  pathname,
-  onNavigate,
-  children,
-}: {
-  title: string
-  items: MobileNavItem[]
-  pathname: string
-  onNavigate: () => void
-  children?: React.ReactNode
-}) {
-  return (
-    <div className="mt-2 rounded-2xl border border-border bg-card p-2 shadow-lg">
-      <div className="mb-2 px-2 pt-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        {title}
-      </div>
-
-      <div className="grid grid-cols-2 gap-1">
-        {items.map((item) => {
-          const itemIsActive = pathname === item.href
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={itemIsActive ? "page" : undefined}
-              onClick={onNavigate}
-              style={panelNavTextStyle}
-              className={`flex min-h-10 items-center justify-between gap-2 rounded-xl px-3 text-left no-underline transition ${
-                itemIsActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-              }`}
-            >
-              <span style={panelNavTextStyle} className="truncate">
-                {item.label}
-              </span>
-              <InlineBadge count={item.badgeCount ?? 0} />
-            </Link>
-          )
-        })}
-      </div>
-
-      {children ? (
-        <div className="mt-2 border-t border-border pt-2">{children}</div>
-      ) : null}
-    </div>
-  )
-}
-
-export default function MobileNav({
-  isSignedIn,
-  overduePracticeCount,
-  unreadTotalCount,
-  pendingModerationCount,
-  canModerate,
-  canAccessDev,
-}: MobileNavProps) {
-  const pathname = usePathname()
-  const [openPanel, setOpenPanel] = useState<OpenPanel>(null)
-
-  const socialItems: MobileNavItem[] = [
-    {
-      href: "/friends",
-      label: "Friends",
-    },
-    {
-      href: "/inbox",
-      label: "Inbox",
-      badgeCount: unreadTotalCount,
-    },
-    {
-      href: "/compare",
-      label: "Compare",
-    },
-    {
-      href: "/public-lists",
-      label: "Shared",
-    },
-    {
-      href: "/setlists",
-      label: "Setlists",
-    },
-    {
-      href: "/badges",
-      label: "Badges",
-    },
-  ]
-
-  const moreItems: MobileNavItem[] = [
-    {
-      href: "/learning-lists",
-      label: "Lists",
-    },
-    {
-      href: "/trends",
-      label: "Trends",
-    },
-    ...(canModerate
-      ? [
-          {
-            href: "/moderator",
-            label: "Moderator",
-            badgeCount: pendingModerationCount,
-          },
-        ]
-      : []),
-    ...(canAccessDev
-      ? [
-          {
-            href: "/dev",
-            label: "Dev",
-          },
-        ]
-      : []),
-    {
-      href: "/dashboard",
-      label: "Profile",
-    },
-  ]
-
-  const socialIsActive = socialItems.some((item) => pathname === item.href)
-  const moreIsActive = moreItems.some((item) => pathname === item.href)
-
-  function closePanel() {
-    setOpenPanel(null)
+function getDiaryView(value: string | undefined): PracticeDiaryView {
+  if (value === "week" || value === "month") {
+    return value
   }
 
-  function togglePanel(panel: Exclude<OpenPanel, null>) {
-    setOpenPanel((current) => (current === panel ? null : panel))
+  return "day"
+}
+
+function getViewDescription(activeView: PracticeDiaryView) {
+  if (activeView === "week") {
+    return "Weekly patterns, tunes touched, and category activity."
   }
 
-  if (!isSignedIn) {
-    return null
+  if (activeView === "month") {
+    return "Monthly habit and coverage summary."
   }
+
+  return "Daily notebook, reflection, due tunes, and tune notes."
+}
+
+export default async function PracticeDiaryPage({
+  searchParams,
+}: PracticeDiaryPageProps) {
+  await requirePracticeDiaryEnabled()
+
+  const resolvedSearchParams = await searchParams
+  const selectedDate = isValidDateOnly(resolvedSearchParams?.date)
+    ? resolvedSearchParams.date
+    : getToday()
+  const activeView = getDiaryView(resolvedSearchParams?.view)
+
+  const diaryData =
+    activeView === "day"
+      ? await loadPracticeDiaryDayData(selectedDate)
+      : null
+
+  const weekData =
+    activeView === "week"
+      ? await loadPracticeDiaryWeekData(selectedDate)
+      : null
+
+  const monthData =
+    activeView === "month"
+      ? await loadPracticeDiaryMonthData(selectedDate)
+      : null
 
   return (
-    <nav className="md:hidden">
-      <div className="grid grid-cols-[1fr_1.2fr_1fr_1fr_1fr] gap-1">
-        <MobileNavLink
-          href="/"
-          label="Home"
-          isActive={pathname === "/"}
-          onNavigate={closePanel}
-        />
+    <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
+      <section className="mb-5 rounded-2xl border border-border bg-card p-4 shadow-sm md:mb-6 md:rounded-3xl md:p-6">
+        <p className="hidden text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground md:block">
+          Practice
+        </p>
 
-        <MobileNavLink
-          href="/review"
-          label="Practice"
-          badgeCount={overduePracticeCount}
-          isActive={pathname === "/review"}
-          onNavigate={closePanel}
-        />
+        <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight md:mt-2 md:text-5xl">
+          Practice diary
+        </h1>
 
-        <MobileNavLink
-          href="/library"
-          label="Tunes"
-          isActive={pathname === "/library"}
-          onNavigate={closePanel}
-        />
+        <p className="mt-3 hidden max-w-3xl text-base leading-7 text-muted-foreground md:block">
+          {getViewDescription(activeView)}
+        </p>
 
-        <MobileNavButton
-          label={openPanel === "social" ? "Close" : "Social"}
-          badgeCount={unreadTotalCount}
-          isActive={socialIsActive || openPanel === "social"}
-          onClick={() => togglePanel("social")}
-        />
+        <PracticeDiaryNav active="diary" />
 
-        <MobileNavButton
-          label={openPanel === "more" ? "Close" : "More"}
-          isActive={moreIsActive || openPanel === "more"}
-          onClick={() => togglePanel("more")}
-        />
-      </div>
+        <div className="mt-5">
+          <PracticeDiaryViewSwitcher
+            activeView={activeView}
+            selectedDate={selectedDate}
+          />
+        </div>
+      </section>
 
-      {openPanel === "social" ? (
-        <MobilePanel
-          title="Social"
-          items={socialItems}
-          pathname={pathname}
-          onNavigate={closePanel}
-        />
+      {activeView === "day" ? (
+        diaryData ? (
+          <PracticeDayView data={diaryData} />
+        ) : null
+      ) : activeView === "week" ? (
+        weekData ? (
+          <PracticeWeekView data={weekData} />
+        ) : null
+      ) : monthData ? (
+        <PracticeMonthView data={monthData} />
       ) : null}
-
-      {openPanel === "more" ? (
-        <MobilePanel
-          title="More"
-          items={moreItems}
-          pathname={pathname}
-          onNavigate={closePanel}
-        >
-          <LogoutButton />
-        </MobilePanel>
-      ) : null}
-    </nav>
+    </main>
   )
 }
