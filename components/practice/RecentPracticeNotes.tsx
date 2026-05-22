@@ -29,7 +29,7 @@ export default function RecentPracticeNotes({
   }
 
   return (
-    <div className="mt-5 rounded-2xl border border-border bg-background/70 p-3 sm:p-4">
+    <section className="mt-5 border-t border-border pt-4">
       <button
         type="button"
         className="flex w-full items-center justify-between gap-3 text-left"
@@ -53,12 +53,9 @@ export default function RecentPracticeNotes({
       </button>
 
       {isOpen ? (
-        <ol className="mt-4 space-y-3">
+        <ol className="mt-4 divide-y divide-border">
           {notes.map((note) => (
-            <li
-              key={note.id}
-              className="rounded-xl border border-border bg-muted/70 p-3"
-            >
+            <li key={note.id} className="py-3 first:pt-0 last:pb-0">
               <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                 <span>{formatDateOnly(note.practice_date)}</span>
 
@@ -77,6 +74,6 @@ export default function RecentPracticeNotes({
           ))}
         </ol>
       ) : null}
-    </div>
+    </section>
   )
 }

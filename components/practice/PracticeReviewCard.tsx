@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import { useState } from "react"
 import ActivePracticeFoci from "@/components/practice/ActivePracticeFoci"
 import PendingLinkButton from "@/components/PendingLinkButton"
@@ -13,7 +12,6 @@ import {
   DiaryReviewButtons,
   DirectReviewForms,
 } from "@/components/practice/ReviewOutcomeButtons"
-import { APP_TIME_ZONE } from "@/lib/review"
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 import type { ReviewOutcomeConfig } from "@/components/practice/reviewOutcomeConfig"
@@ -27,19 +25,9 @@ type PracticeReviewCardProps = {
   noteCategories: PracticeNoteCategory[]
 }
 
-function formatDueDate(dateValue: string | null) {
-  if (!dateValue) return "No due date"
-
-  return new Date(dateValue).toLocaleDateString("en-AU", {
-    timeZone: APP_TIME_ZONE,
-  })
-}
-
 export default function PracticeReviewCard({
   userPiece,
   redirectTo,
-  badgeLabel,
-  badgeClassName,
   practiceDiaryEnabled,
   noteCategories,
 }: PracticeReviewCardProps) {
@@ -61,47 +49,42 @@ export default function PracticeReviewCard({
         />
       </div>
 
-      <div className="flex min-w-0 flex-col gap-3 pr-10 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:pr-12">
-        <div className="min-w-0 flex-1">
-          <h2 className="break-words pr-1 font-serif text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
-            {userPiece.piece ? (
-              <PendingLinkButton
-                href={`/library/${userPiece.piece.id}`}
-                label={title}
-                pendingLabel="Loading..."
-                className="decoration-primary decoration-2 underline-offset-4 hover:underline"
-              />
-            ) : (
-              title
-            )}
-          </h2>
+      <div className="min-w-0 pr-10 sm:pr-12">
+        <h2 className="break-words pr-1 text-center font-serif text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
+          {userPiece.piece ? (
+            <PendingLinkButton
+              href={`/library/${userPiece.piece.id}`}
+              label={title}
+              pendingLabel="Loading..."
+              className="decoration-primary decoration-2 underline-offset-4 hover:underline"
+            />
+          ) : (
+            title
+          )}
+        </h2>
 
-          <p className="mt-3 text-sm font-medium leading-6 text-muted-foreground">
-            Key: {userPiece.piece?.key ?? "Unknown"}{" "}
-            <span aria-hidden="true">|</span> Style:{" "}
-            {userPiece.piece?.style ?? "Unknown"}{" "}
-            <span aria-hidden="true">|</span> Time:{" "}
+        <p className="mt-3 text-center text-sm font-medium leading-6 text-muted-foreground">
+          Key:{" "}
+          <span className="italic">
+            {userPiece.piece?.key ?? "Unknown"}
+          </span>{" "}
+          <span aria-hidden="true">|</span> Style:{" "}
+          <span className="italic">
+            {userPiece.piece?.style ?? "Unknown"}
+          </span>{" "}
+          <span aria-hidden="true">|</span> Time:{" "}
+          <span className="italic">
             {userPiece.piece?.time_signature ?? "Unknown"}
-          </p>
-
-          <p className="mt-1 text-sm font-medium leading-6 text-muted-foreground">
-            Due: {formatDueDate(userPiece.next_review_due)}
-          </p>
-        </div>
-
-        <span
-          className={`w-fit shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${badgeClassName}`}
-        >
-          {badgeLabel}
-        </span>
+          </span>
+        </p>
       </div>
 
       {userPiece.piece?.reference_url && userPiece.piece?.title ? (
-        <div className="mt-4 w-full">
+        <div className="mt-5 w-full">
           <ReferenceMediaLink
             referenceUrl={userPiece.piece.reference_url}
             title={userPiece.piece.title}
-            className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+            className="flex w-full items-center justify-center rounded-full border border-border bg-muted px-4 py-2 text-center text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
         </div>
       ) : null}

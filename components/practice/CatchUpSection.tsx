@@ -161,30 +161,18 @@ export default function CatchUpSection({
   return (
     <section id="catch-up" className="mt-6 md:mt-8">
       <div className="md:hidden">
-        <h2 className="px-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Catch up ({catchUpQueue.length})
-        </h2>
-
         {catchUpQueue.length === 0 ? (
-          <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+          <p className="rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
             Nothing overdue right now.
           </p>
         ) : (
-          <div className="mt-4 grid gap-4">
-            <p className="px-1 text-sm leading-6 text-muted-foreground">
-              {catchUpQueue.length} overdue tune
-              {catchUpQueue.length === 1 ? "" : "s"}. Work through one at a
-              time.
-            </p>
-
-            <CatchUpReviewPager
-              queue={catchUpQueue}
-              redirectTo={redirectTo}
-              practiceDiaryEnabled={practiceDiaryEnabled}
-              noteCategories={noteCategories}
-              emptyMessage="Nothing overdue right now."
-            />
-          </div>
+          <CatchUpReviewPager
+            queue={catchUpQueue}
+            redirectTo={redirectTo}
+            practiceDiaryEnabled={practiceDiaryEnabled}
+            noteCategories={noteCategories}
+            emptyMessage="Nothing overdue right now."
+          />
         )}
       </div>
 

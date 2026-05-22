@@ -36,7 +36,7 @@ export default function ReferenceMediaLink({
   }
 
   return (
-    <span className="inline-block">
+    <span className="block w-full">
       <ReferenceMediaEmbed
         referenceUrl={referenceUrl}
         title={title}
