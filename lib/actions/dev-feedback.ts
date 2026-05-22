@@ -72,3 +72,30 @@ export async function updateBetaFeedbackAdminFields(formData: FormData) {
   revalidatePath("/dev")
   redirect(appendQueryParam(redirectTo, "dev_feedback", "updated"))
 }
+
+export async function resolveBetaFeedback(formData: FormData) {
+  const { supabase } = await requireAppAdmin()
+
+  const feedbackId = Number(formData.get("feedback_id"))
+  const redirectTo = String(formData.get("redirect_to") ?? "/dev")
+
+  if (!Number.isInteger(feedbackId) || feedbackId <= 0) {
+    redirect(appendQueryParam(redirectTo, "dev_feedback", "missing_feedback"))
+  }
+
+  const { error } = await supabase
+    .from("beta_feedback")
+    .update({
+      status: "fixed",
+      resolved_at: new Date().toISOString(),
+    })
+    .eq("id", feedbackId)
+
+  if (error) {
+    console.error("Error resolving beta feedback:", error)
+    redirect(appendQueryParam(redirectTo, "dev_feedback", "error"))
+  }
+
+  revalidatePath("/dev")
+  redirect(appendQueryParam(redirectTo, "dev_feedback", "resolved"))
+}

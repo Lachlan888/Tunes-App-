@@ -32,7 +32,20 @@ export default function DesktopNav({
           />
 
           <PendingNavLink href="/library" label="Tunes" />
-          <PendingNavLink href="/learning-lists" label="Lists" />
+
+          <NavDropdown
+            label="Lists"
+            items={[
+              {
+                href: "/learning-lists",
+                label: "My Lists",
+              },
+              {
+                href: "/public-lists",
+                label: "Public Lists",
+              },
+            ]}
+          />
 
           <NavDropdown
             label="Social"
@@ -50,10 +63,6 @@ export default function DesktopNav({
               {
                 href: "/compare",
                 label: "Compare",
-              },
-              {
-                href: "/public-lists",
-                label: "Shared",
               },
               {
                 href: "/setlists",

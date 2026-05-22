@@ -18,9 +18,9 @@ function getSingleValue(value: string | string[] | undefined) {
 }
 
 function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Shared page options saved."
-  if (status === "reset") return "Shared page options reset."
-  if (status === "error") return "Could not save Shared page options."
+  if (status === "saved") return "Public Lists page options saved."
+  if (status === "reset") return "Public Lists page options reset."
+  if (status === "error") return "Could not save Public Lists page options."
 
   return null
 }

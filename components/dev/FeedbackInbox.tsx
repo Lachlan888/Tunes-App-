@@ -1,6 +1,9 @@
 import Link from "next/link"
 import SubmitButton from "@/components/SubmitButton"
-import { updateBetaFeedbackAdminFields } from "@/lib/actions/dev-feedback"
+import {
+  resolveBetaFeedback,
+  updateBetaFeedbackAdminFields,
+} from "@/lib/actions/dev-feedback"
 import type { BetaFeedbackItem } from "@/lib/types"
 
 type FeedbackInboxProps = {
@@ -42,17 +45,19 @@ const textareaClassName =
   "min-h-20 w-full rounded-2xl border border-border bg-background/80 px-3 py-2 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
-  if (feedbackItems.length === 0) {
+  const activeFeedbackItems = feedbackItems.filter((item) => !item.resolved_at)
+
+  if (activeFeedbackItems.length === 0) {
     return (
       <div className="rounded-3xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
-        No beta feedback yet.
+        No unresolved beta feedback.
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      {feedbackItems.map((item) => {
+      {activeFeedbackItems.map((item) => {
         const safePagePath = getSafeInternalPath(item.page_path)
 
         return (
@@ -176,6 +181,17 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
                 label="Update feedback"
                 pendingLabel="Updating…"
                 className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              />
+            </form>
+
+            <form action={resolveBetaFeedback} className="mt-3">
+              <input type="hidden" name="feedback_id" value={item.id} />
+              <input type="hidden" name="redirect_to" value="/dev" />
+
+              <SubmitButton
+                label="Resolve and archive"
+                pendingLabel="Archiving…"
+                className="rounded-full border border-primary bg-background/70 px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               />
             </form>
           </article>

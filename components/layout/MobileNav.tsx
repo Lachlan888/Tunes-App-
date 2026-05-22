@@ -20,7 +20,7 @@ type MobileNavItem = {
   badgeCount?: number
 }
 
-type OpenPanel = "social" | "more" | null
+type OpenPanel = "lists" | "more" | null
 
 function FloatingBadge({ count }: { count: number }) {
   if (count <= 0) return null
@@ -165,7 +165,18 @@ export default function MobileNav({
   const pathname = usePathname()
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null)
 
-  const socialItems: MobileNavItem[] = [
+  const listItems: MobileNavItem[] = [
+    {
+      href: "/learning-lists",
+      label: "My Lists",
+    },
+    {
+      href: "/public-lists",
+      label: "Public Lists",
+    },
+  ]
+
+  const moreItems: MobileNavItem[] = [
     {
       href: "/friends",
       label: "Friends",
@@ -180,23 +191,12 @@ export default function MobileNav({
       label: "Compare",
     },
     {
-      href: "/public-lists",
-      label: "Shared",
-    },
-    {
       href: "/setlists",
       label: "Setlists",
     },
     {
       href: "/badges",
       label: "Badges",
-    },
-  ]
-
-  const moreItems: MobileNavItem[] = [
-    {
-      href: "/learning-lists",
-      label: "Lists",
     },
     {
       href: "/trends",
@@ -225,7 +225,7 @@ export default function MobileNav({
     },
   ]
 
-  const socialIsActive = socialItems.some((item) => pathname === item.href)
+  const listsIsActive = listItems.some((item) => pathname === item.href)
   const moreIsActive = moreItems.some((item) => pathname === item.href)
 
   function closePanel() {
@@ -266,23 +266,23 @@ export default function MobileNav({
         />
 
         <MobileNavButton
-          label={openPanel === "social" ? "Close" : "Social"}
-          badgeCount={unreadTotalCount}
-          isActive={socialIsActive || openPanel === "social"}
-          onClick={() => togglePanel("social")}
+          label={openPanel === "lists" ? "Close" : "Lists"}
+          isActive={listsIsActive || openPanel === "lists"}
+          onClick={() => togglePanel("lists")}
         />
 
         <MobileNavButton
           label={openPanel === "more" ? "Close" : "More"}
+          badgeCount={unreadTotalCount}
           isActive={moreIsActive || openPanel === "more"}
           onClick={() => togglePanel("more")}
         />
       </div>
 
-      {openPanel === "social" ? (
+      {openPanel === "lists" ? (
         <MobilePanel
-          title="Social"
-          items={socialItems}
+          title="Lists"
+          items={listItems}
           pathname={pathname}
           onNavigate={closePanel}
         />

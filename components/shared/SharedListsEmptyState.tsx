@@ -6,7 +6,7 @@ export default function SharedListsEmptyState() {
       </h2>
 
       <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-        No shared lists yet.
+        No public lists yet.
       </p>
     </section>
   )
