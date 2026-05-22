@@ -83,13 +83,37 @@ export default function LibraryStatusMessages({
       )}
 
       {listAddStatus === "success" && (
-        <StatusBanner tone="success">Tune added to list.</StatusBanner>
+        <StatusBanner tone="success">
+          Tune added to selected list/s.
+        </StatusBanner>
+      )}
+
+      {listAddStatus === "partial" && (
+        <StatusBanner tone="success">
+          Tune added to the selected list/s that did not already contain it.
+        </StatusBanner>
       )}
 
       {listAddStatus === "duplicate" && (
         <StatusBanner tone="neutral">
-          That tune is already in this list.
+          That tune is already in the selected list/s.
         </StatusBanner>
+      )}
+
+      {listAddStatus === "missing_list" && (
+        <StatusBanner tone="warning">
+          Choose at least one list before adding the tune.
+        </StatusBanner>
+      )}
+
+      {listAddStatus === "missing_piece" && (
+        <StatusBanner tone="warning">
+          Could not tell which tune to add.
+        </StatusBanner>
+      )}
+
+      {listAddStatus === "error" && (
+        <StatusBanner tone="error">Could not add tune to list/s.</StatusBanner>
       )}
 
       {referenceUrlStatus === "added" && (

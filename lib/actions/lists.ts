@@ -10,6 +10,13 @@ import {
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 type ListVisibility = "private" | "public"
+type ListAddStatus =
+  | "success"
+  | "duplicate"
+  | "partial"
+  | "missing_piece"
+  | "missing_list"
+  | "error"
 
 function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")
@@ -29,6 +36,20 @@ function appendQueryParams(
   }
 
   return nextUrl
+}
+
+function getSelectedLearningListIds(formData: FormData) {
+  const multiListIds = formData.getAll("learning_list_ids")
+  const singleListId = formData.get("learning_list_id")
+  const rawListIds = singleListId ? [...multiListIds, singleListId] : multiListIds
+
+  return Array.from(
+    new Set(
+      rawListIds
+        .map((value) => Number(value))
+        .filter((value) => Number.isInteger(value) && value > 0)
+    )
+  )
 }
 
 export async function addPieceToLearningListForUser(
@@ -238,7 +259,7 @@ export async function createListInline(
   }
 }
 
-function buildRedirectUrl(basePath: string, status: "success" | "duplicate") {
+function buildListAddRedirectUrl(basePath: string, status: ListAddStatus) {
   const separator = basePath.includes("?") ? "&" : "?"
   return `${basePath}${separator}list_add=${status}`
 }
@@ -255,19 +276,48 @@ export async function addToLearningList(formData: FormData) {
   }
 
   const pieceId = Number(formData.get("piece_id"))
-  const learningListId = Number(formData.get("learning_list_id"))
+  const selectedLearningListIds = getSelectedLearningListIds(formData)
   const redirectTo = String(formData.get("redirect_to") ?? "/")
 
-  await addPieceToLearningListForUser(
-    supabase,
-    user.id,
-    pieceId,
-    learningListId
-  ).then((status) => {
-    redirect(
-      buildRedirectUrl(redirectTo, status === "added" ? "success" : "duplicate")
-    )
-  })
+  if (!Number.isInteger(pieceId) || pieceId <= 0) {
+    redirect(buildListAddRedirectUrl(redirectTo, "missing_piece"))
+  }
+
+  if (selectedLearningListIds.length === 0) {
+    redirect(buildListAddRedirectUrl(redirectTo, "missing_list"))
+  }
+
+  let addedCount = 0
+  let duplicateCount = 0
+
+  try {
+    for (const learningListId of selectedLearningListIds) {
+      const status = await addPieceToLearningListForUser(
+        supabase,
+        user.id,
+        pieceId,
+        learningListId
+      )
+
+      if (status === "added") {
+        addedCount += 1
+      } else {
+        duplicateCount += 1
+      }
+    }
+  } catch {
+    redirect(buildListAddRedirectUrl(redirectTo, "error"))
+  }
+
+  if (addedCount > 0 && duplicateCount > 0) {
+    redirect(buildListAddRedirectUrl(redirectTo, "partial"))
+  }
+
+  if (addedCount > 0) {
+    redirect(buildListAddRedirectUrl(redirectTo, "success"))
+  }
+
+  redirect(buildListAddRedirectUrl(redirectTo, "duplicate"))
 }
 
 export async function importPublicList(formData: FormData) {
