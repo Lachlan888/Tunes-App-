@@ -3,7 +3,7 @@ import MarkAsKnownButton from "@/components/MarkAsKnownButton"
 import PracticeProgress from "@/components/practice/PracticeProgress"
 import RemoveTuneButton from "@/components/RemoveTuneButton"
 import StartPracticeButton from "@/components/StartPracticeButton"
-import { buttonStyles } from "@/components/ui/buttonStyles"
+import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
 
 type LearningListItemRow = {
@@ -38,6 +38,32 @@ export default function TuneDetailActions({
   const existingListCount = Array.from(
     new Set((learningListItems ?? []).map((item) => item.learning_list_id))
   ).length
+
+  const tuneStateButtonSize =
+    "min-h-[3.25rem] sm:!h-[3.25rem] sm:!w-[15rem] sm:!min-w-[15rem]"
+
+  const tuneStatePrimaryActionClass = joinClasses(
+    buttonStyles.primary,
+    tuneStateButtonSize
+  )
+
+  const tuneStateActionClass = joinClasses(
+    buttonStyles.secondary,
+    tuneStateButtonSize
+  )
+
+  const tuneStatePracticeStatusClass = joinClasses(
+    "inline-flex w-full items-center justify-center rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm sm:w-auto",
+    tuneStateButtonSize
+  )
+
+  const tuneStateDestructiveActionClass = joinClasses(
+    buttonStyles.destructiveSecondary,
+    tuneStateButtonSize
+  )
+
+  const knownInertStatusClass =
+    "flex min-h-[3.25rem] w-full flex-col justify-center rounded-2xl px-1 py-2 text-left sm:!w-[15rem] sm:!min-w-[15rem]"
 
   return (
     <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
@@ -86,10 +112,10 @@ export default function TuneDetailActions({
             pieceId={piece.id}
             redirectTo={redirectTo}
             startLearning={startLearning}
-            className={buttonStyles.primary}
+            className={tuneStatePrimaryActionClass}
           />
         ) : (
-          <span className="inline-flex w-full items-center justify-center rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm sm:w-auto">
+          <span className={tuneStatePracticeStatusClass}>
             Already in practice
           </span>
         )}
@@ -99,17 +125,22 @@ export default function TuneDetailActions({
             pieceId={piece.id}
             redirectTo={redirectTo}
             label="Set as known"
-            className={buttonStyles.secondary}
+            className={tuneStateActionClass}
           />
         ) : isKnown ? (
-          <span className="inline-flex w-full items-center justify-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm sm:w-auto">
-            Known
-          </span>
+          <div className={knownInertStatusClass} aria-label="This tune is marked as known">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Status
+            </p>
+            <p className="mt-1 text-sm font-medium text-muted-foreground">
+              Already marked known
+            </p>
+          </div>
         ) : (
           <MarkAsKnownButton
             pieceId={piece.id}
             redirectTo={redirectTo}
-            className={buttonStyles.secondary}
+            className={tuneStateActionClass}
           />
         )}
 
@@ -119,10 +150,14 @@ export default function TuneDetailActions({
           learningListItems={learningListItems}
           redirectTo={redirectTo}
           addToLearningList={addToLearningList}
-          buttonClassName={buttonStyles.secondary}
+          buttonClassName={tuneStateActionClass}
         />
 
-        <RemoveTuneButton pieceId={piece.id} redirectTo={redirectTo} />
+        <RemoveTuneButton
+          pieceId={piece.id}
+          redirectTo={redirectTo}
+          className={tuneStateDestructiveActionClass}
+        />
       </div>
     </section>
   )

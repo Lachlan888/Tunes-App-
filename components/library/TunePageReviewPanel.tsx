@@ -279,15 +279,17 @@ export default function TunePageReviewPanel({
 
   return (
     <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        Review / practice check
-      </h2>
+      <div className="flex min-w-0 flex-col gap-1 sm:gap-2">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          {isFormalReview ? "Review" : "Practice check"}
+        </h2>
 
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">
-        {isFormalReview
-          ? "This tune is in practice. Use these buttons for a formal review that updates Stage and the next review date."
-          : "This tune is not in practice. Use these buttons to log a diary-only practice check without changing Stage or review scheduling."}
-      </p>
+        <p className="hidden text-sm leading-6 text-muted-foreground sm:block">
+          {isFormalReview
+            ? "Formal review updates Stage and the next review date."
+            : "Diary-only check. Does not change Stage or review scheduling."}
+        </p>
+      </div>
 
       {!practiceDiaryEnabled && !isFormalReview ? (
         <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4">

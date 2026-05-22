@@ -3,6 +3,7 @@
 import { useState } from "react"
 import RequestTuneEditForm from "@/components/library/RequestTuneEditForm"
 import SubmitButton from "@/components/SubmitButton"
+import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import { directModeratorUpdatePiece } from "@/lib/actions/moderation"
 import {
   deleteCanonicalTuneAsModerator,
@@ -83,7 +84,7 @@ function ModalShell({
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 rounded-full border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className={buttonStyles.modalClose}
           >
             Close
           </button>
@@ -96,16 +97,21 @@ function ModalShell({
 }
 
 const inputClassName =
-  "w-full min-w-0 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full min-w-0 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
-const primaryButtonClass =
-  "w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+const primaryButtonClass = joinClasses(buttonStyles.primary, "py-3")
 
-const secondaryButtonClass =
-  "w-full rounded-full border border-border bg-background/70 px-4 py-3 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+const secondaryButtonClass = joinClasses(buttonStyles.secondary, "py-3")
 
-const destructiveButtonClass =
-  "w-full rounded-full border border-destructive bg-background/70 px-4 py-3 text-sm font-medium text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+const destructiveButtonClass = joinClasses(
+  buttonStyles.destructiveSecondary,
+  "py-3"
+)
+
+const destructivePrimaryButtonClass = joinClasses(
+  buttonStyles.destructive,
+  "py-3"
+)
 
 export default function TuneCanonicalDetailsCard({
   piece,
@@ -132,9 +138,8 @@ export default function TuneCanonicalDetailsCard({
           Tune details
         </h2>
 
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-          These are shared canonical details for this tune. Normal users can
-          request corrections. Moderators can directly edit shared tune data.
+        <p className="mt-2 hidden max-w-3xl text-sm leading-6 text-muted-foreground sm:block">
+          Shared canonical tune data.
         </p>
       </div>
 
@@ -394,7 +399,7 @@ export default function TuneCanonicalDetailsCard({
               <SubmitButton
                 label="Delete canonical tune"
                 pendingLabel="Deleting..."
-                className="w-full rounded-full border border-destructive bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className={destructivePrimaryButtonClass}
               />
 
               <button
