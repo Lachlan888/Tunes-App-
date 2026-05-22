@@ -16,13 +16,8 @@ type BadgeFacetSummary = {
   timeSignatures: string[]
 }
 
-type BadgeStatus = "all" | "received" | "in_progress" | "not_received"
-
-type BadgeRelationship =
-  | "all"
-  | "received"
-  | "created"
-  | "received_or_created"
+type BadgeViewMode = "all" | "received" | "created"
+type BadgeProgressFilter = "all" | "in_progress" | "not_received"
 
 function normaliseSearchText(value: string | null | undefined) {
   return (value ?? "")
@@ -55,30 +50,33 @@ function getOwnerName(badge: BadgeWithOwner) {
   )
 }
 
-function getBadgeStatus(badge: BadgeWithOwner): Exclude<BadgeStatus, "all"> {
+function getBadgeProgressStatus(
+  badge: BadgeWithOwner
+): Exclude<BadgeProgressFilter, "all"> | "received" {
   if (badge.viewer_award) return "received"
   if ((badge.viewer_progress?.current ?? 0) > 0) return "in_progress"
   return "not_received"
 }
 
-function badgeMatchesRelationship({
+function badgeMatchesViewMode({
   badge,
   viewerId,
-  relationship,
+  viewMode,
 }: {
   badge: BadgeWithOwner
   viewerId: string | null
-  relationship: BadgeRelationship
+  viewMode: BadgeViewMode
 }) {
-  if (relationship === "all") return true
+  if (viewMode === "all") return true
   if (!viewerId) return false
 
-  const isReceived = Boolean(badge.viewer_award)
-  const isCreated = badge.owner_user_id === viewerId
+  if (viewMode === "received") {
+    return Boolean(badge.viewer_award)
+  }
 
-  if (relationship === "received") return isReceived
-  if (relationship === "created") return isCreated
-  if (relationship === "received_or_created") return isReceived || isCreated
+  if (viewMode === "created") {
+    return badge.owner_user_id === viewerId
+  }
 
   return true
 }
@@ -187,24 +185,108 @@ function badgeMatchesFacet({
   )
 }
 
+function badgeMatchesProgress({
+  badge,
+  progress,
+}: {
+  badge: BadgeWithOwner
+  progress: BadgeProgressFilter
+}) {
+  if (progress === "all") return true
+
+  return getBadgeProgressStatus(badge) === progress
+}
+
+type BadgeModeSwitcherProps = {
+  viewMode: BadgeViewMode
+  viewerId: string | null
+  allCount: number
+  receivedCount: number
+  createdCount: number
+  onChangeViewMode: (mode: BadgeViewMode) => void
+}
+
+function BadgeModeSwitcher({
+  viewMode,
+  viewerId,
+  allCount,
+  receivedCount,
+  createdCount,
+  onChangeViewMode,
+}: BadgeModeSwitcherProps) {
+  const options: Array<{
+    value: BadgeViewMode
+    label: string
+    count: number
+    disabled: boolean
+  }> = [
+    {
+      value: "all",
+      label: "All",
+      count: allCount,
+      disabled: false,
+    },
+    {
+      value: "received",
+      label: "Received",
+      count: receivedCount,
+      disabled: !viewerId,
+    },
+    {
+      value: "created",
+      label: "Created",
+      count: createdCount,
+      disabled: !viewerId,
+    },
+  ]
+
+  return (
+    <div className="rounded-3xl border border-border bg-card p-2 shadow-sm">
+      <div className="grid grid-cols-3 gap-2">
+        {options.map((option) => {
+          const isActive = viewMode === option.value
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              disabled={option.disabled}
+              onClick={() => onChangeViewMode(option.value)}
+              className={[
+                "rounded-2xl px-3 py-3 text-center text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
+                isActive
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground",
+                option.disabled ? "cursor-not-allowed opacity-45" : "",
+              ].join(" ")}
+            >
+              <span className="block">{option.label}</span>
+              <span className="mt-1 block text-xs opacity-80">
+                {option.count}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 type BadgeFiltersProps = {
   query: string
   category: string
   style: string
   badgeKey: string
-  status: BadgeStatus
-  relationship: BadgeRelationship
-  viewerId: string | null
+  progress: BadgeProgressFilter
   categoryOptions: string[]
   styleOptions: string[]
   keyOptions: string[]
-  hasActiveFilters: string | boolean
+  hasActiveFilters: boolean
   onChangeQuery: (value: string) => void
   onChangeCategory: (value: string) => void
   onChangeStyle: (value: string) => void
   onChangeKey: (value: string) => void
-  onChangeStatus: (value: BadgeStatus) => void
-  onChangeRelationship: (value: BadgeRelationship) => void
+  onChangeProgress: (value: BadgeProgressFilter) => void
   onClearFilters: () => void
 }
 
@@ -213,9 +295,7 @@ function BadgeFilters({
   category,
   style,
   badgeKey,
-  status,
-  relationship,
-  viewerId,
+  progress,
   categoryOptions,
   styleOptions,
   keyOptions,
@@ -224,12 +304,11 @@ function BadgeFilters({
   onChangeCategory,
   onChangeStyle,
   onChangeKey,
-  onChangeStatus,
-  onChangeRelationship,
+  onChangeProgress,
   onClearFilters,
 }: BadgeFiltersProps) {
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_repeat(5,minmax(9.5rem,1fr))_auto]">
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(9.5rem,1fr))_auto]">
       <div className="space-y-2">
         <label
           htmlFor="badge-search"
@@ -244,29 +323,6 @@ function BadgeFilters({
           placeholder="Search badges..."
           className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
         />
-      </div>
-
-      <div className="space-y-2">
-        <label
-          htmlFor="badge-relationship"
-          className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
-        >
-          Your badges
-        </label>
-        <select
-          id="badge-relationship"
-          value={relationship}
-          onChange={(event) =>
-            onChangeRelationship(event.target.value as BadgeRelationship)
-          }
-          disabled={!viewerId}
-          className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <option value="all">All badges</option>
-          <option value="received">Received</option>
-          <option value="created">Created by me</option>
-          <option value="received_or_created">Received or created</option>
-        </select>
       </div>
 
       <div className="space-y-2">
@@ -337,19 +393,20 @@ function BadgeFilters({
 
       <div className="space-y-2">
         <label
-          htmlFor="badge-status"
+          htmlFor="badge-progress"
           className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
         >
           Progress
         </label>
         <select
-          id="badge-status"
-          value={status}
-          onChange={(event) => onChangeStatus(event.target.value as BadgeStatus)}
+          id="badge-progress"
+          value={progress}
+          onChange={(event) =>
+            onChangeProgress(event.target.value as BadgeProgressFilter)
+          }
           className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
         >
           <option value="all">All progress</option>
-          <option value="received">Received</option>
           <option value="in_progress">In progress</option>
           <option value="not_received">Not received</option>
         </select>
@@ -369,16 +426,44 @@ function BadgeFilters({
   )
 }
 
+function getEmptyTitle(viewMode: BadgeViewMode) {
+  if (viewMode === "received") return "No received badges"
+  if (viewMode === "created") return "No created badges"
+  return "No matching badges"
+}
+
+function getEmptyDescription({
+  viewMode,
+  hasActiveFilters,
+}: {
+  viewMode: BadgeViewMode
+  hasActiveFilters: boolean
+}) {
+  if (hasActiveFilters) {
+    return "Try clearing a filter or searching for a broader style, condition, badge name, or creator."
+  }
+
+  if (viewMode === "received") {
+    return "You have not received any badges yet."
+  }
+
+  if (viewMode === "created") {
+    return "You have not created any badges yet."
+  }
+
+  return "No public badges match this view."
+}
+
 export default function BadgeBrowser({
   badges,
   viewerId,
 }: BadgeBrowserProps) {
+  const [viewMode, setViewMode] = useState<BadgeViewMode>("all")
   const [query, setQuery] = useState("")
   const [category, setCategory] = useState("")
   const [style, setStyle] = useState("")
   const [key, setKey] = useState("")
-  const [status, setStatus] = useState<BadgeStatus>("all")
-  const [relationship, setRelationship] = useState<BadgeRelationship>("all")
+  const [progress, setProgress] = useState<BadgeProgressFilter>("all")
   const [mobileIndex, setMobileIndex] = useState(0)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
 
@@ -390,6 +475,18 @@ export default function BadgeBrowser({
       ])
     )
   }, [badges])
+
+  const allCount = badges.length
+
+  const receivedCount = useMemo(() => {
+    if (!viewerId) return 0
+    return badges.filter((badge) => Boolean(badge.viewer_award)).length
+  }, [badges, viewerId])
+
+  const createdCount = useMemo(() => {
+    if (!viewerId) return 0
+    return badges.filter((badge) => badge.owner_user_id === viewerId).length
+  }, [badges, viewerId])
 
   const categoryOptions = useMemo(() => {
     return uniqueSorted(badges.map((badge) => badge.category))
@@ -417,6 +514,12 @@ export default function BadgeBrowser({
           timeSignatures: [],
         } satisfies BadgeFacetSummary)
 
+      const matchesViewMode = badgeMatchesViewMode({
+        badge,
+        viewerId,
+        viewMode,
+      })
+
       const matchesSearch = badgeMatchesSearch({
         badge,
         query,
@@ -435,22 +538,18 @@ export default function BadgeBrowser({
         selectedValue: key,
       })
 
-      const badgeStatus = getBadgeStatus(badge)
-      const matchesStatus = status === "all" ? true : badgeStatus === status
-
-      const matchesRelationship = badgeMatchesRelationship({
+      const matchesProgress = badgeMatchesProgress({
         badge,
-        viewerId,
-        relationship,
+        progress,
       })
 
       return (
+        matchesViewMode &&
         matchesSearch &&
         matchesCategory &&
         matchesStyle &&
         matchesKey &&
-        matchesStatus &&
-        matchesRelationship
+        matchesProgress
       )
     })
   }, [
@@ -458,16 +557,16 @@ export default function BadgeBrowser({
     badgeFacets,
     category,
     key,
+    progress,
     query,
-    relationship,
-    status,
     style,
     viewerId,
+    viewMode,
   ])
 
   useEffect(() => {
     setMobileIndex(0)
-  }, [category, key, query, relationship, status, style])
+  }, [category, key, progress, query, style, viewMode])
 
   useEffect(() => {
     if (mobileIndex > Math.max(0, filteredBadges.length - 1)) {
@@ -475,13 +574,15 @@ export default function BadgeBrowser({
     }
   }, [filteredBadges.length, mobileIndex])
 
-  const hasActiveFilters =
-    query.trim() ||
-    category ||
-    style ||
-    key ||
-    status !== "all" ||
-    relationship !== "all"
+  useEffect(() => {
+    if (!viewerId && viewMode !== "all") {
+      setViewMode("all")
+    }
+  }, [viewerId, viewMode])
+
+  const hasActiveFilters = Boolean(
+    query.trim() || category || style || key || progress !== "all"
+  )
 
   const currentMobileBadge = filteredBadges[mobileIndex] ?? null
   const canGoPrevious = mobileIndex > 0
@@ -492,8 +593,7 @@ export default function BadgeBrowser({
     setCategory("")
     setStyle("")
     setKey("")
-    setStatus("all")
-    setRelationship("all")
+    setProgress("all")
     setMobileIndex(0)
   }
 
@@ -512,9 +612,7 @@ export default function BadgeBrowser({
     category,
     style,
     badgeKey: key,
-    status,
-    relationship,
-    viewerId,
+    progress,
     categoryOptions,
     styleOptions,
     keyOptions,
@@ -523,13 +621,21 @@ export default function BadgeBrowser({
     onChangeCategory: setCategory,
     onChangeStyle: setStyle,
     onChangeKey: setKey,
-    onChangeStatus: setStatus,
-    onChangeRelationship: setRelationship,
+    onChangeProgress: setProgress,
     onClearFilters: clearFilters,
   }
 
   return (
-    <section className="mt-6 space-y-5 md:mt-8 md:space-y-6">
+    <section className="mt-5 space-y-5 md:mt-8 md:space-y-6">
+      <BadgeModeSwitcher
+        viewMode={viewMode}
+        viewerId={viewerId}
+        allCount={allCount}
+        receivedCount={receivedCount}
+        createdCount={createdCount}
+        onChangeViewMode={setViewMode}
+      />
+
       <div className="hidden rounded-3xl border border-border bg-card p-5 shadow-sm md:block">
         <BadgeFilters {...filterProps} />
 
@@ -612,11 +718,13 @@ export default function BadgeBrowser({
       ) : (
         <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            No matching badges
+            {getEmptyTitle(viewMode)}
           </h2>
           <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            Try clearing a filter or searching for a broader style, condition,
-            badge name, or creator.
+            {getEmptyDescription({
+              viewMode,
+              hasActiveFilters,
+            })}
           </p>
 
           <button
@@ -636,7 +744,7 @@ export default function BadgeBrowser({
         desktopMaxWidth="md:max-w-3xl"
         eyebrow="Badge search"
         title="Search and filter"
-        description="Find badges by name, category, style, key, progress, or your relationship to them."
+        description="Find badges by name, category, style, key, or progress."
       >
         <div className="space-y-5">
           <BadgeFilters {...filterProps} />

@@ -57,55 +57,47 @@ export default async function BadgesPage({ searchParams }: BadgesPageProps) {
   })
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+    <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       {message && showSection("status_messages") ? (
-        <div className="mb-6 rounded-2xl border border-success bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+        <div className="mb-5 rounded-2xl border border-success bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
           {message}
         </div>
       ) : null}
 
-      <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Social
-        </p>
-
-        <div className="mt-3 flex flex-wrap items-end justify-between gap-5">
-          <div className="max-w-3xl">
-            <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+      <section className="rounded-3xl border border-border bg-card px-5 py-5 text-center shadow-sm md:p-6 md:text-left">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 className="font-serif text-4xl font-bold leading-none tracking-tight text-foreground md:text-5xl">
               Badges
             </h1>
-
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              Badges are user-awarded recognition objects. Browse repertoire,
-              media, lore, and catalogue badges, then filter by the musical
-              conditions they mention.
-            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-end">
             {showSection("create_badge") ? (
               viewerId ? (
                 <Link
                   href="/badges/new"
-                  className="rounded-full border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className="inline-flex min-h-10 w-full items-center justify-center rounded-full border border-primary bg-primary px-5 py-2 text-center text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-11 md:w-auto md:py-2.5"
                 >
                   Create Badge
                 </Link>
               ) : (
                 <Link
                   href="/login"
-                  className="rounded-full border border-border px-5 py-2.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className="inline-flex min-h-10 w-full items-center justify-center rounded-full border border-border px-5 py-2 text-center text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-11 md:w-auto md:py-2.5"
                 >
                   Log in to create badges
                 </Link>
               )
             ) : null}
 
-            <PageOptionsModal
-              config={BADGES_PAGE_OPTIONS_CONFIG}
-              preferences={pagePreferences}
-              redirectTo="/badges"
-            />
+            <div className="hidden md:block">
+              <PageOptionsModal
+                config={BADGES_PAGE_OPTIONS_CONFIG}
+                preferences={pagePreferences}
+                redirectTo="/badges"
+              />
+            </div>
           </div>
         </div>
       </section>
