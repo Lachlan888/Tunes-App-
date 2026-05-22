@@ -125,6 +125,31 @@ export type BadgeProgressSummary = {
   missingPieceIds?: number[]
 }
 
+export type BadgeRequiredTuneViewerState =
+  | "known"
+  | "in_practice"
+  | "not_in_repertoire"
+
+export type BadgeRequiredTune = {
+  piece: {
+    id: number
+    title: string
+    key: string | null
+    style: string | null
+    time_signature: string | null
+    reference_url: string | null
+  }
+  viewer_state: BadgeRequiredTuneViewerState | null
+  stage: number | null
+  existing_list_ids: number[]
+}
+
+export type BadgeViewerLearningList = {
+  id: number
+  name: string
+  description: string | null
+}
+
 export type BadgeWithOwner = Badge & {
   owner_profile: BadgeOwnerProfile | null
   recipient_count: number
@@ -143,6 +168,8 @@ export type BadgeDetailData =
       viewerId: string | null
       badge: BadgeWithOwner
       awards: BadgeAwardWithProfiles[]
+      requiredTunes: BadgeRequiredTune[]
+      viewerLearningLists: BadgeViewerLearningList[]
     }
 
 export type BadgeIndexData = {

@@ -44,8 +44,8 @@ function FilterChip({
       onClick={onClick}
       className={
         selected
-          ? "rounded-full border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
-          : "rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          ? "min-h-11 rounded-full border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground"
+          : "min-h-11 rounded-full border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
       }
     >
       {label}
@@ -69,9 +69,9 @@ export default function MobileCompareResultsPanel({
   const [query, setQuery] = useState("")
   const [selectedKeys, setSelectedKeys] = useState<string[]>([])
   const [selectedStyles, setSelectedStyles] = useState<string[]>([])
-  const [selectedTimeSignatures, setSelectedTimeSignatures] = useState<string[]>(
-    []
-  )
+  const [selectedTimeSignatures, setSelectedTimeSignatures] = useState<
+    string[]
+  >([])
   const [showFilters, setShowFilters] = useState(false)
   const [pendingAction, setPendingAction] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -300,7 +300,7 @@ export default function MobileCompareResultsPanel({
             onClearAll={clearLocalFilters}
             onClose={() => setShowFilters(false)}
           >
-            <div className="space-y-5">
+            <div className="space-y-6">
               <FilterSection
                 title="Key"
                 count={selectedKeys.length}
@@ -311,7 +311,7 @@ export default function MobileCompareResultsPanel({
                     No keys available.
                   </p>
                 ) : (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2.5">
                     {availableKeys.map((key) => (
                       <FilterChip
                         key={key}
@@ -336,7 +336,7 @@ export default function MobileCompareResultsPanel({
                     No styles available.
                   </p>
                 ) : (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2.5">
                     {availableStyles.map((style) => (
                       <FilterChip
                         key={style}
@@ -361,7 +361,7 @@ export default function MobileCompareResultsPanel({
                     No time signatures available.
                   </p>
                 ) : (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2.5">
                     {availableTimeSignatures.map((timeSignature) => (
                       <FilterChip
                         key={timeSignature}

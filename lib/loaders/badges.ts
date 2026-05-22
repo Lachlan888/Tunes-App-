@@ -9,14 +9,21 @@ import type {
   Badge,
   BadgeAward,
   BadgeAwardWithProfiles,
+  BadgeCondition,
+  BadgeConditionLogic,
   BadgeDetailData,
   BadgeIndexData,
   BadgeOwnerProfile,
+  BadgeRequiredTune,
+  BadgeRequiredTuneViewerState,
+  BadgeViewerLearningList,
   BadgeWithOwner,
   LearningList,
   Piece,
   StyleOption,
 } from "@/lib/types"
+
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 
 type BadgeRow = Omit<Badge, "condition_logic"> & {
   condition_logic: unknown
@@ -32,6 +39,29 @@ type ProfileRow = {
 
 type CreateBadgeListOption = LearningList & {
   user_id: string
+}
+
+type PieceIdRow = {
+  piece_id: number
+}
+
+type RequiredTunePieceRow = {
+  id: number
+  title: string
+  key: string | null
+  style: string | null
+  time_signature: string | null
+  reference_url: string | null
+}
+
+type UserPieceStateRow = {
+  piece_id: number
+  stage: number | null
+}
+
+type LearningListItemMembershipRow = {
+  piece_id: number
+  learning_list_id: number
 }
 
 export type CreateBadgeData = {
@@ -80,7 +110,7 @@ function mapProfile(
 }
 
 async function loadProfilesByUserId(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: SupabaseServerClient,
   userIds: string[]
 ) {
   const uniqueUserIds = Array.from(new Set(userIds)).filter(Boolean)
@@ -118,11 +148,242 @@ function mapBadgeRow(row: BadgeRow): Badge {
   }
 }
 
+function uniqueNumbers(values: number[]) {
+  return Array.from(new Set(values)).filter(
+    (value) => Number.isInteger(value) && value > 0
+  )
+}
+
+function getListIdsFromTuneBasedConditions(logic: BadgeConditionLogic) {
+  const conditions = logic.conditions ?? []
+  const listIds: number[] = []
+
+  for (const condition of conditions) {
+    if (condition.type === "know_all_tunes_in_list") {
+      listIds.push(condition.list_id)
+    }
+
+    if (
+      condition.type === "added_media_links" &&
+      condition.filters?.list_id
+    ) {
+      listIds.push(condition.filters.list_id)
+    }
+  }
+
+  return uniqueNumbers(listIds)
+}
+
+function getSelectedPieceIdsFromTuneBasedConditions(
+  conditions: BadgeCondition[]
+) {
+  return uniqueNumbers(
+    conditions.flatMap((condition) => {
+      if (condition.type === "know_selected_tunes") {
+        return condition.piece_ids
+      }
+
+      return []
+    })
+  )
+}
+
+async function loadPieceIdsFromLists({
+  supabase,
+  listIds,
+}: {
+  supabase: SupabaseServerClient
+  listIds: number[]
+}) {
+  const uniqueListIds = uniqueNumbers(listIds)
+
+  if (uniqueListIds.length === 0) {
+    return []
+  }
+
+  const { data, error } = await supabase
+    .from("learning_list_items")
+    .select("piece_id")
+    .in("learning_list_id", uniqueListIds)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return uniqueNumbers(((data ?? []) as PieceIdRow[]).map((row) => row.piece_id))
+}
+
+async function getRequiredPieceIdsForBadge({
+  supabase,
+  conditionLogic,
+}: {
+  supabase: SupabaseServerClient
+  conditionLogic: BadgeConditionLogic
+}) {
+  const logic = normaliseBadgeConditionLogic(conditionLogic)
+  const conditions = logic.conditions ?? []
+
+  const selectedPieceIds = getSelectedPieceIdsFromTuneBasedConditions(conditions)
+  const listIds = getListIdsFromTuneBasedConditions(logic)
+  const listPieceIds = await loadPieceIdsFromLists({ supabase, listIds })
+
+  return uniqueNumbers([...selectedPieceIds, ...listPieceIds])
+}
+
+async function loadViewerLearningLists({
+  supabase,
+  viewerId,
+}: {
+  supabase: SupabaseServerClient
+  viewerId: string | null
+}): Promise<BadgeViewerLearningList[]> {
+  if (!viewerId) {
+    return []
+  }
+
+  const { data, error } = await supabase
+    .from("learning_lists")
+    .select("id, name, description")
+    .eq("user_id", viewerId)
+    .order("name", { ascending: true })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return ((data ?? []) as BadgeViewerLearningList[]) ?? []
+}
+
+async function loadRequiredTunesForBadge({
+  supabase,
+  conditionLogic,
+  viewerId,
+}: {
+  supabase: SupabaseServerClient
+  conditionLogic: BadgeConditionLogic
+  viewerId: string | null
+}): Promise<BadgeRequiredTune[]> {
+  const requiredPieceIds = await getRequiredPieceIdsForBadge({
+    supabase,
+    conditionLogic,
+  })
+
+  if (requiredPieceIds.length === 0) {
+    return []
+  }
+
+  const { data: pieceRows, error: piecesError } = await supabase
+    .from("pieces")
+    .select("id, title, key, style, time_signature, reference_url")
+    .in("id", requiredPieceIds)
+    .order("title", { ascending: true })
+
+  if (piecesError) {
+    throw new Error(piecesError.message)
+  }
+
+  const pieces = ((pieceRows ?? []) as RequiredTunePieceRow[]) ?? []
+
+  if (!viewerId) {
+    return pieces.map((piece) => ({
+      piece,
+      viewer_state: null,
+      stage: null,
+      existing_list_ids: [],
+    }))
+  }
+
+  const [
+    { data: knownRows, error: knownError },
+    { data: practiceRows, error: practiceError },
+    { data: viewerListRows, error: viewerListsError },
+  ] = await Promise.all([
+    supabase
+      .from("user_known_pieces")
+      .select("piece_id")
+      .eq("user_id", viewerId)
+      .in("piece_id", requiredPieceIds),
+
+    supabase
+      .from("user_pieces")
+      .select("piece_id, stage")
+      .eq("user_id", viewerId)
+      .in("piece_id", requiredPieceIds),
+
+    supabase.from("learning_lists").select("id").eq("user_id", viewerId),
+  ])
+
+  if (knownError) {
+    throw new Error(knownError.message)
+  }
+
+  if (practiceError) {
+    throw new Error(practiceError.message)
+  }
+
+  if (viewerListsError) {
+    throw new Error(viewerListsError.message)
+  }
+
+  const knownPieceIds = new Set(
+    ((knownRows ?? []) as PieceIdRow[]).map((row) => row.piece_id)
+  )
+
+  const practiceByPieceId = new Map<number, UserPieceStateRow>()
+
+  for (const row of ((practiceRows ?? []) as UserPieceStateRow[]) ?? []) {
+    practiceByPieceId.set(row.piece_id, row)
+  }
+
+  const viewerListIds = ((viewerListRows ?? []) as Array<{ id: number }>).map(
+    (row) => row.id
+  )
+
+  let membershipsByPieceId = new Map<number, number[]>()
+
+  if (viewerListIds.length > 0) {
+    const { data: membershipRows, error: membershipsError } = await supabase
+      .from("learning_list_items")
+      .select("piece_id, learning_list_id")
+      .in("learning_list_id", viewerListIds)
+      .in("piece_id", requiredPieceIds)
+
+    if (membershipsError) {
+      throw new Error(membershipsError.message)
+    }
+
+    for (const row of
+      ((membershipRows ?? []) as LearningListItemMembershipRow[]) ?? []) {
+      const existing = membershipsByPieceId.get(row.piece_id) ?? []
+      membershipsByPieceId.set(row.piece_id, [...existing, row.learning_list_id])
+    }
+  }
+
+  return pieces.map((piece) => {
+    const practiceState = practiceByPieceId.get(piece.id) ?? null
+
+    let viewerState: BadgeRequiredTuneViewerState = "not_in_repertoire"
+
+    if (knownPieceIds.has(piece.id)) {
+      viewerState = "known"
+    } else if (practiceState) {
+      viewerState = "in_practice"
+    }
+
+    return {
+      piece,
+      viewer_state: viewerState,
+      stage: practiceState?.stage ?? null,
+      existing_list_ids: membershipsByPieceId.get(piece.id) ?? [],
+    }
+  })
+}
+
 async function loadBadgeFormOptions({
   supabase,
   userId,
 }: {
-  supabase: Awaited<ReturnType<typeof createClient>>
+  supabase: SupabaseServerClient
   userId: string
 }) {
   const [
@@ -197,7 +458,7 @@ async function attachBadgeDisplayData({
   badges,
   viewerId,
 }: {
-  supabase: Awaited<ReturnType<typeof createClient>>
+  supabase: SupabaseServerClient
   badges: Badge[]
   viewerId: string | null
 }): Promise<BadgeWithOwner[]> {
@@ -402,11 +663,25 @@ export async function loadBadgeDetailData(
     awarded_by_profile: mapProfile(profileMap.get(award.awarded_by_user_id)),
   }))
 
+  const [requiredTunes, viewerLearningLists] = await Promise.all([
+    loadRequiredTunesForBadge({
+      supabase,
+      conditionLogic: badge.condition_logic,
+      viewerId,
+    }),
+    loadViewerLearningLists({
+      supabase,
+      viewerId,
+    }),
+  ])
+
   return {
     status: "loaded",
     viewerId,
     badge: badgeWithOwner,
     awards: awardsWithProfiles,
+    requiredTunes,
+    viewerLearningLists,
   }
 }
 
