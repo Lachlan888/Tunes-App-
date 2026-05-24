@@ -8,14 +8,14 @@ import {
   removeTuneFromPracticeFocus,
 } from "@/lib/actions/practice-foci"
 import type {
-  ActivePracticeTuneOption,
+  FocusTuneOption,
   PracticeFocus,
   PracticeFocusTune,
 } from "@/lib/loaders/practice-foci"
 
 type PracticeFocusTuneManagerProps = {
   focus: PracticeFocus
-  activePracticeTunes: ActivePracticeTuneOption[]
+  focusTuneOptions: FocusTuneOption[]
   redirectTo: string
 }
 
@@ -35,24 +35,30 @@ function normaliseSearch(value: string) {
   return value.toLowerCase().trim()
 }
 
+function getTuneSourceLabel(tune: FocusTuneOption) {
+  if (tune.source === "known") return "Known"
+
+  return tune.stage ? `Stage ${tune.stage}` : "In practice"
+}
+
 function AddTuneDesktopForm({
   focus,
   availableTunes,
   redirectTo,
 }: {
   focus: PracticeFocus
-  availableTunes: ActivePracticeTuneOption[]
+  availableTunes: FocusTuneOption[]
   redirectTo: string
 }) {
   return (
     <details className="hidden md:block md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4">
       <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
-        Add active-practice tune
+        Add repertoire tune
       </summary>
 
       {availableTunes.length === 0 ? (
         <p className="mt-3 text-sm text-muted-foreground">
-          No more active-practice tunes are available for this focus.
+          No more known or active-practice tunes are available for this focus.
         </p>
       ) : (
         <form action={addTuneToPracticeFocus} className="mt-4">
@@ -73,7 +79,7 @@ function AddTuneDesktopForm({
 
               {availableTunes.map((tune) => (
                 <option key={tune.piece_id} value={tune.piece_id}>
-                  {tune.title} — Stage {tune.stage}
+                  {tune.title} — {getTuneSourceLabel(tune)}
                 </option>
               ))}
             </select>
@@ -100,7 +106,7 @@ function MobileTunePickerSheet({
   onClose,
 }: {
   focus: PracticeFocus
-  availableTunes: ActivePracticeTuneOption[]
+  availableTunes: FocusTuneOption[]
   redirectTo: string
   isOpen: boolean
   onClose: () => void
@@ -121,7 +127,9 @@ function MobileTunePickerSheet({
           tune.key ?? "",
           tune.style ?? "",
           tune.time_signature ?? "",
-          `stage ${tune.stage}`,
+          tune.source,
+          tune.stage ? `stage ${tune.stage}` : "",
+          getTuneSourceLabel(tune),
         ].join(" ")
       ).includes(normalisedSearch)
     )
@@ -155,7 +163,7 @@ function MobileTunePickerSheet({
                 id="add-focus-tune-title"
                 className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground"
               >
-                Active-practice tunes
+                Known and practice tunes
               </h3>
             </div>
 
@@ -169,7 +177,7 @@ function MobileTunePickerSheet({
           </div>
 
           <label className="mt-4 block">
-            <span className="sr-only">Search active-practice tunes</span>
+            <span className="sr-only">Search known and practice tunes</span>
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -182,11 +190,12 @@ function MobileTunePickerSheet({
         <div className="max-h-[58vh] overflow-y-auto px-4">
           {availableTunes.length === 0 ? (
             <p className="py-5 text-sm leading-6 text-muted-foreground">
-              No more active-practice tunes are available for this focus.
+              No more known or active-practice tunes are available for this
+              focus.
             </p>
           ) : filteredTunes.length === 0 ? (
             <p className="py-5 text-sm leading-6 text-muted-foreground">
-              No matching active-practice tunes.
+              No matching known or active-practice tunes.
             </p>
           ) : (
             <ul className="divide-y divide-border">
@@ -201,7 +210,7 @@ function MobileTunePickerSheet({
                     </p>
 
                     <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                      Stage {tune.stage}
+                      {getTuneSourceLabel(tune)}
                       {tune.key ? ` · Key: ${tune.key}` : ""}
                       {tune.style ? ` · ${tune.style}` : ""}
                     </p>
@@ -242,7 +251,7 @@ function AddTuneMobilePicker({
   redirectTo,
 }: {
   focus: PracticeFocus
-  availableTunes: ActivePracticeTuneOption[]
+  availableTunes: FocusTuneOption[]
   redirectTo: string
 }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -255,16 +264,16 @@ function AddTuneMobilePicker({
           className={`${buttonStyles.secondaryStrong} w-full`}
           onClick={() => setIsOpen(true)}
         >
-          Add active-practice tune
+          Add repertoire tune
         </button>
 
         {availableTunes.length === 0 ? (
           <p className="text-sm leading-6 text-muted-foreground">
-            No more active-practice tunes are available for this focus.
+            No more known or active-practice tunes are available for this focus.
           </p>
         ) : (
           <p className="text-sm leading-6 text-muted-foreground">
-            Choose from {availableTunes.length} active-practice{" "}
+            Choose from {availableTunes.length} known or active-practice{" "}
             {availableTunes.length === 1 ? "tune" : "tunes"}.
           </p>
         )}
@@ -329,9 +338,10 @@ function RemoveTuneFromFocusModal({
         </div>
 
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          This will remove <span className="font-medium text-foreground">{tuneTitle}</span>{" "}
-          from this practice focus only. It will not remove the tune from
-          practice, lists, known tunes, or the library.
+          This will remove{" "}
+          <span className="font-medium text-foreground">{tuneTitle}</span> from
+          this practice focus only. It will not remove the tune from practice,
+          lists, known tunes, or the library.
         </p>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -398,11 +408,11 @@ function FocusTuneRemoveButton({
 
 export default function PracticeFocusTuneManager({
   focus,
-  activePracticeTunes,
+  focusTuneOptions,
   redirectTo,
 }: PracticeFocusTuneManagerProps) {
   const focusPieceIds = new Set(focus.tunes.map((tune) => tune.piece_id))
-  const availableTunes = activePracticeTunes.filter(
+  const availableTunes = focusTuneOptions.filter(
     (tune) => !focusPieceIds.has(tune.piece_id)
   )
 

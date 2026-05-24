@@ -8,7 +8,7 @@ import PracticeFocusTuneManager from "@/components/practice-foci/PracticeFocusTu
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { updatePracticeFocus } from "@/lib/actions/practice-foci"
 import type {
-  ActivePracticeTuneOption,
+  FocusTuneOption,
   PracticeFocus,
   PracticeFocusRecentNote,
 } from "@/lib/loaders/practice-foci"
@@ -16,7 +16,7 @@ import type {
 type PracticeFocusDetailProps = {
   focus: PracticeFocus
   allFoci: PracticeFocus[]
-  activePracticeTunes: ActivePracticeTuneOption[]
+  focusTuneOptions: FocusTuneOption[]
   recentNotes: PracticeFocusRecentNote[]
   redirectTo: string
 }
@@ -165,7 +165,7 @@ function RecentFocusNotes({
 export default function PracticeFocusDetail({
   focus,
   allFoci,
-  activePracticeTunes,
+  focusTuneOptions,
   recentNotes,
   redirectTo,
 }: PracticeFocusDetailProps) {
@@ -200,7 +200,7 @@ export default function PracticeFocusDetail({
 
         <PracticeFocusTuneManager
           focus={focus}
-          activePracticeTunes={activePracticeTunes}
+          focusTuneOptions={focusTuneOptions}
           redirectTo={redirectTo}
         />
       </section>

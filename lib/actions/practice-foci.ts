@@ -210,20 +210,36 @@ export async function addTuneToPracticeFocus(formData: FormData) {
     redirect(appendStatus(redirectTo, "foci", "focus_not_active"))
   }
 
-  const { data: userPiece, error: userPieceError } = await supabase
-    .from("user_pieces")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("piece_id", pieceId)
-    .eq("status", "learning")
-    .maybeSingle()
+  const [
+    { data: userPiece, error: userPieceError },
+    { data: knownPiece, error: knownPieceError },
+  ] = await Promise.all([
+    supabase
+      .from("user_pieces")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("piece_id", pieceId)
+      .eq("status", "learning")
+      .maybeSingle(),
+
+    supabase
+      .from("user_known_pieces")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("piece_id", pieceId)
+      .maybeSingle(),
+  ])
 
   if (userPieceError) {
     throw new Error(userPieceError.message)
   }
 
-  if (!userPiece) {
-    redirect(appendStatus(redirectTo, "foci", "not_in_practice"))
+  if (knownPieceError) {
+    throw new Error(knownPieceError.message)
+  }
+
+  if (!userPiece && !knownPiece) {
+    redirect(appendStatus(redirectTo, "foci", "not_in_repertoire"))
   }
 
   const { error } = await supabase.from("practice_focus_tunes").upsert(

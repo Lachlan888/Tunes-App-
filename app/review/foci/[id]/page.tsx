@@ -28,8 +28,8 @@ function getFociStatusMessage(status: string | undefined) {
   if (status === "focus_not_active") {
     return "Only active foci can be changed."
   }
-  if (status === "not_in_practice") {
-    return "Only active-practice tunes can be added to a focus."
+  if (status === "not_in_repertoire") {
+    return "Only tunes in your known repertoire or active practice can be added to a focus."
   }
 
   return null
@@ -43,7 +43,7 @@ export default async function PracticeFocusDetailPage({
   const resolvedSearchParams = await searchParams
   const focusId = Number(resolvedParams.id)
 
-  const { focus, allFoci, activePracticeTunes, recentNotes } =
+  const { focus, allFoci, focusTuneOptions, recentNotes } =
     await loadPracticeFocusDetailPageData(focusId)
 
   const statusMessage = getFociStatusMessage(resolvedSearchParams?.foci)
@@ -90,7 +90,7 @@ export default async function PracticeFocusDetailPage({
 
             <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
               {focus.description ??
-                "Use this focus to group related active-practice tunes."}
+                "Use this focus to group related known and active-practice tunes."}
             </p>
           </div>
         </div>
@@ -107,7 +107,7 @@ export default async function PracticeFocusDetailPage({
       <PracticeFocusDetail
         focus={focus}
         allFoci={allFoci}
-        activePracticeTunes={activePracticeTunes}
+        focusTuneOptions={focusTuneOptions}
         recentNotes={recentNotes}
         redirectTo={redirectTo}
       />

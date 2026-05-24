@@ -31,10 +31,14 @@ export type PracticeFocus = {
   tunes: PracticeFocusTune[]
 }
 
-export type ActivePracticeTuneOption = {
-  user_piece_id: number
+export type FocusTuneOptionSource = "practice" | "known"
+
+export type FocusTuneOption = {
   piece_id: number
-  stage: number
+  source: FocusTuneOptionSource
+  user_piece_id: number | null
+  known_piece_id: number | null
+  stage: number | null
   title: string
   key: string | null
   style: string | null
@@ -78,6 +82,12 @@ type ActivePracticeTuneRow = {
   id: number
   piece_id: number
   stage: number
+  pieces: Piece | Piece[] | null
+}
+
+type KnownTuneRow = {
+  id: number
+  piece_id: number
   pieces: Piece | Piece[] | null
 }
 
@@ -225,55 +235,111 @@ async function loadAllFociForUser(
   )
 }
 
-async function loadActivePracticeTunes(
+async function loadFocusTuneOptions(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string
 ) {
-  const { data: activeTuneRows, error: activeTuneError } = await supabase
-    .from("user_pieces")
-    .select(
-      `
-        id,
-        piece_id,
-        stage,
-        pieces (
+  const [
+    { data: activeTuneRows, error: activeTuneError },
+    { data: knownTuneRows, error: knownTuneError },
+  ] = await Promise.all([
+    supabase
+      .from("user_pieces")
+      .select(
+        `
           id,
-          title,
-          key,
-          style,
-          time_signature,
-          reference_url
-        )
-      `
-    )
-    .eq("user_id", userId)
-    .eq("status", "learning")
-    .order("stage", { ascending: true })
+          piece_id,
+          stage,
+          pieces (
+            id,
+            title,
+            key,
+            style,
+            time_signature,
+            reference_url
+          )
+        `
+      )
+      .eq("user_id", userId)
+      .eq("status", "learning")
+      .order("stage", { ascending: true }),
+
+    supabase
+      .from("user_known_pieces")
+      .select(
+        `
+          id,
+          piece_id,
+          pieces (
+            id,
+            title,
+            key,
+            style,
+            time_signature,
+            reference_url
+          )
+        `
+      )
+      .eq("user_id", userId),
+  ])
 
   if (activeTuneError) {
     throw new Error(activeTuneError.message)
   }
 
-  return ((activeTuneRows ?? []) as unknown as ActivePracticeTuneRow[])
-    .map((row) => {
-      const piece = getSingleJoinedRow(row.pieces)
+  if (knownTuneError) {
+    throw new Error(knownTuneError.message)
+  }
 
-      if (!piece) {
-        return null
-      }
+  const optionsByPieceId = new Map<number, FocusTuneOption>()
 
-      return {
-        user_piece_id: row.id,
-        piece_id: row.piece_id,
-        stage: row.stage,
-        title: piece.title,
-        key: piece.key,
-        style: piece.style,
-        time_signature: piece.time_signature,
-      }
+  for (const row of (activeTuneRows ?? []) as unknown as ActivePracticeTuneRow[]) {
+    const piece = getSingleJoinedRow(row.pieces)
+
+    if (!piece) {
+      continue
+    }
+
+    optionsByPieceId.set(row.piece_id, {
+      piece_id: row.piece_id,
+      source: "practice",
+      user_piece_id: row.id,
+      known_piece_id: null,
+      stage: row.stage,
+      title: piece.title,
+      key: piece.key,
+      style: piece.style,
+      time_signature: piece.time_signature,
     })
-    .filter((row): row is ActivePracticeTuneOption => row !== null)
-    .sort((a, b) => a.title.localeCompare(b.title))
+  }
+
+  for (const row of (knownTuneRows ?? []) as unknown as KnownTuneRow[]) {
+    if (optionsByPieceId.has(row.piece_id)) {
+      continue
+    }
+
+    const piece = getSingleJoinedRow(row.pieces)
+
+    if (!piece) {
+      continue
+    }
+
+    optionsByPieceId.set(row.piece_id, {
+      piece_id: row.piece_id,
+      source: "known",
+      user_piece_id: null,
+      known_piece_id: row.id,
+      stage: null,
+      title: piece.title,
+      key: piece.key,
+      style: piece.style,
+      time_signature: piece.time_signature,
+    })
+  }
+
+  return Array.from(optionsByPieceId.values()).sort((a, b) =>
+    a.title.localeCompare(b.title, undefined, { sensitivity: "base" })
+  )
 }
 
 async function loadRecentNotesForFocus({
@@ -362,7 +428,7 @@ export async function loadPracticeFocusDetailPageData(focusId: number) {
   }
 
   const allFoci = await loadAllFociForUser(supabase, user.id)
-  const activePracticeTunes = await loadActivePracticeTunes(supabase, user.id)
+  const focusTuneOptions = await loadFocusTuneOptions(supabase, user.id)
   const recentNotes = await loadRecentNotesForFocus({
     supabase,
     userId: user.id,
@@ -373,7 +439,7 @@ export async function loadPracticeFocusDetailPageData(focusId: number) {
     user,
     focus: mapPracticeFocus(focusRow as unknown as PracticeFocusRow),
     allFoci,
-    activePracticeTunes,
+    focusTuneOptions,
     recentNotes,
   }
 }
