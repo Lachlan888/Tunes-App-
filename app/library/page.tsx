@@ -11,7 +11,7 @@ import {
 } from "@/lib/actions/pieces"
 import { addReferenceUrlToPiece } from "@/lib/actions/reference-media"
 import { startLearning } from "@/lib/actions/user-pieces"
-import { loadLibraryData } from "@/lib/loaders/library"
+import { loadLibraryData, type LibrarySort } from "@/lib/loaders/library"
 import { loadPagePreferences } from "@/lib/loaders/page-preferences"
 import { LIBRARY_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 import { getPieceFilterOptions } from "@/lib/search-filters"
@@ -25,6 +25,7 @@ type LibraryPageProps = {
     key?: SearchParamValue
     style?: SearchParamValue
     time_signature?: SearchParamValue
+    sort?: SearchParamValue
     visible?: SearchParamValue
     page?: SearchParamValue
     import?: SearchParamValue
@@ -82,6 +83,15 @@ function parsePage(value: SearchParamValue) {
   return page
 }
 
+function parseSort(value: SearchParamValue): LibrarySort {
+  const sort = firstParam(value)
+
+  if (sort === "newest") return "newest"
+  if (sort === "oldest") return "oldest"
+
+  return "title_asc"
+}
+
 function getPageOptionsMessage(status: string) {
   if (status === "saved") return "Tunes page options saved."
   if (status === "reset") return "Tunes page options reset."
@@ -103,6 +113,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   const selectedKeys = toArray(resolvedSearchParams?.key)
   const selectedStyles = toArray(resolvedSearchParams?.style)
   const selectedTimeSignatures = toArray(resolvedSearchParams?.time_signature)
+  const selectedSort = parseSort(resolvedSearchParams?.sort)
   const visibleCount = parseVisibleCount(resolvedSearchParams?.visible)
   const requestedPage = parsePage(resolvedSearchParams?.page)
   const scrollPieceId = firstParam(resolvedSearchParams?.scroll_piece)
@@ -127,6 +138,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     selectedTimeSignatures,
     visibleCount,
     page: requestedPage,
+    sort: selectedSort,
   })
 
   const pageOptionsMessage = getPageOptionsMessage(
@@ -170,6 +182,10 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     redirectParams.append("time_signature", timeSignature)
   }
 
+  if (selectedSort !== "title_asc") {
+    redirectParams.set("sort", selectedSort)
+  }
+
   if (visibleCount === "all") {
     redirectParams.set("visible", "all")
   } else {
@@ -195,7 +211,8 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     searchQuery !== "" ||
     selectedKeys.length > 0 ||
     selectedStyles.length > 0 ||
-    selectedTimeSignatures.length > 0
+    selectedTimeSignatures.length > 0 ||
+    selectedSort !== "title_asc"
 
   const totalPages =
     visibleCount === "all"
@@ -261,6 +278,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
             selectedKeys={selectedKeys}
             selectedStyles={selectedStyles}
             selectedTimeSignatures={selectedTimeSignatures}
+            selectedSort={selectedSort}
             availableKeys={availableKeys}
             availableStyles={availableStyles}
             availableTimeSignatures={availableTimeSignatures}
@@ -296,6 +314,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
             selectedKeys={selectedKeys}
             selectedStyles={selectedStyles}
             selectedTimeSignatures={selectedTimeSignatures}
+            selectedSort={selectedSort}
             availableKeys={availableKeys}
             availableStyles={availableStyles}
             availableTimeSignatures={availableTimeSignatures}

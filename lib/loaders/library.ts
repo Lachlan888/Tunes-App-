@@ -16,6 +16,8 @@ type LearningListItemRow = {
   learning_lists: LearningListOwner | LearningListOwner[] | null
 }
 
+export type LibrarySort = "title_asc" | "newest" | "oldest"
+
 type LoadLibraryDataParams = {
   searchQuery?: string
   selectedKeys?: string[]
@@ -23,6 +25,7 @@ type LoadLibraryDataParams = {
   selectedTimeSignatures?: string[]
   visibleCount?: number | "all"
   page?: number
+  sort?: LibrarySort
 }
 
 function normaliseLearningListItem(
@@ -52,6 +55,13 @@ function normalisePage(value: number | undefined) {
   return Math.floor(value)
 }
 
+function normaliseSort(value: LibrarySort | undefined): LibrarySort {
+  if (value === "newest") return "newest"
+  if (value === "oldest") return "oldest"
+
+  return "title_asc"
+}
+
 function getTotalPages(totalCount: number, visibleCount: number | "all") {
   if (visibleCount === "all") return 1
   return Math.max(1, Math.ceil(totalCount / visibleCount))
@@ -62,6 +72,59 @@ function getRangeForPage(page: number, visibleCount: number) {
   const to = from + visibleCount - 1
 
   return { from, to }
+}
+
+function sortPieceRows<
+  T extends { title: string; created_at?: string | null; id: number },
+>(rows: T[], sort: LibrarySort) {
+  const sortedRows = [...rows]
+
+  if (sort === "newest") {
+    return sortedRows.sort((a, b) => {
+      const firstDate = a.created_at ? Date.parse(a.created_at) : 0
+      const secondDate = b.created_at ? Date.parse(b.created_at) : 0
+
+      if (secondDate !== firstDate) return secondDate - firstDate
+
+      return b.id - a.id
+    })
+  }
+
+  if (sort === "oldest") {
+    return sortedRows.sort((a, b) => {
+      const firstDate = a.created_at ? Date.parse(a.created_at) : 0
+      const secondDate = b.created_at ? Date.parse(b.created_at) : 0
+
+      if (firstDate !== secondDate) return firstDate - secondDate
+
+      return a.id - b.id
+    })
+  }
+
+  return sortedRows.sort((a, b) =>
+    a.title.localeCompare(b.title, undefined, { sensitivity: "base" })
+  )
+}
+
+function applyPieceSort<T extends any>(
+  query: T,
+  sort: LibrarySort
+): T {
+  const sortableQuery = query as any
+
+  if (sort === "newest") {
+    return sortableQuery
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+  }
+
+  if (sort === "oldest") {
+    return sortableQuery
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+  }
+
+  return sortableQuery.order("title")
 }
 
 function getUniquePieceIds(pieces: any[], mobilePieces: any[]) {
@@ -80,6 +143,7 @@ export async function loadLibraryData({
   selectedTimeSignatures = [],
   visibleCount = 20,
   page = 1,
+  sort = "title_asc",
 }: LoadLibraryDataParams = {}) {
   const supabase = await createClient()
 
@@ -94,6 +158,7 @@ export async function loadLibraryData({
   const currentUserRole = await getCurrentUserRole(supabase, user.id)
   const trimmedSearchQuery = (searchQuery ?? "").trim()
   const requestedPage = normalisePage(page)
+  const selectedSort = normaliseSort(sort)
 
   let pieces: any[] = []
   let mobilePieces: any[] = []
@@ -110,6 +175,7 @@ export async function loadLibraryData({
         style,
         time_signature,
         reference_url,
+        created_at,
         piece_styles (
           style_id,
           styles (
@@ -119,7 +185,6 @@ export async function loadLibraryData({
           )
         )
       `)
-      .order("title")
 
     if (trimmedSearchQuery) {
       allStyleCandidatePiecesQuery = allStyleCandidatePiecesQuery.ilike(
@@ -157,18 +222,23 @@ export async function loadLibraryData({
       )
     })
 
-    totalPieceCount = styleFilteredPieces.length
-    mobilePieces = styleFilteredPieces
+    const sortedStyleFilteredPieces = sortPieceRows(
+      styleFilteredPieces,
+      selectedSort
+    )
+
+    totalPieceCount = sortedStyleFilteredPieces.length
+    mobilePieces = sortedStyleFilteredPieces
 
     const totalPages = getTotalPages(totalPieceCount, visibleCount)
     currentPage =
       visibleCount === "all" ? 1 : Math.min(requestedPage, totalPages)
 
     if (visibleCount === "all") {
-      pieces = styleFilteredPieces
+      pieces = sortedStyleFilteredPieces
     } else {
       const { from, to } = getRangeForPage(currentPage, visibleCount)
-      pieces = styleFilteredPieces.slice(from, to + 1)
+      pieces = sortedStyleFilteredPieces.slice(from, to + 1)
     }
   } else {
     let countQuery = supabase
@@ -208,6 +278,7 @@ export async function loadLibraryData({
         style,
         time_signature,
         reference_url,
+        created_at,
         piece_styles (
           style_id,
           styles (
@@ -217,7 +288,8 @@ export async function loadLibraryData({
           )
         )
       `)
-      .order("title")
+
+    piecesQuery = applyPieceSort(piecesQuery, selectedSort)
 
     if (trimmedSearchQuery) {
       piecesQuery = piecesQuery.ilike("title", `%${trimmedSearchQuery}%`)
@@ -253,6 +325,7 @@ export async function loadLibraryData({
         style,
         time_signature,
         reference_url,
+        created_at,
         piece_styles (
           style_id,
           styles (
@@ -262,7 +335,8 @@ export async function loadLibraryData({
           )
         )
       `)
-      .order("title")
+
+    mobilePiecesQuery = applyPieceSort(mobilePiecesQuery, selectedSort)
 
     if (trimmedSearchQuery) {
       mobilePiecesQuery = mobilePiecesQuery.ilike(

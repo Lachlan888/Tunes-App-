@@ -22,6 +22,7 @@ export type Piece = {
   time_signature: string | null
   composer?: string | null
   reference_url?: string | null
+  created_at?: string | null
   piece_styles?: PieceStyleTag[] | null
 }
 

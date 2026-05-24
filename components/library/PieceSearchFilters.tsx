@@ -14,6 +14,7 @@ import FilterSection from "@/components/filters/FilterSection"
 import FilterShell from "@/components/filters/FilterShell"
 
 type PreservedParamValue = string | string[]
+type PieceSort = "title_asc" | "newest" | "oldest"
 
 type PieceSearchFiltersProps = {
   basePath: string
@@ -24,6 +25,7 @@ type PieceSearchFiltersProps = {
   selectedKeys?: string[]
   selectedStyles?: string[]
   selectedTimeSignatures?: string[]
+  selectedSort?: PieceSort
 
   selectedKey?: string
   selectedStyle?: string
@@ -96,6 +98,7 @@ export default function PieceSearchFilters({
   selectedKeys,
   selectedStyles,
   selectedTimeSignatures,
+  selectedSort = "title_asc",
 
   selectedKey,
   selectedStyle,
@@ -168,11 +171,13 @@ export default function PieceSearchFilters({
     keys,
     styles,
     timeSignatures,
+    sort,
   }: {
     nextQuery: string
     keys: string[]
     styles: string[]
     timeSignatures: string[]
+    sort?: PieceSort
   }) {
     const params = new URLSearchParams()
 
@@ -195,6 +200,12 @@ export default function PieceSearchFilters({
       if (timeSignature) params.append("time_signature", timeSignature)
     }
 
+    const nextSort = sort ?? selectedSort
+
+    if (nextSort !== "title_asc") {
+      params.set("sort", nextSort)
+    }
+
     return params
   }
 
@@ -211,17 +222,20 @@ export default function PieceSearchFilters({
     styles = draftStyles,
     timeSignatures = draftTimeSignatures,
     nextQuery = query,
+    sort = selectedSort,
   }: {
     keys?: string[]
     styles?: string[]
     timeSignatures?: string[]
     nextQuery?: string
+    sort?: PieceSort
   }) {
     const params = buildParamsFromSelections({
       nextQuery,
       keys,
       styles,
       timeSignatures,
+      sort,
     })
 
     navigateWithParams(params)
@@ -253,6 +267,10 @@ export default function PieceSearchFilters({
     )
     setDraftTimeSignatures(nextTimeSignatures)
     navigateWithDraftSelections({ timeSignatures: nextTimeSignatures })
+  }
+
+  function handleSortChange(nextSort: PieceSort) {
+    navigateWithDraftSelections({ sort: nextSort })
   }
 
   function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
@@ -303,6 +321,7 @@ export default function PieceSearchFilters({
       keys: [],
       styles: [],
       timeSignatures: [],
+      sort: selectedSort,
     })
 
     navigateWithParams(params)
@@ -374,7 +393,27 @@ export default function PieceSearchFilters({
           onClearAll={handleClearAll}
           onClose={() => setIsPanelOpen(false)}
         >
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
+            <FilterSection title="Sort" count={0} disabled={false}>
+              <label className="flex flex-col gap-2 text-sm">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  Order
+                </span>
+
+                <select
+                  value={selectedSort}
+                  onChange={(event) =>
+                    handleSortChange(event.target.value as PieceSort)
+                  }
+                  className="rounded-2xl border border-border bg-background px-3 py-2 text-sm text-foreground"
+                >
+                  <option value="title_asc">Title A–Z</option>
+                  <option value="newest">Recently added first</option>
+                  <option value="oldest">Oldest added first</option>
+                </select>
+              </label>
+            </FilterSection>
+
             <FilterSection title="Key" count={draftKeys.length} disabled={false}>
               {availableKeys.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
