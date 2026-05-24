@@ -9,6 +9,20 @@ function isAlreadyRegisteredMessage(message: string) {
   return message.toLowerCase().includes("already registered")
 }
 
+function getSiteUrl() {
+  const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+
+  if (configuredSiteUrl) {
+    return configuredSiteUrl.replace(/\/$/, "")
+  }
+
+  if (typeof window !== "undefined") {
+    return window.location.origin
+  }
+
+  return "http://localhost:3000"
+}
+
 const inputClassName =
   "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
@@ -57,11 +71,13 @@ export default function LoginPage() {
     resetMessages()
     setIsSubmitting(true)
 
+    const siteUrl = getSiteUrl()
+
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/login`,
+        emailRedirectTo: `${siteUrl}/auth/confirm`,
       },
     })
 
@@ -88,13 +104,13 @@ export default function LoginPage() {
 
     if (data.user) {
       setMessage(
-        "Account created. Check your email if confirmation is required, then sign in."
+        "Account created. Check your email to confirm your account, then sign in."
       )
       setMode("login")
       return
     }
 
-    setMessage("Check your email if confirmation is required, then sign in.")
+    setMessage("Check your email to confirm your account, then sign in.")
     setMode("login")
   }
 
@@ -102,8 +118,10 @@ export default function LoginPage() {
     resetMessages()
     setIsSubmitting(true)
 
+    const siteUrl = getSiteUrl()
+
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/update-password`,
+      redirectTo: `${siteUrl}/update-password`,
     })
 
     setIsSubmitting(false)

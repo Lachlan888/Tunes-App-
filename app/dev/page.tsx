@@ -17,6 +17,7 @@ function getSingleValue(value: string | string[] | undefined) {
 
 function getStatusMessage(status: string) {
   if (status === "updated") return "Feedback updated."
+  if (status === "resolved") return "Feedback resolved and archived."
   if (status === "missing_feedback")
     return "Could not tell which feedback item to update."
   if (status === "invalid_status") return "Invalid feedback status."
