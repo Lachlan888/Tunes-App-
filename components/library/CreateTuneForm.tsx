@@ -131,6 +131,25 @@ export default function CreateTuneForm({
 
             <div>
               <label
+                htmlFor="composer"
+                className="mb-2 block text-sm font-medium"
+              >
+                Composer
+              </label>
+              <input
+                id="composer"
+                name="composer"
+                placeholder="e.g. Bill Monroe, trad., unknown"
+                className={inputClass}
+              />
+              <p className={helperClass}>
+                Optional. Use this only where a composer or useful attribution
+                is known.
+              </p>
+            </div>
+
+            <div>
+              <label
                 htmlFor="reference_url"
                 className="mb-2 block text-sm font-medium"
               >

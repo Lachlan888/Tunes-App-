@@ -1,9 +1,6 @@
 import Link from "next/link"
 import SubmitButton from "@/components/SubmitButton"
-import {
-  resolveBetaFeedback,
-  updateBetaFeedbackAdminFields,
-} from "@/lib/actions/dev-feedback"
+import { updateBetaFeedbackAdminFields } from "@/lib/actions/dev-feedback"
 import type { BetaFeedbackItem } from "@/lib/types"
 
 type FeedbackInboxProps = {
@@ -177,22 +174,36 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
                 />
               </label>
 
-              <SubmitButton
-                label="Update feedback"
-                pendingLabel="Updating…"
-                className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-              />
-            </form>
+              <label className="flex items-start gap-3 rounded-2xl border border-border bg-background/70 p-3 text-sm text-muted-foreground">
+                <input
+                  type="checkbox"
+                  name="notify_reporter"
+                  value="true"
+                  className="mt-1"
+                />
+                <span>
+                  Send this note to the submitting user as a normal inbox
+                  message when updating. Resolving always sends them a message.
+                </span>
+              </label>
 
-            <form action={resolveBetaFeedback} className="mt-3">
-              <input type="hidden" name="feedback_id" value={item.id} />
-              <input type="hidden" name="redirect_to" value="/dev" />
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <SubmitButton
+                  name="intent"
+                  value="update"
+                  label="Update feedback"
+                  pendingLabel="Updating…"
+                  className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                />
 
-              <SubmitButton
-                label="Resolve and archive"
-                pendingLabel="Archiving…"
-                className="rounded-full border border-primary bg-background/70 px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-              />
+                <SubmitButton
+                  name="intent"
+                  value="resolve"
+                  label="Resolve, notify, and archive"
+                  pendingLabel="Resolving…"
+                  className="rounded-full border border-primary bg-background/70 px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                />
+              </div>
             </form>
           </article>
         )

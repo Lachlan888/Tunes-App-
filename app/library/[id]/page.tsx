@@ -1,5 +1,6 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
+import AddToListAction from "@/components/AddToListAction"
 import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import PieceCommentsSection from "@/components/library/PieceCommentsSection"
 import PieceLoreSection from "@/components/library/PieceLoreSection"
@@ -40,6 +41,7 @@ type PiecePageProps = {
     diary?: string | string[]
     loop?: string | string[]
     page_options?: string | string[]
+    list_add?: string | string[]
   }>
 }
 
@@ -142,6 +144,7 @@ export default async function PiecePage({
     pageOptions: getSingleSearchParamValue(
       resolvedSearchParams?.page_options
     ),
+    listAdd: getSingleSearchParamValue(resolvedSearchParams?.list_add),
   })
 
   const showTuneSection = (sectionId: string) =>
@@ -170,9 +173,38 @@ export default async function PiecePage({
             <h1 className="max-w-5xl break-words font-serif text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
               {typedPiece.title}
             </h1>
+
+            <div className="mt-4 flex flex-wrap gap-2 text-sm text-muted-foreground">
+              {typedPiece.key ? (
+                <span className="rounded-full border border-border bg-background/70 px-3 py-1">
+                  Key: {typedPiece.key}
+                </span>
+              ) : null}
+
+              {typedPiece.style ? (
+                <span className="rounded-full border border-border bg-background/70 px-3 py-1">
+                  {typedPiece.style}
+                </span>
+              ) : null}
+
+              {typedPiece.time_signature ? (
+                <span className="rounded-full border border-border bg-background/70 px-3 py-1">
+                  {typedPiece.time_signature}
+                </span>
+              ) : null}
+            </div>
           </div>
 
-          <div className="shrink-0">
+          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+            <AddToListAction
+              piece={typedPiece}
+              learningLists={typedLearningLists}
+              learningListItems={typedLearningListItems}
+              redirectTo={redirectTo}
+              addToLearningList={addToLearningList}
+              buttonClassName="inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-full border border-primary bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] sm:w-auto"
+            />
+
             <PageOptionsModal
               config={TUNE_DETAIL_PAGE_OPTIONS_CONFIG}
               preferences={typedTunePagePreferences}

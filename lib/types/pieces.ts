@@ -20,6 +20,7 @@ export type Piece = {
   key: string | null
   style: string | null
   time_signature: string | null
+  composer?: string | null
   reference_url?: string | null
   piece_styles?: PieceStyleTag[] | null
 }

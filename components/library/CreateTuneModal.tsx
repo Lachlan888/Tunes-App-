@@ -57,11 +57,11 @@ export default function CreateTuneModal({
         closeOnOverlayClick={!isSubmitting}
         closeOnEscape={!isSubmitting}
         mobileMode="full-screen"
-        desktopMaxWidth="md:max-w-4xl"
+        desktopMaxWidth="md:max-w-5xl"
         eyebrow="Catalogue"
         title="Create Tune"
         description="Add a tune to the shared catalogue, then optionally place it straight into your own repertoire workflow."
-        bodyClassName="flex min-h-0 flex-1 overflow-hidden p-0"
+        bodyClassName="flex min-h-0 flex-1 p-0"
       >
         <CreateTuneForm
           createTune={createTune}

@@ -8,6 +8,7 @@ export type TuneDetailStatusMessageInput = {
   diary: string
   loop: string
   pageOptions: string
+  listAdd: string
 }
 
 export function getSingleSearchParamValue(
@@ -26,6 +27,7 @@ export function getTuneDetailStatusMessage({
   diary,
   loop,
   pageOptions,
+  listAdd,
 }: TuneDetailStatusMessageInput) {
   if (editRequest === "success") return "Edit request submitted."
   if (editRequest === "empty") return "Add at least one proposed change."
@@ -85,6 +87,15 @@ export function getTuneDetailStatusMessage({
   if (pageOptions === "saved") return "Tune page options saved."
   if (pageOptions === "reset") return "Tune page options reset."
   if (pageOptions === "error") return "Could not save tune page options."
+
+  if (listAdd === "success") return "Tune added to list."
+  if (listAdd === "partial")
+    return "Tune added to new lists. It was already in at least one selected list."
+  if (listAdd === "duplicate")
+    return "This tune is already in the selected list."
+  if (listAdd === "missing_piece") return "Could not find that tune."
+  if (listAdd === "missing_list") return "Choose a list before adding the tune."
+  if (listAdd === "error") return "Could not add tune to list."
 
   return null
 }
