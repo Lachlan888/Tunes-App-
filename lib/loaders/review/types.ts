@@ -1,4 +1,5 @@
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
+import type { UserPieceMediaLoop } from "@/lib/loaders/tune-detail"
 import type {
   BacklogGroupSummary,
   BacklogTier,
@@ -89,6 +90,7 @@ export type ReviewQueueItem = UserPiece & {
   recent_practice_notes: RecentPracticeNoteForReview[]
   active_practice_foci: PracticeFocusForReview[]
   practice_focus_options: PracticeFocusForReview[]
+  saved_media_loops: UserPieceMediaLoop[]
 }
 
 export type ReviewPageData = {

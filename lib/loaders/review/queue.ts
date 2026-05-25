@@ -1,4 +1,5 @@
 import type { createClient } from "@/lib/supabase/server"
+import type { UserPieceMediaLoop } from "@/lib/loaders/tune-detail"
 import {
   getBacklogTier,
   getBacklogTierLabel,
@@ -59,18 +60,53 @@ export function getReviewPieceIds(rows: ReviewPieceRow[]): number[] {
   )
 }
 
+export async function loadReviewMediaLoopsByPieceId(
+  supabase: SupabaseServerClient,
+  userId: string,
+  pieceIds: number[]
+): Promise<Map<number, UserPieceMediaLoop[]>> {
+  const loopsByPieceId = new Map<number, UserPieceMediaLoop[]>()
+
+  if (pieceIds.length === 0) {
+    return loopsByPieceId
+  }
+
+  const { data, error } = await supabase
+    .from("user_piece_media_loops")
+    .select(
+      "id, piece_id, youtube_video_id, label, start_seconds, end_seconds, playback_rate, notes, created_at, updated_at"
+    )
+    .eq("user_id", userId)
+    .in("piece_id", pieceIds)
+    .order("created_at", { ascending: true })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  for (const loop of (data ?? []) as UserPieceMediaLoop[]) {
+    const loops = loopsByPieceId.get(loop.piece_id) ?? []
+    loops.push(loop)
+    loopsByPieceId.set(loop.piece_id, loops)
+  }
+
+  return loopsByPieceId
+}
+
 export function buildReviewQueueItems({
   rows,
   today,
   recentNotesByPieceId,
   activeFociByPieceId,
   activeFocusOptions,
+  savedMediaLoopsByPieceId,
 }: {
   rows: ReviewPieceRow[]
   today: string
   recentNotesByPieceId: Map<number, RecentPracticeNoteForReview[]>
   activeFociByPieceId: Map<number, PracticeFocusForReview[]>
   activeFocusOptions: PracticeFocusForReview[]
+  savedMediaLoopsByPieceId: Map<number, UserPieceMediaLoop[]>
 }): ReviewQueueItem[] {
   return rows
     .map((userPiece) => {
@@ -89,6 +125,8 @@ export function buildReviewQueueItems({
         active_practice_foci:
           activeFociByPieceId.get(userPiece.piece_id) ?? [],
         practice_focus_options: activeFocusOptions,
+        saved_media_loops:
+          savedMediaLoopsByPieceId.get(userPiece.piece_id) ?? [],
       }
     })
     .sort(sortByDueDateAscending)

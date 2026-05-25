@@ -3,6 +3,7 @@ import { statusStyles, type StatusTone } from "@/components/ui/statusStyles"
 type PracticeStatusMessagesProps = {
   practiceUpdate: string
   removeFromPracticeStatus: string
+  loopStatus: string
 }
 
 function StatusBox({
@@ -24,6 +25,7 @@ function StatusBox({
 export default function PracticeStatusMessages({
   practiceUpdate,
   removeFromPracticeStatus,
+  loopStatus,
 }: PracticeStatusMessagesProps) {
   return (
     <>
@@ -49,6 +51,38 @@ export default function PracticeStatusMessages({
 
       {removeFromPracticeStatus === "error" && (
         <StatusBox tone="error">Could not remove tune from practice.</StatusBox>
+      )}
+
+      {loopStatus === "saved" && (
+        <StatusBox tone="success">Loop saved.</StatusBox>
+      )}
+
+      {loopStatus === "deleted" && (
+        <StatusBox tone="success">Loop deleted.</StatusBox>
+      )}
+
+      {loopStatus === "missing_fields" && (
+        <StatusBox tone="warning">
+          Add a label before saving the loop.
+        </StatusBox>
+      )}
+
+      {loopStatus === "invalid_range" && (
+        <StatusBox tone="warning">
+          Set a valid loop start and end first.
+        </StatusBox>
+      )}
+
+      {loopStatus === "missing_loop" && (
+        <StatusBox tone="warning">Could not find that saved loop.</StatusBox>
+      )}
+
+      {loopStatus === "missing_piece" && (
+        <StatusBox tone="warning">Could not find that tune.</StatusBox>
+      )}
+
+      {loopStatus === "error" && (
+        <StatusBox tone="error">Could not save loop.</StatusBox>
       )}
     </>
   )

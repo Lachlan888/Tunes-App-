@@ -84,6 +84,9 @@ export default function PracticeReviewCard({
           <ReferenceMediaLink
             referenceUrl={userPiece.piece.reference_url}
             title={userPiece.piece.title}
+            pieceId={userPiece.piece.id}
+            redirectTo={redirectTo}
+            savedLoops={userPiece.saved_media_loops}
             className="flex w-full items-center justify-center rounded-full border border-border bg-muted px-4 py-2 text-center text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
         </div>

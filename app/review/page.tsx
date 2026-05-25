@@ -18,6 +18,7 @@ type ReviewPageProps = {
     remove_from_practice?: string
     practice_update?: string
     page_options?: string | string[]
+    loop?: string | string[]
   }>
 }
 
@@ -85,6 +86,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const removeFromPracticeStatus =
     resolvedSearchParams?.remove_from_practice ?? ""
   const practiceUpdate = resolvedSearchParams?.practice_update ?? ""
+  const loopStatus = getSingleValue(resolvedSearchParams?.loop)
   const pageOptionsMessage = getPageOptionsMessage(
     getSingleValue(resolvedSearchParams?.page_options)
   )
@@ -182,6 +184,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         <PracticeStatusMessages
           practiceUpdate={practiceUpdate}
           removeFromPracticeStatus={removeFromPracticeStatus}
+          loopStatus={loopStatus}
         />
       ) : null}
 
