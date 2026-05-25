@@ -10,6 +10,8 @@ type SubmitButtonProps = {
   disabled?: boolean
   name?: string
   value?: string
+  title?: string
+  ariaDescribedBy?: string
 }
 
 export default function SubmitButton({
@@ -20,6 +22,8 @@ export default function SubmitButton({
   disabled = false,
   name,
   value,
+  title,
+  ariaDescribedBy,
 }: SubmitButtonProps) {
   const { pending } = useFormStatus()
   const isPending = pending || forcePending
@@ -30,8 +34,10 @@ export default function SubmitButton({
       type="submit"
       name={name}
       value={value}
+      title={title}
       disabled={isDisabled}
       aria-disabled={isDisabled}
+      aria-describedby={ariaDescribedBy}
       className={`${className} disabled:cursor-not-allowed disabled:opacity-60`}
     >
       {isPending ? pendingLabel ?? label : label}

@@ -9,6 +9,7 @@ export type ReviewOutcomeConfig = {
   modalTitle: string
   action: (formData: FormData) => Promise<void>
   className: string
+  tooltip: string
 }
 
 export const REVIEW_OUTCOMES: ReviewOutcomeConfig[] = [
@@ -18,6 +19,8 @@ export const REVIEW_OUTCOMES: ReviewOutcomeConfig[] = [
     modalTitle: "Rough review note",
     action: markFailed,
     className: buttonStyles.reviewRough,
+    tooltip:
+      "Use Rough when you could not recall the tune reliably. It comes back sooner.",
   },
   {
     outcome: "shaky",
@@ -25,6 +28,8 @@ export const REVIEW_OUTCOMES: ReviewOutcomeConfig[] = [
     modalTitle: "Shaky review note",
     action: markShaky,
     className: buttonStyles.reviewShaky,
+    tooltip:
+      "Use Shaky when you got through it, but it felt uncertain. It repeats the current Stage.",
   },
   {
     outcome: "solid",
@@ -32,6 +37,8 @@ export const REVIEW_OUTCOMES: ReviewOutcomeConfig[] = [
     modalTitle: "Solid review note",
     action: markSolid,
     className: buttonStyles.reviewSolid,
+    tooltip:
+      "Use Solid when recall felt clean and confident. It moves forward to the next Stage.",
   },
 ]
 

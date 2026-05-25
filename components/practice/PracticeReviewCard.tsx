@@ -37,7 +37,7 @@ export default function PracticeReviewCard({
   const title = userPiece.piece?.title ?? "Untitled piece"
 
   return (
-    <article className="relative min-w-0 overflow-hidden rounded-2xl border border-border bg-background/70 p-3 shadow-sm transition hover:bg-muted/70 sm:p-5">
+    <article className="relative min-w-0 rounded-2xl border border-border bg-background/70 p-3 shadow-sm transition hover:bg-muted/70 sm:p-5">
       <div className="absolute right-3 top-3 z-10 sm:right-4 sm:top-4">
         <RemoveFromPracticeButton
           userPieceId={userPiece.id}
