@@ -16,15 +16,15 @@ export default function RecentFriendActivitySection({
   items,
 }: RecentFriendActivitySectionProps) {
   return (
-    <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-      <div className="mb-5">
+    <section className="md:rounded-2xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
+      <div className="mb-4 md:mb-5">
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Social
         </p>
-        <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
+        <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground md:font-serif md:text-3xl md:font-bold">
           Recent activity
         </h2>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+        <p className="mt-2 hidden text-sm leading-6 text-muted-foreground md:block">
           Activity from musicians you are connected with. React, reply, or open
           the tune for more context.
         </p>
@@ -36,15 +36,16 @@ export default function RecentFriendActivitySection({
           description="Once you have friends, recent public practice and list activity can appear here."
         />
       ) : (
-        <div className="space-y-3">
+        <div className="divide-y divide-border/70 md:space-y-3 md:divide-y-0">
           {items.map((item) => (
             <article
               key={item.id}
-              className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:bg-muted/70"
+              className="py-4 transition hover:text-foreground md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm md:hover:bg-muted/70"
             >
               <p className="text-sm leading-6 text-foreground">
                 {renderFriendActivityText(item)}
               </p>
+
               <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                   {formatFriendActivityRelativeTime(item.created_at)}
