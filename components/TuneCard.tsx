@@ -5,7 +5,7 @@ import type { ReactNode } from "react"
 import ReferenceMediaLink from "@/components/ReferenceMediaLink"
 import ClickableCard from "@/components/ui/ClickableCard"
 import { getStyleLabelsFromPiece } from "@/lib/search-filters"
-import type { Piece } from "@/lib/types"
+import type { Piece, UserPieceMediaLoop } from "@/lib/types"
 
 export type TuneCardListLink = {
   id: number | string
@@ -23,6 +23,8 @@ type TuneCardProps = {
   pieceStyles?: Piece["piece_styles"]
   listNames?: string[]
   listLinks?: TuneCardListLink[]
+  redirectTo?: string
+  savedLoops?: UserPieceMediaLoop[]
   topRightAction?: ReactNode
   children?: ReactNode
 }
@@ -37,6 +39,8 @@ export default function TuneCard({
   pieceStyles,
   listNames = [],
   listLinks = [],
+  redirectTo,
+  savedLoops,
   topRightAction,
   children,
 }: TuneCardProps) {
@@ -105,6 +109,9 @@ export default function TuneCard({
           <ReferenceMediaLink
             referenceUrl={referenceUrl}
             title={title}
+            pieceId={id}
+            redirectTo={redirectTo}
+            savedLoops={savedLoops}
             className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
           />
         </div>

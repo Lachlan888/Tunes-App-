@@ -78,11 +78,13 @@ export function getTuneDetailStatusMessage({
 
   if (loop === "saved") return "Loop saved."
   if (loop === "deleted") return "Loop deleted."
-  if (loop === "missing_fields") return "Add a label before saving the loop."
-  if (loop === "invalid_range") return "Set a valid loop start and end first."
+  if (loop === "missing_fields")
+    return "Could not save loop: missing label or video."
+  if (loop === "invalid_range")
+    return "Could not save loop: choose a valid start and end point."
   if (loop === "missing_loop") return "Could not find that saved loop."
   if (loop === "missing_piece") return "Could not find that tune."
-  if (loop === "error") return "Could not save loop."
+  if (loop === "error") return "Could not update loop."
 
   if (pageOptions === "saved") return "Tune page options saved."
   if (pageOptions === "reset") return "Tune page options reset."

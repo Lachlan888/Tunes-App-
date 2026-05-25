@@ -63,13 +63,13 @@ export default function PracticeStatusMessages({
 
       {loopStatus === "missing_fields" && (
         <StatusBox tone="warning">
-          Add a label before saving the loop.
+          Could not save loop: missing label or video.
         </StatusBox>
       )}
 
       {loopStatus === "invalid_range" && (
         <StatusBox tone="warning">
-          Set a valid loop start and end first.
+          Could not save loop: choose a valid start and end point.
         </StatusBox>
       )}
 
@@ -82,7 +82,7 @@ export default function PracticeStatusMessages({
       )}
 
       {loopStatus === "error" && (
-        <StatusBox tone="error">Could not save loop.</StatusBox>
+        <StatusBox tone="error">Could not update loop.</StatusBox>
       )}
     </>
   )

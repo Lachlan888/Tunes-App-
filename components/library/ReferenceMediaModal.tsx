@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { usePathname, useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
 import YouTubeLoopPlayer from "@/components/library/YouTubeLoopPlayer"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
-import type { UserPieceMediaLoop } from "@/lib/loaders/tune-detail"
+import type { UserPieceMediaLoop } from "@/lib/types"
 
 type ReferenceMediaModalProps = {
   videoId: string
@@ -29,7 +30,62 @@ export default function ReferenceMediaModal({
   triggerLabel = "Open reference media",
   triggerClassName,
 }: ReferenceMediaModalProps) {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [isOpen, setIsOpen] = useState(false)
+  const [loadedLoops, setLoadedLoops] =
+    useState<UserPieceMediaLoop[]>(savedLoops)
+  const [isLoadingLoops, setIsLoadingLoops] = useState(false)
+  const [loopLoadError, setLoopLoadError] = useState<string | null>(null)
+  const search = searchParams.toString()
+  const effectiveRedirectTo =
+    redirectTo || (search ? `${pathname}?${search}` : pathname)
+
+  useEffect(() => {
+    if (!isOpen || !pieceId) {
+      return
+    }
+
+    const controller = new AbortController()
+
+    async function loadLoops() {
+      setIsLoadingLoops(true)
+      setLoopLoadError(null)
+
+      const params = new URLSearchParams({
+        piece_id: String(pieceId),
+        youtube_video_id: videoId,
+      })
+
+      try {
+        const response = await fetch(`/api/media-loops?${params.toString()}`, {
+          signal: controller.signal,
+        })
+
+        if (!response.ok) {
+          throw new Error("Could not load saved loops.")
+        }
+
+        const data = (await response.json()) as {
+          loops?: UserPieceMediaLoop[]
+        }
+
+        setLoadedLoops(data.loops ?? [])
+      } catch {
+        if (!controller.signal.aborted) {
+          setLoopLoadError("Could not refresh saved loops.")
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoadingLoops(false)
+        }
+      }
+    }
+
+    loadLoops()
+
+    return () => controller.abort()
+  }, [isOpen, pieceId, videoId])
 
   const trigger = (
     <button
@@ -70,12 +126,24 @@ export default function ReferenceMediaModal({
         )}
         panelClassName="max-w-full"
       >
+        {isLoadingLoops ? (
+          <p className="mb-3 text-sm text-muted-foreground">
+            Loading saved loops...
+          </p>
+        ) : null}
+
+        {loopLoadError ? (
+          <p className="mb-3 rounded-2xl border border-border bg-background/70 p-3 text-sm text-muted-foreground">
+            {loopLoadError}
+          </p>
+        ) : null}
+
         <YouTubeLoopPlayer
           videoId={videoId}
           title={`${title} video`}
           pieceId={pieceId}
-          redirectTo={redirectTo}
-          savedLoops={savedLoops}
+          redirectTo={effectiveRedirectTo}
+          savedLoops={loadedLoops}
         />
       </ResponsiveModal>
     </>

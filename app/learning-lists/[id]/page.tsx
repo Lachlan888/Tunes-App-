@@ -129,6 +129,7 @@ function MobileTuneRow({
             <ReferenceMediaLink
               referenceUrl={piece.reference_url}
               title={piece.title}
+              pieceId={piece.id}
               className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
             />
           </div>

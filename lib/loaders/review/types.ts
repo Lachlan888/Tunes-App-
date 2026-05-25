@@ -1,5 +1,5 @@
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
-import type { UserPieceMediaLoop } from "@/lib/loaders/tune-detail"
+import type { UserPieceMediaLoop } from "@/lib/types"
 import type {
   BacklogGroupSummary,
   BacklogTier,

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import { createMediaLoop, deleteMediaLoop } from "@/lib/actions/media-loops"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
-import type { UserPieceMediaLoop } from "@/lib/loaders/tune-detail"
+import type { UserPieceMediaLoop } from "@/lib/types"
 
 type YouTubePlayer = {
   destroy: () => void

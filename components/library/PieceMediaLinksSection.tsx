@@ -5,7 +5,7 @@ import SubmitButton from "@/components/SubmitButton"
 import ReferenceMediaEmbed from "@/components/library/ReferenceMediaEmbed"
 import FindReferenceModal from "@/components/reference-media/FindReferenceModal"
 import { buttonStyles } from "@/components/ui/buttonStyles"
-import type { UserPieceMediaLoop } from "@/lib/loaders/tune-detail"
+import type { UserPieceMediaLoop } from "@/lib/types"
 import type { Piece } from "@/lib/types"
 import { getYouTubeVideoId } from "@/lib/youtube"
 

@@ -1,5 +1,5 @@
 import ReferenceMediaModal from "@/components/library/ReferenceMediaModal"
-import type { UserPieceMediaLoop } from "@/lib/loaders/tune-detail"
+import type { UserPieceMediaLoop } from "@/lib/types"
 import { getYouTubeVideoId } from "@/lib/youtube"
 
 type ReferenceMediaEmbedProps = {

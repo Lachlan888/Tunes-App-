@@ -4,6 +4,7 @@ import type {
   LearningList,
   Piece,
   StyleOption,
+  UserPieceMediaLoop,
   UserKnownPiece,
   UserPiece,
   UserRole,
@@ -25,18 +26,7 @@ export type PieceMediaLink = {
   label: string | null
 }
 
-export type UserPieceMediaLoop = {
-  id: number
-  piece_id: number
-  youtube_video_id: string
-  label: string
-  start_seconds: number
-  end_seconds: number
-  playback_rate: number
-  notes: string | null
-  created_at: string
-  updated_at: string
-}
+export type { UserPieceMediaLoop }
 
 export type PieceCommentRow = {
   id: number

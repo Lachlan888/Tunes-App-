@@ -80,11 +80,11 @@ function SearchResultsSection({
   return (
     <section className="mb-7 md:mb-8 md:rounded-2xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
       <div className="mb-4 md:mb-5">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="hidden text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground md:block">
           Search
         </p>
-        <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground md:font-serif md:text-3xl md:font-bold">
-          Find new friends
+        <h2 className="text-xl font-semibold tracking-tight text-foreground md:mt-2 md:font-serif md:text-3xl md:font-bold">
+          Find friends
         </h2>
         <p className="mt-2 hidden max-w-3xl text-sm leading-6 text-muted-foreground md:block">
           Search returns users you are not already connected with. Existing
@@ -98,7 +98,7 @@ function SearchResultsSection({
         <EmptyState
           title="Find musicians to connect with"
           description="Search by username or display name. Once connected, you can compare repertoire and see relevant activity."
-          className="mt-4"
+          className="mt-4 hidden md:block"
         />
       )}
 
@@ -164,11 +164,12 @@ function IncomingRequestsSection({
   return (
     <section className="mb-7 md:mb-8 md:rounded-2xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
       <div className="mb-4 md:mb-5">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="hidden text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground md:block">
           Requests
         </p>
-        <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground md:font-serif md:text-3xl md:font-bold">
-          Incoming requests
+        <h2 className="text-xl font-semibold tracking-tight text-foreground md:mt-2 md:font-serif md:text-3xl md:font-bold">
+          <span className="md:hidden">Requests</span>
+          <span className="hidden md:inline">Incoming requests</span>
         </h2>
         <p className="mt-2 hidden text-sm leading-6 text-muted-foreground md:block">
           Accept requests from musicians who want to connect with you.
@@ -330,9 +331,11 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
         activityContent={activityContent}
       />
 
-      <div className="hidden md:block">
-        {addFriendsContent}
-        {activityContent}
+      <div className="hidden gap-6 md:grid lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
+        <div className="min-w-0">{addFriendsContent}</div>
+        <div className="min-w-0 self-start lg:sticky lg:top-24">
+          {activityContent}
+        </div>
       </div>
     </main>
   )

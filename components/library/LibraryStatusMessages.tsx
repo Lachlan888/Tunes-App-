@@ -9,6 +9,7 @@ type LibraryStatusMessagesProps = {
   removeTuneStatus: string
   removeFromPracticeStatus: string
   deleteTuneStatus: string
+  loopStatus: string
   bulkUploadStatus: string
   bulkUploadRow: string
   uploadedListId: string
@@ -43,6 +44,7 @@ export default function LibraryStatusMessages({
   removeTuneStatus,
   removeFromPracticeStatus,
   deleteTuneStatus,
+  loopStatus,
   bulkUploadStatus,
   bulkUploadRow,
   uploadedListId,
@@ -218,6 +220,38 @@ export default function LibraryStatusMessages({
         <StatusBanner tone="error">
           Could not delete canonical tune.
         </StatusBanner>
+      )}
+
+      {loopStatus === "saved" && (
+        <StatusBanner tone="success">Loop saved.</StatusBanner>
+      )}
+
+      {loopStatus === "deleted" && (
+        <StatusBanner tone="success">Loop deleted.</StatusBanner>
+      )}
+
+      {loopStatus === "missing_fields" && (
+        <StatusBanner tone="warning">
+          Could not save loop: missing label or video.
+        </StatusBanner>
+      )}
+
+      {loopStatus === "invalid_range" && (
+        <StatusBanner tone="warning">
+          Could not save loop: choose a valid start and end point.
+        </StatusBanner>
+      )}
+
+      {loopStatus === "missing_loop" && (
+        <StatusBanner tone="warning">Could not find that saved loop.</StatusBanner>
+      )}
+
+      {loopStatus === "missing_piece" && (
+        <StatusBanner tone="warning">Could not find that tune.</StatusBanner>
+      )}
+
+      {loopStatus === "error" && (
+        <StatusBanner tone="error">Could not update loop.</StatusBanner>
       )}
 
       {bulkUploadStatus === "received" && (

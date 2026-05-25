@@ -1,5 +1,5 @@
 import type { createClient } from "@/lib/supabase/server"
-import type { UserPieceMediaLoop } from "@/lib/loaders/tune-detail"
+import type { UserPieceMediaLoop } from "@/lib/types"
 import {
   getBacklogTier,
   getBacklogTierLabel,

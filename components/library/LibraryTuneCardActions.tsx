@@ -1,5 +1,6 @@
 "use client"
 
+import TuneStatusActionSheet from "@/components/library/TuneStatusActionSheet"
 import TuneStatusDropdown from "@/components/library/TuneStatusDropdown"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import type { Piece, UserPiece } from "@/lib/types"
@@ -39,19 +40,37 @@ export default function LibraryTuneCardActions({
 
   return (
     <div className="flex w-full flex-wrap items-start gap-3">
-      <TuneStatusDropdown
-        piece={piece}
-        activeUserPiece={activeUserPiece}
-        isAlreadyInPractice={isAlreadyInPractice}
-        isKnown={isKnown}
-        isInAList={isInAList}
-        isOpen={isStatusOpen}
-        redirectTo={redirectTo}
-        onToggle={onToggleStatus}
-        onClose={onCloseStatus}
-        startLearning={startLearning}
-        removeTuneFromMyApp={removeTuneFromMyApp}
-      />
+      <div className="hidden md:block">
+        <TuneStatusDropdown
+          piece={piece}
+          activeUserPiece={activeUserPiece}
+          isAlreadyInPractice={isAlreadyInPractice}
+          isKnown={isKnown}
+          isInAList={isInAList}
+          isOpen={isStatusOpen}
+          redirectTo={redirectTo}
+          onToggle={onToggleStatus}
+          onClose={onCloseStatus}
+          startLearning={startLearning}
+          removeTuneFromMyApp={removeTuneFromMyApp}
+        />
+      </div>
+
+      <div className="w-full md:hidden">
+        <TuneStatusActionSheet
+          piece={piece}
+          activeUserPiece={activeUserPiece}
+          isAlreadyInPractice={isAlreadyInPractice}
+          isKnown={isKnown}
+          isInAList={isInAList}
+          isOpen={isStatusOpen}
+          redirectTo={redirectTo}
+          onOpen={onToggleStatus}
+          onClose={onCloseStatus}
+          startLearning={startLearning}
+          removeTuneFromMyApp={removeTuneFromMyApp}
+        />
+      </div>
 
       <button
         type="button"

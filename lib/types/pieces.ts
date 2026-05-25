@@ -38,3 +38,16 @@ export type StyleOption = {
   slug: string
   label: string
 }
+
+export type UserPieceMediaLoop = {
+  id: number
+  piece_id: number
+  youtube_video_id: string
+  label: string
+  start_seconds: number
+  end_seconds: number
+  playback_rate: number
+  notes: string | null
+  created_at: string
+  updated_at: string
+}

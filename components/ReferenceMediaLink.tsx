@@ -1,8 +1,9 @@
 "use client"
 
+import { usePathname, useSearchParams } from "next/navigation"
 import { useMemo } from "react"
 import ReferenceMediaEmbed from "@/components/library/ReferenceMediaEmbed"
-import type { UserPieceMediaLoop } from "@/lib/loaders/tune-detail"
+import type { UserPieceMediaLoop } from "@/lib/types"
 import { getYouTubeVideoId } from "@/lib/youtube"
 
 type ReferenceMediaLinkProps = {
@@ -22,8 +23,16 @@ export default function ReferenceMediaLink({
   redirectTo,
   savedLoops,
 }: ReferenceMediaLinkProps) {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const videoId = useMemo(() => getYouTubeVideoId(referenceUrl), [referenceUrl])
   const isYouTube = Boolean(videoId)
+  const effectiveRedirectTo = useMemo(() => {
+    if (redirectTo) return redirectTo
+
+    const search = searchParams.toString()
+    return search ? `${pathname}?${search}` : pathname
+  }, [pathname, redirectTo, searchParams])
 
   if (!referenceUrl) {
     return null
@@ -51,7 +60,7 @@ export default function ReferenceMediaLink({
         triggerLabel="Open reference"
         triggerClassName={className ?? "text-sm underline"}
         pieceId={pieceId}
-        redirectTo={redirectTo}
+        redirectTo={effectiveRedirectTo}
         savedLoops={savedLoops}
       />
     </span>

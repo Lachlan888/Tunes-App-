@@ -232,7 +232,7 @@ export default function LibraryList({
         <button
           type="button"
           aria-label="Close status menu"
-          className="fixed inset-0 z-40 cursor-default bg-transparent"
+          className="fixed inset-0 z-40 hidden cursor-default bg-transparent md:block"
           onClick={() => setOpenStatusPieceId(null)}
           tabIndex={-1}
         />

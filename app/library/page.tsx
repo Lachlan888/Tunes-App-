@@ -44,6 +44,7 @@ type LibraryPageProps = {
     remove_tune?: SearchParamValue
     remove_from_practice?: SearchParamValue
     delete_tune?: SearchParamValue
+    loop?: SearchParamValue
     scroll_piece?: SearchParamValue
     page_options?: SearchParamValue
   }>
@@ -155,6 +156,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     resolvedSearchParams?.remove_from_practice
   )
   const deleteTuneStatus = firstParam(resolvedSearchParams?.delete_tune)
+  const loopStatus = firstParam(resolvedSearchParams?.loop)
   const uploadedListId = firstParam(resolvedSearchParams?.uploaded_list_id)
 
   const createdPiecesCount = numberParam(resolvedSearchParams?.created_pieces)
@@ -334,6 +336,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
           removeTuneStatus={removeTuneStatus}
           removeFromPracticeStatus={removeFromPracticeStatus}
           deleteTuneStatus={deleteTuneStatus}
+          loopStatus={loopStatus}
           bulkUploadStatus={bulkUploadStatus}
           bulkUploadRow={bulkUploadRow}
           uploadedListId={uploadedListId}
