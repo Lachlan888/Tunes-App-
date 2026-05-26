@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react"
 import { usePathname, useRouter } from "next/navigation"
+import { navItemIsActive } from "@/components/layout/navItems"
 
 type NavDropdownItem = {
   href: string
@@ -36,7 +37,7 @@ export default function NavDropdown({
   const [isOpen, setIsOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
 
-  const isActive = items.some((item) => pathname === item.href)
+  const isActive = items.some((item) => navItemIsActive(pathname, item.href))
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -87,7 +88,7 @@ export default function NavDropdown({
           className="absolute left-0 z-50 mt-2 min-w-44 rounded-2xl border border-border bg-card p-2 shadow-lg"
         >
           {items.map((item) => {
-            const itemIsActive = pathname === item.href
+            const itemIsActive = navItemIsActive(pathname, item.href)
 
             return (
               <button

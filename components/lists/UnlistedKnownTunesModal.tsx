@@ -40,6 +40,8 @@ type UnlistedKnownTunesModalProps = {
   addToLearningList: (formData: FormData) => Promise<void>
   redirectTo: string
   summaryClassName?: string
+  summaryVariant?: "card" | "compact"
+  triggerClassName?: string
 }
 
 export default function UnlistedKnownTunesModal({
@@ -48,6 +50,8 @@ export default function UnlistedKnownTunesModal({
   addToLearningList,
   redirectTo,
   summaryClassName = "rounded-2xl border border-border bg-card p-5 shadow-sm",
+  summaryVariant = "card",
+  triggerClassName,
 }: UnlistedKnownTunesModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
@@ -73,27 +77,35 @@ export default function UnlistedKnownTunesModal({
     return null
   }
 
+  const isCompact = summaryVariant === "compact"
+
   return (
     <>
       <section className={summaryClassName}>
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Known tunes
             </p>
-            <h2 className="mt-2 font-serif text-2xl font-bold text-foreground">
+            <h2
+              className={
+                isCompact
+                  ? "mt-1 text-base font-semibold text-foreground"
+                  : "mt-2 font-serif text-2xl font-bold text-foreground"
+              }
+            >
               Known, not in a list
             </h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
               {unlistedKnownTunes.length} tune
-              {unlistedKnownTunes.length === 1 ? "" : "s"} ready to organise.
+              {unlistedKnownTunes.length === 1 ? "" : "s"} need organising.
             </p>
           </div>
 
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className={buttonStyles.secondary}
+            className={triggerClassName ?? buttonStyles.secondary}
           >
             Review tunes
           </button>

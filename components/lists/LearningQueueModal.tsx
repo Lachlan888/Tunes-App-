@@ -11,6 +11,8 @@ type LearningQueueModalProps = {
   startLearning: (formData: FormData) => Promise<void>
   redirectTo: string
   summaryClassName?: string
+  summaryVariant?: "card" | "compact"
+  triggerClassName?: string
 }
 
 function formatAddedDate(value: string | null) {
@@ -37,6 +39,8 @@ export default function LearningQueueModal({
   startLearning,
   redirectTo,
   summaryClassName = "rounded-2xl border border-border bg-card p-5 shadow-sm",
+  summaryVariant = "card",
+  triggerClassName,
 }: LearningQueueModalProps) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -61,26 +65,33 @@ export default function LearningQueueModal({
   }
 
   const nextTune = learningQueueTunes[0]
+  const isCompact = summaryVariant === "compact"
 
   return (
     <>
       <section className={summaryClassName}>
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Learning Queue
             </p>
-            <h2 className="mt-2 font-serif text-2xl font-bold text-foreground">
+            <h2
+              className={
+                isCompact
+                  ? "mt-1 text-base font-semibold text-foreground"
+                  : "mt-2 font-serif text-2xl font-bold text-foreground"
+              }
+            >
               Saved for later
             </h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
               {learningQueueTunes.length} tune
               {learningQueueTunes.length === 1 ? "" : "s"} in your lists but
               not yet in Practice or Known.
             </p>
 
             {nextTune ? (
-              <p className="mt-3 text-sm text-muted-foreground">
+              <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
                 Next oldest:{" "}
                 <span className="font-medium text-foreground">
                   {nextTune.piece.title}
@@ -93,7 +104,7 @@ export default function LearningQueueModal({
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className={buttonStyles.primary}
+            className={triggerClassName ?? buttonStyles.primary}
           >
             Open queue
           </button>

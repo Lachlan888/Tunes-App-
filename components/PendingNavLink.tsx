@@ -2,6 +2,7 @@
 
 import { useTransition } from "react"
 import { usePathname, useRouter } from "next/navigation"
+import { navItemIsActive } from "@/components/layout/navItems"
 
 type PendingNavLinkProps = {
   href: string
@@ -30,7 +31,7 @@ export default function PendingNavLink({
   const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
 
-  const isActive = pathname === href
+  const isActive = navItemIsActive(pathname, href)
 
   const sizeClasses =
     size === "compact" ? "px-2.5 py-1.5 text-sm" : "px-3 py-1.5 text-sm"

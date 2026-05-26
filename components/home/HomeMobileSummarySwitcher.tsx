@@ -86,11 +86,7 @@ function MobileSectionHeading({
 }
 
 function MobilePanel({ children }: { children: React.ReactNode }) {
-  return (
-    <section className="rounded-3xl border border-border bg-card/80 p-4 shadow-sm">
-      {children}
-    </section>
-  )
+  return <section className="border-y border-border/70 py-4">{children}</section>
 }
 
 function MobileStatGrid({
@@ -99,18 +95,16 @@ function MobileStatGrid({
   items: { label: string; value: number; href: string }[]
 }) {
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="divide-y divide-border/70 border-y border-border/70">
       {items.map((item) => (
         <Link
           key={item.label}
           href={item.href}
-          className="rounded-2xl border border-border bg-background/60 p-3 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          className="flex items-center justify-between gap-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {item.label}
-          </p>
+          <p className="text-sm font-semibold text-foreground">{item.label}</p>
 
-          <p className="mt-2 font-serif text-3xl font-bold leading-none text-foreground">
+          <p className="font-serif text-3xl font-bold leading-none text-foreground">
             {item.value}
           </p>
         </Link>
@@ -121,7 +115,7 @@ function MobileStatGrid({
 
 function MobileEmptyBlock({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-2xl border border-dashed border-border bg-background/40 p-4 text-sm leading-6 text-muted-foreground">
+    <p className="border-y border-dashed border-border py-4 text-sm leading-6 text-muted-foreground">
       {children}
     </p>
   )
@@ -261,7 +255,7 @@ function TodayPanel({
           {summary.dueTodayPreview.length === 0 ? (
             <MobileEmptyBlock>Nothing due today.</MobileEmptyBlock>
           ) : (
-            <div className="rounded-3xl border border-border bg-card/70 px-4">
+            <div className="border-y border-border/70">
               {summary.dueTodayPreview
                 .slice(0, previewLimit)
                 .map((userPiece) => (
@@ -350,7 +344,7 @@ function RepertoirePanel({
           {summary.inPracticePreview.length === 0 ? (
             <MobileEmptyBlock>No tunes in practice yet.</MobileEmptyBlock>
           ) : (
-            <div className="rounded-3xl border border-border bg-card/70 px-4">
+            <div className="border-y border-border/70">
               {summary.inPracticePreview
                 .slice(0, previewLimit)
                 .map((userPiece) => (
@@ -375,7 +369,7 @@ function RepertoirePanel({
               Add tunes to lists before starting Practice to build this queue.
             </MobileEmptyBlock>
           ) : (
-            <div className="rounded-3xl border border-border bg-card/70 px-4">
+            <div className="border-y border-border/70">
               {summary.learningQueuePreview
                 .slice(0, previewLimit)
                 .map((queueTune) => (
@@ -408,7 +402,7 @@ function RepertoirePanel({
           {summary.listPreview.length === 0 ? (
             <MobileEmptyBlock>No lists yet.</MobileEmptyBlock>
           ) : (
-            <div className="rounded-3xl border border-border bg-card/70 px-4">
+            <div className="border-y border-border/70">
               {summary.listPreview.slice(0, previewLimit).map((learningList) => (
                 <MobileRow
                   key={learningList.id}
@@ -435,7 +429,7 @@ function RepertoirePanel({
           {recentBadges.length === 0 ? (
             <MobileEmptyBlock>No badges yet.</MobileEmptyBlock>
           ) : (
-            <div className="rounded-3xl border border-border bg-card/70 px-4">
+            <div className="border-y border-border/70">
               {recentBadges.map((badge) => (
                 <MobileRow
                   key={`${badge.kind}-${badge.id}`}
@@ -484,7 +478,7 @@ function SocialPanel({
           {recentFriendActivity.length === 0 ? (
             <MobileEmptyBlock>No recent friend activity yet.</MobileEmptyBlock>
           ) : (
-            <div className="rounded-3xl border border-border bg-card/70 px-4">
+            <div className="border-y border-border/70">
               {recentFriendActivity.slice(0, 5).map((item) => (
                 <div
                   key={item.id}

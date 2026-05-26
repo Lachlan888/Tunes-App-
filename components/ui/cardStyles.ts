@@ -26,6 +26,9 @@ export const cardStyles = {
   passiveCard:
     "rounded-2xl border border-border bg-background/70 p-5 shadow-sm",
 
+  mobileRowToCard:
+    "py-4 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm",
+
   modal:
     "max-h-[90vh] w-full overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-lg",
 

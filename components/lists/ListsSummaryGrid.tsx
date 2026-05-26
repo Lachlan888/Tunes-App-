@@ -24,18 +24,18 @@ type ListsSummaryGridProps = {
 
 function getSummaryGridClass(visibleSummaryCount: number) {
   if (visibleSummaryCount <= 1) {
-    return "mb-8 grid gap-4"
+    return "mb-8 divide-y divide-border/70 md:grid md:gap-4 md:divide-y-0"
   }
 
   if (visibleSummaryCount === 2) {
-    return "mb-8 grid gap-4 lg:grid-cols-2"
+    return "mb-8 divide-y divide-border/70 md:grid md:gap-4 md:divide-y-0 lg:grid-cols-2"
   }
 
-  return "mb-8 grid gap-4 lg:grid-cols-3"
+  return "mb-8 divide-y divide-border/70 md:grid md:gap-4 md:divide-y-0 lg:grid-cols-3"
 }
 
 const summaryCardClass =
-  "h-full rounded-2xl border border-border bg-card p-5 shadow-sm"
+  "py-4 md:h-full md:rounded-2xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm"
 
 export default function ListsSummaryGrid({
   myTunes,

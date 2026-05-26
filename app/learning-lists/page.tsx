@@ -2,10 +2,10 @@ import EmptyState from "@/components/EmptyState"
 import CreateListModal from "@/components/lists/CreateListModal"
 import ListOverviewCard from "@/components/lists/ListOverviewCard"
 import ListSearchFilters from "@/components/lists/ListSearchFilters"
+import ListsMobileSwitcher from "@/components/lists/ListsMobileSwitcher"
 import ListsResultsHeader from "@/components/lists/ListsResultsHeader"
 import ListsStatusMessages from "@/components/lists/ListsStatusMessages"
 import ListsSummaryGrid from "@/components/lists/ListsSummaryGrid"
-import MobilePageHeader from "@/components/mobile/MobilePageHeader"
 import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import {
   addToLearningList,
@@ -155,127 +155,155 @@ export default async function LearningListsPage({
         </div>
       ) : null}
 
-      <div className="mb-5 md:hidden">
-        <MobilePageHeader
-          eyebrow="Lists"
-          title="Organise tunes"
-          subtitle="Use lists to hold repertoire, practice queues, session sets, and cleanup work."
-          meta={<span className="block truncate">Signed in as {user.email}</span>}
-        />
-      </div>
-
-      <section className="mb-8 hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
-        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Lists
-            </p>
-            <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
-              Organise your tunes
-            </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-              Keep repertoire, practice queues, session sets, and imported
-              collections in clear working lists.
-            </p>
-            <p className="mt-4 text-sm text-muted-foreground">
-              Logged in as {user.email}
-            </p>
-          </div>
-
-          <PageOptionsModal
-            config={LISTS_PAGE_OPTIONS_CONFIG}
-            preferences={pagePreferences}
-            redirectTo={redirectTo}
-          />
-        </div>
-      </section>
-
-      {showSection("create_list") ? (
-        <div className="mb-6 md:mb-8">
-          <CreateListModal />
-        </div>
-      ) : null}
-
-      {showSection("status_messages") ? (
-        <ListsStatusMessages
-          createListStatus={createListStatus}
-          editListStatus={editListStatus}
-        />
-      ) : null}
-
-      {showSection("summary_grid") ? (
-        <ListsSummaryGrid
+      <div className="md:hidden">
+        <ListsMobileSwitcher
+          userEmail={user.email}
           myTunes={myTunes}
           learningQueueTunes={learningQueueTunes}
           unlistedPracticeTunes={unlistedPracticeTunes}
           unlistedKnownTunes={unlistedKnownTunes}
           learningLists={learningLists}
+          listOverviews={listOverviews}
+          filteredListOverviews={filteredListOverviews}
+          availableStyles={availableStyles}
+          searchQuery={searchQuery}
+          selectedSize={selectedSize}
+          selectedStyles={selectedStyles}
+          selectedSource={selectedSource}
+          selectedVisibility={selectedVisibility}
+          hasActiveFilters={hasActiveFilters}
+          createListStatus={createListStatus}
+          editListStatus={editListStatus}
+          showCreateList={showSection("create_list")}
+          showSummaryGrid={showSection("summary_grid")}
+          showFilters={showSection("filters")}
+          showResultsHeader={showSection("results_header")}
+          showListResults={showSection("list_results")}
+          redirectTo={redirectTo}
           addToLearningList={addToLearningList}
           startLearning={startLearning}
-          redirectTo={redirectTo}
+          updateList={updateList}
+          removeTuneFromList={removeTuneFromList}
+          deleteList={deleteList}
         />
-      ) : null}
+      </div>
 
-      {listOverviews.length > 0 &&
-      (showSection("filters") || showSection("results_header")) ? (
-        <>
-          {showSection("filters") ? (
-            <ListSearchFilters
-              basePath="/learning-lists"
-              searchLabel="Search by list name"
-              searchPlaceholder="Search lists"
-              searchValue={searchQuery}
-              selectedSize={selectedSize}
-              selectedStyles={selectedStyles}
-              selectedSource={selectedSource}
-              selectedVisibility={selectedVisibility}
-              availableStyles={availableStyles}
-              hasActiveFilters={hasActiveFilters}
+      <div className="hidden md:block">
+        <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Lists
+              </p>
+              <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
+                Organise your tunes
+              </h1>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+                Keep repertoire, practice queues, session sets, and imported
+                collections in clear working lists.
+              </p>
+              <p className="mt-4 text-sm text-muted-foreground">
+                Logged in as {user.email}
+              </p>
+            </div>
+
+            <PageOptionsModal
+              config={LISTS_PAGE_OPTIONS_CONFIG}
+              preferences={pagePreferences}
+              redirectTo={redirectTo}
             />
-          ) : null}
-
-          {showSection("results_header") ? (
-            <ListsResultsHeader
-              filteredCount={filteredListOverviews.length}
-              totalCount={listOverviews.length}
-              hasActiveFilters={hasActiveFilters}
-            />
-          ) : null}
-        </>
-      ) : null}
-
-      {showSection("list_results") ? (
-        listOverviews.length === 0 ? (
-          <EmptyState
-            title="No lists yet"
-            description="Lists are where you organise tunes for learning, repertoire, sessions, or publishing. Use Create List above to start one."
-            secondaryActionHref="/library"
-            secondaryActionLabel="Browse Tunes"
-            className="bg-card p-5"
-            titleClassName="font-serif text-2xl font-bold text-foreground"
-          />
-        ) : filteredListOverviews.length === 0 ? (
-          <EmptyState
-            title="No lists match this view"
-            description="Try clearing the search or filters."
-            primaryActionHref="/learning-lists"
-            primaryActionLabel="Reset view"
-          />
-        ) : (
-          <div className="space-y-4">
-            {filteredListOverviews.map((list) => (
-              <ListOverviewCard
-                key={list.id}
-                list={list}
-                redirectTo={redirectTo}
-                updateList={updateList}
-                removeTuneFromList={removeTuneFromList}
-                deleteList={deleteList}
-              />
-            ))}
           </div>
-        )
-      ) : null}
+        </section>
+
+        {showSection("create_list") ? (
+          <div className="mb-8">
+            <CreateListModal />
+          </div>
+        ) : null}
+
+        {showSection("status_messages") ? (
+          <ListsStatusMessages
+            createListStatus={createListStatus}
+            editListStatus={editListStatus}
+          />
+        ) : null}
+
+        {showSection("summary_grid") ? (
+          <ListsSummaryGrid
+            myTunes={myTunes}
+            learningQueueTunes={learningQueueTunes}
+            unlistedPracticeTunes={unlistedPracticeTunes}
+            unlistedKnownTunes={unlistedKnownTunes}
+            learningLists={learningLists}
+            addToLearningList={addToLearningList}
+            startLearning={startLearning}
+            redirectTo={redirectTo}
+          />
+        ) : null}
+
+        {listOverviews.length > 0 &&
+        (showSection("filters") || showSection("results_header")) ? (
+          <>
+            {showSection("filters") ? (
+              <ListSearchFilters
+                basePath="/learning-lists"
+                searchLabel="Search by list name"
+                searchPlaceholder="Search lists"
+                searchValue={searchQuery}
+                selectedSize={selectedSize}
+                selectedStyles={selectedStyles}
+                selectedSource={selectedSource}
+                selectedVisibility={selectedVisibility}
+                availableStyles={availableStyles}
+                hasActiveFilters={hasActiveFilters}
+              />
+            ) : null}
+
+            {showSection("results_header") ? (
+              <ListsResultsHeader
+                filteredCount={filteredListOverviews.length}
+                totalCount={listOverviews.length}
+                hasActiveFilters={hasActiveFilters}
+              />
+            ) : null}
+          </>
+        ) : null}
+
+        {showSection("list_results") ? (
+          <>
+            {listOverviews.length === 0 ? (
+              <EmptyState
+                title="No lists yet"
+                description="Lists are where you organise tunes for learning, repertoire, sessions, or publishing. Use Create List above to start one."
+                secondaryActionHref="/library"
+                secondaryActionLabel="Browse Tunes"
+                className="bg-card p-5"
+                titleClassName="font-serif text-2xl font-bold text-foreground"
+              />
+            ) : filteredListOverviews.length === 0 ? (
+              <EmptyState
+                title="No lists match this view"
+                description="Try clearing the search or filters."
+                primaryActionHref="/learning-lists"
+                primaryActionLabel="Reset view"
+              />
+            ) : (
+              <div className="space-y-4">
+                {filteredListOverviews.map((list) => (
+                  <ListOverviewCard
+                    key={list.id}
+                    list={list}
+                    redirectTo={redirectTo}
+                    updateList={updateList}
+                    removeTuneFromList={removeTuneFromList}
+                    deleteList={deleteList}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        ) : null}
+      </div>
     </main>
   )
 }

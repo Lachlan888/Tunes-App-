@@ -2,6 +2,7 @@ import Link from "next/link"
 import PracticeProgress from "@/components/practice/PracticeProgress"
 import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeButton"
 import { buttonStyles } from "@/components/ui/buttonStyles"
+import { cardStyles } from "@/components/ui/cardStyles"
 import { APP_TIME_ZONE } from "@/lib/review"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 
@@ -36,7 +37,7 @@ export default function ActivePracticeSection({
   redirectTo,
 }: ActivePracticeSectionProps) {
   return (
-    <section className="mt-10 rounded-3xl border border-border bg-card p-6 shadow-sm">
+    <section className="mt-10 border-y border-border/70 py-4 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
       <details>
         <summary className="cursor-pointer text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Currently in practice ({practiceItems.length})
@@ -47,11 +48,11 @@ export default function ActivePracticeSection({
         </p>
 
         {practiceItems.length === 0 ? (
-          <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+          <p className="mt-4 border-y border-dashed border-border py-4 text-sm text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-4">
             No tunes in practice yet.
           </p>
         ) : (
-          <ul className="mt-4 space-y-3">
+          <ul className="mt-4 divide-y divide-border/70 md:space-y-3 md:divide-y-0">
             {practiceItems.map((userPiece) => {
               const badgeLabel =
                 userPiece.backlog_label ??
@@ -66,10 +67,10 @@ export default function ActivePracticeSection({
               return (
                 <li
                   key={userPiece.id}
-                  className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
+                  className={cardStyles.mobileRowToCard}
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
+                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-4">
+                    <div className="min-w-0 flex-1">
                       <p className="font-medium text-foreground">
                         {userPiece.piece ? (
                           <Link
@@ -110,7 +111,7 @@ export default function ActivePracticeSection({
                     </div>
 
                     <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${badgeClassName}`}
+                      className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${badgeClassName}`}
                     >
                       {badgeLabel}
                     </span>

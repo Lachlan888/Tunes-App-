@@ -19,6 +19,7 @@ type EditListModalProps = {
   removeTuneFromList: (formData: FormData) => Promise<void>
   deleteList: (formData: FormData) => Promise<void>
   triggerLabel?: string
+  triggerClassName?: string
 }
 
 const inputClass =
@@ -35,6 +36,7 @@ export default function EditListModal({
   removeTuneFromList,
   deleteList,
   triggerLabel = "Manage List",
+  triggerClassName = buttonStyles.secondary,
 }: EditListModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isBusy, setIsBusy] = useState(false)
@@ -52,7 +54,7 @@ export default function EditListModal({
     <>
       <button
         type="button"
-        className={buttonStyles.secondary}
+        className={triggerClassName}
         onClick={() => {
           setIsBusy(false)
           setIsOpen(true)

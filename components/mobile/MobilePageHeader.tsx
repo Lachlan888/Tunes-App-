@@ -8,6 +8,7 @@ type MobilePageHeaderProps = {
   primaryAction?: ReactNode
   secondaryAction?: ReactNode
   children?: ReactNode
+  variant?: "card" | "plain"
 }
 
 export default function MobilePageHeader({
@@ -18,9 +19,15 @@ export default function MobilePageHeader({
   primaryAction,
   secondaryAction,
   children,
+  variant = "card",
 }: MobilePageHeaderProps) {
+  const sectionClassName =
+    variant === "plain"
+      ? "border-b border-border/70 pb-4 md:hidden"
+      : "rounded-2xl border border-border bg-card p-4 shadow-sm md:hidden"
+
   return (
-    <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:hidden">
+    <section className={sectionClassName}>
       {eyebrow ? (
         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           {eyebrow}

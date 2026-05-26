@@ -4,6 +4,13 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import LogoutButton from "@/components/LogoutButton"
+import {
+  coreNavItems,
+  listNavItems,
+  navItemIsActive,
+  socialNavItems,
+  type NavItem,
+} from "@/components/layout/navItems"
 
 type MobileNavProps = {
   isSignedIn: boolean
@@ -14,13 +21,7 @@ type MobileNavProps = {
   canAccessDev: boolean
 }
 
-type MobileNavItem = {
-  href: string
-  label: string
-  badgeCount?: number
-}
-
-type OpenPanel = "lists" | "more" | null
+type OpenPanel = "lists" | "social" | "more" | null
 
 function FloatingBadge({ count }: { count: number }) {
   if (count <= 0) return null
@@ -77,12 +78,14 @@ function MobileNavButton({
   badgeCount = 0,
   isActive,
   disableWhenActive = false,
+  isExpanded,
   onClick,
 }: {
   label: string
   badgeCount?: number
   isActive?: boolean
   disableWhenActive?: boolean
+  isExpanded?: boolean
   onClick: () => void
 }) {
   const isDisabled = Boolean(disableWhenActive && isActive)
@@ -92,6 +95,8 @@ function MobileNavButton({
       type="button"
       disabled={isDisabled}
       aria-current={isActive ? "page" : undefined}
+      aria-haspopup="menu"
+      aria-expanded={isExpanded}
       onClick={onClick}
       className={`relative flex min-h-9 min-w-0 items-center justify-center rounded-full border px-1.5 text-[0.78rem] font-semibold leading-none transition disabled:cursor-not-allowed disabled:opacity-70 ${
         isActive
@@ -113,20 +118,20 @@ function MobilePanel({
   children,
 }: {
   title: string
-  items: MobileNavItem[]
+  items: NavItem[]
   pathname: string
   onNavigate: () => void
   children?: React.ReactNode
 }) {
   return (
-    <div className="mt-2 rounded-2xl border border-border bg-card p-2 shadow-lg">
+    <div className="mt-2 w-full max-w-full overflow-hidden rounded-2xl border border-border bg-card p-2 shadow-lg">
       <div className="mb-2 px-2 pt-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         {title}
       </div>
 
       <div className="grid grid-cols-2 gap-1">
         {items.map((item) => {
-          const itemIsActive = pathname === item.href
+          const itemIsActive = navItemIsActive(pathname, item.href)
 
           return (
             <Link
@@ -134,7 +139,7 @@ function MobilePanel({
               href={item.href}
               aria-current={itemIsActive ? "page" : undefined}
               onClick={onNavigate}
-              className={`flex min-h-10 items-center justify-between gap-2 rounded-xl px-3 text-left text-sm font-medium transition ${
+              className={`flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl px-3 text-left text-sm font-medium transition ${
                 itemIsActive
                   ? "bg-primary text-primary-foreground"
                   : "text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
@@ -165,43 +170,11 @@ export default function MobileNav({
   const pathname = usePathname()
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null)
 
-  const listItems: MobileNavItem[] = [
-    {
-      href: "/learning-lists",
-      label: "My Lists",
-    },
-    {
-      href: "/public-lists",
-      label: "Public Lists",
-    },
-  ]
+  const socialItems = socialNavItems.map((item) =>
+    item.href === "/inbox" ? { ...item, badgeCount: unreadTotalCount } : item
+  )
 
-  const moreItems: MobileNavItem[] = [
-    {
-      href: "/friends",
-      label: "Friends",
-    },
-    {
-      href: "/inbox",
-      label: "Inbox",
-      badgeCount: unreadTotalCount,
-    },
-    {
-      href: "/compare",
-      label: "Compare",
-    },
-    {
-      href: "/setlists",
-      label: "Setlists",
-    },
-    {
-      href: "/badges",
-      label: "Badges",
-    },
-    {
-      href: "/trends",
-      label: "Trends",
-    },
+  const accountItems: NavItem[] = [
     ...(canModerate
       ? [
           {
@@ -225,8 +198,15 @@ export default function MobileNav({
     },
   ]
 
-  const listsIsActive = listItems.some((item) => pathname === item.href)
-  const moreIsActive = moreItems.some((item) => pathname === item.href)
+  const listsIsActive = listNavItems.some((item) =>
+    navItemIsActive(pathname, item.href)
+  )
+  const socialIsActive = socialItems.some((item) =>
+    navItemIsActive(pathname, item.href)
+  )
+  const moreIsActive = accountItems.some((item) =>
+    navItemIsActive(pathname, item.href)
+  )
 
   function closePanel() {
     setOpenPanel(null)
@@ -242,39 +222,40 @@ export default function MobileNav({
 
   return (
     <nav className="md:hidden">
-      <div className="grid grid-cols-[1fr_1.2fr_1fr_1fr_1fr] gap-1 text-sm">
-        <MobileNavLink
-          href="/"
-          label="Home"
-          isActive={pathname === "/"}
-          onNavigate={closePanel}
-        />
-
-        <MobileNavLink
-          href="/review"
-          label="Practice"
-          badgeCount={overduePracticeCount}
-          isActive={pathname === "/review"}
-          onNavigate={closePanel}
-        />
-
-        <MobileNavLink
-          href="/library"
-          label="Tunes"
-          isActive={pathname === "/library"}
-          onNavigate={closePanel}
-        />
+      <div className="grid grid-cols-[1fr_1.2fr_1fr_1fr_1fr_1fr] gap-1 text-sm">
+        {coreNavItems.map((item) => (
+          <MobileNavLink
+            key={item.href}
+            href={item.href}
+            label={item.label}
+            badgeCount={
+              item.href === "/review" ? overduePracticeCount : undefined
+            }
+            isActive={navItemIsActive(pathname, item.href)}
+            onNavigate={closePanel}
+          />
+        ))}
 
         <MobileNavButton
           label={openPanel === "lists" ? "Close" : "Lists"}
           isActive={listsIsActive || openPanel === "lists"}
+          isExpanded={openPanel === "lists"}
           onClick={() => togglePanel("lists")}
         />
 
         <MobileNavButton
-          label={openPanel === "more" ? "Close" : "More"}
+          label={openPanel === "social" ? "Close" : "Social"}
           badgeCount={unreadTotalCount}
+          isActive={socialIsActive || openPanel === "social"}
+          isExpanded={openPanel === "social"}
+          onClick={() => togglePanel("social")}
+        />
+
+        <MobileNavButton
+          label={openPanel === "more" ? "Close" : "More"}
+          badgeCount={pendingModerationCount}
           isActive={moreIsActive || openPanel === "more"}
+          isExpanded={openPanel === "more"}
           onClick={() => togglePanel("more")}
         />
       </div>
@@ -282,7 +263,16 @@ export default function MobileNav({
       {openPanel === "lists" ? (
         <MobilePanel
           title="Lists"
-          items={listItems}
+          items={listNavItems}
+          pathname={pathname}
+          onNavigate={closePanel}
+        />
+      ) : null}
+
+      {openPanel === "social" ? (
+        <MobilePanel
+          title="Social"
+          items={socialItems}
           pathname={pathname}
           onNavigate={closePanel}
         />
@@ -291,7 +281,7 @@ export default function MobileNav({
       {openPanel === "more" ? (
         <MobilePanel
           title="More"
-          items={moreItems}
+          items={accountItems}
           pathname={pathname}
           onNavigate={closePanel}
         >
