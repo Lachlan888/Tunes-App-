@@ -1,5 +1,6 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
+import ReferenceMediaLink from "@/components/ReferenceMediaLink"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
 import {
@@ -12,6 +13,7 @@ import {
   loadPublicListDetailData,
   type PublicListOwnerProfile,
 } from "@/lib/loaders/public-list-detail"
+import type { Piece } from "@/lib/types"
 
 type PublicListDetailPageProps = {
   params: Promise<{ id: string }>
@@ -74,6 +76,126 @@ function StatusMessage({
   )
 }
 
+function getTuneMetadata(piece: Piece) {
+  return [
+    piece.key ? `Key: ${piece.key}` : null,
+    piece.style ? `Style: ${piece.style}` : null,
+    piece.time_signature ? `Time: ${piece.time_signature}` : null,
+  ].filter(Boolean)
+}
+
+function PublicListMobileTuneRow({
+  piece,
+  userIsSignedIn,
+  isAlreadyInPractice,
+  isKnown,
+  canSelectForImport,
+  redirectTo,
+}: {
+  piece: Piece
+  userIsSignedIn: boolean
+  isAlreadyInPractice: boolean
+  isKnown: boolean
+  canSelectForImport: boolean
+  redirectTo: string
+}) {
+  const metadataParts = getTuneMetadata(piece)
+  const checkboxId = `mobile-select-piece-${piece.id}`
+
+  return (
+    <article className="border-b border-border/70 py-4 last:border-b-0">
+      <div className="min-w-0">
+        <h3 className="text-lg font-semibold leading-snug text-foreground">
+          <Link
+            href={`/library/${piece.id}`}
+            className="decoration-primary decoration-2 underline-offset-4 hover:underline"
+          >
+            {piece.title}
+          </Link>
+        </h3>
+
+        {metadataParts.length > 0 ? (
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">
+            {metadataParts.join(" · ")}
+          </p>
+        ) : null}
+
+        {piece.reference_url ? (
+          <div className="mt-2">
+            <ReferenceMediaLink
+              referenceUrl={piece.reference_url}
+              title={piece.title}
+              pieceId={piece.id}
+              redirectTo={redirectTo}
+              className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+            />
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {!userIsSignedIn ? (
+          <span className="text-sm text-muted-foreground">
+            Log in to start practice or mark known.
+          </span>
+        ) : (
+          <>
+            {isAlreadyInPractice ? (
+              <span className="rounded-full border border-success bg-success px-3 py-1.5 text-xs font-semibold text-success-foreground">
+                Already in practice
+              </span>
+            ) : (
+              <form action={startLearning}>
+                <input type="hidden" name="piece_id" value={piece.id} />
+                <input type="hidden" name="redirect_to" value={redirectTo} />
+                <SubmitButton
+                  label="Start Practice"
+                  pendingLabel="Starting..."
+                  className="rounded-full border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                />
+              </form>
+            )}
+
+            {!isAlreadyInPractice &&
+              (isKnown ? (
+                <span className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+                  Known
+                </span>
+              ) : (
+                <form action={markAsKnown}>
+                  <input type="hidden" name="piece_id" value={piece.id} />
+                  <input type="hidden" name="redirect_to" value={redirectTo} />
+                  <SubmitButton
+                    label="Mark as known"
+                    pendingLabel="Saving..."
+                    className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  />
+                </form>
+              ))}
+          </>
+        )}
+      </div>
+
+      {canSelectForImport ? (
+        <label
+          htmlFor={checkboxId}
+          className="mt-3 flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-border bg-background/70 px-3 py-2 text-sm font-medium text-foreground"
+        >
+          <span>Select for import</span>
+          <input
+            id={checkboxId}
+            type="checkbox"
+            name="piece_ids"
+            value={piece.id}
+            form="selected-import-form"
+            className="h-5 w-5 shrink-0 accent-primary"
+          />
+        </label>
+      ) : null}
+    </article>
+  )
+}
+
 export default async function PublicListDetailPage({
   params,
   searchParams,
@@ -104,7 +226,7 @@ export default async function PublicListDetailPage({
       : null
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+    <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       <div className="mb-5">
         <Link
           href="/public-lists"
@@ -114,10 +236,10 @@ export default async function PublicListDetailPage({
         </Link>
       </div>
 
-      <header className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <header className="border-b border-border/70 pb-5 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
-            <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+            <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground md:text-5xl">
               {typedList.name}
             </h1>
 
@@ -136,11 +258,11 @@ export default async function PublicListDetailPage({
             </div>
 
             {typedList.description ? (
-              <p className="mt-5 max-w-3xl text-base leading-7 text-foreground">
+              <p className="mt-4 max-w-3xl text-sm leading-6 text-foreground md:mt-5 md:text-base md:leading-7">
                 {typedList.description}
               </p>
             ) : (
-              <p className="mt-5 text-base text-muted-foreground">
+              <p className="mt-4 text-sm text-muted-foreground md:mt-5 md:text-base">
                 No description yet.
               </p>
             )}
@@ -149,14 +271,14 @@ export default async function PublicListDetailPage({
           {isViewingOwnPublicList && (
             <Link
               href={`/learning-lists/${typedList.id}`}
-              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="inline-flex min-h-10 items-center justify-center rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:hover:-translate-y-0.5"
             >
               Open editable list
             </Link>
           )}
         </div>
 
-        <p className="mt-6 rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+        <p className="mt-5 border-t border-border/70 pt-4 text-sm leading-6 text-muted-foreground md:mt-6 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4">
           Public lists are for discovery and import. Importing adds tunes into
           your own private lists first. Starting practice still stays
           deliberate.
@@ -241,7 +363,7 @@ export default async function PublicListDetailPage({
       )}
 
       {!user ? (
-        <section className="mt-6 rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <section className="mt-6 border-b border-border/70 pb-5 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Import and practice
           </h2>
@@ -251,7 +373,7 @@ export default async function PublicListDetailPage({
           </p>
         </section>
       ) : isViewingOwnPublicList ? null : (
-        <section className="mt-6 rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <section className="mt-6 border-b border-border/70 pb-6 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Import this list
           </h2>
@@ -260,10 +382,10 @@ export default async function PublicListDetailPage({
             tunes below and add them to one of your existing lists.
           </p>
 
-          <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
+          <div className="mt-5 grid gap-5 md:gap-4 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
             <form
               action={importPublicList}
-              className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm"
+              className="border-b border-border/70 pb-5 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-5 md:shadow-sm"
             >
               <input type="hidden" name="source_list_id" value={typedList.id} />
               <input type="hidden" name="redirect_to" value={redirectTo} />
@@ -277,12 +399,12 @@ export default async function PublicListDetailPage({
                 <SubmitButton
                   label="Import whole list"
                   pendingLabel="Importing..."
-                  className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto md:hover:-translate-y-0.5"
                 />
               </div>
             </form>
 
-            <div className="min-w-0 rounded-2xl border border-border bg-background/70 p-5 shadow-sm">
+            <div className="min-w-0 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-5 md:shadow-sm">
               <form
                 id="selected-import-form"
                 action={importSelectedPublicListItems}
@@ -312,7 +434,7 @@ export default async function PublicListDetailPage({
                       id="target_learning_list_id"
                       name="target_learning_list_id"
                       defaultValue=""
-                      className="mt-2 w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
+                      className="mt-2 w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)] md:bg-card"
                     >
                       <option value="" disabled>
                         Choose one of your lists
@@ -328,7 +450,7 @@ export default async function PublicListDetailPage({
                       <SubmitButton
                         label="Import selected tunes"
                         pendingLabel="Importing..."
-                        className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                        className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto md:bg-card"
                       />
                     </div>
                   </>
@@ -339,17 +461,17 @@ export default async function PublicListDetailPage({
         </section>
       )}
 
-      <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <section className="mt-7 md:mt-8 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Tunes
         </h2>
 
         {typedItems.length === 0 ? (
-          <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+          <p className="mt-4 border-y border-border/70 py-4 text-sm text-muted-foreground md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4">
             This list has no tunes yet.
           </p>
         ) : (
-          <div className="mt-5 space-y-4">
+          <div className="mt-3 divide-y divide-border/70 border-y border-border/70 md:mt-5 md:divide-y-0 md:border-y-0 md:space-y-4">
             {typedItems.map((item) => {
               const piece = Array.isArray(item.pieces)
                 ? item.pieces[0]
@@ -367,70 +489,57 @@ export default async function PublicListDetailPage({
                 ownedLists.length > 0
 
               return (
-                <div key={item.id} className="relative">
-                  {canSelectForImport && (
-                    <label
-                      htmlFor={`select-piece-${piece.id}`}
-                      className="absolute right-5 top-5 z-10 flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground"
+                <div key={item.id}>
+                  <div className="md:hidden">
+                    <PublicListMobileTuneRow
+                      piece={piece}
+                      userIsSignedIn={Boolean(user)}
+                      isAlreadyInPractice={isAlreadyInPractice}
+                      isKnown={isKnown}
+                      canSelectForImport={canSelectForImport}
+                      redirectTo={redirectTo}
+                    />
+                  </div>
+
+                  <div className="relative hidden md:block">
+                    {canSelectForImport && (
+                      <label
+                        htmlFor={`desktop-select-piece-${piece.id}`}
+                        className="absolute right-5 top-5 z-10 flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground"
+                      >
+                        <span>Select for import</span>
+                        <input
+                          id={`desktop-select-piece-${piece.id}`}
+                          type="checkbox"
+                          name="piece_ids"
+                          value={piece.id}
+                          form="selected-import-form"
+                          className="h-4 w-4 accent-primary"
+                        />
+                      </label>
+                    )}
+
+                    <TuneCard
+                      id={piece.id}
+                      title={piece.title}
+                      keyValue={piece.key}
+                      style={piece.style}
+                      timeSignature={piece.time_signature}
+                      referenceUrl={piece.reference_url}
+                      listNames={[]}
                     >
-                      <span>Select for import</span>
-                      <input
-                        id={`select-piece-${piece.id}`}
-                        type="checkbox"
-                        name="piece_ids"
-                        value={piece.id}
-                        form="selected-import-form"
-                        className="h-4 w-4 accent-primary"
-                      />
-                    </label>
-                  )}
-
-                  <TuneCard
-                    id={piece.id}
-                    title={piece.title}
-                    keyValue={piece.key}
-                    style={piece.style}
-                    timeSignature={piece.time_signature}
-                    referenceUrl={piece.reference_url}
-                    listNames={[]}
-                  >
-                    {!user ? (
-                      <p className="text-sm text-muted-foreground">
-                        Log in to start practice or mark known.
-                      </p>
-                    ) : (
-                      <>
-                        {isAlreadyInPractice ? (
-                          <span className="rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm">
-                            Already in practice
-                          </span>
-                        ) : (
-                          <form action={startLearning}>
-                            <input
-                              type="hidden"
-                              name="piece_id"
-                              value={piece.id}
-                            />
-                            <input
-                              type="hidden"
-                              name="redirect_to"
-                              value={redirectTo}
-                            />
-                            <SubmitButton
-                              label="Start Practice"
-                              pendingLabel="Starting..."
-                              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                            />
-                          </form>
-                        )}
-
-                        {!isAlreadyInPractice &&
-                          (isKnown ? (
-                            <span className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm">
-                              Known
+                      {!user ? (
+                        <p className="text-sm text-muted-foreground">
+                          Log in to start practice or mark known.
+                        </p>
+                      ) : (
+                        <>
+                          {isAlreadyInPractice ? (
+                            <span className="rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm">
+                              Already in practice
                             </span>
                           ) : (
-                            <form action={markAsKnown}>
+                            <form action={startLearning}>
                               <input
                                 type="hidden"
                                 name="piece_id"
@@ -442,15 +551,41 @@ export default async function PublicListDetailPage({
                                 value={redirectTo}
                               />
                               <SubmitButton
-                                label="Mark as known"
-                                pendingLabel="Saving..."
-                                className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                                label="Start Practice"
+                                pendingLabel="Starting..."
+                                className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                               />
                             </form>
-                          ))}
-                      </>
-                    )}
-                  </TuneCard>
+                          )}
+
+                          {!isAlreadyInPractice &&
+                            (isKnown ? (
+                              <span className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm">
+                                Known
+                              </span>
+                            ) : (
+                              <form action={markAsKnown}>
+                                <input
+                                  type="hidden"
+                                  name="piece_id"
+                                  value={piece.id}
+                                />
+                                <input
+                                  type="hidden"
+                                  name="redirect_to"
+                                  value={redirectTo}
+                                />
+                                <SubmitButton
+                                  label="Mark as known"
+                                  pendingLabel="Saving..."
+                                  className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                                />
+                              </form>
+                            ))}
+                        </>
+                      )}
+                    </TuneCard>
+                  </div>
                 </div>
               )
             })}
