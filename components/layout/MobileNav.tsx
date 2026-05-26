@@ -16,6 +16,8 @@ type MobileNavProps = {
   isSignedIn: boolean
   overduePracticeCount: number
   unreadTotalCount: number
+  pendingFriendRequestCount: number
+  socialAttentionCount: number
   pendingModerationCount: number
   canModerate: boolean
   canAccessDev: boolean
@@ -163,6 +165,8 @@ export default function MobileNav({
   isSignedIn,
   overduePracticeCount,
   unreadTotalCount,
+  pendingFriendRequestCount,
+  socialAttentionCount,
   pendingModerationCount,
   canModerate,
   canAccessDev,
@@ -170,9 +174,17 @@ export default function MobileNav({
   const pathname = usePathname()
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null)
 
-  const socialItems = socialNavItems.map((item) =>
-    item.href === "/inbox" ? { ...item, badgeCount: unreadTotalCount } : item
-  )
+  const socialItems = socialNavItems.map((item) => {
+    if (item.href === "/friends") {
+      return { ...item, badgeCount: pendingFriendRequestCount }
+    }
+
+    if (item.href === "/inbox") {
+      return { ...item, badgeCount: unreadTotalCount }
+    }
+
+    return item
+  })
 
   const accountItems: NavItem[] = [
     ...(canModerate
@@ -245,7 +257,7 @@ export default function MobileNav({
 
         <MobileNavButton
           label={openPanel === "social" ? "Close" : "Social"}
-          badgeCount={unreadTotalCount}
+          badgeCount={socialAttentionCount}
           isActive={socialIsActive || openPanel === "social"}
           isExpanded={openPanel === "social"}
           onClick={() => togglePanel("social")}

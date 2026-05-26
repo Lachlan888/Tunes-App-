@@ -28,6 +28,8 @@ export default async function RootLayout({
           isSignedIn={Boolean(user)}
           overduePracticeCount={navContext.overduePracticeCount}
           unreadTotalCount={navContext.unreadTotalCount}
+          pendingFriendRequestCount={navContext.pendingFriendRequestCount}
+          socialAttentionCount={navContext.socialAttentionCount}
           pendingModerationCount={navContext.pendingModerationCount}
           canModerate={navContext.canModerate}
           canAccessDev={navContext.canAccessDev}

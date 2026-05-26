@@ -10,6 +10,8 @@ export type NavContext = {
   unreadNotificationCount: number
   unreadMessageCount: number
   unreadTotalCount: number
+  pendingFriendRequestCount: number
+  socialAttentionCount: number
   overduePracticeCount: number
   pendingModerationCount: number
 }
@@ -21,6 +23,8 @@ export const emptyNavContext: NavContext = {
   unreadNotificationCount: 0,
   unreadMessageCount: 0,
   unreadTotalCount: 0,
+  pendingFriendRequestCount: 0,
+  socialAttentionCount: 0,
   overduePracticeCount: 0,
   pendingModerationCount: 0,
 }
@@ -124,6 +128,7 @@ export async function loadNavContext(
   const [
     { count: unreadNotificationCount, error: notificationError },
     { count: unreadMessageCount, error: messageError },
+    { count: pendingFriendRequestCount, error: friendRequestError },
     { data: practiceRows, error: practiceError },
     pendingModerationCount,
   ] = await Promise.all([
@@ -143,6 +148,12 @@ export async function loadNavContext(
       .is("recipient_archived_at", null),
 
     supabase
+      .from("connections")
+      .select("id", { count: "exact", head: true })
+      .eq("addressee_id", userId)
+      .eq("status", "pending"),
+
+    supabase
       .from("user_pieces")
       .select("next_review_due")
       .eq("user_id", userId)
@@ -160,6 +171,13 @@ export async function loadNavContext(
     console.error("Error loading unread direct message count:", messageError)
   }
 
+  if (friendRequestError) {
+    console.error(
+      "Error loading pending incoming friend request count:",
+      friendRequestError
+    )
+  }
+
   if (practiceError) {
     console.error("Error loading overdue practice count:", practiceError)
   }
@@ -171,6 +189,13 @@ export async function loadNavContext(
 
   const safeUnreadMessageCount =
     messageError || unreadMessageCount === null ? 0 : unreadMessageCount
+
+  const safePendingFriendRequestCount =
+    friendRequestError || pendingFriendRequestCount === null
+      ? 0
+      : pendingFriendRequestCount
+
+  const unreadTotalCount = safeUnreadNotificationCount + safeUnreadMessageCount
 
   const today = getToday()
 
@@ -187,7 +212,9 @@ export async function loadNavContext(
     canAccessDev: userCanAccessDev,
     unreadNotificationCount: safeUnreadNotificationCount,
     unreadMessageCount: safeUnreadMessageCount,
-    unreadTotalCount: safeUnreadNotificationCount + safeUnreadMessageCount,
+    unreadTotalCount,
+    pendingFriendRequestCount: safePendingFriendRequestCount,
+    socialAttentionCount: unreadTotalCount + safePendingFriendRequestCount,
     overduePracticeCount,
     pendingModerationCount,
   }

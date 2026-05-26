@@ -5,6 +5,8 @@ type AppHeaderProps = {
   isSignedIn: boolean
   overduePracticeCount: number
   unreadTotalCount: number
+  pendingFriendRequestCount: number
+  socialAttentionCount: number
   pendingModerationCount: number
   canModerate: boolean
   canAccessDev: boolean
@@ -14,6 +16,8 @@ export default function AppHeader({
   isSignedIn,
   overduePracticeCount,
   unreadTotalCount,
+  pendingFriendRequestCount,
+  socialAttentionCount,
   pendingModerationCount,
   canModerate,
   canAccessDev,
@@ -34,6 +38,8 @@ export default function AppHeader({
           isSignedIn={isSignedIn}
           overduePracticeCount={overduePracticeCount}
           unreadTotalCount={unreadTotalCount}
+          pendingFriendRequestCount={pendingFriendRequestCount}
+          socialAttentionCount={socialAttentionCount}
           pendingModerationCount={pendingModerationCount}
           canModerate={canModerate}
           canAccessDev={canAccessDev}
@@ -43,6 +49,8 @@ export default function AppHeader({
           isSignedIn={isSignedIn}
           overduePracticeCount={overduePracticeCount}
           unreadTotalCount={unreadTotalCount}
+          pendingFriendRequestCount={pendingFriendRequestCount}
+          socialAttentionCount={socialAttentionCount}
           pendingModerationCount={pendingModerationCount}
           canModerate={canModerate}
           canAccessDev={canAccessDev}
