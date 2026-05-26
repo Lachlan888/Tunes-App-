@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { statusStyles } from "@/components/ui/statusStyles"
 import YouTubeSearchResultList from "@/components/reference-media/YouTubeSearchResultList"
@@ -111,7 +112,14 @@ export default function FindReferenceModal({
               className={buttonStyles.primary}
               disabled={isSearchPending}
             >
-              {isSearchPending ? "Searching..." : "Search"}
+              {isSearchPending ? (
+                <span className="inline-flex items-center justify-center gap-2">
+                  <LoadingSpinner label="Searching..." size="sm" decorative />
+                  <span>Searching...</span>
+                </span>
+              ) : (
+                "Search"
+              )}
             </button>
           </div>
 
@@ -134,9 +142,12 @@ export default function FindReferenceModal({
         ) : null}
 
         {isSearchPending ? (
-          <p className="rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-            Searching YouTube...
-          </p>
+          <LoadingSpinner
+            label="Searching YouTube..."
+            showLabel
+            centered
+            size="md"
+          />
         ) : (
           <YouTubeSearchResultList
             results={results}

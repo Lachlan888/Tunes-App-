@@ -1,6 +1,7 @@
 "use client"
 
 import type { FormEvent, ReactNode, RefObject } from "react"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 
 type FilterShellProps = {
@@ -81,7 +82,14 @@ export default function FilterShell({
               className={buttonStyles.filterPrimary}
               disabled={isPending}
             >
-              {isPending ? "Searching..." : "Search"}
+              {isPending ? (
+                <span className="inline-flex items-center justify-center gap-2">
+                  <LoadingSpinner label="Searching..." size="sm" decorative />
+                  <span>Searching...</span>
+                </span>
+              ) : (
+                "Search"
+              )}
             </button>
 
             <button
@@ -92,9 +100,12 @@ export default function FilterShell({
               aria-expanded={isPanelOpen}
               aria-controls={panelId}
             >
-              {isPending
-                ? "Updating..."
-                : activeFilterCount > 0
+              {isPending ? (
+                <span className="inline-flex items-center justify-center gap-2">
+                  <LoadingSpinner label="Updating..." size="sm" decorative />
+                  <span>Updating...</span>
+                </span>
+              ) : activeFilterCount > 0
                   ? `Filters (${activeFilterCount})`
                   : "Filters"}
             </button>
@@ -115,9 +126,12 @@ export default function FilterShell({
         </div>
 
         {isPending ? (
-          <p className="mt-3 text-sm text-muted-foreground">
-            Updating filters...
-          </p>
+          <LoadingSpinner
+            label="Updating filters..."
+            showLabel
+            size="sm"
+            className="mt-3"
+          />
         ) : null}
 
         {activeChips ? (

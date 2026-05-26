@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 import { createMediaLoop, deleteMediaLoop } from "@/lib/actions/media-loops"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import type { UserPieceMediaLoop } from "@/lib/types"
@@ -806,9 +807,7 @@ export default function YouTubeLoopPlayer({
             ) : null}
 
             {!isReady ? (
-              <p className="text-sm text-muted-foreground">
-                Loading YouTube controls...
-              </p>
+              <LoadingSpinner label="Loading YouTube controls..." showLabel />
             ) : !hasValidLoop ? (
               <p className="text-sm leading-6 text-muted-foreground">
                 Press Tap in at the start of the phrase, then Tap out at the

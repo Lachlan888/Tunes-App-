@@ -3,6 +3,7 @@
 import { useTransition } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { navItemIsActive } from "@/components/layout/navItems"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 
 type PendingNavLinkProps = {
   href: string
@@ -55,7 +56,12 @@ export default function PendingNavLink({
           : "border-transparent text-foreground hover:border-border hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
       }`}
     >
-      <span>{isPending ? "Loading..." : label}</span>
+      <span className="inline-flex items-center gap-1.5">
+        {isPending ? (
+          <LoadingSpinner label="Loading..." size="sm" decorative />
+        ) : null}
+        <span>{label}</span>
+      </span>
       <NavBadge count={badgeCount} />
     </button>
   )

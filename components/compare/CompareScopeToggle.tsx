@@ -2,6 +2,7 @@
 
 import { useTransition } from "react"
 import { useRouter } from "next/navigation"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 import { buildCompareHref } from "@/lib/compare-page"
 
 type CompareScopeToggleProps = {
@@ -51,7 +52,18 @@ export default function CompareScopeToggle({
 
         <span>
           <span className="block text-sm font-semibold text-foreground">
-            {isPending ? "Updating compare scope..." : "Include practice tunes"}
+            {isPending ? (
+              <span className="inline-flex items-center gap-2">
+                <LoadingSpinner
+                  label="Updating compare scope..."
+                  size="sm"
+                  decorative
+                />
+                <span>Updating compare scope...</span>
+              </span>
+            ) : (
+              "Include practice tunes"
+            )}
           </span>
 
           <span className="mt-1 block text-sm text-muted-foreground">

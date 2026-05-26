@@ -3,6 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import YouTubeLoopPlayer from "@/components/library/YouTubeLoopPlayer"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import type { UserPieceMediaLoop } from "@/lib/types"
@@ -127,9 +128,11 @@ export default function ReferenceMediaModal({
         panelClassName="max-w-full"
       >
         {isLoadingLoops ? (
-          <p className="mb-3 text-sm text-muted-foreground">
-            Loading saved loops...
-          </p>
+          <LoadingSpinner
+            label="Loading saved loops..."
+            showLabel
+            className="mb-3"
+          />
         ) : null}
 
         {loopLoadError ? (

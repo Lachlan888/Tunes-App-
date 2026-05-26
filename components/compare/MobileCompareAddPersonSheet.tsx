@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import UserIdentityLink from "@/components/UserIdentityLink"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 import type { CompareError, CompareSuggestion } from "@/lib/loaders/compare"
 import type { ProfileSearchRow, RankedProfileMatch } from "@/lib/profile-search"
 import { buildCompareHref, removeUserOnce } from "@/lib/compare-page"
@@ -157,9 +158,14 @@ export default function MobileCompareAddPersonSheet({
               disabled={isPending}
               className="shrink-0 rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {pendingValue === query.trim() && isPending
-                ? "Searching..."
-                : "Search"}
+              {pendingValue === query.trim() && isPending ? (
+                <span className="inline-flex items-center justify-center gap-2">
+                  <LoadingSpinner label="Searching..." size="sm" decorative />
+                  <span>Searching...</span>
+                </span>
+              ) : (
+                "Search"
+              )}
             </button>
           </form>
         </header>
@@ -214,9 +220,14 @@ export default function MobileCompareAddPersonSheet({
                     >
                       {profile.username &&
                       pendingValue === profile.username &&
-                      isPending
-                        ? "Adding..."
-                        : "Add"}
+                      isPending ? (
+                        <span className="inline-flex items-center justify-center gap-2">
+                          <LoadingSpinner label="Adding..." size="sm" decorative />
+                          <span>Adding...</span>
+                        </span>
+                      ) : (
+                        "Add"
+                      )}
                     </button>
                   </div>
                 ))}
@@ -252,9 +263,14 @@ export default function MobileCompareAddPersonSheet({
                       onClick={() => addSuggestion(suggestion)}
                       className="shrink-0 rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {pendingValue === suggestion.username && isPending
-                        ? "Adding..."
-                        : "Add"}
+                      {pendingValue === suggestion.username && isPending ? (
+                        <span className="inline-flex items-center justify-center gap-2">
+                          <LoadingSpinner label="Adding..." size="sm" decorative />
+                          <span>Adding...</span>
+                        </span>
+                      ) : (
+                        "Add"
+                      )}
                     </button>
                   </div>
                 ))}

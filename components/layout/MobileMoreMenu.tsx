@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import LogoutButton from "@/components/LogoutButton"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 
 type MobileMoreMenuItem = {
   href: string
@@ -78,7 +79,12 @@ export default function MobileMoreMenu({
             : "border-transparent text-foreground hover:border-border hover:bg-muted"
         }`}
       >
-        <span>{isPending ? "Loading..." : "More"}</span>
+        <span className="inline-flex items-center gap-1.5">
+          {isPending ? (
+            <LoadingSpinner label="Loading..." size="sm" decorative />
+          ) : null}
+          <span>More</span>
+        </span>
         <NavBadge count={unreadTotalCount} />
         <span className="ml-1" aria-hidden="true">
           ▾

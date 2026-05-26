@@ -1,6 +1,7 @@
 "use client"
 
 import { useFormStatus } from "react-dom"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 
 type SubmitButtonProps = {
   label: string
@@ -40,7 +41,18 @@ export default function SubmitButton({
       aria-describedby={ariaDescribedBy}
       className={`${className} disabled:cursor-not-allowed disabled:opacity-60`}
     >
-      {isPending ? pendingLabel ?? label : label}
+      {isPending ? (
+        <span className="inline-flex items-center justify-center gap-2">
+          <LoadingSpinner
+            label={pendingLabel ?? label}
+            size="sm"
+            decorative
+          />
+          <span>{pendingLabel ?? label}</span>
+        </span>
+      ) : (
+        label
+      )}
     </button>
   )
 }

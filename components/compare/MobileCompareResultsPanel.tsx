@@ -6,6 +6,7 @@ import UserIdentityLink from "@/components/UserIdentityLink"
 import MobileCompareTuneRow from "@/components/compare/MobileCompareTuneRow"
 import FilterPanel from "@/components/filters/FilterPanel"
 import FilterSection from "@/components/filters/FilterSection"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 import { buildCompareHref, removeUserOnce } from "@/lib/compare-page"
 import { pieceMatchesFilters } from "@/lib/search-filters"
 import type { ProfileSearchRow } from "@/lib/profile-search"
@@ -180,7 +181,11 @@ export default function MobileCompareResultsPanel({
                     profile.display_name || profile.username || "player"
                   }`}
                 >
-                  {pendingAction === profile.id && isPending ? "…" : "×"}
+                  {pendingAction === profile.id && isPending ? (
+                    <LoadingSpinner label="Removing..." size="sm" decorative />
+                  ) : (
+                    "×"
+                  )}
                 </button>
               ) : null}
             </span>
@@ -220,11 +225,16 @@ export default function MobileCompareResultsPanel({
                 : "rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground"
             }
           >
-            {pendingAction === "scope" && isPending
-              ? "Updating..."
-              : includePractice
-                ? "On"
-                : "Off"}
+            {pendingAction === "scope" && isPending ? (
+              <span className="inline-flex items-center gap-1.5">
+                <LoadingSpinner label="Updating..." size="sm" decorative />
+                <span>Updating</span>
+              </span>
+            ) : includePractice ? (
+              "On"
+            ) : (
+              "Off"
+            )}
           </span>
         </button>
       </section>

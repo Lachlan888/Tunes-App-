@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 
 type MyTuneRow = {
@@ -39,7 +40,18 @@ function MyTuneLinkRow({
     >
       <div className="min-w-0">
         <div className="font-medium underline-offset-4 transition group-hover:underline">
-          {isPending ? `Opening ${tune.title}...` : tune.title}
+          {isPending ? (
+            <span className="inline-flex items-center gap-2">
+              <LoadingSpinner
+                label={`Opening ${tune.title}...`}
+                size="sm"
+                decorative
+              />
+              <span>Opening {tune.title}...</span>
+            </span>
+          ) : (
+            tune.title
+          )}
         </div>
         {!isPending && (
           <div className="mt-1 text-xs text-muted-foreground">

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 
 type CompareSearchFormProps = {
   initialQuery?: string
@@ -43,7 +44,9 @@ export default function CompareSearchForm({
         params.set("include_practice", "1")
       }
 
-      const nextHref = params.toString() ? `/compare?${params.toString()}` : "/compare"
+      const nextHref = params.toString()
+        ? `/compare?${params.toString()}`
+        : "/compare"
 
       router.push(nextHref)
       setQuery("")
@@ -77,7 +80,14 @@ export default function CompareSearchForm({
           disabled={isPending}
           className="rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isPending ? "Adding..." : "Add"}
+          {isPending ? (
+            <span className="inline-flex items-center justify-center gap-2">
+              <LoadingSpinner label="Adding..." size="sm" decorative />
+              <span>Adding...</span>
+            </span>
+          ) : (
+            "Add"
+          )}
         </button>
       </div>
     </form>

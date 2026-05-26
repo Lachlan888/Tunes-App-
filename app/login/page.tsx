@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 import { createClient } from "@/lib/supabase/client"
 
 type AuthMode = "login" | "signup" | "reset"
@@ -31,6 +32,15 @@ const primaryButtonClassName =
 
 const modeButtonClassName =
   "text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+
+function PendingLabel({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center justify-center gap-2">
+      <LoadingSpinner label={label} size="sm" decorative />
+      <span>{label}</span>
+    </span>
+  )
+}
 
 export default function LoginPage() {
   const [mode, setMode] = useState<AuthMode>("login")
@@ -217,9 +227,11 @@ export default function LoginPage() {
         </p>
 
         {isRedirecting && (
-          <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground shadow-sm">
-            Loading your tunes...
-          </div>
+          <LoadingSpinner
+            label="Loading your tunes..."
+            showLabel
+            className="mt-5"
+          />
         )}
 
         {message && (
@@ -282,11 +294,13 @@ export default function LoginPage() {
               onClick={handleLogin}
               className={primaryButtonClassName}
             >
-              {isRedirecting
-                ? "Loading your tunes..."
-                : isSubmitting
-                  ? "Signing in..."
-                  : "Sign in"}
+              {isRedirecting ? (
+                <PendingLabel label="Loading your tunes..." />
+              ) : isSubmitting ? (
+                <PendingLabel label="Signing in..." />
+              ) : (
+                "Sign in"
+              )}
             </button>
           )}
 
@@ -297,11 +311,13 @@ export default function LoginPage() {
               onClick={handleSignup}
               className={primaryButtonClassName}
             >
-              {isRedirecting
-                ? "Loading your tunes..."
-                : isSubmitting
-                  ? "Creating account..."
-                  : "Create account"}
+              {isRedirecting ? (
+                <PendingLabel label="Loading your tunes..." />
+              ) : isSubmitting ? (
+                <PendingLabel label="Creating account..." />
+              ) : (
+                "Create account"
+              )}
             </button>
           )}
 
@@ -312,7 +328,11 @@ export default function LoginPage() {
               onClick={handlePasswordReset}
               className={primaryButtonClassName}
             >
-              {isSubmitting ? "Sending reset link..." : "Send reset link"}
+              {isSubmitting ? (
+                <PendingLabel label="Sending reset link..." />
+              ) : (
+                "Send reset link"
+              )}
             </button>
           )}
         </div>

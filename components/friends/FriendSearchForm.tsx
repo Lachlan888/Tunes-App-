@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 
 type FriendSearchFormProps = {
   initialQuery: string
@@ -44,7 +45,14 @@ export default function FriendSearchForm({
         disabled={isPending}
         className="rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isPending ? "Searching..." : "Search"}
+        {isPending ? (
+          <span className="inline-flex items-center justify-center gap-2">
+            <LoadingSpinner label="Searching..." size="sm" decorative />
+            <span>Searching...</span>
+          </span>
+        ) : (
+          "Search"
+        )}
       </button>
     </form>
   )
