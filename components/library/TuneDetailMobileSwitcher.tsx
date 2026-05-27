@@ -14,6 +14,7 @@ import type {
   PieceLoreEntryRow,
   PieceMediaLink,
   PieceSheetMusicLink,
+  ProfileRow,
   TunePracticeNote,
   UserPieceMediaLoop,
   UserPieceMetadata,
@@ -51,6 +52,8 @@ type TuneDetailMobileSwitcherProps = {
   practiceDiaryEnabled: boolean
   practiceNoteCategories: PracticeNoteCategory[]
   styleOptions: StyleOption[]
+  composerProfile: ProfileRow | null
+  composerProfileOptions: ProfileRow[]
   profileMap: Record<string, CommentAuthor>
   startLearning: (formData: FormData) => Promise<void>
   addToLearningList: (formData: FormData) => Promise<void>
@@ -133,6 +136,8 @@ export default function TuneDetailMobileSwitcher({
   practiceDiaryEnabled,
   practiceNoteCategories,
   styleOptions,
+  composerProfile,
+  composerProfileOptions,
   profileMap,
   startLearning,
   addToLearningList,
@@ -209,6 +214,8 @@ export default function TuneDetailMobileSwitcher({
           practiceDiaryEnabled={practiceDiaryEnabled}
           noteCategories={practiceNoteCategories}
           styleOptions={styleOptions}
+          composerProfile={composerProfile}
+          composerProfileOptions={composerProfileOptions}
           currentUserRole={currentUserRole}
           startLearning={startLearning}
           addToLearningList={addToLearningList}

@@ -43,9 +43,7 @@ type RepertoireSummaryRpcRow = {
   review_event_count: number | null
 }
 
-type HomePracticeSummaryRow = UserPiece
-
-type HomePracticePreviewRow = UserPiece & {
+type HomePracticeSummaryRow = UserPiece & {
   pieces:
     | {
         id: number
@@ -160,7 +158,7 @@ function getJoinedList(
     : learningLists
 }
 
-function toHomeTunePreview(row: HomePracticePreviewRow): HomeTunePreview {
+function toHomeTunePreview(row: HomePracticeSummaryRow): HomeTunePreview {
   return {
     user_piece_id: row.id,
     piece_id: row.piece_id,
@@ -187,8 +185,8 @@ function sortPracticeSummaryRows(
 }
 
 function sortPracticePreviewRows(
-  a: HomePracticePreviewRow,
-  b: HomePracticePreviewRow
+  a: HomePracticeSummaryRow,
+  b: HomePracticeSummaryRow
 ) {
   const aStage = a.stage ?? 999
   const bStage = b.stage ?? 999
@@ -551,7 +549,19 @@ export async function loadHomepageData() {
 
     supabase
       .from("user_pieces")
-      .select("id, piece_id, status, next_review_due, stage")
+      .select(
+        `
+          id,
+          piece_id,
+          status,
+          next_review_due,
+          stage,
+          pieces (
+            id,
+            title
+          )
+        `
+      )
       .eq("user_id", user.id)
       .eq("status", "learning"),
 
@@ -696,47 +706,24 @@ export async function loadHomepageData() {
     ])
   )
 
-  let previewRows: HomePracticePreviewRow[] = []
-
-  if (previewUserPieceIds.length > 0) {
-    const { data: previewData, error: previewError } = await supabase
-      .from("user_pieces")
-      .select(
-        `
-        id,
-        piece_id,
-        status,
-        next_review_due,
-        stage,
-        pieces (
-          id,
-          title
-        )
-      `
-      )
-      .eq("user_id", user.id)
-      .in("id", previewUserPieceIds)
-
-    if (previewError) {
-      throw new Error(previewError.message)
-    }
-
-    previewRows = (previewData ?? []) as HomePracticePreviewRow[]
-  }
-
-  const previewRowsById = new Map(previewRows.map((row) => [row.id, row]))
+  const previewUserPieceIdSet = new Set(previewUserPieceIds)
+  const previewRowsById = new Map(
+    typedPracticeSummaryRows
+      .filter((row) => previewUserPieceIdSet.has(row.id))
+      .map((row) => [row.id, row])
+  )
 
   const dueTodayPreview = dueTodayRows
     .slice(0, 3)
     .map((row) => previewRowsById.get(row.id))
-    .filter((row): row is HomePracticePreviewRow => Boolean(row))
+    .filter((row): row is HomePracticeSummaryRow => Boolean(row))
     .sort(sortPracticePreviewRows)
     .map(toHomeTunePreview)
 
   const inPracticePreview = sortedPracticeRows
     .slice(0, 3)
     .map((row) => previewRowsById.get(row.id))
-    .filter((row): row is HomePracticePreviewRow => Boolean(row))
+    .filter((row): row is HomePracticeSummaryRow => Boolean(row))
     .sort(sortPracticePreviewRows)
     .map(toHomeTunePreview)
 

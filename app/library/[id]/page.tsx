@@ -124,6 +124,8 @@ export default async function PiecePage({
     practiceDiaryEnabled,
     practiceNoteCategories,
     styleOptions,
+    composerProfile,
+    composerProfileOptions,
     profileMap,
   } = tuneDetail
 
@@ -244,6 +246,8 @@ export default async function PiecePage({
           practiceDiaryEnabled={practiceDiaryEnabled}
           practiceNoteCategories={practiceNoteCategories}
           styleOptions={styleOptions}
+          composerProfile={composerProfile}
+          composerProfileOptions={composerProfileOptions}
           profileMap={profileMap}
           startLearning={startLearning}
           addToLearningList={addToLearningList}
@@ -286,6 +290,8 @@ export default async function PiecePage({
               piece={typedPiece}
               redirectTo={redirectTo}
               styleOptions={styleOptions}
+              composerProfile={composerProfile}
+              composerProfileOptions={composerProfileOptions}
               currentUserRole={currentUserRole}
             />
           ) : null}

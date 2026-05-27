@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { requireModerator } from "@/lib/auth/roles"
 import { normaliseKey } from "@/lib/music/keys"
+import { notifyComposerAttributionAdded } from "@/lib/services/composer-notifications"
 
 function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")
@@ -446,7 +447,9 @@ export async function directModeratorUpdatePiece(formData: FormData) {
 
   const { data: existingPiece, error: existingPieceError } = await supabase
     .from("pieces")
-    .select("id, title, key, style, time_signature, composer, reference_url")
+    .select(
+      "id, title, key, style, time_signature, composer, composer_user_id, reference_url"
+    )
     .eq("id", pieceId)
     .maybeSingle()
 
@@ -459,6 +462,7 @@ export async function directModeratorUpdatePiece(formData: FormData) {
   const rawStyle = getCleanString(formData, "style")
   const timeSignature = getCleanString(formData, "time_signature")
   const composer = getCleanString(formData, "composer")
+  const composerUserId = getCleanString(formData, "composer_user_id")
   const referenceUrl = getCleanString(formData, "reference_url")
   const moderatorComment = getCleanString(formData, "moderator_comment")
 
@@ -472,6 +476,7 @@ export async function directModeratorUpdatePiece(formData: FormData) {
     style: rawStyle || null,
     time_signature: timeSignature || null,
     composer: composer || null,
+    composer_user_id: composerUserId || null,
     reference_url: referenceUrl || null,
   }
 
@@ -493,6 +498,20 @@ export async function directModeratorUpdatePiece(formData: FormData) {
     }
   }
 
+  if (composerUserId) {
+    const { data: composerProfile, error: composerProfileError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", composerUserId)
+      .maybeSingle()
+
+    if (composerProfileError || !composerProfile) {
+      redirect(
+        appendQueryParam(redirectTo, "moderator_edit", "invalid_composer")
+      )
+    }
+  }
+
   const { error: updateError } = await supabase
     .from("pieces")
     .update(updates)
@@ -501,6 +520,21 @@ export async function directModeratorUpdatePiece(formData: FormData) {
   if (updateError) {
     console.error("Error directly updating piece:", updateError)
     redirect(appendQueryParam(redirectTo, "moderator_edit", "error"))
+  }
+
+  if (
+    updates.composer_user_id &&
+    updates.composer_user_id !== existingPiece.composer_user_id
+  ) {
+    await notifyComposerAttributionAdded({
+      supabase,
+      recipientUserId: updates.composer_user_id,
+      actorUserId: user.id,
+      piece: {
+        id: existingPiece.id,
+        title,
+      },
+    })
   }
 
   const { error: logError } = await supabase.from("piece_change_log").insert({

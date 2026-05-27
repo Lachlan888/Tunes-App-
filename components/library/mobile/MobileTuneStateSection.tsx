@@ -9,6 +9,7 @@ import TuneCanonicalDetailsCard from "@/components/library/TuneCanonicalDetailsC
 import TunePageReviewPanel from "@/components/library/TunePageReviewPanel"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
+import type { ProfileRow } from "@/lib/loaders/tune-detail"
 import type { LearningListItemRow } from "@/lib/loaders/tune-detail"
 import type {
   LearningList,
@@ -32,6 +33,8 @@ type MobileTuneStateSectionProps = {
   practiceDiaryEnabled: boolean
   noteCategories: PracticeNoteCategory[]
   styleOptions: StyleOption[]
+  composerProfile: ProfileRow | null
+  composerProfileOptions: ProfileRow[]
   currentUserRole: UserRole
   startLearning: (formData: FormData) => Promise<void>
   addToLearningList: (formData: FormData) => Promise<void>
@@ -78,6 +81,8 @@ export default function MobileTuneStateSection({
   practiceDiaryEnabled,
   noteCategories,
   styleOptions,
+  composerProfile,
+  composerProfileOptions,
   currentUserRole,
   startLearning,
   addToLearningList,
@@ -185,6 +190,8 @@ export default function MobileTuneStateSection({
           piece={piece}
           redirectTo={redirectTo}
           styleOptions={styleOptions}
+          composerProfile={composerProfile}
+          composerProfileOptions={composerProfileOptions}
           currentUserRole={currentUserRole}
           variant="mobile"
         />

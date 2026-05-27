@@ -4,6 +4,10 @@ import type { PieceIdRow } from "./types"
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 
+type UserPieceIdRow = PieceIdRow & {
+  user_id: string
+}
+
 export async function loadUserRepertoirePieceIds(
   supabase: SupabaseServerClient,
   userId: string,
@@ -40,6 +44,54 @@ export async function loadUserRepertoirePieceIds(
     ...knownPieceIds,
     ...((practiceRows ?? []) as PieceIdRow[]).map((row) => row.piece_id),
   ])
+}
+
+export async function loadUsersRepertoirePieceIds(
+  supabase: SupabaseServerClient,
+  userIds: string[],
+  options: { includePractice: boolean }
+): Promise<Map<string, Set<number>>> {
+  const uniqueUserIds = Array.from(new Set(userIds))
+  const repertoireByUserId = new Map(
+    uniqueUserIds.map((userId) => [userId, new Set<number>()])
+  )
+
+  if (uniqueUserIds.length === 0) {
+    return repertoireByUserId
+  }
+
+  const { data: knownRows, error: knownError } = await supabase
+    .from("user_known_pieces")
+    .select("user_id, piece_id")
+    .in("user_id", uniqueUserIds)
+
+  if (knownError) {
+    throw new Error(knownError.message)
+  }
+
+  for (const row of (knownRows ?? []) as UserPieceIdRow[]) {
+    repertoireByUserId.get(row.user_id)?.add(row.piece_id)
+  }
+
+  if (!options.includePractice) {
+    return repertoireByUserId
+  }
+
+  const { data: practiceRows, error: practiceError } = await supabase
+    .from("user_pieces")
+    .select("user_id, piece_id")
+    .in("user_id", uniqueUserIds)
+    .eq("status", "learning")
+
+  if (practiceError) {
+    throw new Error(practiceError.message)
+  }
+
+  for (const row of (practiceRows ?? []) as UserPieceIdRow[]) {
+    repertoireByUserId.get(row.user_id)?.add(row.piece_id)
+  }
+
+  return repertoireByUserId
 }
 
 export function intersectSets(base: Set<number>, other: Set<number>) {

@@ -63,20 +63,22 @@ function BadgeLinkCard({
 
   return (
     <article
-      className="group cursor-pointer rounded-2xl border border-border bg-background/70 p-4 transition hover:-translate-y-0.5 hover:bg-muted hover:shadow-md focus-within:ring-2 focus-within:ring-[var(--focus-ring)]"
+      className="group cursor-pointer rounded-xl bg-card p-4 transition hover:bg-muted focus-within:ring-2 focus-within:ring-[var(--focus-ring)] md:rounded-2xl md:border md:border-border md:bg-background/70 md:hover:-translate-y-0.5 md:hover:shadow-md"
       onClick={openBadge}
       aria-label={`Open badge ${title}`}
     >
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="font-semibold">
+        <div className="min-w-0">
+          <p className="break-words font-semibold">
             <Link href={href} className="underline-offset-4 hover:underline">
               {title}
             </Link>
           </p>
-          <div className="mt-1 text-sm text-muted-foreground">{meta}</div>
+          <div className="mt-1 break-words text-sm text-muted-foreground">
+            {meta}
+          </div>
           {description ? (
-            <p className="mt-3 line-clamp-2 text-sm leading-6 text-muted-foreground">
+            <p className="mt-3 line-clamp-2 break-words text-sm leading-6 text-muted-foreground">
               {description}
             </p>
           ) : null}
@@ -123,16 +125,16 @@ export default function PublicProfileBadgesSection({
   const ownerLabel = isOwnProfile ? "You" : displayName
 
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+    <section className="min-w-0 max-w-full md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Badges
           </p>
-          <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-foreground">
+          <h2 className="mt-2 break-words font-serif text-2xl font-bold leading-tight tracking-tight text-foreground md:mt-3 md:text-3xl">
             Recognition
           </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+          <p className="mt-3 max-w-3xl break-words text-sm leading-6 text-muted-foreground">
             Badges {ownerLabel.toLowerCase()} award and badges{" "}
             {isOwnProfile ? "you have" : "they have"} received.
           </p>
@@ -146,7 +148,7 @@ export default function PublicProfileBadgesSection({
         </Link>
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-2">
+      <div className="mt-4 grid gap-5 md:mt-6 xl:grid-cols-2">
         <div>
           <div className="mb-3 flex items-baseline justify-between gap-3">
             <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -158,7 +160,7 @@ export default function PublicProfileBadgesSection({
           </div>
 
           {createdBadges.length === 0 ? (
-            <p className="rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+            <p className="break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-4">
               {isOwnProfile
                 ? "You have not created any badges yet."
                 : `${displayName} has not created any badges yet.`}
@@ -191,7 +193,7 @@ export default function PublicProfileBadgesSection({
           </div>
 
           {receivedBadges.length === 0 ? (
-            <p className="rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+            <p className="break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-4">
               {isOwnProfile
                 ? "You have not received any badges yet."
                 : `${displayName} has not received any badges yet.`}

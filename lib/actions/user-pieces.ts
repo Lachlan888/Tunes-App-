@@ -5,6 +5,7 @@ import { getTomorrow } from "@/lib/review"
 import { reconcileStreaksForUser } from "@/lib/streaks"
 import { createClient } from "@/lib/supabase/server"
 import { recordStartedPracticeEvent } from "@/lib/services/activity-events"
+import { notifyComposerTuneStartedPractice } from "@/lib/services/composer-notifications"
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 
@@ -61,6 +62,33 @@ export async function startPracticeForUser(
   }
 
   await recordStartedPracticeEvent(userId, pieceId)
+
+  const { data: pieceForNotification, error: pieceNotificationError } =
+    await supabase
+      .from("pieces")
+      .select("id, title, composer_user_id")
+      .eq("id", pieceId)
+      .maybeSingle()
+
+  if (pieceNotificationError) {
+    console.error(
+      "Error loading piece for composer practice notification:",
+      pieceNotificationError
+    )
+  }
+
+  if (pieceForNotification) {
+    await notifyComposerTuneStartedPractice({
+      supabase,
+      composerUserId: pieceForNotification.composer_user_id,
+      learnerUserId: userId,
+      piece: {
+        id: pieceForNotification.id,
+        title: pieceForNotification.title,
+      },
+    })
+  }
+
   await reconcileStreaksForUser(supabase, userId, {
     markPracticeActivity: true,
   })

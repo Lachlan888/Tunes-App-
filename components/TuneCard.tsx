@@ -81,7 +81,7 @@ export default function TuneCard({
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="font-serif text-2xl font-bold leading-tight tracking-tight text-foreground">
+          <h3 className="break-words font-serif text-2xl font-bold leading-tight tracking-tight text-foreground">
             <Link
               href={`/library/${id}`}
               className="decoration-primary decoration-2 underline-offset-4 hover:underline"
@@ -91,7 +91,7 @@ export default function TuneCard({
           </h3>
 
           {metadataParts.length > 0 && (
-            <p className="mt-2 text-sm font-medium leading-6 text-muted-foreground">
+            <p className="mt-2 break-words text-sm font-medium leading-6 text-muted-foreground">
               {metadataParts.join(" | ")}
             </p>
           )}

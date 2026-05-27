@@ -229,7 +229,7 @@ export default async function PublicProfilePage({
   const listAddMessage = getListAddMessage(resolvedSearchParams?.list_add)
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+    <main className="mx-auto max-w-[1500px] min-w-0 px-4 py-5 text-foreground sm:px-6 md:py-8">
       {friendRequestMessage ? (
         <div className={getMessageClasses(friendRequestMessage.tone)}>
           {friendRequestMessage.text}
@@ -254,8 +254,8 @@ export default async function PublicProfilePage({
         </div>
       ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <div className="space-y-6">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <div className="min-w-0 space-y-6">
           <PublicProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
 
           <PublicProfileOverview
@@ -291,7 +291,7 @@ export default async function PublicProfilePage({
           />
         </div>
 
-        <aside className="xl:sticky xl:top-24 xl:self-start">
+        <aside className="min-w-0 xl:sticky xl:top-24 xl:self-start">
           <PublicProfileActions
             viewerId={viewerId}
             username={profile.username}

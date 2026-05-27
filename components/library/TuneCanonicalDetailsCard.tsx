@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useState } from "react"
 import RequestTuneEditForm from "@/components/library/RequestTuneEditForm"
 import SubmitButton from "@/components/SubmitButton"
@@ -9,6 +10,7 @@ import {
   deleteCanonicalTuneAsModerator,
   updateMissingPieceDetails,
 } from "@/lib/actions/pieces"
+import type { ProfileRow } from "@/lib/loaders/tune-detail"
 import { VALID_KEYS } from "@/lib/music/keys"
 import type { Piece, StyleOption, UserRole } from "@/lib/types"
 
@@ -16,6 +18,8 @@ type TuneCanonicalDetailsCardProps = {
   piece: Piece
   redirectTo: string
   styleOptions: StyleOption[]
+  composerProfile: ProfileRow | null
+  composerProfileOptions: ProfileRow[]
   currentUserRole: UserRole
   variant?: "card" | "mobile"
 }
@@ -32,7 +36,7 @@ function DetailRow({
   variant = "card",
 }: {
   label: string
-  value: string | null | undefined
+  value: React.ReactNode
   variant?: "card" | "mobile"
 }) {
   return (
@@ -53,7 +57,7 @@ function DetailRow({
             : "mt-2 min-w-0 break-words text-sm font-medium text-foreground"
         }
       >
-        {value || <span className="text-muted-foreground">Missing</span>}
+        {value ?? <span className="text-muted-foreground">Missing</span>}
       </p>
     </div>
   )
@@ -128,20 +132,205 @@ const destructivePrimaryButtonClass = joinClasses(
   "py-3"
 )
 
+function getProfileDisplayName(profile: ProfileRow) {
+  return profile.display_name || profile.username || "Unknown user"
+}
+
+function getProfileSearchText(profile: ProfileRow) {
+  return `${profile.display_name ?? ""} ${profile.username ?? ""}`.toLowerCase()
+}
+
+function ComposerDisplay({
+  composerText,
+  composerProfile,
+}: {
+  composerText: string | null | undefined
+  composerProfile: ProfileRow | null
+}) {
+  if (composerProfile) {
+    const displayName = getProfileDisplayName(composerProfile)
+
+    return (
+      <span className="block min-w-0">
+        {composerProfile.username ? (
+          <Link
+            href={`/users/${encodeURIComponent(composerProfile.username)}`}
+            className="font-semibold underline underline-offset-4 hover:text-primary"
+          >
+            {displayName}
+          </Link>
+        ) : (
+          <span className="font-semibold">{displayName}</span>
+        )}
+
+        {composerProfile.username ? (
+          <span className="mt-1 block text-xs font-normal text-muted-foreground">
+            @{composerProfile.username}
+          </span>
+        ) : null}
+
+        {composerText ? (
+          <span className="mt-1 block text-xs font-normal text-muted-foreground">
+            Attribution: {composerText}
+          </span>
+        ) : null}
+      </span>
+    )
+  }
+
+  return composerText || null
+}
+
+function ComposerProfilePicker({
+  composerProfile,
+  composerProfileOptions,
+  selectedComposerProfileId,
+  onSelectComposerProfileId,
+}: {
+  composerProfile: ProfileRow | null
+  composerProfileOptions: ProfileRow[]
+  selectedComposerProfileId: string
+  onSelectComposerProfileId: (id: string) => void
+}) {
+  const [query, setQuery] = useState("")
+
+  const profileById = new Map(
+    [
+      ...composerProfileOptions,
+      ...(composerProfile ? [composerProfile] : []),
+    ].map((profile) => [profile.id, profile])
+  )
+  const selectedProfile = selectedComposerProfileId
+    ? profileById.get(selectedComposerProfileId) ?? null
+    : null
+  const cleanQuery = query.trim().toLowerCase()
+  const matchingProfiles = cleanQuery
+    ? Array.from(profileById.values())
+        .filter((profile) => getProfileSearchText(profile).includes(cleanQuery))
+        .sort((a, b) =>
+          getProfileDisplayName(a).localeCompare(getProfileDisplayName(b))
+        )
+        .slice(0, 8)
+    : []
+
+  return (
+    <div className="min-w-0 space-y-3 rounded-2xl border border-border bg-background/70 p-4">
+      <div>
+        <p className="text-sm font-semibold text-foreground">
+          Linked Tunes App composer
+        </p>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">
+          Link this tune to a user profile when the tune is composed by that
+          Tunes App user.
+        </p>
+      </div>
+
+      <input
+        type="hidden"
+        name="composer_user_id"
+        value={selectedComposerProfileId}
+      />
+
+      {selectedProfile ? (
+        <div className="flex min-w-0 flex-col gap-3 border-y border-border py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="break-words text-sm font-semibold text-foreground">
+              {getProfileDisplayName(selectedProfile)}
+            </p>
+            {selectedProfile.username ? (
+              <p className="mt-1 break-words text-sm text-muted-foreground">
+                @{selectedProfile.username}
+              </p>
+            ) : null}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onSelectComposerProfileId("")}
+            className={secondaryButtonClass}
+          >
+            Clear linked composer
+          </button>
+        </div>
+      ) : (
+        <p className="border-y border-border py-3 text-sm text-muted-foreground">
+          No linked composer selected.
+        </p>
+      )}
+
+      <div>
+        <label
+          htmlFor="composer_profile_search"
+          className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+        >
+          Search profiles
+        </label>
+        <input
+          id="composer_profile_search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search by username or display name"
+          className={inputClassName}
+        />
+      </div>
+
+      {cleanQuery ? (
+        matchingProfiles.length > 0 ? (
+          <ul className="max-h-64 divide-y divide-border overflow-y-auto border-y border-border">
+            {matchingProfiles.map((profile) => {
+              const isSelected = profile.id === selectedComposerProfileId
+
+              return (
+                <li key={profile.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectComposerProfileId(profile.id)
+                      setQuery("")
+                    }}
+                    className="flex w-full min-w-0 flex-col items-start px-1 py-3 text-left transition hover:text-primary"
+                  >
+                    <span className="break-words text-sm font-semibold text-foreground">
+                      {getProfileDisplayName(profile)}
+                      {isSelected ? " (selected)" : ""}
+                    </span>
+                    {profile.username ? (
+                      <span className="mt-1 break-words text-sm text-muted-foreground">
+                        @{profile.username}
+                      </span>
+                    ) : null}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground">No profiles found.</p>
+        )
+      ) : null}
+    </div>
+  )
+}
+
 export default function TuneCanonicalDetailsCard({
   piece,
   redirectTo,
   styleOptions,
+  composerProfile,
+  composerProfileOptions,
   currentUserRole,
   variant = "card",
 }: TuneCanonicalDetailsCardProps) {
   const [modalMode, setModalMode] = useState<ModalMode>(null)
+  const [selectedComposerProfileId, setSelectedComposerProfileId] = useState(
+    piece.composer_user_id || ""
+  )
 
   const missingFields = [
     !piece.key,
     !piece.style,
     !piece.time_signature,
-    !piece.composer,
+    !piece.composer && !composerProfile,
     !piece.reference_url,
   ].filter(Boolean).length
 
@@ -184,7 +373,12 @@ export default function TuneCanonicalDetailsCard({
         />
         <DetailRow
           label="Composer"
-          value={piece.composer}
+          value={
+            <ComposerDisplay
+              composerText={piece.composer}
+              composerProfile={composerProfile}
+            />
+          }
           variant={variant}
         />
         <DetailRow
@@ -212,7 +406,10 @@ export default function TuneCanonicalDetailsCard({
           <>
             <button
               type="button"
-              onClick={() => setModalMode("moderator")}
+              onClick={() => {
+                setSelectedComposerProfileId(piece.composer_user_id || "")
+                setModalMode("moderator")
+              }}
               className={primaryButtonClass}
             >
               Edit canonical details
@@ -289,7 +486,7 @@ export default function TuneCanonicalDetailsCard({
               />
             ) : null}
 
-            {!piece.composer ? (
+            {!piece.composer && !composerProfile ? (
               <input
                 name="composer"
                 placeholder="Add composer or attribution"
@@ -393,8 +590,15 @@ export default function TuneCanonicalDetailsCard({
             <input
               name="composer"
               defaultValue={piece.composer || ""}
-              placeholder="Composer or attribution"
+              placeholder="Composer text attribution, eg trad. or Bill Monroe"
               className={inputClassName}
+            />
+
+            <ComposerProfilePicker
+              composerProfile={composerProfile}
+              composerProfileOptions={composerProfileOptions}
+              selectedComposerProfileId={selectedComposerProfileId}
+              onSelectComposerProfileId={setSelectedComposerProfileId}
             />
 
             <input

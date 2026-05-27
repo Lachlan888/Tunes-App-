@@ -3,12 +3,17 @@ import { getCurrentUserRole } from "@/lib/auth/roles"
 import { loadPagePreferences } from "@/lib/loaders/page-preferences"
 import { TUNE_DETAIL_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 import { createClient } from "@/lib/supabase/server"
-import { loadStyleOptions, loadTuneCore } from "./tune-detail/core"
+import {
+  loadComposerProfile,
+  loadComposerProfileOptions,
+  loadStyleOptions,
+  loadTuneCore,
+} from "./tune-detail/core"
 import { loadTuneCommunity } from "./tune-detail/community"
 import { loadProfileMapForCommunityRows } from "./tune-detail/helpers"
 import { loadTuneLinks } from "./tune-detail/links"
 import { loadTunePracticeHistory } from "./tune-detail/practice-history"
-import { loadOwnedListIds, loadTuneUserState } from "./tune-detail/user-state"
+import { loadTuneUserState } from "./tune-detail/user-state"
 export type {
   CommentAuthor,
   LearningListItemRow,
@@ -65,21 +70,23 @@ export async function loadTuneDetailData(
     }
   }
 
-  const ownedListIds = await loadOwnedListIds(supabase, user.id)
-
   const [
     userState,
     tuneLinks,
     tuneCommunity,
     tunePracticeHistory,
     styleOptions,
+    composerProfile,
+    composerProfileOptions,
     typedTunePagePreferences,
   ] = await Promise.all([
-    loadTuneUserState(supabase, user.id, pieceId, ownedListIds),
+    loadTuneUserState(supabase, user.id, pieceId),
     loadTuneLinks(supabase, user.id, pieceId),
     loadTuneCommunity(supabase, pieceId, currentUserRole),
     loadTunePracticeHistory(supabase, user.id, pieceId),
     loadStyleOptions(supabase),
+    loadComposerProfile(supabase, piece.composer_user_id),
+    loadComposerProfileOptions(supabase),
     loadPagePreferences(TUNE_DETAIL_PAGE_OPTIONS_CONFIG.pageKey),
   ])
 
@@ -113,6 +120,8 @@ export async function loadTuneDetailData(
     practiceDiaryEnabled: userState.practiceDiaryEnabled,
     practiceNoteCategories: tunePracticeHistory.practiceNoteCategories,
     styleOptions,
+    composerProfile,
+    composerProfileOptions,
     profileMap,
   }
 }

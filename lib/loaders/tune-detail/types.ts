@@ -146,6 +146,8 @@ export type TuneDetailLoadedData = {
   practiceDiaryEnabled: boolean
   practiceNoteCategories: PracticeNoteCategory[]
   styleOptions: StyleOption[]
+  composerProfile: ProfileRow | null
+  composerProfileOptions: ProfileRow[]
   profileMap: Record<string, CommentAuthor>
 }
 

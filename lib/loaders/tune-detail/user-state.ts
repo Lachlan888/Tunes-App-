@@ -6,23 +6,10 @@ import type {
   UserPieceMetadata,
 } from "./types"
 
-export async function loadOwnedListIds(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<number[]> {
-  const { data: ownedLists } = await supabase
-    .from("learning_lists")
-    .select("id")
-    .eq("user_id", userId)
-
-  return (ownedLists ?? []).map((list) => list.id)
-}
-
 export async function loadTuneUserState(
   supabase: SupabaseClient,
   userId: string,
-  pieceId: number,
-  ownedListIds: number[]
+  pieceId: number
 ): Promise<{
   typedUserPieceMetadata: UserPieceMetadata | null
   typedUserPiece: UserPiece | null
@@ -36,7 +23,6 @@ export async function loadTuneUserState(
     userPieceResult,
     userKnownPieceResult,
     learningListsResult,
-    learningListItemsResult,
     practiceProfileResult,
   ] = await Promise.all([
     supabase
@@ -66,14 +52,6 @@ export async function loadTuneUserState(
       .eq("user_id", userId)
       .order("name", { ascending: true }),
 
-    ownedListIds.length > 0
-      ? supabase
-          .from("learning_list_items")
-          .select("learning_list_id, piece_id")
-          .eq("piece_id", pieceId)
-          .in("learning_list_id", ownedListIds)
-      : Promise.resolve({ data: [], error: null }),
-
     supabase
       .from("profiles")
       .select("practice_diary_enabled")
@@ -81,14 +59,25 @@ export async function loadTuneUserState(
       .maybeSingle(),
   ])
 
+  const typedLearningLists =
+    (learningListsResult.data as LearningList[] | null) ?? []
+  const ownedListIds = typedLearningLists.map((list) => list.id)
+  const learningListItemsResult =
+    ownedListIds.length > 0
+      ? await supabase
+          .from("learning_list_items")
+          .select("learning_list_id, piece_id")
+          .eq("piece_id", pieceId)
+          .in("learning_list_id", ownedListIds)
+      : { data: [], error: null }
+
   return {
     typedUserPieceMetadata:
       (userPieceMetadataResult.data as UserPieceMetadata | null) ?? null,
     typedUserPiece: (userPieceResult.data as UserPiece | null) ?? null,
     typedUserKnownPiece:
       (userKnownPieceResult.data as UserKnownPiece | null) ?? null,
-    typedLearningLists:
-      (learningListsResult.data as LearningList[] | null) ?? [],
+    typedLearningLists,
     typedLearningListItems:
       (learningListItemsResult.data as LearningListItemRow[] | null) ?? [],
     practiceDiaryEnabled: Boolean(

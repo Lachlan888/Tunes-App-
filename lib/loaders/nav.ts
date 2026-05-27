@@ -1,5 +1,5 @@
 import { canModerate, isAppAdmin } from "@/lib/auth/roles"
-import { getToday, normaliseStoredDate } from "@/lib/review"
+import { getToday } from "@/lib/review"
 import type { SupabaseServerClient } from "@/lib/auth/session"
 import type { UserRole } from "@/lib/types"
 
@@ -129,7 +129,7 @@ export async function loadNavContext(
     { count: unreadNotificationCount, error: notificationError },
     { count: unreadMessageCount, error: messageError },
     { count: pendingFriendRequestCount, error: friendRequestError },
-    { data: practiceRows, error: practiceError },
+    { count: overduePracticeRowCount, error: practiceError },
     pendingModerationCount,
   ] = await Promise.all([
     supabase
@@ -155,10 +155,11 @@ export async function loadNavContext(
 
     supabase
       .from("user_pieces")
-      .select("next_review_due")
+      .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
       .eq("status", "learning")
-      .not("next_review_due", "is", null),
+      .not("next_review_due", "is", null)
+      .lt("next_review_due", getToday()),
 
     userCanModerate ? loadPendingModerationCount(supabase) : Promise.resolve(0),
   ])
@@ -197,14 +198,10 @@ export async function loadNavContext(
 
   const unreadTotalCount = safeUnreadNotificationCount + safeUnreadMessageCount
 
-  const today = getToday()
-
-  const overduePracticeCount = practiceError
-    ? 0
-    : (practiceRows ?? []).filter((row) => {
-        const dueDate = normaliseStoredDate(row.next_review_due)
-        return Boolean(dueDate && dueDate < today)
-      }).length
+  const overduePracticeCount =
+    practiceError || overduePracticeRowCount === null
+      ? 0
+      : overduePracticeRowCount
 
   return {
     role,

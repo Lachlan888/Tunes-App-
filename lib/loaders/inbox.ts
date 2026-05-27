@@ -5,6 +5,8 @@ export type InboxNotificationType =
   | "activity_reaction"
   | "activity_reply"
   | "comment_reply"
+  | "composer_attribution_added"
+  | "composer_tune_started_practice"
   | "direct_message"
   | "piece_edit_request_approved"
   | "piece_edit_request_rejected"
@@ -252,86 +254,87 @@ export async function loadInboxData() {
   let setlistsById = new Map<number, SetlistRow>()
   let badgesById = new Map<number, BadgeRow>()
 
-  if (profileIds.length > 0) {
-    const { data: profiles, error: profilesError } = await supabase
-      .from("profiles")
-      .select("id, username, display_name")
-      .in("id", profileIds)
+  ;[
+    profilesById,
+    piecesById,
+    learningListsById,
+    setlistsById,
+    badgesById,
+  ] = await Promise.all([
+    profileIds.length > 0
+      ? supabase
+          .from("profiles")
+          .select("id, username, display_name")
+          .in("id", profileIds)
+          .then(({ data, error }) => {
+            if (error) throw new Error(error.message)
+            return new Map(
+              ((data ?? []) as ProfileRow[]).map((profile) => [
+                profile.id,
+                profile,
+              ])
+            )
+          })
+      : Promise.resolve(new Map<string, ProfileRow>()),
 
-    if (profilesError) {
-      throw new Error(profilesError.message)
-    }
+    pieceIds.length > 0
+      ? supabase
+          .from("pieces")
+          .select("id, title")
+          .in("id", pieceIds)
+          .then(({ data, error }) => {
+            if (error) throw new Error(error.message)
+            return new Map(
+              ((data ?? []) as PieceRow[]).map((piece) => [piece.id, piece])
+            )
+          })
+      : Promise.resolve(new Map<number, PieceRow>()),
 
-    profilesById = new Map(
-      ((profiles ?? []) as ProfileRow[]).map((profile) => [profile.id, profile])
-    )
-  }
+    learningListIds.length > 0
+      ? supabase
+          .from("learning_lists")
+          .select("id, name")
+          .in("id", learningListIds)
+          .then(({ data, error }) => {
+            if (error) throw new Error(error.message)
+            return new Map(
+              ((data ?? []) as LearningListRow[]).map((list) => [
+                list.id,
+                list,
+              ])
+            )
+          })
+      : Promise.resolve(new Map<number, LearningListRow>()),
 
-  if (pieceIds.length > 0) {
-    const { data: pieces, error: piecesError } = await supabase
-      .from("pieces")
-      .select("id, title")
-      .in("id", pieceIds)
+    setlistIds.length > 0
+      ? supabase
+          .from("setlists")
+          .select("id, name")
+          .in("id", setlistIds)
+          .then(({ data, error }) => {
+            if (error) throw new Error(error.message)
+            return new Map(
+              ((data ?? []) as SetlistRow[]).map((setlist) => [
+                setlist.id,
+                setlist,
+              ])
+            )
+          })
+      : Promise.resolve(new Map<number, SetlistRow>()),
 
-    if (piecesError) {
-      throw new Error(piecesError.message)
-    }
-
-    piecesById = new Map(
-      ((pieces ?? []) as PieceRow[]).map((piece) => [piece.id, piece])
-    )
-  }
-
-  if (learningListIds.length > 0) {
-    const { data: learningLists, error: learningListsError } = await supabase
-      .from("learning_lists")
-      .select("id, name")
-      .in("id", learningListIds)
-
-    if (learningListsError) {
-      throw new Error(learningListsError.message)
-    }
-
-    learningListsById = new Map(
-      ((learningLists ?? []) as LearningListRow[]).map((list) => [
-        list.id,
-        list,
-      ])
-    )
-  }
-
-  if (setlistIds.length > 0) {
-    const { data: setlists, error: setlistsError } = await supabase
-      .from("setlists")
-      .select("id, name")
-      .in("id", setlistIds)
-
-    if (setlistsError) {
-      throw new Error(setlistsError.message)
-    }
-
-    setlistsById = new Map(
-      ((setlists ?? []) as SetlistRow[]).map((setlist) => [
-        setlist.id,
-        setlist,
-      ])
-    )
-  }
-
-  if (badgeIds.length > 0) {
-    const { data: badges, error: badgesError } = await supabase
-      .from("badges")
-      .select("id, name, slug")
-      .in("id", badgeIds)
-
-    if (badgesError) {
-      throw new Error(badgesError.message)
-    }
-
-    badgesById = new Map(
-      ((badges ?? []) as BadgeRow[]).map((badge) => [badge.id, badge])
-    )
-  }
+    badgeIds.length > 0
+      ? supabase
+          .from("badges")
+          .select("id, name, slug")
+          .in("id", badgeIds)
+          .then(({ data, error }) => {
+            if (error) throw new Error(error.message)
+            return new Map(
+              ((data ?? []) as BadgeRow[]).map((badge) => [badge.id, badge])
+            )
+          })
+      : Promise.resolve(new Map<number, BadgeRow>()),
+  ])
 
   const notificationItems: InboxItem[] = typedNotifications.map(
     (notification) => {

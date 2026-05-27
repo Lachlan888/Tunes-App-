@@ -58,6 +58,8 @@ export function getTuneDetailStatusMessage({
   if (moderatorEdit === "missing_title") return "Title is required."
   if (moderatorEdit === "invalid_key") return "That key is not valid."
   if (moderatorEdit === "invalid_url") return "That reference URL is not valid."
+  if (moderatorEdit === "invalid_composer")
+    return "That linked composer profile could not be found."
   if (moderatorEdit === "error") return "Could not save canonical details."
 
   if (referenceUrl === "added") return "Reference recording saved."

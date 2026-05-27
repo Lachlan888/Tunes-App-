@@ -32,24 +32,43 @@ export async function checkCompareFriendshipAccess(
   blockedProfile: ProfileSearchRow | null
   allAccepted: boolean
 }> {
-  const friendshipChecks = await Promise.all(
-    resolvedProfiles.map(async (profile) => {
-      const isAcceptedFriend = await getIsAcceptedFriend(
-        supabase,
-        currentUserId,
-        profile.id
+  const profileIds = resolvedProfiles.map((profile) => profile.id)
+  let acceptedFriendIds = new Set<string>()
+
+  if (profileIds.length > 0) {
+    const { data: connectionRows, error: connectionError } = await supabase
+      .from("connections")
+      .select("requester_id, addressee_id")
+      .eq("status", "accepted")
+      .or(
+        `and(requester_id.eq.${currentUserId},addressee_id.in.(${profileIds.join(",")})),and(addressee_id.eq.${currentUserId},requester_id.in.(${profileIds.join(",")}))`
       )
 
-      const profileCanCompare =
-        !profile.compare_requires_friend || isAcceptedFriend
+    if (connectionError) {
+      throw new Error(connectionError.message)
+    }
 
-      return {
-        profile,
-        isAcceptedFriend,
-        profileCanCompare,
-      }
-    })
-  )
+    acceptedFriendIds = new Set(
+      ((connectionRows ?? []) as Array<{
+        requester_id: string
+        addressee_id: string
+      }>).map((row) =>
+        row.requester_id === currentUserId ? row.addressee_id : row.requester_id
+      )
+    )
+  }
+
+  const friendshipChecks = resolvedProfiles.map((profile) => {
+    const isAcceptedFriend = acceptedFriendIds.has(profile.id)
+    const profileCanCompare =
+      !profile.compare_requires_friend || isAcceptedFriend
+
+    return {
+      profile,
+      isAcceptedFriend,
+      profileCanCompare,
+    }
+  })
 
   const blockedCheck =
     friendshipChecks.find((check) => !check.profileCanCompare) ?? null

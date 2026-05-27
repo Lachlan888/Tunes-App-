@@ -180,7 +180,7 @@ export default function PublicProfileRepertoireSection({
   if (!canViewFullRepertoire) {
     if (isOwnProfile) {
       return (
-        <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+        <section className="min-w-0 max-w-full md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Friend repertoire view
           </p>
@@ -189,7 +189,7 @@ export default function PublicProfileRepertoireSection({
             description="Turn on “Show repertoire to friends” in Profile settings if you want accepted friends to browse the tunes you know or have in practice."
             primaryActionHref="/dashboard"
             primaryActionLabel="Edit Profile"
-            className="mt-5"
+            className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
           />
         </section>
       )
@@ -203,13 +203,13 @@ export default function PublicProfileRepertoireSection({
   }
 
   return (
-    <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+    <section className="min-w-0 max-w-full md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Friend repertoire
           </p>
-          <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
+          <h2 className="mt-2 break-words font-serif text-2xl font-bold leading-tight tracking-tight text-foreground md:text-3xl">
             {isOwnProfile ? "Your repertoire" : `${profileName}’s repertoire`}
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
@@ -234,11 +234,11 @@ export default function PublicProfileRepertoireSection({
               ? "Tunes you mark known or start practising will appear here."
               : "This friend does not have visible known or practice tunes yet."
           }
-          className="mt-5"
+          className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
         />
       ) : (
         <>
-          <div className="mt-6 rounded-2xl border border-border bg-muted p-4">
+          <div className="mt-4 rounded-xl bg-card p-3 md:mt-6 md:rounded-2xl md:border md:border-border md:bg-muted md:p-4">
             <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_repeat(3,minmax(8rem,12rem))]">
               <div>
                 <label
@@ -371,7 +371,7 @@ export default function PublicProfileRepertoireSection({
             <EmptyState
               title="No tunes match these filters"
               description="Try broadening the search, key, style, time, or relationship filter."
-              className="mt-5"
+              className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
             />
           ) : (
             <ul className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">

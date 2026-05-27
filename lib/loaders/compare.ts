@@ -4,7 +4,7 @@ import { resolveSelectedProfile } from "@/lib/loaders/compare/profile-resolution
 import {
   intersectSets,
   loadMutualPieces,
-  loadUserRepertoirePieceIds,
+  loadUsersRepertoirePieceIds,
 } from "@/lib/loaders/compare/repertoire"
 import { loadCompareSuggestions } from "@/lib/loaders/compare/suggestions"
 import { createClient } from "@/lib/supabase/server"
@@ -124,18 +124,24 @@ async function getMutualPieceIds({
   resolvedProfiles: ProfileSearchRow[]
   includePractice: boolean
 }) {
-  const repertoireSets = await Promise.all([
-    loadUserRepertoirePieceIds(supabase, currentUserId, { includePractice }),
-    ...resolvedProfiles.map((profile) =>
-      loadUserRepertoirePieceIds(supabase, profile.id, { includePractice })
-    ),
-  ])
+  const comparedUserIds = [
+    currentUserId,
+    ...resolvedProfiles.map((profile) => profile.id),
+  ]
+  const repertoireByUserId = await loadUsersRepertoirePieceIds(
+    supabase,
+    comparedUserIds,
+    { includePractice }
+  )
 
-  const [currentUserPieceIds, ...otherUserPieceIdSets] = repertoireSets
+  const currentUserPieceIds =
+    repertoireByUserId.get(currentUserId) ?? new Set<number>()
 
   let mutualPieceIds = new Set<number>(currentUserPieceIds)
 
-  for (const otherUserPieceIds of otherUserPieceIdSets) {
+  for (const profile of resolvedProfiles) {
+    const otherUserPieceIds =
+      repertoireByUserId.get(profile.id) ?? new Set<number>()
     mutualPieceIds = intersectSets(mutualPieceIds, otherUserPieceIds)
   }
 

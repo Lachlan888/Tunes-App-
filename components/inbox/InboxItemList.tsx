@@ -70,6 +70,24 @@ function notificationTitle(item: InboxItem) {
     return <>{actorLink(item)} replied to your tune comment.</>
   }
 
+  if (item.notification_type === "composer_attribution_added") {
+    return (
+      <>
+        You were tagged as composer
+        {item.piece ? <> of {item.piece.title}</> : null}.
+      </>
+    )
+  }
+
+  if (item.notification_type === "composer_tune_started_practice") {
+    return (
+      <>
+        {actorLink(item)} started practising
+        {item.piece ? <> your tune {item.piece.title}</> : <> one of your tunes</>}.
+      </>
+    )
+  }
+
   if (item.notification_type === "piece_edit_request_approved") {
     return (
       <>

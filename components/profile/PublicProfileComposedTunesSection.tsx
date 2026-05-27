@@ -24,18 +24,18 @@ export default function PublicProfileComposedTunesSection({
   }
 
   return (
-    <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+    <section className="min-w-0 max-w-full md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Composed tunes
           </p>
-          <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
+          <h2 className="mt-2 break-words font-serif text-2xl font-bold leading-tight tracking-tight text-foreground md:text-3xl">
             Tunes by {displayName}
           </h2>
         </div>
 
-        <span className="w-fit rounded-full border border-border bg-background/70 px-3 py-1 text-sm font-medium text-muted-foreground">
+        <span className="w-fit text-sm font-medium text-muted-foreground md:rounded-full md:border md:border-border md:bg-background/70 md:px-3 md:py-1">
           {tunes.length} tune{tunes.length === 1 ? "" : "s"}
         </span>
       </div>
@@ -50,12 +50,12 @@ export default function PublicProfileComposedTunesSection({
                 href={`/library/${tune.id}`}
                 className="block py-4 transition hover:text-primary"
               >
-                <span className="block font-serif text-xl font-bold leading-tight text-foreground">
+                <span className="block break-words font-serif text-xl font-bold leading-tight text-foreground">
                   {tune.title}
                 </span>
 
                 {metadata.length > 0 ? (
-                  <span className="mt-2 block text-sm leading-6 text-muted-foreground">
+                  <span className="mt-2 block break-words text-sm leading-6 text-muted-foreground">
                     {metadata.join(" | ")}
                   </span>
                 ) : null}

@@ -20,10 +20,10 @@ type PublicProfileActionsProps = {
 }
 
 const primaryButtonClass =
-  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "max-w-full rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 const secondaryButtonClass =
-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "max-w-full rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 const textareaClassName =
   "max-h-[22rem] min-h-28 w-full resize-none overflow-hidden rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm leading-6 text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
@@ -44,12 +44,12 @@ export default function PublicProfileActions({
 }: PublicProfileActionsProps) {
   if (isOwnProfile) {
     return (
-      <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+      <section className="min-w-0 max-w-full rounded-2xl bg-card p-4 shadow-sm md:rounded-3xl md:border md:border-border md:p-5">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Your profile
         </h2>
 
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        <p className="mt-3 break-words text-sm leading-6 text-muted-foreground">
           Edit your name, bio, instruments, visibility, and public repertoire
           settings from your private profile page.
         </p>
@@ -68,12 +68,12 @@ export default function PublicProfileActions({
 
   if (!viewerId) {
     return (
-      <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+      <section className="min-w-0 max-w-full rounded-2xl bg-card p-4 shadow-sm md:rounded-3xl md:border md:border-border md:p-5">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Connect
         </h2>
 
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        <p className="mt-3 break-words text-sm leading-6 text-muted-foreground">
           Log in to message this musician, send a friend request, or compare
           repertoire.
         </p>
@@ -91,12 +91,12 @@ export default function PublicProfileActions({
   }
 
   return (
-    <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+    <section className="min-w-0 max-w-full rounded-2xl bg-card p-4 shadow-sm md:rounded-3xl md:border md:border-border md:p-5">
       <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         Connect
       </h2>
 
-      <div className="mt-5 flex flex-wrap gap-3">
+      <div className="mt-5 flex min-w-0 flex-wrap gap-3">
         {canCompare ? (
           <PendingLinkButton
             href={`/compare?user=${encodeURIComponent(username)}`}
@@ -107,11 +107,11 @@ export default function PublicProfileActions({
         ) : null}
 
         {isAcceptedFriend ? (
-          <span className="inline-flex items-center rounded-full border border-success bg-muted px-4 py-2 text-sm font-medium text-foreground">
+          <span className="inline-flex max-w-full items-center rounded-full border border-success bg-muted px-4 py-2 text-sm font-medium text-foreground">
             Friends
           </span>
         ) : hasPendingOutgoingRequest ? (
-          <span className="inline-flex items-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground">
+          <span className="inline-flex max-w-full items-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground">
             Friend request sent
           </span>
         ) : hasPendingIncomingRequest && pendingIncomingConnectionId ? (
@@ -142,13 +142,13 @@ export default function PublicProfileActions({
       </div>
 
       {compareBlockedByFriendship ? (
-        <p className="mt-4 rounded-2xl border border-border bg-background/70 p-3 text-sm leading-6 text-muted-foreground">
+        <p className="mt-4 break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-3">
           Comparison is available once you are friends.
         </p>
       ) : null}
 
       {!showCompareDiscoverability ? (
-        <p className="mt-4 rounded-2xl border border-border bg-background/70 p-3 text-sm leading-6 text-muted-foreground">
+        <p className="mt-4 break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-3">
           This user is not discoverable through compare.
         </p>
       ) : null}

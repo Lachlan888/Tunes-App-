@@ -10,14 +10,11 @@ import type {
 } from "@/lib/types"
 import { redirect } from "next/navigation"
 
-type LearningListMembershipRow = {
-  piece_id: number
-}
-
 type LearningListItemWithPieceRow = {
   id: number
   learning_list_id: number
   created_at: string | null
+  piece_id: number
   pieces: Piece | Piece[] | null
   learning_lists:
     | {
@@ -110,7 +107,6 @@ export async function loadListsData() {
     { data: learningLists, error: learningListsError },
     { data: userPieces, error: userPiecesError },
     { data: userKnownPieces, error: userKnownPiecesError },
-    { data: learningListMemberships, error: learningListMembershipsError },
     {
       data: learningListItemsWithPieces,
       error: learningListItemsWithPiecesError,
@@ -149,15 +145,11 @@ export async function loadListsData() {
 
     supabase
       .from("learning_list_items")
-      .select("piece_id, learning_lists!inner(user_id)")
-      .eq("learning_lists.user_id", user.id),
-
-    supabase
-      .from("learning_list_items")
       .select(`
         id,
         learning_list_id,
         created_at,
+        piece_id,
         pieces (
           id,
           title,
@@ -198,10 +190,6 @@ export async function loadListsData() {
     throw new Error(userKnownPiecesError.message)
   }
 
-  if (learningListMembershipsError) {
-    throw new Error(learningListMembershipsError.message)
-  }
-
   if (learningListItemsWithPiecesError) {
     throw new Error(learningListItemsWithPiecesError.message)
   }
@@ -210,13 +198,11 @@ export async function loadListsData() {
   const typedUserPieces = (userPieces ?? []) as UserPieceWithPiece[]
   const typedUserKnownPieces = (userKnownPieces ??
     []) as UserKnownPieceWithPiece[]
-  const typedLearningListMemberships = (learningListMemberships ??
-    []) as LearningListMembershipRow[]
   const typedLearningListItemsWithPieces = (learningListItemsWithPieces ??
     []) as LearningListItemWithPieceRow[]
 
   const listedPieceIds = new Set(
-    typedLearningListMemberships.map((item) => item.piece_id)
+    typedLearningListItemsWithPieces.map((item) => item.piece_id)
   )
 
   const practicePieceIds = new Set(
