@@ -116,7 +116,7 @@ export default function SharedListCard({ list }: SharedListCardProps) {
         <div data-card-action>
           <PendingLinkButton
             href={listHref}
-            label="Browse and bookmark"
+            label="Browse"
             pendingLabel="Opening..."
             className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
