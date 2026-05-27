@@ -79,11 +79,18 @@ export default function PracticeReviewCard({
         </p>
       </div>
 
-      {userPiece.piece?.reference_url && userPiece.piece?.title ? (
+      {userPiece.effective_reference_url && userPiece.piece?.title ? (
         <div className="mt-5 w-full">
+          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            {userPiece.is_using_preferred_reference
+              ? "Preferred reference"
+              : "Reference"}
+          </p>
           <ReferenceMediaLink
-            referenceUrl={userPiece.piece.reference_url}
-            title={userPiece.piece.title}
+            referenceUrl={userPiece.effective_reference_url}
+            title={
+              userPiece.effective_reference_label || userPiece.piece.title
+            }
             pieceId={userPiece.piece.id}
             redirectTo={redirectTo}
             savedLoops={userPiece.saved_media_loops}

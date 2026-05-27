@@ -17,6 +17,7 @@ type TuneCanonicalDetailsCardProps = {
   redirectTo: string
   styleOptions: StyleOption[]
   currentUserRole: UserRole
+  variant?: "card" | "mobile"
 }
 
 type ModalMode = "missing" | "request" | "moderator" | "delete" | null
@@ -28,16 +29,30 @@ function canUseModeratorTools(role: UserRole) {
 function DetailRow({
   label,
   value,
+  variant = "card",
 }: {
   label: string
   value: string | null | undefined
+  variant?: "card" | "mobile"
 }) {
   return (
-    <div className="min-w-0 max-w-full rounded-2xl border border-border bg-background/70 p-4">
+    <div
+      className={
+        variant === "mobile"
+          ? "flex min-w-0 items-center justify-between gap-4 py-3"
+          : "min-w-0 max-w-full rounded-2xl border border-border bg-background/70 p-4"
+      }
+    >
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>
-      <p className="mt-2 min-w-0 break-words text-sm font-medium text-foreground">
+      <p
+        className={
+          variant === "mobile"
+            ? "min-w-0 break-words text-right text-sm font-medium text-foreground"
+            : "mt-2 min-w-0 break-words text-sm font-medium text-foreground"
+        }
+      >
         {value || <span className="text-muted-foreground">Missing</span>}
       </p>
     </div>
@@ -118,6 +133,7 @@ export default function TuneCanonicalDetailsCard({
   redirectTo,
   styleOptions,
   currentUserRole,
+  variant = "card",
 }: TuneCanonicalDetailsCardProps) {
   const [modalMode, setModalMode] = useState<ModalMode>(null)
 
@@ -130,9 +146,16 @@ export default function TuneCanonicalDetailsCard({
 
   const isModerator = canUseModeratorTools(currentUserRole)
   const deleteConfirmation = `DELETE ${piece.title}`
+  const isMobile = variant === "mobile"
 
   return (
-    <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
+    <section
+      className={
+        isMobile
+          ? "min-w-0 border-b border-border pb-6 last:border-b-0 last:pb-0"
+          : "w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6"
+      }
+    >
       <div className="min-w-0">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Tune details
@@ -143,16 +166,36 @@ export default function TuneCanonicalDetailsCard({
         </p>
       </div>
 
-      <div className="mt-5 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
-        <DetailRow label="Title" value={piece.title} />
-        <DetailRow label="Key" value={piece.key} />
-        <DetailRow label="Style" value={piece.style} />
-        <DetailRow label="Time signature" value={piece.time_signature} />
-        <DetailRow label="Reference URL" value={piece.reference_url} />
+      <div
+        className={
+          isMobile
+            ? "mt-4 min-w-0 divide-y divide-border"
+            : "mt-5 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2"
+        }
+      >
+        <DetailRow label="Title" value={piece.title} variant={variant} />
+        <DetailRow label="Key" value={piece.key} variant={variant} />
+        <DetailRow label="Style" value={piece.style} variant={variant} />
+        <DetailRow
+          label="Time signature"
+          value={piece.time_signature}
+          variant={variant}
+        />
+        <DetailRow
+          label="Reference URL"
+          value={piece.reference_url}
+          variant={variant}
+        />
       </div>
 
       {!isModerator && missingFields > 0 ? (
-        <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+        <p
+          className={
+            isMobile
+              ? "mt-4 text-sm text-muted-foreground"
+              : "mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground"
+          }
+        >
           {missingFields} shared detail{missingFields === 1 ? "" : "s"} still{" "}
           {missingFields === 1 ? "needs" : "need"} filling in.
         </p>

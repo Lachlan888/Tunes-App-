@@ -12,6 +12,12 @@ export type ReviewPieceRow = UserPiece & {
   pieces: Piece[] | Piece | null
 }
 
+export type ReviewPreferredReferenceMetadata = {
+  piece_id: number
+  preferred_reference_url: string | null
+  preferred_reference_label: string | null
+}
+
 export type PracticeNoteCategoryRelation =
   | {
       name: string | null
@@ -91,6 +97,9 @@ export type ReviewQueueItem = UserPiece & {
   active_practice_foci: PracticeFocusForReview[]
   practice_focus_options: PracticeFocusForReview[]
   saved_media_loops: UserPieceMediaLoop[]
+  effective_reference_url: string | null
+  effective_reference_label: string | null
+  is_using_preferred_reference: boolean
 }
 
 export type ReviewPageData = {

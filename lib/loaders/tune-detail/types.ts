@@ -12,6 +12,8 @@ import type {
 
 export type UserPieceMetadata = {
   notes: string | null
+  preferred_reference_url: string | null
+  preferred_reference_label: string | null
 }
 
 export type PieceSheetMusicLink = {

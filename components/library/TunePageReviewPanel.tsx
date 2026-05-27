@@ -29,6 +29,7 @@ type TunePageReviewPanelProps = {
   redirectTo: string
   practiceDiaryEnabled: boolean
   noteCategories: PracticeNoteCategory[]
+  variant?: "card" | "mobile"
 }
 
 const FORMAL_REVIEW_OUTCOMES: ReviewOutcomeConfig[] = [
@@ -268,6 +269,7 @@ export default function TunePageReviewPanel({
   redirectTo,
   practiceDiaryEnabled,
   noteCategories,
+  variant = "card",
 }: TunePageReviewPanelProps) {
   const [selectedOutcome, setSelectedOutcome] =
     useState<ReviewOutcomeConfig | null>(null)
@@ -276,15 +278,28 @@ export default function TunePageReviewPanel({
   const reviewOutcomes = isFormalReview
     ? FORMAL_REVIEW_OUTCOMES
     : DIARY_PRACTICE_OUTCOMES
+  const isMobile = variant === "mobile"
 
   return (
-    <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
+    <section
+      className={
+        isMobile
+          ? "min-w-0 border-b border-border pb-6 last:border-b-0 last:pb-0"
+          : "w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6"
+      }
+    >
       <div className="flex min-w-0 flex-col gap-1 sm:gap-2">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           {isFormalReview ? "Review" : "Practice check"}
         </h2>
 
-        <p className="hidden text-sm leading-6 text-muted-foreground sm:block">
+        <p
+          className={
+            isMobile
+              ? "mt-1 text-sm leading-6 text-muted-foreground"
+              : "hidden text-sm leading-6 text-muted-foreground sm:block"
+          }
+        >
           {isFormalReview
             ? "Formal review updates Stage and the next review date."
             : "Diary-only check. Does not change Stage or review scheduling."}
@@ -292,7 +307,7 @@ export default function TunePageReviewPanel({
       </div>
 
       {!practiceDiaryEnabled && !isFormalReview ? (
-        <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
+        <div className={isMobile ? "mt-4" : "mt-5 rounded-2xl border border-border bg-background/70 p-4"}>
           <p className="text-sm leading-6 text-muted-foreground">
             Enable Practice Diary on your Profile page to log practice checks for
             tunes that are not in practice.

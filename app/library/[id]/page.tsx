@@ -12,7 +12,11 @@ import TuneDetailMobileSwitcher from "@/components/library/TuneDetailMobileSwitc
 import TunePageReviewPanel from "@/components/library/TunePageReviewPanel"
 import TunePrivateNotesSection from "@/components/library/TunePrivateNotesSection"
 import TunePracticeHistorySection from "@/components/practice-diary/TunePracticeHistorySection"
-import { upsertUserPieceNotes } from "@/lib/actions/user-piece-metadata"
+import {
+  removePreferredReferenceUrl,
+  upsertPreferredReferenceUrl,
+  upsertUserPieceNotes,
+} from "@/lib/actions/user-piece-metadata"
 import {
   addPieceMediaLink,
   addPieceSheetMusicLink,
@@ -38,6 +42,7 @@ type PiecePageProps = {
     lore?: string | string[]
     moderator_edit?: string | string[]
     reference_url?: string | string[]
+    preferred_reference?: string | string[]
     diary?: string | string[]
     loop?: string | string[]
     page_options?: string | string[]
@@ -138,6 +143,9 @@ export default async function PiecePage({
     ),
     referenceUrl: getSingleSearchParamValue(
       resolvedSearchParams?.reference_url
+    ),
+    preferredReference: getSingleSearchParamValue(
+      resolvedSearchParams?.preferred_reference
     ),
     diary: getSingleSearchParamValue(resolvedSearchParams?.diary),
     loop: getSingleSearchParamValue(resolvedSearchParams?.loop),
@@ -240,6 +248,8 @@ export default async function PiecePage({
           startLearning={startLearning}
           addToLearningList={addToLearningList}
           upsertUserPieceNotes={upsertUserPieceNotes}
+          upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
+          removePreferredReferenceUrl={removePreferredReferenceUrl}
           addPieceMediaLink={addPieceMediaLink}
           addPieceSheetMusicLink={addPieceSheetMusicLink}
           addReferenceUrlToPiece={addReferenceUrlToPiece}
@@ -299,8 +309,11 @@ export default async function PiecePage({
             <PieceMediaLinksSection
               piece={typedPiece}
               redirectTo={redirectTo}
+              userPieceMetadata={typedUserPieceMetadata}
               mediaLinks={typedMediaLinks}
               savedLoops={typedMediaLoops}
+              upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
+              removePreferredReferenceUrl={removePreferredReferenceUrl}
               addPieceMediaLink={addPieceMediaLink}
               addReferenceUrlToPiece={addReferenceUrlToPiece}
             />

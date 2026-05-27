@@ -11,6 +11,7 @@ import {
   buildReviewQueueItems,
   getNeedsAttentionCount,
   getReviewPieceIds,
+  loadPreferredReferencesByPieceId,
   loadReviewMediaLoopsByPieceId,
   loadReviewPieceRows,
 } from "@/lib/loaders/review/queue"
@@ -30,6 +31,7 @@ export type {
   RecentPracticeNoteRow,
   ReviewPageData,
   ReviewPieceRow,
+  ReviewPreferredReferenceMetadata,
   ReviewQueueItem,
 } from "@/lib/loaders/review/types"
 
@@ -71,11 +73,13 @@ export async function loadReviewPageData() {
     activeFociByPieceId,
     activeFocusOptions,
     savedMediaLoopsByPieceId,
+    preferredReferencesByPieceId,
   ] = await Promise.all([
     loadRecentPracticeNotesByPieceId(supabase, user.id, pieceIds),
     loadActivePracticeFociByPieceId(supabase, user.id, pieceIds),
     loadActivePracticeFocusOptions(supabase, user.id),
     loadReviewMediaLoopsByPieceId(supabase, user.id, pieceIds),
+    loadPreferredReferencesByPieceId(supabase, user.id, pieceIds),
   ])
 
   const today = getToday()
@@ -87,6 +91,7 @@ export async function loadReviewPageData() {
     activeFociByPieceId,
     activeFocusOptions,
     savedMediaLoopsByPieceId,
+    preferredReferencesByPieceId,
   })
 
   const dueTodayPieces = buildDueTodayPieces(practiceItems)

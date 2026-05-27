@@ -41,7 +41,7 @@ export async function loadTuneUserState(
   ] = await Promise.all([
     supabase
       .from("user_piece_metadata")
-      .select("notes")
+      .select("notes, preferred_reference_url, preferred_reference_label")
       .eq("user_id", userId)
       .eq("piece_id", pieceId)
       .maybeSingle(),

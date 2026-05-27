@@ -1,15 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import PieceCommentsSection from "@/components/library/PieceCommentsSection"
-import PieceLoreSection from "@/components/library/PieceLoreSection"
-import PieceMediaLinksSection from "@/components/library/PieceMediaLinksSection"
-import PieceSheetMusicSection from "@/components/library/PieceSheetMusicSection"
-import TuneCanonicalDetailsCard from "@/components/library/TuneCanonicalDetailsCard"
-import TuneDetailActions from "@/components/library/TuneDetailActions"
-import TunePageReviewPanel from "@/components/library/TunePageReviewPanel"
-import TunePrivateNotesSection from "@/components/library/TunePrivateNotesSection"
-import TunePracticeHistorySection from "@/components/practice-diary/TunePracticeHistorySection"
+import MobileTuneLoreSection from "@/components/library/mobile/MobileTuneLoreSection"
+import MobileTuneMediaSection from "@/components/library/mobile/MobileTuneMediaSection"
+import MobileTuneNotesSection from "@/components/library/mobile/MobileTuneNotesSection"
+import MobileTuneStateSection from "@/components/library/mobile/MobileTuneStateSection"
 import { joinClasses } from "@/components/ui/buttonStyles"
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type {
@@ -60,6 +55,8 @@ type TuneDetailMobileSwitcherProps = {
   startLearning: (formData: FormData) => Promise<void>
   addToLearningList: (formData: FormData) => Promise<void>
   upsertUserPieceNotes: (formData: FormData) => Promise<void>
+  upsertPreferredReferenceUrl: (formData: FormData) => Promise<void>
+  removePreferredReferenceUrl: (formData: FormData) => Promise<void>
   addPieceMediaLink: (formData: FormData) => Promise<void>
   addPieceSheetMusicLink: (formData: FormData) => Promise<void>
   addReferenceUrlToPiece: (formData: FormData) => Promise<void>
@@ -115,23 +112,6 @@ function MobileSwitcher({
   )
 }
 
-function EmptyMobileSection({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <section className="rounded-3xl border border-dashed border-border bg-card/60 p-4 text-sm leading-6 text-muted-foreground shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        {title}
-      </h2>
-      <div className="mt-3">{children}</div>
-    </section>
-  )
-}
-
 export default function TuneDetailMobileSwitcher({
   pieceId,
   currentUserId,
@@ -157,6 +137,8 @@ export default function TuneDetailMobileSwitcher({
   startLearning,
   addToLearningList,
   upsertUserPieceNotes,
+  upsertPreferredReferenceUrl,
+  removePreferredReferenceUrl,
   addPieceMediaLink,
   addPieceSheetMusicLink,
   addReferenceUrlToPiece,
@@ -196,136 +178,66 @@ export default function TuneDetailMobileSwitcher({
       <MobileSwitcher activeTab={activeTab} onChange={setActiveTab} />
 
       {activeTab === "media" ? (
-        <div className="space-y-5">
-          {showMediaLinks ? (
-            <PieceMediaLinksSection
-              piece={piece}
-              redirectTo={redirectTo}
-              mediaLinks={mediaLinks}
-              savedLoops={mediaLoops}
-              addPieceMediaLink={addPieceMediaLink}
-              addReferenceUrlToPiece={addReferenceUrlToPiece}
-            />
-          ) : null}
-
-          {showSheetMusic ? (
-            <PieceSheetMusicSection
-              pieceId={pieceId}
-              redirectTo={redirectTo}
-              sheetMusicLinks={sheetMusicLinks}
-              addPieceSheetMusicLink={addPieceSheetMusicLink}
-            />
-          ) : null}
-
-          {!showMediaLinks && !showSheetMusic ? (
-            <EmptyMobileSection title="Media">
-              <p>
-                Media and sheet music sections are hidden in Tune Page Options.
-              </p>
-            </EmptyMobileSection>
-          ) : null}
-        </div>
+        <MobileTuneMediaSection
+          piece={piece}
+          redirectTo={redirectTo}
+          userPieceMetadata={userPieceMetadata}
+          mediaLinks={mediaLinks}
+          savedLoops={mediaLoops}
+          sheetMusicLinks={sheetMusicLinks}
+          showMediaLinks={showMediaLinks}
+          showSheetMusic={showSheetMusic}
+          upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
+          removePreferredReferenceUrl={removePreferredReferenceUrl}
+          addPieceMediaLink={addPieceMediaLink}
+          addPieceSheetMusicLink={addPieceSheetMusicLink}
+          addReferenceUrlToPiece={addReferenceUrlToPiece}
+        />
       ) : null}
 
       {activeTab === "practice" ? (
-        <div className="space-y-5">
-          {showTuneState ? (
-            <TuneDetailActions
-              piece={piece}
-              userPiece={userPiece}
-              userKnownPiece={userKnownPiece}
-              learningLists={learningLists}
-              learningListItems={learningListItems}
-              redirectTo={redirectTo}
-              startLearning={startLearning}
-              addToLearningList={addToLearningList}
-            />
-          ) : null}
-
-          {showTuneReview ? (
-            <TunePageReviewPanel
-              piece={piece}
-              userPiece={userPiece}
-              redirectTo={redirectTo}
-              practiceDiaryEnabled={practiceDiaryEnabled}
-              noteCategories={practiceNoteCategories}
-            />
-          ) : null}
-
-          {showCanonicalDetails ? (
-            <TuneCanonicalDetailsCard
-              piece={piece}
-              redirectTo={redirectTo}
-              styleOptions={styleOptions}
-              currentUserRole={currentUserRole}
-            />
-          ) : null}
-
-          {!showTuneState && !showTuneReview && !showCanonicalDetails ? (
-            <EmptyMobileSection title="Practice">
-              <p>
-                Practice and tune-detail sections are hidden in Tune Page
-                Options.
-              </p>
-            </EmptyMobileSection>
-          ) : null}
-        </div>
+        <MobileTuneStateSection
+          piece={piece}
+          userPiece={userPiece}
+          userKnownPiece={userKnownPiece}
+          learningLists={learningLists}
+          learningListItems={learningListItems}
+          redirectTo={redirectTo}
+          showTuneState={showTuneState}
+          showTuneReview={showTuneReview}
+          showCanonicalDetails={showCanonicalDetails}
+          practiceDiaryEnabled={practiceDiaryEnabled}
+          noteCategories={practiceNoteCategories}
+          styleOptions={styleOptions}
+          currentUserRole={currentUserRole}
+          startLearning={startLearning}
+          addToLearningList={addToLearningList}
+        />
       ) : null}
 
       {activeTab === "notes" ? (
-        <div className="space-y-5">
-          {showMyNotes ? (
-            <TunePrivateNotesSection
-              pieceId={pieceId}
-              redirectTo={redirectTo}
-              userPieceMetadata={userPieceMetadata}
-              upsertUserPieceNotes={upsertUserPieceNotes}
-            />
-          ) : null}
-
-          {showPracticeHistory ? (
-            <TunePracticeHistorySection notes={practiceNotes} />
-          ) : null}
-
-          {!showMyNotes && !showPracticeHistory ? (
-            <EmptyMobileSection title="Notes">
-              <p>Notes sections are hidden in Tune Page Options.</p>
-            </EmptyMobileSection>
-          ) : null}
-        </div>
+        <MobileTuneNotesSection
+          pieceId={pieceId}
+          redirectTo={redirectTo}
+          userPieceMetadata={userPieceMetadata}
+          practiceNotes={practiceNotes}
+          showMyNotes={showMyNotes}
+          showPracticeHistory={showPracticeHistory}
+          upsertUserPieceNotes={upsertUserPieceNotes}
+        />
       ) : null}
 
       {activeTab === "community" ? (
-        <div className="space-y-5">
-          {showLore ? (
-            <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm">
-              <PieceLoreSection
-                pieceId={pieceId}
-                loreEntries={pieceLoreEntries}
-                profileMap={profileMap}
-                currentUserId={currentUserId}
-                currentUserRole={currentUserRole}
-              />
-            </section>
-          ) : null}
-
-          {showComments ? (
-            <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm">
-              <PieceCommentsSection
-                pieceId={pieceId}
-                comments={pieceComments}
-                profileMap={profileMap}
-                currentUserId={currentUserId}
-              />
-            </section>
-          ) : null}
-
-          {!showLore && !showComments ? (
-            <EmptyMobileSection title="Lore">
-              <p>Lore and comment sections are hidden in Tune Page Options.</p>
-            </EmptyMobileSection>
-          ) : null}
-        </div>
+        <MobileTuneLoreSection
+          pieceId={pieceId}
+          loreEntries={pieceLoreEntries}
+          comments={pieceComments}
+          profileMap={profileMap}
+          currentUserId={currentUserId}
+          currentUserRole={currentUserRole}
+          showLore={showLore}
+          showComments={showComments}
+        />
       ) : null}
     </section>
   )

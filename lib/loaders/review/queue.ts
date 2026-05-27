@@ -1,5 +1,6 @@
 import type { createClient } from "@/lib/supabase/server"
 import type { UserPieceMediaLoop } from "@/lib/types"
+import { getEffectiveReference } from "@/lib/effective-reference"
 import {
   getBacklogTier,
   getBacklogTierLabel,
@@ -12,6 +13,7 @@ import { getPiece, sortByDueDateAscending, sortByMostOverdueFirst } from "./help
 import type {
   PracticeFocusForReview,
   RecentPracticeNoteForReview,
+  ReviewPreferredReferenceMetadata,
   ReviewPieceRow,
   ReviewQueueItem,
 } from "./types"
@@ -93,6 +95,37 @@ export async function loadReviewMediaLoopsByPieceId(
   return loopsByPieceId
 }
 
+export async function loadPreferredReferencesByPieceId(
+  supabase: SupabaseServerClient,
+  userId: string,
+  pieceIds: number[]
+): Promise<Map<number, ReviewPreferredReferenceMetadata>> {
+  const referencesByPieceId = new Map<
+    number,
+    ReviewPreferredReferenceMetadata
+  >()
+
+  if (pieceIds.length === 0) {
+    return referencesByPieceId
+  }
+
+  const { data, error } = await supabase
+    .from("user_piece_metadata")
+    .select("piece_id, preferred_reference_url, preferred_reference_label")
+    .eq("user_id", userId)
+    .in("piece_id", pieceIds)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  for (const metadata of (data ?? []) as ReviewPreferredReferenceMetadata[]) {
+    referencesByPieceId.set(metadata.piece_id, metadata)
+  }
+
+  return referencesByPieceId
+}
+
 export function buildReviewQueueItems({
   rows,
   today,
@@ -100,6 +133,7 @@ export function buildReviewQueueItems({
   activeFociByPieceId,
   activeFocusOptions,
   savedMediaLoopsByPieceId,
+  preferredReferencesByPieceId,
 }: {
   rows: ReviewPieceRow[]
   today: string
@@ -107,15 +141,25 @@ export function buildReviewQueueItems({
   activeFociByPieceId: Map<number, PracticeFocusForReview[]>
   activeFocusOptions: PracticeFocusForReview[]
   savedMediaLoopsByPieceId: Map<number, UserPieceMediaLoop[]>
+  preferredReferencesByPieceId: Map<number, ReviewPreferredReferenceMetadata>
 }): ReviewQueueItem[] {
   return rows
     .map((userPiece) => {
+      const piece = getPiece(userPiece.pieces)
       const dueDateOnly = normaliseStoredDate(userPiece.next_review_due)
       const backlogTier = getBacklogTier(userPiece.next_review_due, today)
+      const {
+        effectiveReferenceUrl,
+        effectiveReferenceLabel,
+        isUsingPreferredReference,
+      } = getEffectiveReference({
+        defaultReferenceUrl: piece?.reference_url,
+        metadata: preferredReferencesByPieceId.get(userPiece.piece_id) ?? null,
+      })
 
       return {
         ...userPiece,
-        piece: getPiece(userPiece.pieces),
+        piece,
         due_date_only: dueDateOnly,
         overdue_days: getOverdueDays(userPiece.next_review_due, today),
         backlog_tier: backlogTier,
@@ -127,6 +171,9 @@ export function buildReviewQueueItems({
         practice_focus_options: activeFocusOptions,
         saved_media_loops:
           savedMediaLoopsByPieceId.get(userPiece.piece_id) ?? [],
+        effective_reference_url: effectiveReferenceUrl,
+        effective_reference_label: effectiveReferenceLabel,
+        is_using_preferred_reference: isUsingPreferredReference,
       }
     })
     .sort(sortByDueDateAscending)

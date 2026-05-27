@@ -5,6 +5,7 @@ export type TuneDetailStatusMessageInput = {
   lore: string
   moderatorEdit: string
   referenceUrl: string
+  preferredReference: string
   diary: string
   loop: string
   pageOptions: string
@@ -24,6 +25,7 @@ export function getTuneDetailStatusMessage({
   lore,
   moderatorEdit,
   referenceUrl,
+  preferredReference,
   diary,
   loop,
   pageOptions,
@@ -66,6 +68,18 @@ export function getTuneDetailStatusMessage({
   if (referenceUrl === "already_present")
     return "This tune already has a primary reference recording."
   if (referenceUrl === "error") return "Could not save reference recording."
+
+  if (preferredReference === "saved") return "Preferred reference saved."
+  if (preferredReference === "removed")
+    return "Preferred reference removed. This tune will use the default reference again."
+  if (preferredReference === "invalid_url")
+    return "Enter a valid reference URL."
+  if (preferredReference === "not_youtube")
+    return "Preferred references must be YouTube links for now."
+  if (preferredReference === "missing_piece")
+    return "Could not find that tune."
+  if (preferredReference === "error")
+    return "Could not update preferred reference."
 
   if (diary === "note_saved") return "Practice note saved."
   if (diary === "note_deleted") return "Practice note deleted."
