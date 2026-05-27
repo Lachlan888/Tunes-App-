@@ -174,6 +174,7 @@ export async function loadLibraryData({
         key,
         style,
         time_signature,
+        composer,
         reference_url,
         created_at,
         piece_styles (
@@ -277,6 +278,7 @@ export async function loadLibraryData({
         key,
         style,
         time_signature,
+        composer,
         reference_url,
         created_at,
         piece_styles (
@@ -324,6 +326,7 @@ export async function loadLibraryData({
         key,
         style,
         time_signature,
+        composer,
         reference_url,
         created_at,
         piece_styles (

@@ -38,6 +38,7 @@ export async function createPieceEditRequest(formData: FormData) {
   const rawKey = cleanOptionalString(formData.get("key"))
   const style = cleanOptionalString(formData.get("style"))
   const timeSignature = cleanOptionalString(formData.get("time_signature"))
+  const composer = cleanOptionalString(formData.get("composer"))
   const referenceUrl = cleanOptionalString(formData.get("reference_url"))
   const reason = cleanOptionalString(formData.get("reason"))
 
@@ -63,6 +64,10 @@ export async function createPieceEditRequest(formData: FormData) {
 
   if (timeSignature) {
     proposedChanges.time_signature = timeSignature
+  }
+
+  if (composer) {
+    proposedChanges.composer = composer
   }
 
   if (referenceUrl) {

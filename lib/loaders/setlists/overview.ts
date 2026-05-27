@@ -113,6 +113,7 @@ export async function loadSetlistsPageData() {
             key,
             style,
             time_signature,
+            composer,
             reference_url
           )
         `

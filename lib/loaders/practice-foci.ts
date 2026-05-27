@@ -209,6 +209,7 @@ function focusSelectQuery() {
         key,
         style,
         time_signature,
+        composer,
         reference_url
       )
     )
@@ -256,6 +257,7 @@ async function loadFocusTuneOptions(
             key,
             style,
             time_signature,
+            composer,
             reference_url
           )
         `
@@ -276,6 +278,7 @@ async function loadFocusTuneOptions(
             key,
             style,
             time_signature,
+            composer,
             reference_url
           )
         `
@@ -368,6 +371,7 @@ async function loadRecentNotesForFocus({
           key,
           style,
           time_signature,
+          composer,
           reference_url
         ),
         practice_note_categories (

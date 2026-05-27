@@ -7,6 +7,7 @@ import type {
   Profile,
   PublicProfileCreatedBadge,
   PublicProfileData,
+  PublicProfileComposedTune,
   PublicProfileList,
   PublicProfileReceivedBadge,
   PublicProfileRepertoireTune,
@@ -328,6 +329,7 @@ async function loadProfileRepertoireTunes({
           key,
           style,
           time_signature,
+          composer,
           reference_url,
           piece_styles (
             style_id,
@@ -450,6 +452,37 @@ async function loadProfileRepertoireTunes({
   })
 }
 
+async function loadProfileComposedTunes({
+  supabase,
+  profileUserId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  profileUserId: string
+}): Promise<PublicProfileComposedTune[]> {
+  const { data, error } = await supabase
+    .from("pieces")
+    .select(
+      `
+        id,
+        title,
+        key,
+        style,
+        time_signature,
+        reference_url,
+        composer,
+        composer_user_id
+      `
+    )
+    .eq("composer_user_id", profileUserId)
+    .order("title", { ascending: true })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return (data ?? []) as PublicProfileComposedTune[]
+}
+
 export async function loadPublicProfileData(
   username: string
 ): Promise<PublicProfileData> {
@@ -473,6 +506,7 @@ export async function loadPublicProfileData(
         show_identity,
         show_instruments,
         show_public_lists_on_profile,
+        show_composed_tunes_on_profile,
         show_repertoire_summary,
         show_repertoire_to_friends,
         show_comment_activity,
@@ -502,6 +536,7 @@ export async function loadPublicProfileData(
       instruments: [],
       publicLists: [],
       repertoireSummary: null,
+      composedTunes: [],
       profileRepertoireTunes: [],
       viewerLearningLists: [],
       createdBadges: [],
@@ -651,8 +686,20 @@ export async function loadPublicProfileData(
     isOwnProfile ||
     (typedProfile.show_repertoire_to_friends && isAcceptedFriend)
 
-  const [profileRepertoireTunes, viewerLearningLists, profileBadges] =
+  const [
+    composedTunes,
+    profileRepertoireTunes,
+    viewerLearningLists,
+    profileBadges,
+  ] =
     await Promise.all([
+      typedProfile.show_composed_tunes_on_profile
+        ? loadProfileComposedTunes({
+            supabase,
+            profileUserId: typedProfile.id,
+          })
+        : Promise.resolve([]),
+
       canViewFullRepertoire
         ? loadProfileRepertoireTunes({
             supabase,
@@ -696,6 +743,7 @@ export async function loadPublicProfileData(
     instruments,
     publicLists,
     repertoireSummary,
+    composedTunes,
     profileRepertoireTunes,
     viewerLearningLists,
     createdBadges: profileBadges.createdBadges,

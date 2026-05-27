@@ -14,12 +14,19 @@ function getProfileDraftParams(formData: FormData) {
     ["show_identity", "profile_show_identity"],
     ["show_instruments", "profile_show_instruments"],
     ["show_public_lists_on_profile", "profile_show_public_lists_on_profile"],
+    [
+      "show_composed_tunes_on_profile",
+      "profile_show_composed_tunes_on_profile",
+    ],
     ["show_repertoire_summary", "profile_show_repertoire_summary"],
+    ["show_repertoire_to_friends", "profile_show_repertoire_to_friends"],
+    ["show_comment_activity", "profile_show_comment_activity"],
     [
       "show_compare_discoverability",
       "profile_show_compare_discoverability",
     ],
     ["compare_requires_friend", "profile_compare_requires_friend"],
+    ["practice_diary_enabled", "profile_practice_diary_enabled"],
   ]
 
   for (const [queryName, formName] of draftFields) {

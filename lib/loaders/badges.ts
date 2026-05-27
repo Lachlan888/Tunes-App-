@@ -274,7 +274,7 @@ async function loadRequiredTunesForBadge({
 
   const { data: pieceRows, error: piecesError } = await supabase
     .from("pieces")
-    .select("id, title, key, style, time_signature, reference_url")
+    .select("id, title, key, style, time_signature, composer, reference_url")
     .in("id", requiredPieceIds)
     .order("title", { ascending: true })
 
@@ -399,7 +399,7 @@ async function loadBadgeFormOptions({
 
     supabase
       .from("pieces")
-      .select("id, title, key, style, time_signature, reference_url")
+      .select("id, title, key, style, time_signature, composer, reference_url")
       .order("title", { ascending: true })
       .limit(500),
 

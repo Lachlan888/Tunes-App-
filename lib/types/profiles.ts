@@ -21,6 +21,7 @@ export type Profile = {
   show_identity: boolean
   show_instruments: boolean
   show_public_lists_on_profile: boolean
+  show_composed_tunes_on_profile: boolean
   show_repertoire_summary: boolean
   show_repertoire_to_friends: boolean
   show_comment_activity: boolean
@@ -49,6 +50,10 @@ export type PublicProfileRepertoireTune = Piece & {
   viewer_list_names: string[]
 }
 
+export type PublicProfileComposedTune = Piece & {
+  composer_user_id: string | null
+}
+
 export type OwnProfileData = {
   user: {
     id: string
@@ -72,6 +77,7 @@ export type PublicProfileData = {
   instruments: UserInstrument[]
   publicLists: PublicProfileList[]
   repertoireSummary: RepertoireSummary | null
+  composedTunes: PublicProfileComposedTune[]
   profileRepertoireTunes: PublicProfileRepertoireTune[]
   viewerLearningLists: LearningList[]
   createdBadges: PublicProfileCreatedBadge[]

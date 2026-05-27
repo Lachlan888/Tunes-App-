@@ -10,7 +10,7 @@ export async function loadTuneCore(
 }> {
   const { data: piece, error } = await supabase
     .from("pieces")
-    .select("id, title, key, style, time_signature, reference_url")
+    .select("id, title, key, style, time_signature, composer, reference_url")
     .eq("id", pieceId)
     .maybeSingle()
 

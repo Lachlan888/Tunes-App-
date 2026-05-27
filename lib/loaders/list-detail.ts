@@ -57,6 +57,7 @@ export async function loadLearningListDetailData(rawListId: string) {
         key,
         style,
         time_signature,
+        composer,
         reference_url,
         piece_styles (
           style_id,

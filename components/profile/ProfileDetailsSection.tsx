@@ -23,6 +23,8 @@ type ProfileDetailsSectionProps = {
   setShowInstruments: (value: boolean) => void
   showPublicListsOnProfile: boolean
   setShowPublicListsOnProfile: (value: boolean) => void
+  showComposedTunesOnProfile: boolean
+  setShowComposedTunesOnProfile: (value: boolean) => void
   showRepertoireSummary: boolean
   setShowRepertoireSummary: (value: boolean) => void
   showRepertoireToFriends: boolean
@@ -66,6 +68,8 @@ export default function ProfileDetailsSection({
   setShowInstruments,
   showPublicListsOnProfile,
   setShowPublicListsOnProfile,
+  showComposedTunesOnProfile,
+  setShowComposedTunesOnProfile,
   showRepertoireSummary,
   setShowRepertoireSummary,
   showRepertoireToFriends,
@@ -189,6 +193,8 @@ export default function ProfileDetailsSection({
           setShowInstruments={setShowInstruments}
           showPublicListsOnProfile={showPublicListsOnProfile}
           setShowPublicListsOnProfile={setShowPublicListsOnProfile}
+          showComposedTunesOnProfile={showComposedTunesOnProfile}
+          setShowComposedTunesOnProfile={setShowComposedTunesOnProfile}
           showRepertoireSummary={showRepertoireSummary}
           setShowRepertoireSummary={setShowRepertoireSummary}
           showRepertoireToFriends={showRepertoireToFriends}

@@ -20,6 +20,7 @@ type ProfileEditorProps = {
   initialShowIdentity: boolean
   initialShowInstruments: boolean
   initialShowPublicListsOnProfile: boolean
+  initialShowComposedTunesOnProfile: boolean
   initialShowRepertoireSummary: boolean
   initialShowRepertoireToFriends: boolean
   initialShowCommentActivity: boolean
@@ -43,6 +44,7 @@ export default function ProfileEditor({
   initialShowIdentity,
   initialShowInstruments,
   initialShowPublicListsOnProfile,
+  initialShowComposedTunesOnProfile,
   initialShowRepertoireSummary,
   initialShowRepertoireToFriends,
   initialShowCommentActivity,
@@ -59,6 +61,9 @@ export default function ProfileEditor({
   )
   const [showPublicListsOnProfile, setShowPublicListsOnProfile] = useState(
     initialShowPublicListsOnProfile
+  )
+  const [showComposedTunesOnProfile, setShowComposedTunesOnProfile] = useState(
+    initialShowComposedTunesOnProfile
   )
   const [showRepertoireSummary, setShowRepertoireSummary] = useState(
     initialShowRepertoireSummary
@@ -86,6 +91,7 @@ export default function ProfileEditor({
     showIdentity,
     showInstruments,
     showPublicListsOnProfile,
+    showComposedTunesOnProfile,
     showRepertoireSummary,
     showRepertoireToFriends,
     showCommentActivity,
@@ -113,6 +119,8 @@ export default function ProfileEditor({
         setShowInstruments={setShowInstruments}
         showPublicListsOnProfile={showPublicListsOnProfile}
         setShowPublicListsOnProfile={setShowPublicListsOnProfile}
+        showComposedTunesOnProfile={showComposedTunesOnProfile}
+        setShowComposedTunesOnProfile={setShowComposedTunesOnProfile}
         showRepertoireSummary={showRepertoireSummary}
         setShowRepertoireSummary={setShowRepertoireSummary}
         showRepertoireToFriends={showRepertoireToFriends}

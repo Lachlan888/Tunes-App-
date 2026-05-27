@@ -134,6 +134,7 @@ export async function loadKnownTunesPageData() {
         key,
         style,
         time_signature,
+        composer,
         reference_url,
         piece_styles (
           style_id,
@@ -195,6 +196,7 @@ export async function loadPracticeTunesPageData() {
         key,
         style,
         time_signature,
+        composer,
         reference_url,
         piece_styles (
           style_id,

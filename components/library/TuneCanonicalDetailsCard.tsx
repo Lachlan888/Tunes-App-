@@ -141,6 +141,7 @@ export default function TuneCanonicalDetailsCard({
     !piece.key,
     !piece.style,
     !piece.time_signature,
+    !piece.composer,
     !piece.reference_url,
   ].filter(Boolean).length
 
@@ -179,6 +180,11 @@ export default function TuneCanonicalDetailsCard({
         <DetailRow
           label="Time signature"
           value={piece.time_signature}
+          variant={variant}
+        />
+        <DetailRow
+          label="Composer"
+          value={piece.composer}
           variant={variant}
         />
         <DetailRow
@@ -283,6 +289,14 @@ export default function TuneCanonicalDetailsCard({
               />
             ) : null}
 
+            {!piece.composer ? (
+              <input
+                name="composer"
+                placeholder="Add composer or attribution"
+                className={inputClassName}
+              />
+            ) : null}
+
             {!piece.reference_url ? (
               <input
                 name="reference_url"
@@ -373,6 +387,13 @@ export default function TuneCanonicalDetailsCard({
               name="time_signature"
               defaultValue={piece.time_signature || ""}
               placeholder='Time signature, eg "4/4"'
+              className={inputClassName}
+            />
+
+            <input
+              name="composer"
+              defaultValue={piece.composer || ""}
+              placeholder="Composer or attribution"
               className={inputClassName}
             />
 

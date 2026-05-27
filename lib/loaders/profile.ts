@@ -16,6 +16,7 @@ export async function loadOwnProfileData(): Promise<OwnProfileData> {
         show_identity,
         show_instruments,
         show_public_lists_on_profile,
+        show_composed_tunes_on_profile,
         show_repertoire_summary,
         show_repertoire_to_friends,
         show_comment_activity,

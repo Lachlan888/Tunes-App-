@@ -228,6 +228,7 @@ export async function loadSetlistDetailData(rawSetlistId: string) {
           key,
           style,
           time_signature,
+          composer,
           reference_url,
           piece_styles (
             style_id,
@@ -245,7 +246,7 @@ export async function loadSetlistDetailData(rawSetlistId: string) {
 
     supabase
       .from("pieces")
-      .select("id, title, key, style, time_signature, reference_url")
+      .select("id, title, key, style, time_signature, composer, reference_url")
       .order("title", { ascending: true })
       .limit(500),
 

@@ -38,6 +38,7 @@ export async function loadReviewPieceRows(
         key,
         style,
         time_signature,
+        composer,
         reference_url
       )
     `)

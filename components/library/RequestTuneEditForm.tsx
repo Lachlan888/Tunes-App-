@@ -66,6 +66,12 @@ export default function RequestTuneEditForm({
       />
 
       <input
+        name="composer"
+        placeholder={`Composer, currently ${piece.composer || "missing"}`}
+        className={inputClassName}
+      />
+
+      <input
         name="reference_url"
         type="url"
         placeholder="Reference URL"

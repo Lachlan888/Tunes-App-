@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import PublicProfileActions from "@/components/profile/PublicProfileActions"
 import PublicProfileBadgesSection from "@/components/profile/PublicProfileBadgesSection"
+import PublicProfileComposedTunesSection from "@/components/profile/PublicProfileComposedTunesSection"
 import PublicProfileHeader from "@/components/profile/PublicProfileHeader"
 import PublicProfileOverview from "@/components/profile/PublicProfileOverview"
 import PublicProfileRepertoireSection from "@/components/profile/PublicProfileRepertoireSection"
@@ -192,6 +193,7 @@ export default async function PublicProfilePage({
     instruments,
     publicLists,
     repertoireSummary,
+    composedTunes,
     profileRepertoireTunes,
     viewerLearningLists,
     createdBadges,
@@ -268,6 +270,11 @@ export default async function PublicProfilePage({
             createdBadges={createdBadges}
             receivedBadges={receivedBadges}
             isOwnProfile={isOwnProfile}
+            displayName={profileDisplayName(profile)}
+          />
+
+          <PublicProfileComposedTunesSection
+            tunes={composedTunes}
             displayName={profileDisplayName(profile)}
           />
 

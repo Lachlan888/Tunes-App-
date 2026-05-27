@@ -33,6 +33,10 @@ function getProfileDraftParams(formData: FormData) {
     String(asBoolean(formData.get("show_public_lists_on_profile")))
   )
   params.set(
+    "show_composed_tunes_on_profile",
+    String(asBoolean(formData.get("show_composed_tunes_on_profile")))
+  )
+  params.set(
     "show_repertoire_summary",
     String(asBoolean(formData.get("show_repertoire_summary")))
   )
@@ -77,6 +81,9 @@ export async function updateProfile(formData: FormData) {
   const show_instruments = asBoolean(formData.get("show_instruments"))
   const show_public_lists_on_profile = asBoolean(
     formData.get("show_public_lists_on_profile")
+  )
+  const show_composed_tunes_on_profile = asBoolean(
+    formData.get("show_composed_tunes_on_profile")
   )
   const show_repertoire_summary = asBoolean(
     formData.get("show_repertoire_summary")
@@ -135,6 +142,7 @@ export async function updateProfile(formData: FormData) {
       show_identity,
       show_instruments,
       show_public_lists_on_profile,
+      show_composed_tunes_on_profile,
       show_repertoire_summary,
       show_repertoire_to_friends,
       show_comment_activity,

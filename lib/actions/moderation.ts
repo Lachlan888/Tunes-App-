@@ -105,7 +105,7 @@ export async function approvePieceEditRequest(formData: FormData) {
 
   const { data: piece, error: pieceError } = await supabase
     .from("pieces")
-    .select("id, title, key, style, time_signature, reference_url")
+    .select("id, title, key, style, time_signature, composer, reference_url")
     .eq("id", request.piece_id)
     .maybeSingle()
 
@@ -122,6 +122,7 @@ export async function approvePieceEditRequest(formData: FormData) {
   const rawKey = getProposedString(proposedChanges, "key")
   const style = getProposedString(proposedChanges, "style")
   const timeSignature = getProposedString(proposedChanges, "time_signature")
+  const composer = getProposedString(proposedChanges, "composer")
   const referenceUrl = getProposedString(proposedChanges, "reference_url")
 
   if (title) {
@@ -144,6 +145,10 @@ export async function approvePieceEditRequest(formData: FormData) {
 
   if (timeSignature) {
     updates.time_signature = timeSignature
+  }
+
+  if (composer) {
+    updates.composer = composer
   }
 
   if (referenceUrl) {
@@ -441,7 +446,7 @@ export async function directModeratorUpdatePiece(formData: FormData) {
 
   const { data: existingPiece, error: existingPieceError } = await supabase
     .from("pieces")
-    .select("id, title, key, style, time_signature, reference_url")
+    .select("id, title, key, style, time_signature, composer, reference_url")
     .eq("id", pieceId)
     .maybeSingle()
 
@@ -453,6 +458,7 @@ export async function directModeratorUpdatePiece(formData: FormData) {
   const rawKey = getCleanString(formData, "key")
   const rawStyle = getCleanString(formData, "style")
   const timeSignature = getCleanString(formData, "time_signature")
+  const composer = getCleanString(formData, "composer")
   const referenceUrl = getCleanString(formData, "reference_url")
   const moderatorComment = getCleanString(formData, "moderator_comment")
 
@@ -465,6 +471,7 @@ export async function directModeratorUpdatePiece(formData: FormData) {
     key: null,
     style: rawStyle || null,
     time_signature: timeSignature || null,
+    composer: composer || null,
     reference_url: referenceUrl || null,
   }
 

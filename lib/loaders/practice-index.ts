@@ -722,6 +722,7 @@ async function loadPracticeFocusSummaries({
           key,
           style,
           time_signature,
+          composer,
           reference_url
         )
       `
@@ -842,6 +843,7 @@ export async function loadPracticeIndexData(
             key,
             style,
             time_signature,
+            composer,
             reference_url
           )
         `
@@ -1029,6 +1031,7 @@ export async function loadPracticeCategoryDetailData(
           key,
           style,
           time_signature,
+          composer,
           reference_url
         )
       `

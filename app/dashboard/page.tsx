@@ -17,6 +17,7 @@ type DashboardPageProps = {
     show_identity?: string | string[]
     show_instruments?: string | string[]
     show_public_lists_on_profile?: string | string[]
+    show_composed_tunes_on_profile?: string | string[]
     show_repertoire_summary?: string | string[]
     show_repertoire_to_friends?: string | string[]
     show_comment_activity?: string | string[]
@@ -153,6 +154,11 @@ export default async function DashboardPage({
     profile?.show_public_lists_on_profile ?? true
   )
 
+  const initialShowComposedTunesOnProfile = getBooleanDraftValue(
+    resolvedSearchParams?.show_composed_tunes_on_profile,
+    profile?.show_composed_tunes_on_profile ?? true
+  )
+
   const initialShowRepertoireSummary = getBooleanDraftValue(
     resolvedSearchParams?.show_repertoire_summary,
     profile?.show_repertoire_summary ?? false
@@ -236,6 +242,7 @@ export default async function DashboardPage({
           initialShowIdentity={initialShowIdentity}
           initialShowInstruments={initialShowInstruments}
           initialShowPublicListsOnProfile={initialShowPublicListsOnProfile}
+          initialShowComposedTunesOnProfile={initialShowComposedTunesOnProfile}
           initialShowRepertoireSummary={initialShowRepertoireSummary}
           initialShowRepertoireToFriends={initialShowRepertoireToFriends}
           initialShowCommentActivity={initialShowCommentActivity}

@@ -235,6 +235,7 @@ export async function loadPracticeEventsForDayIds({
           key,
           style,
           time_signature,
+          composer,
           reference_url
         ),
         review_events (
@@ -379,6 +380,7 @@ export async function loadDueTunesForRange({
           key,
           style,
           time_signature,
+          composer,
           reference_url
         )
       `

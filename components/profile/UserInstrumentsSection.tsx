@@ -12,9 +12,13 @@ type ProfileDraft = {
   showIdentity: boolean
   showInstruments: boolean
   showPublicListsOnProfile: boolean
+  showComposedTunesOnProfile: boolean
   showRepertoireSummary: boolean
+  showRepertoireToFriends: boolean
+  showCommentActivity: boolean
   showCompareDiscoverability: boolean
   compareRequiresFriend: boolean
+  practiceDiaryEnabled: boolean
 }
 
 type UserInstrumentsSectionProps = {
@@ -69,8 +73,23 @@ function ProfileDraftHiddenInputs({
       />
       <input
         type="hidden"
+        name="profile_show_composed_tunes_on_profile"
+        value={String(profileDraft.showComposedTunesOnProfile)}
+      />
+      <input
+        type="hidden"
         name="profile_show_repertoire_summary"
         value={String(profileDraft.showRepertoireSummary)}
+      />
+      <input
+        type="hidden"
+        name="profile_show_repertoire_to_friends"
+        value={String(profileDraft.showRepertoireToFriends)}
+      />
+      <input
+        type="hidden"
+        name="profile_show_comment_activity"
+        value={String(profileDraft.showCommentActivity)}
       />
       <input
         type="hidden"
@@ -81,6 +100,11 @@ function ProfileDraftHiddenInputs({
         type="hidden"
         name="profile_compare_requires_friend"
         value={String(profileDraft.compareRequiresFriend)}
+      />
+      <input
+        type="hidden"
+        name="profile_practice_diary_enabled"
+        value={String(profileDraft.practiceDiaryEnabled)}
       />
     </>
   )

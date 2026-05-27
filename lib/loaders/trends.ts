@@ -267,7 +267,7 @@ async function loadFriendRepertoireStats(
 
   const { data: piecesData, error: piecesError } = await supabase
     .from("pieces")
-    .select("id, title, key, style, time_signature, reference_url")
+    .select("id, title, key, style, time_signature, composer, reference_url")
     .in("id", pieceIds)
 
   if (piecesError) {
@@ -618,7 +618,7 @@ export async function loadStyleTrendData(styleSlug: string) {
 
   const { data: pieces, error: piecesError } = await supabase
     .from("pieces")
-    .select("id, title, key, style, time_signature, reference_url")
+    .select("id, title, key, style, time_signature, composer, reference_url")
     .not("style", "is", null)
     .order("title", { ascending: true })
 

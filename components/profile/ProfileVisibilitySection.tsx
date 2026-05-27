@@ -10,6 +10,8 @@ type ProfileVisibilitySectionProps = {
   setShowInstruments: (value: boolean) => void
   showPublicListsOnProfile: boolean
   setShowPublicListsOnProfile: (value: boolean) => void
+  showComposedTunesOnProfile: boolean
+  setShowComposedTunesOnProfile: (value: boolean) => void
   showRepertoireSummary: boolean
   setShowRepertoireSummary: (value: boolean) => void
   showRepertoireToFriends: boolean
@@ -72,6 +74,8 @@ export default function ProfileVisibilitySection({
   setShowInstruments,
   showPublicListsOnProfile,
   setShowPublicListsOnProfile,
+  showComposedTunesOnProfile,
+  setShowComposedTunesOnProfile,
   showRepertoireSummary,
   setShowRepertoireSummary,
   showRepertoireToFriends,
@@ -141,6 +145,14 @@ export default function ProfileVisibilitySection({
             onChange={setShowPublicListsOnProfile}
             title="Show public lists"
             description="Display your public tune lists on your profile page and allow public-list activity to appear to friends."
+          />
+
+          <VisibilityToggle
+            name="show_composed_tunes_on_profile"
+            checked={showComposedTunesOnProfile}
+            onChange={setShowComposedTunesOnProfile}
+            title="Show composed tunes"
+            description="Display canonical tunes that are attributed to you as composer on your public profile."
           />
 
           <VisibilityToggle

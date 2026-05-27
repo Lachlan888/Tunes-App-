@@ -21,6 +21,7 @@ export type Piece = {
   style: string | null
   time_signature: string | null
   composer?: string | null
+  composer_user_id?: string | null
   reference_url?: string | null
   created_at?: string | null
   piece_styles?: PieceStyleTag[] | null

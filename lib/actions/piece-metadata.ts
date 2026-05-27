@@ -160,7 +160,7 @@ export async function updateMissingPieceDetails(formData: FormData) {
 
   const { data: existingPiece, error: existingPieceError } = await supabase
     .from("pieces")
-    .select("id, key, style, time_signature, reference_url")
+    .select("id, key, style, time_signature, composer, reference_url")
     .eq("id", pieceId)
     .maybeSingle()
 
@@ -172,6 +172,7 @@ export async function updateMissingPieceDetails(formData: FormData) {
   const rawKey = formData.get("key")?.toString().trim() || ""
   const rawTimeSignature =
     formData.get("time_signature")?.toString().trim() || ""
+  const rawComposer = formData.get("composer")?.toString().trim() || ""
   const rawReferenceUrl =
     formData.get("reference_url")?.toString().trim() || ""
   const rawStyleId = Number(formData.get("style_id"))
@@ -180,6 +181,7 @@ export async function updateMissingPieceDetails(formData: FormData) {
     key?: string | null
     style?: string | null
     time_signature?: string | null
+    composer?: string | null
     reference_url?: string | null
   } = {}
 
@@ -211,6 +213,10 @@ export async function updateMissingPieceDetails(formData: FormData) {
 
   if (!existingPiece.time_signature && rawTimeSignature) {
     updates.time_signature = rawTimeSignature
+  }
+
+  if (!existingPiece.composer && rawComposer) {
+    updates.composer = rawComposer
   }
 
   if (!existingPiece.reference_url && rawReferenceUrl) {
