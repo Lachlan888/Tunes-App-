@@ -111,31 +111,16 @@ export default function MobileTuneMediaSection({
             ) : null}
 
             {effectiveReferenceUrl ? (
-              <>
-                <a
-                  href={effectiveReferenceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={joinClasses(
-                    buttonStyles.primary,
-                    "mt-4",
-                    mobileButtonClass
-                  )}
-                >
-                  Open reference media
-                </a>
-
-                <div className="mt-4 min-w-0 overflow-hidden">
-                  <ReferenceMediaEmbed
-                    referenceUrl={effectiveReferenceUrl}
-                    title={effectiveReferenceLabel || piece.title}
-                    showHeading={false}
-                    pieceId={piece.id}
-                    redirectTo={redirectTo}
-                    savedLoops={savedLoops}
-                  />
-                </div>
-              </>
+              <div className="mt-4 min-w-0 overflow-hidden">
+                <ReferenceMediaEmbed
+                  referenceUrl={effectiveReferenceUrl}
+                  title={effectiveReferenceLabel || piece.title}
+                  showHeading={false}
+                  pieceId={piece.id}
+                  redirectTo={redirectTo}
+                  savedLoops={savedLoops}
+                />
+              </div>
             ) : (
               <button
                 type="button"
