@@ -32,12 +32,19 @@ function clickedInsideInteractiveElement(target: EventTarget | null) {
   )
 }
 
+function styleLabel(list: SharedList) {
+  if (!list.dominantStyle) return null
+
+  return list.dominantStyle
+}
+
 export default function SharedListCard({ list }: SharedListCardProps) {
   const router = useRouter()
   const listHref = `/public-lists/${list.id}`
   const ownerHref = list.ownerUsername
     ? `/users/${encodeURIComponent(list.ownerUsername)}`
     : null
+  const displayedStyle = styleLabel(list)
 
   function openListPage(event: React.MouseEvent<HTMLElement>) {
     if (clickedInsideInteractiveElement(event.target)) return
@@ -87,6 +94,12 @@ export default function SharedListCard({ list }: SharedListCardProps) {
             <span>
               {list.tuneCount} tune{list.tuneCount === 1 ? "" : "s"}
             </span>
+            {displayedStyle ? (
+              <>
+                <span aria-hidden="true">•</span>
+                <span>{displayedStyle}</span>
+              </>
+            ) : null}
           </div>
 
           {list.description ? (

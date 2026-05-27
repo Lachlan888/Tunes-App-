@@ -13,8 +13,16 @@ type ProfileRow = {
   display_name: string | null
 }
 
-type LearningListItemCountRow = {
+type LearningListItemRow = {
   learning_list_id: number
+  pieces:
+    | {
+        style: string | null
+      }
+    | Array<{
+        style: string | null
+      }>
+    | null
 }
 
 export type SharedList = {
@@ -26,6 +34,9 @@ export type SharedList = {
   ownerDisplayName: string | null
   ownerLabel: string
   tuneCount: number
+  stylesPresent: string[]
+  dominantStyle: string | null
+  isMixedStyle: boolean
   isOwnedByCurrentUser: boolean
 }
 
@@ -56,6 +67,21 @@ function formatOwnerLabel(list: {
   }
 
   return "Unknown user"
+}
+
+function getPieceStyle(row: LearningListItemRow) {
+  if (!row.pieces) return null
+
+  const piece = Array.isArray(row.pieces) ? row.pieces[0] : row.pieces
+
+  return piece?.style ?? null
+}
+
+function formatDominantStyle(stylesPresent: string[]) {
+  if (stylesPresent.length === 0) return null
+  if (stylesPresent.length === 1) return stylesPresent[0]
+
+  return "Mixed"
 }
 
 export async function loadPublicListsData(): Promise<PublicListsLoadResult> {
@@ -113,11 +139,12 @@ export async function loadPublicListsData(): Promise<PublicListsLoadResult> {
   }
 
   let countsByListId: Record<number, number> = {}
+  let stylesByListId: Record<number, string[]> = {}
 
   if (listIds.length > 0) {
     const { data: itemRows, error: itemRowsError } = await supabase
       .from("learning_list_items")
-      .select("learning_list_id")
+      .select("learning_list_id, pieces(style)")
       .in("learning_list_id", listIds)
 
     if (itemRowsError) {
@@ -127,18 +154,38 @@ export async function loadPublicListsData(): Promise<PublicListsLoadResult> {
       }
     }
 
-    countsByListId = ((itemRows ?? []) as LearningListItemCountRow[]).reduce(
-      (acc, row) => {
-        acc[row.learning_list_id] = (acc[row.learning_list_id] ?? 0) + 1
-        return acc
-      },
-      {} as Record<number, number>
+    const rows = (itemRows ?? []) as LearningListItemRow[]
+
+    countsByListId = rows.reduce((acc, row) => {
+      acc[row.learning_list_id] = (acc[row.learning_list_id] ?? 0) + 1
+      return acc
+    }, {} as Record<number, number>)
+
+    const styleSetsByListId = rows.reduce((acc, row) => {
+      const style = getPieceStyle(row)
+      if (!style) return acc
+
+      if (!acc[row.learning_list_id]) {
+        acc[row.learning_list_id] = new Set<string>()
+      }
+
+      acc[row.learning_list_id].add(style)
+      return acc
+    }, {} as Record<number, Set<string>>)
+
+    stylesByListId = Object.fromEntries(
+      Object.entries(styleSetsByListId).map(([listId, styles]) => [
+        Number(listId),
+        Array.from(styles).sort(),
+      ])
     )
   }
 
   const sharedLists: SharedList[] = lists.map((list) => {
     const ownerUsername = profilesById[list.user_id]?.username ?? null
     const ownerDisplayName = profilesById[list.user_id]?.displayName ?? null
+    const stylesPresent = stylesByListId[list.id] ?? []
+    const dominantStyle = formatDominantStyle(stylesPresent)
 
     return {
       id: list.id,
@@ -152,6 +199,9 @@ export async function loadPublicListsData(): Promise<PublicListsLoadResult> {
         ownerDisplayName,
       }),
       tuneCount: countsByListId[list.id] ?? 0,
+      stylesPresent,
+      dominantStyle,
+      isMixedStyle: stylesPresent.length > 1,
       isOwnedByCurrentUser: user?.id === list.user_id,
     }
   })

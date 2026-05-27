@@ -57,6 +57,12 @@ export default function SharedListsMobileList({
                   </span>
                   <span aria-hidden="true">·</span>
                   <span>{tuneCountLabel(list.tuneCount)}</span>
+                  {list.dominantStyle ? (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span>{list.dominantStyle}</span>
+                    </>
+                  ) : null}
                 </p>
 
                 {list.isOwnedByCurrentUser ? (
