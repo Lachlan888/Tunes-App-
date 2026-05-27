@@ -47,6 +47,9 @@ export async function addReferenceUrlToPiece(formData: FormData) {
 
   const pieceId = Number(formData.get("piece_id"))
   const referenceUrl = String(formData.get("reference_url") ?? "").trim()
+  const referenceLabel =
+    String(formData.get("reference_label") ?? "").trim() || null
+  const makePreferred = formData.get("make_preferred")?.toString() === "true"
   const redirectTo = cleanRedirectTo(formData.get("redirect_to"), "/library")
 
   if (!pieceId || Number.isNaN(pieceId)) {
@@ -89,9 +92,34 @@ export async function addReferenceUrlToPiece(formData: FormData) {
 
   await recordPieceDetailsAddedEvent(user.id, pieceId, ["reference_url"])
 
+  if (makePreferred) {
+    const { error: preferredReferenceError } = await supabase
+      .from("user_piece_metadata")
+      .upsert(
+        {
+          user_id: user.id,
+          piece_id: pieceId,
+          preferred_reference_url: referenceUrl,
+          preferred_reference_label: referenceLabel,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "user_id,piece_id",
+        }
+      )
+
+    if (preferredReferenceError) {
+      console.error(
+        "Error setting reference URL as preferred:",
+        preferredReferenceError
+      )
+    }
+  }
+
   revalidatePath("/library")
   revalidatePath(`/library/${pieceId}`)
   revalidatePath(redirectTo)
+  revalidatePath("/review")
 
   redirect(appendQueryParam(redirectTo, "reference_url", "added"))
 }

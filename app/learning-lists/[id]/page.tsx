@@ -1,7 +1,7 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
 import EditListModal from "@/components/lists/EditListModal"
-import ReferenceMediaLink from "@/components/ReferenceMediaLink"
+import PreferredReferenceControl from "@/components/reference-media/PreferredReferenceControl"
 import RemoveTuneButton from "@/components/RemoveTuneButton"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
@@ -11,8 +11,13 @@ import {
   updateList,
 } from "@/lib/actions/lists"
 import { markAsKnown } from "@/lib/actions/known-pieces"
+import { upsertPreferredReferenceUrl } from "@/lib/actions/user-piece-metadata"
 import { startLearning } from "@/lib/actions/user-pieces"
-import { loadLearningListDetailData } from "@/lib/loaders/list-detail"
+import {
+  loadLearningListDetailData,
+  type ListDetailPieceMediaLink,
+  type ListDetailUserPieceMetadata,
+} from "@/lib/loaders/list-detail"
 import { getStyleLabelsFromPiece } from "@/lib/search-filters"
 import type { Piece } from "@/lib/types"
 
@@ -98,11 +103,15 @@ function MobileTuneRow({
   isAlreadyInPractice,
   isKnown,
   redirectTo,
+  referenceMetadata,
+  mediaLinks,
 }: {
   piece: Piece
   isAlreadyInPractice: boolean
   isKnown: boolean
   redirectTo: string
+  referenceMetadata: ListDetailUserPieceMetadata | null
+  mediaLinks: ListDetailPieceMediaLink[]
 }) {
   const metadataParts = getPieceMetadataParts(piece)
 
@@ -124,13 +133,18 @@ function MobileTuneRow({
           </p>
         )}
 
-        {piece.reference_url ? (
+        {piece.reference_url || mediaLinks.length > 0 ? (
           <div className="mt-3">
-            <ReferenceMediaLink
-              referenceUrl={piece.reference_url}
-              title={piece.title}
+            <PreferredReferenceControl
               pieceId={piece.id}
-              className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+              title={piece.title}
+              defaultReferenceUrl={piece.reference_url}
+              mediaLinks={mediaLinks}
+              metadata={referenceMetadata}
+              redirectTo={redirectTo}
+              upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
+              compact
+              triggerClassName="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
             />
           </div>
         ) : null}
@@ -259,6 +273,8 @@ export default async function LearningListDetailPage({
     tunes,
     activePieceIds,
     knownPieceIds,
+    userPieceMetadata,
+    mediaLinks,
     redirectTo,
   } = await loadLearningListDetailData(id)
 
@@ -409,6 +425,13 @@ export default async function LearningListDetailPage({
             {visibleItems.map(({ item, piece }) => {
               const isAlreadyInPractice = activePieceIds.has(piece.id)
               const isKnown = knownPieceIds.has(piece.id)
+              const referenceMetadata =
+                userPieceMetadata.find(
+                  (metadata) => metadata.piece_id === piece.id
+                ) ?? null
+              const pieceMediaLinks = mediaLinks.filter(
+                (link) => link.piece_id === piece.id
+              )
 
               return (
                 <MobileTuneRow
@@ -417,6 +440,8 @@ export default async function LearningListDetailPage({
                   isAlreadyInPractice={isAlreadyInPractice}
                   isKnown={isKnown}
                   redirectTo={redirectTo}
+                  referenceMetadata={referenceMetadata}
+                  mediaLinks={pieceMediaLinks}
                 />
               )
             })}
@@ -438,6 +463,13 @@ export default async function LearningListDetailPage({
             {visibleItems.map(({ item, piece }) => {
               const isAlreadyInPractice = activePieceIds.has(piece.id)
               const isKnown = knownPieceIds.has(piece.id)
+              const referenceMetadata =
+                userPieceMetadata.find(
+                  (metadata) => metadata.piece_id === piece.id
+                ) ?? null
+              const pieceMediaLinks = mediaLinks.filter(
+                (link) => link.piece_id === piece.id
+              )
 
               return (
                 <TuneCard
@@ -448,8 +480,12 @@ export default async function LearningListDetailPage({
                   style={piece.style}
                   timeSignature={piece.time_signature}
                   referenceUrl={piece.reference_url}
+                  mediaLinks={pieceMediaLinks}
+                  referenceMetadata={referenceMetadata}
                   pieceStyles={piece.piece_styles}
                   listLinks={[]}
+                  redirectTo={redirectTo}
+                  upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
                 >
                   <DesktopTuneActions
                     piece={piece}

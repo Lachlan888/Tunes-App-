@@ -72,6 +72,7 @@ export async function addPieceMediaLink(formData: FormData) {
     formData.get("redirect_to")?.toString() || `/library/${pieceId}`
   const url = formData.get("url")?.toString().trim() || ""
   const label = formData.get("label")?.toString().trim() || null
+  const makePreferred = formData.get("make_preferred")?.toString() === "true"
 
   if (!pieceId || Number.isNaN(pieceId)) {
     return
@@ -99,8 +100,34 @@ export async function addPieceMediaLink(formData: FormData) {
     return
   }
 
+  if (makePreferred) {
+    const { error: preferredReferenceError } = await supabase
+      .from("user_piece_metadata")
+      .upsert(
+        {
+          user_id: user.id,
+          piece_id: pieceId,
+          preferred_reference_url: url,
+          preferred_reference_label: label,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "user_id,piece_id",
+        }
+      )
+
+    if (preferredReferenceError) {
+      console.error(
+        "Error setting new media link as preferred reference:",
+        preferredReferenceError
+      )
+    }
+  }
+
   await recordPieceMediaLinkAddedEvent(user.id, pieceId)
 
+  revalidatePath("/library")
   revalidatePath(`/library/${pieceId}`)
+  revalidatePath("/review")
   revalidatePath(redirectTo)
 }

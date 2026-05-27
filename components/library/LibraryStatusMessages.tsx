@@ -6,6 +6,7 @@ type LibraryStatusMessagesProps = {
   createTuneStatus: string
   listAddStatus: string
   referenceUrlStatus: string
+  preferredReferenceStatus: string
   removeTuneStatus: string
   removeFromPracticeStatus: string
   deleteTuneStatus: string
@@ -41,6 +42,7 @@ export default function LibraryStatusMessages({
   createTuneStatus,
   listAddStatus,
   referenceUrlStatus,
+  preferredReferenceStatus,
   removeTuneStatus,
   removeFromPracticeStatus,
   deleteTuneStatus,
@@ -148,6 +150,38 @@ export default function LibraryStatusMessages({
 
       {referenceUrlStatus === "error" && (
         <StatusBanner tone="error">Could not add reference.</StatusBanner>
+      )}
+
+      {preferredReferenceStatus === "saved" && (
+        <StatusBanner tone="success">Preferred reference saved.</StatusBanner>
+      )}
+
+      {preferredReferenceStatus === "removed" && (
+        <StatusBanner tone="success">Preferred reference removed.</StatusBanner>
+      )}
+
+      {preferredReferenceStatus === "missing_piece" && (
+        <StatusBanner tone="warning">
+          Could not tell which tune to update.
+        </StatusBanner>
+      )}
+
+      {preferredReferenceStatus === "invalid_url" && (
+        <StatusBanner tone="warning">
+          That does not look like a valid URL.
+        </StatusBanner>
+      )}
+
+      {preferredReferenceStatus === "not_youtube" && (
+        <StatusBanner tone="warning">
+          Preferred references must be YouTube links for now.
+        </StatusBanner>
+      )}
+
+      {preferredReferenceStatus === "error" && (
+        <StatusBanner tone="error">
+          Could not update preferred reference.
+        </StatusBanner>
       )}
 
       {removeTuneStatus === "success" && (

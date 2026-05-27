@@ -4,6 +4,7 @@ type PracticeStatusMessagesProps = {
   practiceUpdate: string
   removeFromPracticeStatus: string
   loopStatus: string
+  preferredReferenceStatus: string
 }
 
 function StatusBox({
@@ -26,6 +27,7 @@ export default function PracticeStatusMessages({
   practiceUpdate,
   removeFromPracticeStatus,
   loopStatus,
+  preferredReferenceStatus,
 }: PracticeStatusMessagesProps) {
   return (
     <>
@@ -83,6 +85,28 @@ export default function PracticeStatusMessages({
 
       {loopStatus === "error" && (
         <StatusBox tone="error">Could not update loop.</StatusBox>
+      )}
+
+      {preferredReferenceStatus === "saved" && (
+        <StatusBox tone="success">Preferred reference saved.</StatusBox>
+      )}
+
+      {preferredReferenceStatus === "invalid_url" && (
+        <StatusBox tone="warning">
+          That does not look like a valid URL.
+        </StatusBox>
+      )}
+
+      {preferredReferenceStatus === "not_youtube" && (
+        <StatusBox tone="warning">
+          Preferred references must be YouTube links for now.
+        </StatusBox>
+      )}
+
+      {preferredReferenceStatus === "error" && (
+        <StatusBox tone="error">
+          Could not update preferred reference.
+        </StatusBox>
       )}
     </>
   )

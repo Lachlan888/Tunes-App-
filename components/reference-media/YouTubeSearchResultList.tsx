@@ -85,9 +85,24 @@ export default function YouTubeSearchResultList({
                     />
                     <input
                       type="hidden"
+                      name="reference_label"
+                      value={result.title}
+                    />
+                    <input
+                      type="hidden"
                       name="redirect_to"
                       value={redirectTo}
                     />
+
+                    <label className="mb-2 flex items-start gap-2 text-xs text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        name="make_preferred"
+                        value="true"
+                        className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-[var(--focus-ring)]"
+                      />
+                      <span>Make preferred</span>
+                    </label>
 
                     <SubmitButton
                       label="Use this"

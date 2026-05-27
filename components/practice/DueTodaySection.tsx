@@ -10,6 +10,7 @@ type DueTodaySectionProps = {
   redirectTo: string
   practiceDiaryEnabled: boolean
   noteCategories: PracticeNoteCategory[]
+  upsertPreferredReferenceUrl: (formData: FormData) => Promise<void>
 }
 
 export default function DueTodaySection({
@@ -17,6 +18,7 @@ export default function DueTodaySection({
   redirectTo,
   practiceDiaryEnabled,
   noteCategories,
+  upsertPreferredReferenceUrl,
 }: DueTodaySectionProps) {
   return (
     <section id="due-today" className="mt-6 md:mt-8">
@@ -57,6 +59,7 @@ export default function DueTodaySection({
                 badgeClassName="border border-accent bg-accent/20 text-accent-foreground"
                 practiceDiaryEnabled={practiceDiaryEnabled}
                 noteCategories={noteCategories}
+                upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
               />
             )}
           />

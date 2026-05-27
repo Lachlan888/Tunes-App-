@@ -15,6 +15,7 @@ type CatchUpSectionProps = {
   defaultOpen?: boolean
   practiceDiaryEnabled: boolean
   noteCategories: PracticeNoteCategory[]
+  upsertPreferredReferenceUrl: (formData: FormData) => Promise<void>
 }
 
 type CatchUpFilter = "all" | BacklogTier
@@ -80,12 +81,14 @@ function CatchUpReviewPager({
   redirectTo,
   practiceDiaryEnabled,
   noteCategories,
+  upsertPreferredReferenceUrl,
   emptyMessage,
 }: {
   queue: ReviewQueueItem[]
   redirectTo: string
   practiceDiaryEnabled: boolean
   noteCategories: PracticeNoteCategory[]
+  upsertPreferredReferenceUrl: (formData: FormData) => Promise<void>
   emptyMessage: string
 }) {
   return (
@@ -109,6 +112,7 @@ function CatchUpReviewPager({
           badgeClassName={getStatusBadgeClasses(userPiece.backlog_label)}
           practiceDiaryEnabled={practiceDiaryEnabled}
           noteCategories={noteCategories}
+          upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
         />
       )}
     />
@@ -122,6 +126,7 @@ export default function CatchUpSection({
   defaultOpen = false,
   practiceDiaryEnabled,
   noteCategories,
+  upsertPreferredReferenceUrl,
 }: CatchUpSectionProps) {
   const [activeFilter, setActiveFilter] = useState<CatchUpFilter>("all")
 
@@ -171,6 +176,7 @@ export default function CatchUpSection({
             redirectTo={redirectTo}
             practiceDiaryEnabled={practiceDiaryEnabled}
             noteCategories={noteCategories}
+            upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
             emptyMessage="Nothing overdue right now."
           />
         )}
@@ -235,6 +241,7 @@ export default function CatchUpSection({
                 redirectTo={redirectTo}
                 practiceDiaryEnabled={practiceDiaryEnabled}
                 noteCategories={noteCategories}
+                upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
                 emptyMessage="No catch-up tunes match this filter."
               />
             </div>

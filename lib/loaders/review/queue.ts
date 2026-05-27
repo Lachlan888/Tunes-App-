@@ -13,6 +13,7 @@ import { getPiece, sortByDueDateAscending, sortByMostOverdueFirst } from "./help
 import type {
   PracticeFocusForReview,
   RecentPracticeNoteForReview,
+  ReviewPieceMediaLink,
   ReviewPreferredReferenceMetadata,
   ReviewPieceRow,
   ReviewQueueItem,
@@ -127,6 +128,35 @@ export async function loadPreferredReferencesByPieceId(
   return referencesByPieceId
 }
 
+export async function loadReviewMediaLinksByPieceId(
+  supabase: SupabaseServerClient,
+  pieceIds: number[]
+): Promise<Map<number, ReviewPieceMediaLink[]>> {
+  const linksByPieceId = new Map<number, ReviewPieceMediaLink[]>()
+
+  if (pieceIds.length === 0) {
+    return linksByPieceId
+  }
+
+  const { data, error } = await supabase
+    .from("piece_media_links")
+    .select("id, piece_id, url, label")
+    .in("piece_id", pieceIds)
+    .order("created_at", { ascending: true })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  for (const link of (data ?? []) as ReviewPieceMediaLink[]) {
+    const links = linksByPieceId.get(link.piece_id) ?? []
+    links.push(link)
+    linksByPieceId.set(link.piece_id, links)
+  }
+
+  return linksByPieceId
+}
+
 export function buildReviewQueueItems({
   rows,
   today,
@@ -134,6 +164,7 @@ export function buildReviewQueueItems({
   activeFociByPieceId,
   activeFocusOptions,
   savedMediaLoopsByPieceId,
+  mediaLinksByPieceId,
   preferredReferencesByPieceId,
 }: {
   rows: ReviewPieceRow[]
@@ -142,6 +173,7 @@ export function buildReviewQueueItems({
   activeFociByPieceId: Map<number, PracticeFocusForReview[]>
   activeFocusOptions: PracticeFocusForReview[]
   savedMediaLoopsByPieceId: Map<number, UserPieceMediaLoop[]>
+  mediaLinksByPieceId: Map<number, ReviewPieceMediaLink[]>
   preferredReferencesByPieceId: Map<number, ReviewPreferredReferenceMetadata>
 }): ReviewQueueItem[] {
   return rows
@@ -157,6 +189,8 @@ export function buildReviewQueueItems({
         defaultReferenceUrl: piece?.reference_url,
         metadata: preferredReferencesByPieceId.get(userPiece.piece_id) ?? null,
       })
+      const preferredReferenceMetadata =
+        preferredReferencesByPieceId.get(userPiece.piece_id) ?? null
 
       return {
         ...userPiece,
@@ -172,6 +206,8 @@ export function buildReviewQueueItems({
         practice_focus_options: activeFocusOptions,
         saved_media_loops:
           savedMediaLoopsByPieceId.get(userPiece.piece_id) ?? [],
+        media_links: mediaLinksByPieceId.get(userPiece.piece_id) ?? [],
+        preferred_reference_metadata: preferredReferenceMetadata,
         effective_reference_url: effectiveReferenceUrl,
         effective_reference_label: effectiveReferenceLabel,
         is_using_preferred_reference: isUsingPreferredReference,

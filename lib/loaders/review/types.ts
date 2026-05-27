@@ -18,6 +18,13 @@ export type ReviewPreferredReferenceMetadata = {
   preferred_reference_label: string | null
 }
 
+export type ReviewPieceMediaLink = {
+  id: number
+  piece_id: number
+  url: string
+  label: string | null
+}
+
 export type PracticeNoteCategoryRelation =
   | {
       name: string | null
@@ -97,6 +104,8 @@ export type ReviewQueueItem = UserPiece & {
   active_practice_foci: PracticeFocusForReview[]
   practice_focus_options: PracticeFocusForReview[]
   saved_media_loops: UserPieceMediaLoop[]
+  media_links: ReviewPieceMediaLink[]
+  preferred_reference_metadata: ReviewPreferredReferenceMetadata | null
   effective_reference_url: string | null
   effective_reference_label: string | null
   is_using_preferred_reference: boolean

@@ -3,9 +3,9 @@
 import { useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import ReferenceMediaEmbed from "@/components/library/ReferenceMediaEmbed"
+import PreferredReferenceControl from "@/components/reference-media/PreferredReferenceControl"
 import FindReferenceModal from "@/components/reference-media/FindReferenceModal"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
-import { getEffectiveReference } from "@/lib/effective-reference"
 import type {
   PieceMediaLink,
   PieceSheetMusicLink,
@@ -70,18 +70,7 @@ export default function MobileTuneMediaSection({
 }: MobileTuneMediaSectionProps) {
   const [openMediaId, setOpenMediaId] = useState<number | null>(null)
   const [isFindReferenceOpen, setIsFindReferenceOpen] = useState(false)
-  const {
-    effectiveReferenceUrl,
-    effectiveReferenceLabel,
-    isUsingPreferredReference,
-  } = getEffectiveReference({
-    defaultReferenceUrl: piece.reference_url,
-    metadata: userPieceMetadata,
-  })
-  const preferredReferenceUrl =
-    userPieceMetadata?.preferred_reference_url || ""
-  const preferredReferenceLabel =
-    userPieceMetadata?.preferred_reference_label || ""
+  const hasAnyReference = Boolean(piece.reference_url) || mediaLinks.length > 0
 
   if (!showMediaLinks && !showSheetMusic) {
     return (
@@ -97,31 +86,28 @@ export default function MobileTuneMediaSection({
         <>
           <MobileSection title="Primary reference">
             <p className="text-sm leading-6 text-muted-foreground">
-              {isUsingPreferredReference
-                ? "Using your preferred reference."
-                : piece.reference_url
-                  ? "Using default tune reference."
-                  : "No primary reference saved yet."}
+              Open your preferred reference, or choose from this tune&apos;s saved
+              media.
             </p>
 
-            {effectiveReferenceLabel ? (
-              <p className="mt-2 min-w-0 break-words text-sm font-medium text-foreground">
-                {effectiveReferenceLabel}
-              </p>
+            {hasAnyReference ? (
+              <PreferredReferenceControl
+                pieceId={piece.id}
+                title={piece.title}
+                defaultReferenceUrl={piece.reference_url}
+                mediaLinks={mediaLinks}
+                metadata={userPieceMetadata}
+                redirectTo={redirectTo}
+                savedLoops={savedLoops}
+                upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
+                removePreferredReferenceUrl={removePreferredReferenceUrl}
+                addPieceMediaLink={addPieceMediaLink}
+                allowAddMediaLink
+                className="mt-4"
+              />
             ) : null}
 
-            {effectiveReferenceUrl ? (
-              <div className="mt-4 min-w-0 overflow-hidden">
-                <ReferenceMediaEmbed
-                  referenceUrl={effectiveReferenceUrl}
-                  title={effectiveReferenceLabel || piece.title}
-                  showHeading={false}
-                  pieceId={piece.id}
-                  redirectTo={redirectTo}
-                  savedLoops={savedLoops}
-                />
-              </div>
-            ) : (
+            {!piece.reference_url ? (
               <button
                 type="button"
                 onClick={() => setIsFindReferenceOpen(true)}
@@ -129,68 +115,6 @@ export default function MobileTuneMediaSection({
               >
                 Find reference
               </button>
-            )}
-
-            {isUsingPreferredReference && piece.reference_url ? (
-              <a
-                href={piece.reference_url}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-4 inline-flex text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
-              >
-                Open default reference
-              </a>
-            ) : null}
-          </MobileSection>
-
-          <MobileSection title="Preferred reference">
-            {!isUsingPreferredReference ? (
-              <p className="mb-3 text-sm leading-6 text-muted-foreground">
-                Set the reference you want to see for this tune.
-              </p>
-            ) : null}
-
-            <form action={upsertPreferredReferenceUrl} className="space-y-3">
-              <input type="hidden" name="piece_id" value={piece.id} />
-              <input type="hidden" name="redirect_to" value={redirectTo} />
-
-              <input
-                name="preferred_reference_label"
-                placeholder="Label, eg Clare lesson"
-                defaultValue={preferredReferenceLabel}
-                className={inputClassName}
-              />
-
-              <input
-                name="preferred_reference_url"
-                type="url"
-                placeholder="https://www.youtube.com/watch?v=..."
-                defaultValue={preferredReferenceUrl}
-                className={inputClassName}
-                required
-              />
-
-              <SubmitButton
-                label="Save preferred reference"
-                pendingLabel="Saving..."
-                className={joinClasses(buttonStyles.primary, mobileButtonClass)}
-              />
-            </form>
-
-            {isUsingPreferredReference ? (
-              <form action={removePreferredReferenceUrl} className="mt-3">
-                <input type="hidden" name="piece_id" value={piece.id} />
-                <input type="hidden" name="redirect_to" value={redirectTo} />
-
-                <SubmitButton
-                  label="Remove preferred reference"
-                  pendingLabel="Removing..."
-                  className={joinClasses(
-                    buttonStyles.destructiveSecondary,
-                    mobileButtonClass
-                  )}
-                />
-              </form>
             ) : null}
           </MobileSection>
 

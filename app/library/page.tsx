@@ -10,12 +10,19 @@ import {
   removeTuneFromMyApp,
 } from "@/lib/actions/pieces"
 import { addReferenceUrlToPiece } from "@/lib/actions/reference-media"
+import { upsertPreferredReferenceUrl } from "@/lib/actions/user-piece-metadata"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadLibraryData, type LibrarySort } from "@/lib/loaders/library"
 import { loadPagePreferences } from "@/lib/loaders/page-preferences"
 import { LIBRARY_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 import { getPieceFilterOptions } from "@/lib/search-filters"
-import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
+import type {
+  LearningList,
+  LearningListItemMembership,
+  Piece,
+  UserKnownPiece,
+  UserPiece,
+} from "@/lib/types"
 
 type SearchParamValue = string | string[] | undefined
 
@@ -31,6 +38,7 @@ type LibraryPageProps = {
     import?: SearchParamValue
     list_add?: SearchParamValue
     reference_url?: SearchParamValue
+    preferred_reference?: SearchParamValue
     create_tune?: SearchParamValue
     bulk_upload?: SearchParamValue
     row?: SearchParamValue
@@ -129,6 +137,9 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     currentPage,
     userPieces,
     userKnownPieces,
+    userPieceMetadata,
+    mediaLinks,
+    mediaLoops,
     learningLists,
     learningListItems,
     styleOptions,
@@ -148,6 +159,9 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
   const listAddStatus = firstParam(resolvedSearchParams?.list_add)
   const referenceUrlStatus = firstParam(resolvedSearchParams?.reference_url)
+  const preferredReferenceStatus = firstParam(
+    resolvedSearchParams?.preferred_reference
+  )
   const createTuneStatus = firstParam(resolvedSearchParams?.create_tune)
   const bulkUploadStatus = firstParam(resolvedSearchParams?.bulk_upload)
   const bulkUploadRow = firstParam(resolvedSearchParams?.row)
@@ -333,6 +347,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
           createTuneStatus={createTuneStatus}
           listAddStatus={listAddStatus}
           referenceUrlStatus={referenceUrlStatus}
+          preferredReferenceStatus={preferredReferenceStatus}
           removeTuneStatus={removeTuneStatus}
           removeFromPracticeStatus={removeFromPracticeStatus}
           deleteTuneStatus={deleteTuneStatus}
@@ -360,13 +375,19 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
           userPieces={userPieces as UserPiece[] | null}
           userKnownPieces={userKnownPieces as UserKnownPiece[]}
           learningLists={learningLists as LearningList[] | null}
-          learningListItems={learningListItems as any}
+          learningListItems={
+            learningListItems as LearningListItemMembership[] | null
+          }
           currentUserRole={currentUserRole}
           startLearning={startLearning}
           addToLearningList={addToLearningList}
           removeTuneFromMyApp={removeTuneFromMyApp}
           deleteCanonicalTuneAsModerator={deleteCanonicalTuneAsModerator}
           addReferenceUrlToPiece={addReferenceUrlToPiece}
+          upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
+          userPieceMetadata={userPieceMetadata}
+          mediaLinks={mediaLinks}
+          mediaLoops={mediaLoops}
           redirectTo={redirectTo}
           scrollPieceId={scrollPieceId}
           hasActiveFilters={hasActiveFilters}

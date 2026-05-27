@@ -5,7 +5,7 @@ import ActivePracticeFoci from "@/components/practice/ActivePracticeFoci"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import PracticeProgress from "@/components/practice/PracticeProgress"
 import RecentPracticeNotes from "@/components/practice/RecentPracticeNotes"
-import ReferenceMediaLink from "@/components/ReferenceMediaLink"
+import PreferredReferenceControl from "@/components/reference-media/PreferredReferenceControl"
 import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeButton"
 import ReviewNoteModal from "@/components/practice/ReviewNoteModal"
 import {
@@ -23,6 +23,7 @@ type PracticeReviewCardProps = {
   badgeClassName: string
   practiceDiaryEnabled: boolean
   noteCategories: PracticeNoteCategory[]
+  upsertPreferredReferenceUrl: (formData: FormData) => Promise<void>
 }
 
 export default function PracticeReviewCard({
@@ -30,6 +31,7 @@ export default function PracticeReviewCard({
   redirectTo,
   practiceDiaryEnabled,
   noteCategories,
+  upsertPreferredReferenceUrl,
 }: PracticeReviewCardProps) {
   const [selectedOutcome, setSelectedOutcome] =
     useState<ReviewOutcomeConfig | null>(null)
@@ -79,22 +81,24 @@ export default function PracticeReviewCard({
         </p>
       </div>
 
-      {userPiece.effective_reference_url && userPiece.piece?.title ? (
+      {userPiece.piece &&
+      (userPiece.piece.reference_url || userPiece.media_links.length > 0) ? (
         <div className="mt-5 w-full">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             {userPiece.is_using_preferred_reference
               ? "Preferred reference"
               : "Reference"}
           </p>
-          <ReferenceMediaLink
-            referenceUrl={userPiece.effective_reference_url}
-            title={
-              userPiece.effective_reference_label || userPiece.piece.title
-            }
+          <PreferredReferenceControl
             pieceId={userPiece.piece.id}
+            title={userPiece.piece.title}
+            defaultReferenceUrl={userPiece.piece.reference_url}
+            mediaLinks={userPiece.media_links}
+            metadata={userPiece.preferred_reference_metadata}
             redirectTo={redirectTo}
             savedLoops={userPiece.saved_media_loops}
-            className="flex w-full items-center justify-center rounded-full border border-border bg-muted px-4 py-2 text-center text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
+            triggerClassName="flex w-full items-center justify-center rounded-full border border-border bg-muted px-4 py-2 text-center text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
         </div>
       ) : null}

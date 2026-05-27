@@ -8,6 +8,7 @@ import PracticeStatusMessages from "@/components/practice/PracticeStatusMessages
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import PracticeDiaryNav from "@/components/practice-diary/PracticeDiaryNav"
 import { joinClasses } from "@/components/ui/buttonStyles"
+import { upsertPreferredReferenceUrl } from "@/lib/actions/user-piece-metadata"
 import { loadPagePreferences } from "@/lib/loaders/page-preferences"
 import { loadReviewPageData } from "@/lib/loaders/review"
 import { PRACTICE_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
@@ -17,6 +18,7 @@ type ReviewPageProps = {
     mode?: string
     remove_from_practice?: string
     practice_update?: string
+    preferred_reference?: string | string[]
     page_options?: string | string[]
     loop?: string | string[]
   }>
@@ -87,6 +89,9 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     resolvedSearchParams?.remove_from_practice ?? ""
   const practiceUpdate = resolvedSearchParams?.practice_update ?? ""
   const loopStatus = getSingleValue(resolvedSearchParams?.loop)
+  const preferredReferenceStatus = getSingleValue(
+    resolvedSearchParams?.preferred_reference
+  )
   const pageOptionsMessage = getPageOptionsMessage(
     getSingleValue(resolvedSearchParams?.page_options)
   )
@@ -185,6 +190,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           practiceUpdate={practiceUpdate}
           removeFromPracticeStatus={removeFromPracticeStatus}
           loopStatus={loopStatus}
+          preferredReferenceStatus={preferredReferenceStatus}
         />
       ) : null}
 
@@ -199,6 +205,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
             redirectTo={redirectTo}
             practiceDiaryEnabled={practiceDiaryEnabled}
             noteCategories={noteCategories}
+            upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
           />
         </div>
       ) : null}
@@ -216,6 +223,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
             defaultOpen={shouldOpenCatchUp}
             practiceDiaryEnabled={practiceDiaryEnabled}
             noteCategories={noteCategories}
+            upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
           />
         </div>
       ) : null}

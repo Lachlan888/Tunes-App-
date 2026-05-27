@@ -2,8 +2,9 @@
 
 import Link from "next/link"
 import type { ReactNode } from "react"
-import ReferenceMediaLink from "@/components/ReferenceMediaLink"
+import PreferredReferenceControl from "@/components/reference-media/PreferredReferenceControl"
 import ClickableCard from "@/components/ui/ClickableCard"
+import type { PreferredReferenceMetadata } from "@/lib/effective-reference"
 import { getStyleLabelsFromPiece } from "@/lib/search-filters"
 import type { Piece, UserPieceMediaLoop } from "@/lib/types"
 
@@ -20,11 +21,19 @@ type TuneCardProps = {
   style: Piece["style"]
   timeSignature: Piece["time_signature"]
   referenceUrl?: Piece["reference_url"]
+  mediaLinks?: Array<{
+    id: number
+    url: string
+    label: string | null
+  }>
+  referenceMetadata?: PreferredReferenceMetadata
   pieceStyles?: Piece["piece_styles"]
   listNames?: string[]
   listLinks?: TuneCardListLink[]
   redirectTo?: string
   savedLoops?: UserPieceMediaLoop[]
+  upsertPreferredReferenceUrl?: (formData: FormData) => Promise<void>
+  addPieceMediaLink?: (formData: FormData) => Promise<void>
   topRightAction?: ReactNode
   children?: ReactNode
 }
@@ -36,11 +45,15 @@ export default function TuneCard({
   style,
   timeSignature,
   referenceUrl,
+  mediaLinks,
+  referenceMetadata,
   pieceStyles,
   listNames = [],
   listLinks = [],
   redirectTo,
   savedLoops,
+  upsertPreferredReferenceUrl,
+  addPieceMediaLink,
   topRightAction,
   children,
 }: TuneCardProps) {
@@ -104,15 +117,20 @@ export default function TuneCard({
         ) : null}
       </div>
 
-      {referenceUrl && (
+      {(referenceUrl || (mediaLinks && mediaLinks.length > 0)) && (
         <div data-card-action className="mt-4">
-          <ReferenceMediaLink
-            referenceUrl={referenceUrl}
-            title={title}
+          <PreferredReferenceControl
             pieceId={id}
-            redirectTo={redirectTo}
+            title={title}
+            defaultReferenceUrl={referenceUrl}
+            mediaLinks={mediaLinks}
+            metadata={referenceMetadata}
+            redirectTo={redirectTo ?? `/library/${id}`}
+            upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
+            addPieceMediaLink={addPieceMediaLink}
             savedLoops={savedLoops}
-            className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+            compact
+            triggerClassName="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
           />
         </div>
       )}

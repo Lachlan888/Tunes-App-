@@ -14,10 +14,15 @@ import type {
   LearningList,
   LearningListItemMembership,
   Piece,
+  UserPieceMediaLoop,
   UserKnownPiece,
   UserPiece,
   UserRole,
 } from "@/lib/types"
+import type {
+  LibraryPieceMediaLink,
+  LibraryUserPieceMetadata,
+} from "@/lib/loaders/library"
 
 type LibraryListProps = {
   pieces: Piece[] | null
@@ -26,12 +31,16 @@ type LibraryListProps = {
   userKnownPieces: UserKnownPiece[] | null
   learningLists: LearningList[] | null
   learningListItems: LearningListItemMembership[] | null
+  userPieceMetadata: LibraryUserPieceMetadata[] | null
+  mediaLinks: LibraryPieceMediaLink[] | null
+  mediaLoops: UserPieceMediaLoop[] | null
   currentUserRole: UserRole
   startLearning: (formData: FormData) => Promise<void>
   addToLearningList: (formData: FormData) => Promise<void>
   removeTuneFromMyApp: (formData: FormData) => Promise<void>
   deleteCanonicalTuneAsModerator: (formData: FormData) => Promise<void>
   addReferenceUrlToPiece: (formData: FormData) => Promise<void>
+  upsertPreferredReferenceUrl: (formData: FormData) => Promise<void>
   redirectTo: string
   scrollPieceId: string
   hasActiveFilters: boolean
@@ -109,12 +118,16 @@ export default function LibraryList({
   userKnownPieces,
   learningLists,
   learningListItems,
+  userPieceMetadata,
+  mediaLinks,
+  mediaLoops,
   currentUserRole,
   startLearning,
   addToLearningList,
   removeTuneFromMyApp,
   deleteCanonicalTuneAsModerator,
   addReferenceUrlToPiece,
+  upsertPreferredReferenceUrl,
   redirectTo,
   scrollPieceId,
   hasActiveFilters,
@@ -155,6 +168,15 @@ export default function LibraryList({
     const isAlreadyInPractice = Boolean(activeUserPiece)
     const isKnown = getIsKnown(piece.id, userKnownPieces)
     const listLinks = getListLinksForPiece(piece.id, learningListItems)
+    const referenceMetadata =
+      (userPieceMetadata ?? []).find((metadata) => metadata.piece_id === piece.id) ??
+      null
+    const pieceMediaLinks = (mediaLinks ?? []).filter(
+      (link) => link.piece_id === piece.id
+    )
+    const pieceMediaLoops = (mediaLoops ?? []).filter(
+      (loop) => loop.piece_id === piece.id
+    )
     const isInAList = listLinks.length > 0
     const isStatusOpen = openStatusPieceId === piece.id
 
@@ -166,8 +188,13 @@ export default function LibraryList({
         style={piece.style}
         timeSignature={piece.time_signature}
         referenceUrl={piece.reference_url}
+        mediaLinks={pieceMediaLinks}
+        referenceMetadata={referenceMetadata}
         pieceStyles={piece.piece_styles}
         listLinks={listLinks}
+        redirectTo={pieceRedirectTo}
+        savedLoops={pieceMediaLoops}
+        upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
         topRightAction={
           isModerator ? (
             <button
