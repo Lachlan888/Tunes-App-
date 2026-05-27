@@ -1,8 +1,6 @@
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type { UserPieceMediaLoop } from "@/lib/types"
 import type {
-  BacklogGroupSummary,
-  BacklogTier,
   Piece,
   StreakSummary,
   UserPiece,
@@ -98,8 +96,6 @@ export type ReviewQueueItem = UserPiece & {
   piece: Piece | null
   due_date_only: string | null
   overdue_days: number
-  backlog_tier: BacklogTier | null
-  backlog_label: string | null
   recent_practice_notes: RecentPracticeNoteForReview[]
   active_practice_foci: PracticeFocusForReview[]
   practice_focus_options: PracticeFocusForReview[]
@@ -122,6 +118,4 @@ export type ReviewPageData = {
   practiceItems: ReviewQueueItem[]
   dueTodayPieces: ReviewQueueItem[]
   catchUpQueue: ReviewQueueItem[]
-  backlogSummary: BacklogGroupSummary[]
-  needsAttentionCount: number
 }

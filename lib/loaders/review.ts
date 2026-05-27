@@ -5,11 +5,9 @@ import {
   loadRecentPracticeNotesByPieceId,
 } from "@/lib/loaders/review/notes"
 import {
-  buildBacklogSummary,
   buildCatchUpQueue,
   buildDueTodayPieces,
   buildReviewQueueItems,
-  getNeedsAttentionCount,
   getReviewPieceIds,
   loadPreferredReferencesByPieceId,
   loadReviewMediaLinksByPieceId,
@@ -100,8 +98,6 @@ export async function loadReviewPageData() {
 
   const dueTodayPieces = buildDueTodayPieces(practiceItems)
   const catchUpQueue = buildCatchUpQueue(practiceItems)
-  const backlogSummary = buildBacklogSummary(catchUpQueue)
-  const needsAttentionCount = getNeedsAttentionCount(backlogSummary)
 
   return {
     user,
@@ -111,7 +107,5 @@ export async function loadReviewPageData() {
     practiceItems,
     dueTodayPieces,
     catchUpQueue,
-    backlogSummary,
-    needsAttentionCount,
   }
 }

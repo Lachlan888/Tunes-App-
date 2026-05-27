@@ -103,7 +103,6 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     practiceItems,
     dueTodayPieces,
     catchUpQueue,
-    backlogSummary,
   } = await loadReviewPageData()
 
   const redirectTo = "/review"
@@ -218,7 +217,6 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         >
           <CatchUpSection
             catchUpQueue={catchUpQueue}
-            backlogSummary={backlogSummary}
             redirectTo={redirectTo}
             defaultOpen={shouldOpenCatchUp}
             practiceDiaryEnabled={practiceDiaryEnabled}

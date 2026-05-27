@@ -2,13 +2,10 @@ import type { createClient } from "@/lib/supabase/server"
 import type { UserPieceMediaLoop } from "@/lib/types"
 import { getEffectiveReference } from "@/lib/effective-reference"
 import {
-  getBacklogTier,
-  getBacklogTierLabel,
   getOverdueDays,
   isDueExactlyToday,
   normaliseStoredDate,
 } from "@/lib/review"
-import type { BacklogGroupSummary } from "@/lib/types"
 import { getPiece, sortByDueDateAscending, sortByMostOverdueFirst } from "./helpers"
 import type {
   PracticeFocusForReview,
@@ -180,7 +177,7 @@ export function buildReviewQueueItems({
     .map((userPiece) => {
       const piece = getPiece(userPiece.pieces)
       const dueDateOnly = normaliseStoredDate(userPiece.next_review_due)
-      const backlogTier = getBacklogTier(userPiece.next_review_due, today)
+      const overdueDays = getOverdueDays(userPiece.next_review_due, today)
       const {
         effectiveReferenceUrl,
         effectiveReferenceLabel,
@@ -196,9 +193,7 @@ export function buildReviewQueueItems({
         ...userPiece,
         piece,
         due_date_only: dueDateOnly,
-        overdue_days: getOverdueDays(userPiece.next_review_due, today),
-        backlog_tier: backlogTier,
-        backlog_label: backlogTier ? getBacklogTierLabel(backlogTier) : null,
+        overdue_days: overdueDays,
         recent_practice_notes:
           recentNotesByPieceId.get(userPiece.piece_id) ?? [],
         active_practice_foci:
@@ -228,36 +223,6 @@ export function buildCatchUpQueue(
   practiceItems: ReviewQueueItem[]
 ): ReviewQueueItem[] {
   return practiceItems
-    .filter((item) => item.backlog_tier !== null)
+    .filter((item) => item.overdue_days > 0)
     .sort(sortByMostOverdueFirst)
-}
-
-export function buildBacklogSummary(
-  catchUpQueue: ReviewQueueItem[]
-): BacklogGroupSummary[] {
-  return [
-    {
-      tier: "due_now",
-      label: getBacklogTierLabel("due_now"),
-      count: catchUpQueue.filter((item) => item.backlog_tier === "due_now")
-        .length,
-    },
-    {
-      tier: "overdue",
-      label: getBacklogTierLabel("overdue"),
-      count: catchUpQueue.filter((item) => item.backlog_tier === "overdue")
-        .length,
-    },
-    {
-      tier: "overdue_longest",
-      label: getBacklogTierLabel("overdue_longest"),
-      count: catchUpQueue.filter(
-        (item) => item.backlog_tier === "overdue_longest"
-      ).length,
-    },
-  ]
-}
-
-export function getNeedsAttentionCount(backlogSummary: BacklogGroupSummary[]) {
-  return backlogSummary.reduce((sum, group) => sum + group.count, 0)
 }

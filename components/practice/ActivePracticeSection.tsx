@@ -19,19 +19,6 @@ function formatDueDate(dateValue: string | null) {
   })
 }
 
-function getStatusBadgeClasses(label: string | null) {
-  switch (label) {
-    case "Due now":
-      return "border border-warning bg-warning/30 text-warning-foreground"
-    case "Overdue":
-      return "border border-destructive/40 bg-destructive/15 text-destructive"
-    case "Overdue (longest)":
-      return "border border-destructive bg-destructive/20 text-destructive"
-    default:
-      return "border border-border bg-muted text-muted-foreground"
-  }
-}
-
 export default function ActivePracticeSection({
   practiceItems,
   redirectTo,
@@ -55,11 +42,15 @@ export default function ActivePracticeSection({
           <ul className="mt-4 divide-y divide-border/70 md:space-y-3 md:divide-y-0">
             {practiceItems.map((userPiece) => {
               const badgeLabel =
-                userPiece.backlog_label ??
-                (userPiece.due_date_only ? "Scheduled" : "No due date")
+                userPiece.overdue_days > 0
+                  ? "Overdue"
+                  : userPiece.due_date_only
+                    ? "Scheduled"
+                    : "No due date"
 
-              const badgeClassName = userPiece.backlog_label
-                ? getStatusBadgeClasses(userPiece.backlog_label)
+              const badgeClassName =
+                userPiece.overdue_days > 0
+                  ? "border border-destructive/40 bg-destructive/15 text-destructive"
                 : badgeLabel === "Scheduled"
                   ? "border border-border bg-muted text-muted-foreground"
                   : "border border-border bg-background/70 text-muted-foreground"
