@@ -17,10 +17,7 @@ import {
   upsertPreferredReferenceUrl,
   upsertUserPieceNotes,
 } from "@/lib/actions/user-piece-metadata"
-import {
-  addPieceMediaLink,
-  addPieceSheetMusicLink,
-} from "@/lib/actions/piece-links"
+import { addPieceSheetMusicLink } from "@/lib/actions/piece-links"
 import { addToLearningList } from "@/lib/actions/lists"
 import { addReferenceUrlToPiece } from "@/lib/actions/reference-media"
 import { startLearning } from "@/lib/actions/user-pieces"
@@ -111,7 +108,6 @@ export default async function PiecePage({
     typedPiece,
     typedUserPieceMetadata,
     typedSheetMusicLinks,
-    typedMediaLinks,
     typedMediaLoops,
     typedPieceComments,
     typedPieceLoreEntries,
@@ -136,9 +132,7 @@ export default async function PiecePage({
     commentReport: getSingleSearchParamValue(
       resolvedSearchParams?.comment_report
     ),
-    loreReport: getSingleSearchParamValue(
-      resolvedSearchParams?.lore_report
-    ),
+    loreReport: getSingleSearchParamValue(resolvedSearchParams?.lore_report),
     lore: getSingleSearchParamValue(resolvedSearchParams?.lore),
     moderatorEdit: getSingleSearchParamValue(
       resolvedSearchParams?.moderator_edit
@@ -224,7 +218,7 @@ export default async function PiecePage({
         </div>
       </section>
 
-      <div className="mt-5 md:mt-8">
+      <div className="mt-5 md:hidden">
         <TuneDetailMobileSwitcher
           pieceId={pieceId}
           currentUserId={user.id}
@@ -235,7 +229,6 @@ export default async function PiecePage({
           userKnownPiece={typedUserKnownPiece}
           userPieceMetadata={typedUserPieceMetadata}
           sheetMusicLinks={typedSheetMusicLinks}
-          mediaLinks={typedMediaLinks}
           mediaLoops={typedMediaLoops}
           pieceComments={typedPieceComments}
           pieceLoreEntries={typedPieceLoreEntries}
@@ -254,14 +247,68 @@ export default async function PiecePage({
           upsertUserPieceNotes={upsertUserPieceNotes}
           upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
           removePreferredReferenceUrl={removePreferredReferenceUrl}
-          addPieceMediaLink={addPieceMediaLink}
           addPieceSheetMusicLink={addPieceSheetMusicLink}
           addReferenceUrlToPiece={addReferenceUrlToPiece}
         />
       </div>
 
-      <div className="mt-6 hidden min-w-0 grid-cols-1 gap-6 sm:mt-8 sm:gap-8 md:grid xl:grid-cols-2 2xl:grid-cols-3">
-        <div className="min-w-0 space-y-6 sm:space-y-8">
+      <div className="mt-8 hidden grid-cols-1 gap-6 md:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)]">
+        <div className="min-w-0 space-y-6">
+          {showTuneSection("media_links") ? (
+            <PieceMediaLinksSection
+              piece={typedPiece}
+              redirectTo={redirectTo}
+              userPieceMetadata={typedUserPieceMetadata}
+              savedLoops={typedMediaLoops}
+              upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
+              removePreferredReferenceUrl={removePreferredReferenceUrl}
+              addReferenceUrlToPiece={addReferenceUrlToPiece}
+            />
+          ) : null}
+
+          {showTuneSection("sheet_music") ? (
+            <PieceSheetMusicSection
+              pieceId={pieceId}
+              redirectTo={redirectTo}
+              sheetMusicLinks={typedSheetMusicLinks}
+              addPieceSheetMusicLink={addPieceSheetMusicLink}
+            />
+          ) : null}
+
+          {showTuneSection("my_notes") ? (
+            <TunePrivateNotesSection
+              pieceId={pieceId}
+              redirectTo={redirectTo}
+              userPieceMetadata={typedUserPieceMetadata}
+              upsertUserPieceNotes={upsertUserPieceNotes}
+            />
+          ) : null}
+
+          {showTuneSection("practice_history") ? (
+            <TunePracticeHistorySection notes={typedPracticeNotes} />
+          ) : null}
+
+          {showTuneSection("lore") ? (
+            <PieceLoreSection
+              pieceId={pieceId}
+              loreEntries={typedPieceLoreEntries}
+              profileMap={profileMap}
+              currentUserId={user.id}
+              currentUserRole={currentUserRole}
+            />
+          ) : null}
+
+          {showTuneSection("comments") ? (
+            <PieceCommentsSection
+              pieceId={pieceId}
+              comments={typedPieceComments}
+              profileMap={profileMap}
+              currentUserId={user.id}
+            />
+          ) : null}
+        </div>
+
+        <aside className="min-w-0 space-y-6">
           {showTuneSection("tune_state") ? (
             <TuneDetailActions
               piece={typedPiece}
@@ -295,70 +342,7 @@ export default async function PiecePage({
               currentUserRole={currentUserRole}
             />
           ) : null}
-        </div>
-
-        <div className="min-w-0 space-y-6 sm:space-y-8">
-          {showTuneSection("my_notes") ? (
-            <TunePrivateNotesSection
-              pieceId={pieceId}
-              redirectTo={redirectTo}
-              userPieceMetadata={typedUserPieceMetadata}
-              upsertUserPieceNotes={upsertUserPieceNotes}
-            />
-          ) : null}
-
-          {showTuneSection("practice_history") ? (
-            <TunePracticeHistorySection notes={typedPracticeNotes} />
-          ) : null}
-
-          {showTuneSection("media_links") ? (
-            <PieceMediaLinksSection
-              piece={typedPiece}
-              redirectTo={redirectTo}
-              userPieceMetadata={typedUserPieceMetadata}
-              mediaLinks={typedMediaLinks}
-              savedLoops={typedMediaLoops}
-              upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
-              removePreferredReferenceUrl={removePreferredReferenceUrl}
-              addPieceMediaLink={addPieceMediaLink}
-              addReferenceUrlToPiece={addReferenceUrlToPiece}
-            />
-          ) : null}
-
-          {showTuneSection("sheet_music") ? (
-            <PieceSheetMusicSection
-              pieceId={pieceId}
-              redirectTo={redirectTo}
-              sheetMusicLinks={typedSheetMusicLinks}
-              addPieceSheetMusicLink={addPieceSheetMusicLink}
-            />
-          ) : null}
-        </div>
-
-        <div className="min-w-0 space-y-6 sm:space-y-8 xl:col-span-2 2xl:col-span-1">
-          {showTuneSection("lore") ? (
-            <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
-              <PieceLoreSection
-                pieceId={pieceId}
-                loreEntries={typedPieceLoreEntries}
-                profileMap={profileMap}
-                currentUserId={user.id}
-                currentUserRole={currentUserRole}
-              />
-            </section>
-          ) : null}
-
-          {showTuneSection("comments") ? (
-            <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
-              <PieceCommentsSection
-                pieceId={pieceId}
-                comments={typedPieceComments}
-                profileMap={profileMap}
-                currentUserId={user.id}
-              />
-            </section>
-          ) : null}
-        </div>
+        </aside>
       </div>
     </main>
   )

@@ -14,13 +14,13 @@ import { loadProfileMapForCommunityRows } from "./tune-detail/helpers"
 import { loadTuneLinks } from "./tune-detail/links"
 import { loadTunePracticeHistory } from "./tune-detail/practice-history"
 import { loadTuneUserState } from "./tune-detail/user-state"
+
 export type {
   CommentAuthor,
   LearningListItemRow,
   PieceCommentRow,
   PieceLoreCategory,
   PieceLoreEntryRow,
-  PieceMediaLink,
   PieceSheetMusicLink,
   PracticeNoteRow,
   PracticeProfileRow,
@@ -31,6 +31,7 @@ export type {
   UserPieceMediaLoop,
   UserPieceMetadata,
 } from "./tune-detail/types"
+
 import type { TuneDetailLoadResult } from "./tune-detail/types"
 
 export async function loadTuneDetailData(
@@ -107,7 +108,6 @@ export async function loadTuneDetailData(
     typedPiece: piece,
     typedUserPieceMetadata: userState.typedUserPieceMetadata,
     typedSheetMusicLinks: tuneLinks.typedSheetMusicLinks,
-    typedMediaLinks: tuneLinks.typedMediaLinks,
     typedMediaLoops: tuneLinks.typedMediaLoops,
     typedPieceComments: tuneCommunity.typedPieceComments,
     typedPieceLoreEntries: tuneCommunity.typedPieceLoreEntries,

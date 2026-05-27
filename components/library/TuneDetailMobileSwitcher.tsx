@@ -12,7 +12,6 @@ import type {
   LearningListItemRow,
   PieceCommentRow,
   PieceLoreEntryRow,
-  PieceMediaLink,
   PieceSheetMusicLink,
   ProfileRow,
   TunePracticeNote,
@@ -41,7 +40,6 @@ type TuneDetailMobileSwitcherProps = {
   userKnownPiece: UserKnownPiece | null
   userPieceMetadata: UserPieceMetadata | null
   sheetMusicLinks: PieceSheetMusicLink[]
-  mediaLinks: PieceMediaLink[]
   mediaLoops: UserPieceMediaLoop[]
   pieceComments: PieceCommentRow[]
   pieceLoreEntries: PieceLoreEntryRow[]
@@ -60,7 +58,6 @@ type TuneDetailMobileSwitcherProps = {
   upsertUserPieceNotes: (formData: FormData) => Promise<void>
   upsertPreferredReferenceUrl: (formData: FormData) => Promise<void>
   removePreferredReferenceUrl: (formData: FormData) => Promise<void>
-  addPieceMediaLink: (formData: FormData) => Promise<void>
   addPieceSheetMusicLink: (formData: FormData) => Promise<void>
   addReferenceUrlToPiece: (formData: FormData) => Promise<void>
 }
@@ -125,7 +122,6 @@ export default function TuneDetailMobileSwitcher({
   userKnownPiece,
   userPieceMetadata,
   sheetMusicLinks,
-  mediaLinks,
   mediaLoops,
   pieceComments,
   pieceLoreEntries,
@@ -144,7 +140,6 @@ export default function TuneDetailMobileSwitcher({
   upsertUserPieceNotes,
   upsertPreferredReferenceUrl,
   removePreferredReferenceUrl,
-  addPieceMediaLink,
   addPieceSheetMusicLink,
   addReferenceUrlToPiece,
 }: TuneDetailMobileSwitcherProps) {
@@ -187,14 +182,12 @@ export default function TuneDetailMobileSwitcher({
           piece={piece}
           redirectTo={redirectTo}
           userPieceMetadata={userPieceMetadata}
-          mediaLinks={mediaLinks}
           savedLoops={mediaLoops}
           sheetMusicLinks={sheetMusicLinks}
           showMediaLinks={showMediaLinks}
           showSheetMusic={showSheetMusic}
           upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
           removePreferredReferenceUrl={removePreferredReferenceUrl}
-          addPieceMediaLink={addPieceMediaLink}
           addPieceSheetMusicLink={addPieceSheetMusicLink}
           addReferenceUrlToPiece={addReferenceUrlToPiece}
         />

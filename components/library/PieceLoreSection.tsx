@@ -157,11 +157,11 @@ export default function PieceLoreSection({
   const isModerator = canUseModeratorTools(currentUserRole)
 
   return (
-    <div>
+    <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
       <div>
-        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Sources &amp; Lore
-        </h3>
+        </h2>
 
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
           Add shared background, source notes, alternate titles, regional notes,
@@ -200,9 +200,9 @@ export default function PieceLoreSection({
         <div className="mt-8 space-y-7">
           {groupedLoreEntries.map((group) => (
             <section key={group.category}>
-              <h4 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 {group.label}
-              </h4>
+              </h3>
 
               <ul className="mt-3 space-y-3">
                 {group.entries.map((entry) => {
@@ -317,7 +317,11 @@ export default function PieceLoreSection({
         >
           <form action={updatePieceLoreEntry} className="space-y-3">
             <input type="hidden" name="piece_id" value={pieceId} />
-            <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
+            <input
+              type="hidden"
+              name="redirect_to"
+              value={`/library/${pieceId}`}
+            />
             <input
               type="hidden"
               name="lore_entry_id"
@@ -388,7 +392,11 @@ export default function PieceLoreSection({
 
           <form action={reportPieceLoreEntry} className="space-y-3">
             <input type="hidden" name="piece_id" value={pieceId} />
-            <input type="hidden" name="redirect_to" value={`/library/${pieceId}`} />
+            <input
+              type="hidden"
+              name="redirect_to"
+              value={`/library/${pieceId}`}
+            />
             <input
               type="hidden"
               name="lore_entry_id"
@@ -429,6 +437,6 @@ export default function PieceLoreSection({
           </form>
         </ModalShell>
       ) : null}
-    </div>
+    </section>
   )
 }

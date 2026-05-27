@@ -193,7 +193,7 @@ export default function PieceCommentsSection({
   )
 
   return (
-    <div>
+    <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
       <div>
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Comments
@@ -238,8 +238,8 @@ export default function PieceCommentsSection({
                 ) : (
                   <>
                     <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="whitespace-pre-wrap text-sm leading-6 text-foreground">
+                      <div className="min-w-0">
+                        <p className="whitespace-pre-wrap break-words text-sm leading-6 text-foreground">
                           {comment.body}
                         </p>
 
@@ -265,7 +265,7 @@ export default function PieceCommentsSection({
                   </>
                 )}
 
-                {replies.length > 0 && (
+                {replies.length > 0 ? (
                   <div className="mt-4 space-y-3 border-l-2 border-border pl-4">
                     {replies.map((reply) => {
                       const replyAuthor = profileMap[reply.user_id] ?? {
@@ -288,8 +288,8 @@ export default function PieceCommentsSection({
                           ) : (
                             <>
                               <div className="flex items-start justify-between gap-4">
-                                <div>
-                                  <p className="whitespace-pre-wrap text-sm leading-6 text-foreground">
+                                <div className="min-w-0">
+                                  <p className="whitespace-pre-wrap break-words text-sm leading-6 text-foreground">
                                     {reply.body}
                                   </p>
 
@@ -319,7 +319,7 @@ export default function PieceCommentsSection({
                       )
                     })}
                   </div>
-                )}
+                ) : null}
 
                 {!isHidden ? (
                   <div className="mt-4 border-t border-border pt-4">
@@ -341,6 +341,6 @@ export default function PieceCommentsSection({
           No comments yet.
         </p>
       )}
-    </div>
+    </section>
   )
 }
