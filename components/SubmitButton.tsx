@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { useFormStatus } from "react-dom"
 import LoadingSpinner from "@/components/ui/LoadingSpinner"
 
@@ -13,6 +14,8 @@ type SubmitButtonProps = {
   value?: string
   title?: string
   ariaDescribedBy?: string
+  children?: ReactNode
+  pendingChildren?: ReactNode
 }
 
 export default function SubmitButton({
@@ -25,6 +28,8 @@ export default function SubmitButton({
   value,
   title,
   ariaDescribedBy,
+  children,
+  pendingChildren,
 }: SubmitButtonProps) {
   const { pending } = useFormStatus()
   const isPending = pending || forcePending
@@ -41,7 +46,9 @@ export default function SubmitButton({
       aria-describedby={ariaDescribedBy}
       className={`${className} disabled:cursor-not-allowed disabled:opacity-60`}
     >
-      {isPending ? (
+      {isPending && pendingChildren ? (
+        pendingChildren
+      ) : isPending ? (
         <span className="inline-flex items-center justify-center gap-2">
           <LoadingSpinner
             label={pendingLabel ?? label}
@@ -50,6 +57,8 @@ export default function SubmitButton({
           />
           <span>{pendingLabel ?? label}</span>
         </span>
+      ) : children ? (
+        children
       ) : (
         label
       )}

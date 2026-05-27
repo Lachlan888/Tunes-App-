@@ -54,7 +54,7 @@ export default function ListOverviewCard({
 
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
             <span className={cardStyles.statusBadge}>{visibilityLabel}</span>
-            {list.is_imported ? <span>Imported</span> : null}
+            {list.is_imported ? <span>Your editable copy</span> : null}
             {list.stylesPresent.slice(0, 3).map((style) => (
               <span key={style}>{style}</span>
             ))}
@@ -155,7 +155,9 @@ export default function ListOverviewCard({
             <div className="shrink-0 text-right text-sm text-muted-foreground">
               <div className={cardStyles.statusBadge}>{visibilityLabel}</div>
 
-              {list.is_imported && <div className="mt-2">Imported</div>}
+              {list.is_imported && (
+                <div className="mt-2">Your editable copy</div>
+              )}
 
               <div className="mt-2">
                 {list.tuneCount} tune{list.tuneCount === 1 ? "" : "s"}

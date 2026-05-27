@@ -11,6 +11,7 @@ import {
   addToLearningList,
   deleteList,
   removeTuneFromList,
+  unbookmarkPublicList,
   updateList,
 } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
@@ -26,6 +27,7 @@ type LearningListsPageProps = {
   searchParams?: Promise<{
     create_list?: string
     edit_list?: string
+    bookmark_public?: string
     page_options?: string | string[]
     q?: string | string[]
     size?: string | string[]
@@ -49,6 +51,17 @@ function getPageOptionsMessage(status: string) {
   if (status === "saved") return "Lists page options saved."
   if (status === "reset") return "Lists page options reset."
   if (status === "error") return "Could not save Lists page options."
+
+  return null
+}
+
+function getBookmarkMessage(status: string) {
+  if (status === "removed") return "Bookmark removed."
+  if (status === "error") return "Could not update that bookmark."
+  if (status === "not_found") return "That shared list could not be found."
+  if (status === "unavailable") {
+    return "Bookmarking is not available until the bookmark table migration has been applied."
+  }
 
   return null
 }
@@ -100,6 +113,9 @@ export default async function LearningListsPage({
 
   const createListStatus = resolvedSearchParams?.create_list ?? ""
   const editListStatus = resolvedSearchParams?.edit_list ?? ""
+  const bookmarkMessage = getBookmarkMessage(
+    getSingleValue(resolvedSearchParams?.bookmark_public)
+  )
   const pageOptionsMessage = getPageOptionsMessage(
     getSingleValue(resolvedSearchParams?.page_options)
   )
@@ -118,6 +134,7 @@ export default async function LearningListsPage({
     learningQueueTunes,
     unlistedPracticeTunes,
     unlistedKnownTunes,
+    bookmarkedSharedLists,
   } = await loadListsData()
 
   const { styles: availableStyles } = getListFilterOptions(listOverviews)
@@ -155,11 +172,18 @@ export default async function LearningListsPage({
         </div>
       ) : null}
 
+      {bookmarkMessage ? (
+        <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
+          {bookmarkMessage}
+        </div>
+      ) : null}
+
       <div className="md:hidden">
         <ListsMobileSwitcher
           userEmail={user.email}
           myTunes={myTunes}
           learningQueueTunes={learningQueueTunes}
+          bookmarkedSharedLists={bookmarkedSharedLists}
           unlistedPracticeTunes={unlistedPracticeTunes}
           unlistedKnownTunes={unlistedKnownTunes}
           learningLists={learningLists}
@@ -182,6 +206,7 @@ export default async function LearningListsPage({
           redirectTo={redirectTo}
           addToLearningList={addToLearningList}
           startLearning={startLearning}
+          unbookmarkPublicList={unbookmarkPublicList}
           updateList={updateList}
           removeTuneFromList={removeTuneFromList}
           deleteList={deleteList}
@@ -199,7 +224,7 @@ export default async function LearningListsPage({
                 Organise your tunes
               </h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-                Keep repertoire, practice queues, session sets, and imported
+                Keep repertoire, practice queues, session sets, and copied
                 collections in clear working lists.
               </p>
               <p className="mt-4 text-sm text-muted-foreground">
@@ -234,9 +259,11 @@ export default async function LearningListsPage({
             learningQueueTunes={learningQueueTunes}
             unlistedPracticeTunes={unlistedPracticeTunes}
             unlistedKnownTunes={unlistedKnownTunes}
+            bookmarkedSharedLists={bookmarkedSharedLists}
             learningLists={learningLists}
             addToLearningList={addToLearningList}
             startLearning={startLearning}
+            unbookmarkPublicList={unbookmarkPublicList}
             redirectTo={redirectTo}
           />
         ) : null}
@@ -288,18 +315,29 @@ export default async function LearningListsPage({
                 primaryActionLabel="Reset view"
               />
             ) : (
-              <div className="space-y-4">
-                {filteredListOverviews.map((list) => (
-                  <ListOverviewCard
-                    key={list.id}
-                    list={list}
-                    redirectTo={redirectTo}
-                    updateList={updateList}
-                    removeTuneFromList={removeTuneFromList}
-                    deleteList={deleteList}
-                  />
-                ))}
-              </div>
+              <section>
+                <div className="mb-4">
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Your lists
+                  </h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Editable lists you created or copied.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  {filteredListOverviews.map((list) => (
+                    <ListOverviewCard
+                      key={list.id}
+                      list={list}
+                      redirectTo={redirectTo}
+                      updateList={updateList}
+                      removeTuneFromList={removeTuneFromList}
+                      deleteList={deleteList}
+                    />
+                  ))}
+                </div>
+              </section>
             )}
           </>
         ) : null}

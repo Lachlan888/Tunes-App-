@@ -31,6 +31,14 @@ type PieceIdRow = {
   piece_id: number
 }
 
+function isMissingBookmarksTableError(error: { code?: string; message?: string }) {
+  return (
+    error.code === "PGRST205" ||
+    error.code === "42P01" ||
+    Boolean(error.message?.includes("learning_list_bookmarks"))
+  )
+}
+
 function extractPiece(piece: Piece | Piece[] | null): Piece | null {
   if (!piece) return null
   return Array.isArray(piece) ? piece[0] ?? null : piece
@@ -103,20 +111,41 @@ export async function loadPublicListDetailData(rawListId: string) {
   let activePieceIds = new Set<number>()
   let knownPieceIds = new Set<number>()
   let ownedLists: OwnedLearningListRow[] = []
+  let isBookmarkedByCurrentUser = false
+  let bookmarksTableIsAvailable = true
 
   if (user) {
-    const { data: ownedLearningLists, error: ownedLearningListsError } =
-      await supabase
+    const [
+      { data: ownedLearningLists, error: ownedLearningListsError },
+      { data: bookmark, error: bookmarkError },
+    ] = await Promise.all([
+      supabase
         .from("learning_lists")
         .select("id, name")
         .eq("user_id", user.id)
-        .order("name", { ascending: true })
+        .order("name", { ascending: true }),
+      supabase
+        .from("learning_list_bookmarks")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("learning_list_id", typedList.id)
+        .maybeSingle(),
+    ])
 
     if (ownedLearningListsError) {
       throw new Error(ownedLearningListsError.message)
     }
 
+    if (bookmarkError) {
+      if (!isMissingBookmarksTableError(bookmarkError)) {
+        throw new Error(bookmarkError.message)
+      }
+
+      bookmarksTableIsAvailable = false
+    }
+
     ownedLists = (ownedLearningLists ?? []) as OwnedLearningListRow[]
+    isBookmarkedByCurrentUser = Boolean(bookmark) && bookmarksTableIsAvailable
   }
 
   if (user && pieceIds.length > 0) {
@@ -160,5 +189,7 @@ export async function loadPublicListDetailData(rawListId: string) {
     knownPieceIds,
     redirectTo,
     isViewingOwnPublicList,
+    isBookmarkedByCurrentUser,
+    canBookmark: Boolean(user) && !isViewingOwnPublicList,
   }
 }

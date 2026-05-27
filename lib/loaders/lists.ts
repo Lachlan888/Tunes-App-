@@ -30,6 +30,45 @@ type LearningListItemWithPieceRow = {
     | null
 }
 
+type LearningListBookmarkRow = {
+  learning_list_id: number
+  created_at: string | null
+  learning_lists:
+    | {
+        id: number
+        user_id: string
+        name: string
+        description: string | null
+        visibility: string
+      }
+    | {
+        id: number
+        user_id: string
+        name: string
+        description: string | null
+        visibility: string
+      }[]
+    | null
+}
+
+type BookmarkOwnerProfileRow = {
+  id: string
+  username: string | null
+  display_name: string | null
+}
+
+type BookmarkCountRow = {
+  learning_list_id: number
+}
+
+function isMissingBookmarksTableError(error: { code?: string; message?: string }) {
+  return (
+    error.code === "PGRST205" ||
+    error.code === "42P01" ||
+    Boolean(error.message?.includes("learning_list_bookmarks"))
+  )
+}
+
 export type LearningQueueTune = {
   piece: Piece
   firstAddedAt: string | null
@@ -38,6 +77,18 @@ export type LearningQueueTune = {
   firstListName: string
   listIds: number[]
   listNames: string[]
+}
+
+export type BookmarkedSharedListSummary = {
+  id: number
+  name: string
+  description: string | null
+  ownerUserId: string
+  ownerUsername: string | null
+  ownerDisplayName: string | null
+  ownerLabel: string
+  tuneCount: number
+  bookmarkedAt: string | null
 }
 
 function extractPieceTitle(
@@ -88,6 +139,35 @@ function extractList(
   return list
 }
 
+function extractBookmarkedList(
+  list: LearningListBookmarkRow["learning_lists"]
+) {
+  if (!list) return null
+  if (Array.isArray(list)) {
+    return list[0] ?? null
+  }
+  return list
+}
+
+function formatBookmarkOwnerLabel(profile: {
+  username: string | null
+  displayName: string | null
+}) {
+  if (profile.displayName && profile.username) {
+    return `${profile.displayName} (@${profile.username})`
+  }
+
+  if (profile.displayName) {
+    return profile.displayName
+  }
+
+  if (profile.username) {
+    return `@${profile.username}`
+  }
+
+  return "Unknown user"
+}
+
 function getQueueSortValue(item: LearningListItemWithPieceRow) {
   return item.created_at ?? `9999-12-31T23:59:59.999Z-${item.id}`
 }
@@ -111,6 +191,7 @@ export async function loadListsData() {
       data: learningListItemsWithPieces,
       error: learningListItemsWithPiecesError,
     },
+    { data: bookmarkedSharedListRows, error: bookmarkedSharedListRowsError },
   ] = await Promise.all([
     supabase
       .from("learning_lists")
@@ -176,6 +257,25 @@ export async function loadListsData() {
       .eq("learning_lists.user_id", user.id)
       .order("created_at", { ascending: true })
       .order("position", { ascending: true }),
+
+    supabase
+      .from("learning_list_bookmarks")
+      .select(
+        `
+        learning_list_id,
+        created_at,
+        learning_lists!inner(
+          id,
+          user_id,
+          name,
+          description,
+          visibility
+        )
+      `
+      )
+      .eq("user_id", user.id)
+      .eq("learning_lists.visibility", "public")
+      .order("created_at", { ascending: false }),
   ])
 
   if (learningListsError) {
@@ -194,12 +294,22 @@ export async function loadListsData() {
     throw new Error(learningListItemsWithPiecesError.message)
   }
 
+  if (
+    bookmarkedSharedListRowsError &&
+    !isMissingBookmarksTableError(bookmarkedSharedListRowsError)
+  ) {
+    throw new Error(bookmarkedSharedListRowsError.message)
+  }
+
   const typedLearningLists = (learningLists ?? []) as LearningList[]
   const typedUserPieces = (userPieces ?? []) as UserPieceWithPiece[]
   const typedUserKnownPieces = (userKnownPieces ??
     []) as UserKnownPieceWithPiece[]
   const typedLearningListItemsWithPieces = (learningListItemsWithPieces ??
     []) as LearningListItemWithPieceRow[]
+  const typedBookmarkedSharedListRows = bookmarkedSharedListRowsError
+    ? []
+    : ((bookmarkedSharedListRows ?? []) as LearningListBookmarkRow[])
 
   const listedPieceIds = new Set(
     typedLearningListItemsWithPieces.map((item) => item.piece_id)
@@ -317,6 +427,93 @@ export async function loadListsData() {
     }
   )
 
+  const bookmarkedListRows = typedBookmarkedSharedListRows
+    .map((bookmark) => ({
+      bookmark,
+      list: extractBookmarkedList(bookmark.learning_lists),
+    }))
+    .filter(
+      (entry): entry is {
+        bookmark: LearningListBookmarkRow
+        list: NonNullable<ReturnType<typeof extractBookmarkedList>>
+      } => entry.list !== null
+    )
+
+  const bookmarkedListIds = bookmarkedListRows.map((entry) => entry.list.id)
+  const bookmarkedOwnerIds = [
+    ...new Set(bookmarkedListRows.map((entry) => entry.list.user_id)),
+  ]
+
+  let bookmarkProfilesById: Record<
+    string,
+    { username: string | null; displayName: string | null }
+  > = {}
+  let bookmarkCountsByListId: Record<number, number> = {}
+
+  if (bookmarkedOwnerIds.length > 0) {
+    const { data: bookmarkProfiles, error: bookmarkProfilesError } =
+      await supabase
+        .from("profiles")
+        .select("id, username, display_name")
+        .in("id", bookmarkedOwnerIds)
+
+    if (bookmarkProfilesError) {
+      throw new Error(bookmarkProfilesError.message)
+    }
+
+    bookmarkProfilesById = (
+      (bookmarkProfiles ?? []) as BookmarkOwnerProfileRow[]
+    ).reduce(
+      (acc, profile) => {
+        acc[profile.id] = {
+          username: profile.username,
+          displayName: profile.display_name,
+        }
+        return acc
+      },
+      {} as Record<string, { username: string | null; displayName: string | null }>
+    )
+  }
+
+  if (bookmarkedListIds.length > 0) {
+    const { data: bookmarkCountRows, error: bookmarkCountRowsError } =
+      await supabase
+        .from("learning_list_items")
+        .select("learning_list_id")
+        .in("learning_list_id", bookmarkedListIds)
+
+    if (bookmarkCountRowsError) {
+      throw new Error(bookmarkCountRowsError.message)
+    }
+
+    bookmarkCountsByListId = (
+      (bookmarkCountRows ?? []) as BookmarkCountRow[]
+    ).reduce((acc, row) => {
+      acc[row.learning_list_id] = (acc[row.learning_list_id] ?? 0) + 1
+      return acc
+    }, {} as Record<number, number>)
+  }
+
+  const bookmarkedSharedLists: BookmarkedSharedListSummary[] =
+    bookmarkedListRows.map(({ bookmark, list }) => {
+      const ownerProfile = bookmarkProfilesById[list.user_id] ?? {
+        username: null,
+        displayName: null,
+      }
+
+      return {
+        id: list.id,
+        name: list.name,
+        description: list.description,
+        ownerUserId: list.user_id,
+        ownerUsername: ownerProfile.username,
+        ownerDisplayName: ownerProfile.displayName,
+        ownerLabel: formatBookmarkOwnerLabel(ownerProfile),
+        tuneCount: bookmarkCountsByListId[list.id] ?? 0,
+        bookmarkedAt: bookmark.created_at,
+      }
+    })
+
   const listOverviews: FilterableLearningList[] = typedLearningLists.map(
     (list) => {
       const tunes = tunesByListId.get(list.id) ?? []
@@ -346,5 +543,6 @@ export async function loadListsData() {
     learningQueueTunes,
     unlistedPracticeTunes,
     unlistedKnownTunes,
+    bookmarkedSharedLists,
   }
 }

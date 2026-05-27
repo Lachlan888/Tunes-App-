@@ -3,16 +3,19 @@
 import Link from "next/link"
 import { useState } from "react"
 import EmptyState from "@/components/EmptyState"
+import BookmarkedSharedListsModal from "@/components/lists/BookmarkedSharedListsModal"
 import CreateListModal from "@/components/lists/CreateListModal"
 import LearningQueueModal from "@/components/lists/LearningQueueModal"
 import ListOverviewCard from "@/components/lists/ListOverviewCard"
 import ListSearchFilters from "@/components/lists/ListSearchFilters"
 import ListsStatusMessages from "@/components/lists/ListsStatusMessages"
-import MyTunesModal from "@/components/lists/MyTunesModal"
 import UnlistedKnownTunesModal from "@/components/lists/UnlistedKnownTunesModal"
 import UnlistedPracticeTunesModal from "@/components/lists/UnlistedPracticeTunesModal"
 import { joinClasses } from "@/components/ui/buttonStyles"
-import type { LearningQueueTune } from "@/lib/loaders/lists"
+import type {
+  BookmarkedSharedListSummary,
+  LearningQueueTune,
+} from "@/lib/loaders/lists"
 import type {
   FilterableLearningList,
   LearningList,
@@ -27,6 +30,7 @@ type ListsMobileSwitcherProps = {
   userEmail: string | null | undefined
   myTunes: MyTuneRow[]
   learningQueueTunes: LearningQueueTune[]
+  bookmarkedSharedLists: BookmarkedSharedListSummary[]
   unlistedPracticeTunes: UserPieceWithPiece[]
   unlistedKnownTunes: UserKnownPieceWithPiece[]
   learningLists: LearningList[]
@@ -49,6 +53,7 @@ type ListsMobileSwitcherProps = {
   redirectTo: string
   addToLearningList: (formData: FormData) => Promise<void>
   startLearning: (formData: FormData) => Promise<void>
+  unbookmarkPublicList: (formData: FormData) => Promise<void>
   updateList: (formData: FormData) => Promise<void>
   removeTuneFromList: (formData: FormData) => Promise<void>
   deleteList: (formData: FormData) => Promise<void>
@@ -133,7 +138,7 @@ function CountRows({
   ]
 
   return (
-    <div className="divide-y divide-border/70 border-y border-border/70">
+    <div className="divide-y divide-border/70">
       {rows.map((row) => {
         const content = (
           <>
@@ -183,24 +188,30 @@ function OverviewTab({
   userEmail,
   myTunes,
   learningQueueTunes,
+  bookmarkedSharedLists,
   learningLists,
+  unbookmarkPublicList,
   showCreateList,
   showSummaryGrid,
+  redirectTo,
   onSelectTab,
 }: Pick<
   ListsMobileSwitcherProps,
   | "userEmail"
   | "myTunes"
   | "learningQueueTunes"
+  | "bookmarkedSharedLists"
   | "learningLists"
+  | "unbookmarkPublicList"
   | "showCreateList"
   | "showSummaryGrid"
+  | "redirectTo"
 > & {
   onSelectTab: (tab: ListsMobileTab) => void
 }) {
   return (
     <div className="space-y-5">
-      <section className="border-b border-border/70 pb-4">
+      <section className="pb-4">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Lists
         </p>
@@ -221,22 +232,24 @@ function OverviewTab({
       </section>
 
       {showSummaryGrid ? (
-        <section className="space-y-3">
-          <h2 className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            State
-          </h2>
-          <CountRows
-            myTunesCount={myTunes.length}
-            learningQueueCount={learningQueueTunes.length}
-            listsCount={learningLists.length}
-            onSelectTab={onSelectTab}
-          />
+        <section>
+          <div className="divide-y divide-border/70 border-y border-border/70">
+            <CountRows
+              myTunesCount={myTunes.length}
+              learningQueueCount={learningQueueTunes.length}
+              listsCount={learningLists.length}
+              onSelectTab={onSelectTab}
+            />
 
-          {myTunes.length > 0 ? (
-            <div className="pt-1">
-              <MyTunesModal myTunes={myTunes} />
-            </div>
-          ) : null}
+            <BookmarkedSharedListsModal
+              bookmarkedSharedLists={bookmarkedSharedLists}
+              unbookmarkPublicList={unbookmarkPublicList}
+              redirectTo={redirectTo}
+              summaryClassName=""
+              summaryVariant="compact"
+              triggerClassName={compactActionClassName}
+            />
+          </div>
         </section>
       ) : null}
     </div>
@@ -300,10 +313,11 @@ function ListsTab({
         <section className="flex flex-wrap items-center justify-between gap-3 border-y border-border/70 py-3">
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Lists
+              Your lists
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Showing {filteredListOverviews.length} of {listOverviews.length}
+              Editable lists you created or copied. Showing{" "}
+              {filteredListOverviews.length} of {listOverviews.length}
             </p>
           </div>
 

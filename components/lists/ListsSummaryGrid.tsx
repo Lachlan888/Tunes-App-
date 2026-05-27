@@ -1,9 +1,14 @@
 import EmptyState from "@/components/EmptyState"
+import BookmarkedSharedListsModal from "@/components/lists/BookmarkedSharedListsModal"
 import LearningQueueModal from "@/components/lists/LearningQueueModal"
 import MyTunesModal from "@/components/lists/MyTunesModal"
 import UnlistedKnownTunesModal from "@/components/lists/UnlistedKnownTunesModal"
 import UnlistedPracticeTunesModal from "@/components/lists/UnlistedPracticeTunesModal"
-import type { LearningQueueTune } from "@/lib/loaders/lists"
+import { buttonStyles } from "@/components/ui/buttonStyles"
+import type {
+  BookmarkedSharedListSummary,
+  LearningQueueTune,
+} from "@/lib/loaders/lists"
 import type {
   LearningList,
   MyTuneRow,
@@ -16,9 +21,11 @@ type ListsSummaryGridProps = {
   learningQueueTunes: LearningQueueTune[]
   unlistedPracticeTunes: UserPieceWithPiece[]
   unlistedKnownTunes: UserKnownPieceWithPiece[]
+  bookmarkedSharedLists: BookmarkedSharedListSummary[]
   learningLists: LearningList[]
   addToLearningList: (formData: FormData) => Promise<void>
   startLearning: (formData: FormData) => Promise<void>
+  unbookmarkPublicList: (formData: FormData) => Promise<void>
   redirectTo: string
 }
 
@@ -42,13 +49,15 @@ export default function ListsSummaryGrid({
   learningQueueTunes,
   unlistedPracticeTunes,
   unlistedKnownTunes,
+  bookmarkedSharedLists,
   learningLists,
   addToLearningList,
   startLearning,
+  unbookmarkPublicList,
   redirectTo,
 }: ListsSummaryGridProps) {
   const visibleSummaryCount =
-    1 +
+    2 +
     (learningQueueTunes.length > 0 ? 1 : 0) +
     (unlistedPracticeTunes.length > 0 ? 1 : 0) +
     (unlistedKnownTunes.length > 0 ? 1 : 0)
@@ -56,40 +65,47 @@ export default function ListsSummaryGrid({
   return (
     <div className={getSummaryGridClass(visibleSummaryCount)}>
       <section className={summaryCardClass}>
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Repertoire
-          </p>
-          <h2 className="mt-2 font-serif text-2xl font-bold text-foreground">
-            My Tunes
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Known and active practice tunes.
-          </p>
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Repertoire
+            </p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Known and active practice tunes.
+            </p>
 
-          <p className="mt-3 text-sm font-medium text-muted-foreground">
-            {myTunes.length} tune{myTunes.length === 1 ? "" : "s"}
-          </p>
-        </div>
-
-        {myTunes.length === 0 ? (
-          <EmptyState
-            title="No personal tunes yet"
-            description="Tunes you mark as known or start practising will appear here."
-            secondaryActionHref="/library"
-            secondaryActionLabel="Browse Tunes"
-            className="mt-4"
-          />
-        ) : (
-          <div className="mt-5">
-            <MyTunesModal myTunes={myTunes} />
+            <p className="mt-3 text-sm font-medium text-muted-foreground">
+              {myTunes.length} tune{myTunes.length === 1 ? "" : "s"}
+            </p>
           </div>
-        )}
+
+          {myTunes.length === 0 ? (
+            <EmptyState
+              title="No personal tunes yet"
+              description="Tunes you mark as known or start practising will appear here."
+              secondaryActionHref="/library"
+              secondaryActionLabel="Browse Tunes"
+              className="mt-4"
+            />
+          ) : (
+            <MyTunesModal
+              myTunes={myTunes}
+              triggerClassName={buttonStyles.primary}
+            />
+          )}
+        </div>
       </section>
 
       <LearningQueueModal
         learningQueueTunes={learningQueueTunes}
         startLearning={startLearning}
+        redirectTo={redirectTo}
+        summaryClassName={summaryCardClass}
+      />
+
+      <BookmarkedSharedListsModal
+        bookmarkedSharedLists={bookmarkedSharedLists}
+        unbookmarkPublicList={unbookmarkPublicList}
         redirectTo={redirectTo}
         summaryClassName={summaryCardClass}
       />
@@ -100,6 +116,7 @@ export default function ListsSummaryGrid({
         addToLearningList={addToLearningList}
         redirectTo={redirectTo}
         summaryClassName={summaryCardClass}
+        triggerClassName={buttonStyles.primary}
       />
 
       <UnlistedKnownTunesModal
@@ -108,6 +125,7 @@ export default function ListsSummaryGrid({
         addToLearningList={addToLearningList}
         redirectTo={redirectTo}
         summaryClassName={summaryCardClass}
+        triggerClassName={buttonStyles.primary}
       />
     </div>
   )

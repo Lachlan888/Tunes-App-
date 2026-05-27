@@ -50,7 +50,6 @@ export default function UnlistedKnownTunesModal({
   addToLearningList,
   redirectTo,
   summaryClassName = "rounded-2xl border border-border bg-card p-5 shadow-sm",
-  summaryVariant = "card",
   triggerClassName,
 }: UnlistedKnownTunesModalProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -77,8 +76,6 @@ export default function UnlistedKnownTunesModal({
     return null
   }
 
-  const isCompact = summaryVariant === "compact"
-
   return (
     <>
       <section className={summaryClassName}>
@@ -87,16 +84,7 @@ export default function UnlistedKnownTunesModal({
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Known tunes
             </p>
-            <h2
-              className={
-                isCompact
-                  ? "mt-1 text-base font-semibold text-foreground"
-                  : "mt-2 font-serif text-2xl font-bold text-foreground"
-              }
-            >
-              Known, not in a list
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
               {unlistedKnownTunes.length} tune
               {unlistedKnownTunes.length === 1 ? "" : "s"} need organising.
             </p>

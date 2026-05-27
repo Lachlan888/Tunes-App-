@@ -37,7 +37,7 @@ export default function CreateListModal() {
         desktopMaxWidth="md:max-w-xl"
         eyebrow="Lists"
         title="Create List"
-        description="Make a container for repertoire, practice plans, session sets, or imported tune groups."
+        description="Make a container for repertoire, practice plans, session sets, or copied tune groups."
       >
         <CreateListForm
           createList={createList}

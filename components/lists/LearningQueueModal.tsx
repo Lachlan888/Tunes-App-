@@ -39,7 +39,6 @@ export default function LearningQueueModal({
   startLearning,
   redirectTo,
   summaryClassName = "rounded-2xl border border-border bg-card p-5 shadow-sm",
-  summaryVariant = "card",
   triggerClassName,
 }: LearningQueueModalProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -65,7 +64,6 @@ export default function LearningQueueModal({
   }
 
   const nextTune = learningQueueTunes[0]
-  const isCompact = summaryVariant === "compact"
 
   return (
     <>
@@ -75,16 +73,7 @@ export default function LearningQueueModal({
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Learning Queue
             </p>
-            <h2
-              className={
-                isCompact
-                  ? "mt-1 text-base font-semibold text-foreground"
-                  : "mt-2 font-serif text-2xl font-bold text-foreground"
-              }
-            >
-              Saved for later
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
               {learningQueueTunes.length} tune
               {learningQueueTunes.length === 1 ? "" : "s"} in your lists but
               not yet in Practice or Known.

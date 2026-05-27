@@ -59,7 +59,7 @@ const SIZE_OPTIONS = [
 
 const SOURCE_OPTIONS = [
   { value: "mine", label: "Mine" },
-  { value: "imported", label: "Imported" },
+  { value: "imported", label: "Copied" },
 ] as const
 
 const VISIBILITY_OPTIONS = [

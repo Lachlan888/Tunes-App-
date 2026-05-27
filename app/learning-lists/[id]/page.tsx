@@ -321,7 +321,7 @@ export default async function LearningListDetailPage({
                 <>
                   <span aria-hidden="true">•</span>
                   <span className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold text-muted-foreground">
-                    Imported
+                    Your editable copy
                   </span>
                 </>
               )}

@@ -38,6 +38,14 @@ function appendQueryParams(
   return nextUrl
 }
 
+function isMissingBookmarksTableError(error: { code?: string; message?: string }) {
+  return (
+    error.code === "PGRST205" ||
+    error.code === "42P01" ||
+    Boolean(error.message?.includes("learning_list_bookmarks"))
+  )
+}
+
 function getSelectedLearningListIds(formData: FormData) {
   const multiListIds = formData.getAll("learning_list_ids")
   const singleListId = formData.get("learning_list_id")
@@ -365,7 +373,7 @@ export async function importPublicList(formData: FormData) {
     .from("learning_lists")
     .insert({
       user_id: user.id,
-      name: `${sourceList.name} (Imported)`,
+      name: `${sourceList.name} (Copy)`,
       description: sourceList.description,
       visibility: "private",
       is_imported: true,
@@ -395,7 +403,7 @@ export async function importPublicList(formData: FormData) {
 
   redirect(
     appendQueryParams(redirectTo, {
-      import_public: "imported_all",
+      import_public: "copied_all",
       imported_list_id: newList.id,
     })
   )
@@ -500,12 +508,126 @@ export async function importSelectedPublicListItems(formData: FormData) {
 
   redirect(
     appendQueryParams(redirectTo, {
-      import_public: "imported_selected",
+      import_public: "copied_selected",
       added_count: addedCount,
       duplicate_count: duplicateCount,
       imported_list_id: targetLearningListId,
     })
   )
+}
+
+export async function bookmarkPublicList(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const listId = Number(formData.get("learning_list_id"))
+  const redirectTo = String(
+    formData.get("redirect_to") ?? `/public-lists/${listId}`
+  )
+
+  if (!Number.isInteger(listId) || listId <= 0) {
+    redirect(appendQueryParam(redirectTo, "bookmark_public", "not_found"))
+  }
+
+  const { data: list, error: listError } = await supabase
+    .from("learning_lists")
+    .select("id, user_id, visibility")
+    .eq("id", listId)
+    .eq("visibility", "public")
+    .maybeSingle()
+
+  if (listError || !list) {
+    redirect(appendQueryParam(redirectTo, "bookmark_public", "not_found"))
+  }
+
+  if (list.user_id === user.id) {
+    redirect(appendQueryParam(redirectTo, "bookmark_public", "own_list"))
+  }
+
+  const { data: existingBookmark, error: existingBookmarkError } =
+    await supabase
+      .from("learning_list_bookmarks")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("learning_list_id", listId)
+      .maybeSingle()
+
+  if (existingBookmarkError) {
+    if (isMissingBookmarksTableError(existingBookmarkError)) {
+      redirect(appendQueryParam(redirectTo, "bookmark_public", "unavailable"))
+    }
+
+    redirect(appendQueryParam(redirectTo, "bookmark_public", "error"))
+  }
+
+  if (existingBookmark) {
+    redirect(appendQueryParam(redirectTo, "bookmark_public", "already"))
+  }
+
+  const { error: insertError } = await supabase
+    .from("learning_list_bookmarks")
+    .insert({
+      user_id: user.id,
+      learning_list_id: listId,
+    })
+
+  if (insertError) {
+    if (isMissingBookmarksTableError(insertError)) {
+      redirect(appendQueryParam(redirectTo, "bookmark_public", "unavailable"))
+    }
+
+    redirect(appendQueryParam(redirectTo, "bookmark_public", "error"))
+  }
+
+  revalidatePath("/learning-lists")
+  revalidatePath(`/public-lists/${listId}`)
+  redirect(appendQueryParam(redirectTo, "bookmark_public", "bookmarked"))
+}
+
+export async function unbookmarkPublicList(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const listId = Number(formData.get("learning_list_id"))
+  const redirectTo = String(
+    formData.get("redirect_to") ?? `/public-lists/${listId}`
+  )
+
+  if (!Number.isInteger(listId) || listId <= 0) {
+    redirect(appendQueryParam(redirectTo, "bookmark_public", "not_found"))
+  }
+
+  const { error: deleteError } = await supabase
+    .from("learning_list_bookmarks")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("learning_list_id", listId)
+
+  if (deleteError) {
+    if (isMissingBookmarksTableError(deleteError)) {
+      redirect(appendQueryParam(redirectTo, "bookmark_public", "unavailable"))
+    }
+
+    redirect(appendQueryParam(redirectTo, "bookmark_public", "error"))
+  }
+
+  revalidatePath("/learning-lists")
+  revalidatePath(`/public-lists/${listId}`)
+  redirect(appendQueryParam(redirectTo, "bookmark_public", "removed"))
 }
 
 export async function updateList(formData: FormData) {
@@ -706,7 +828,7 @@ export async function toggleLearningListVisibility(formData: FormData) {
   }
 
   if (nextVisibility === "public" && existingList.is_imported) {
-    throw new Error("Imported lists cannot be made public")
+    throw new Error("Copied lists cannot be made public")
   }
 
   const { error: updateError } = await supabase

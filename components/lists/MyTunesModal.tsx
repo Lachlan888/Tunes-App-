@@ -14,6 +14,7 @@ type MyTuneRow = {
 
 type MyTunesModalProps = {
   myTunes: MyTuneRow[]
+  triggerClassName?: string
 }
 
 function MyTuneLinkRow({
@@ -76,7 +77,10 @@ function MyTuneLinkRow({
   )
 }
 
-export default function MyTunesModal({ myTunes }: MyTunesModalProps) {
+export default function MyTunesModal({
+  myTunes,
+  triggerClassName,
+}: MyTunesModalProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
@@ -100,7 +104,7 @@ export default function MyTunesModal({ myTunes }: MyTunesModalProps) {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className={buttonStyles.secondary}
+        className={triggerClassName ?? buttonStyles.secondary}
       >
         View My Tunes
       </button>
