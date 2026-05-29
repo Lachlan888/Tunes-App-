@@ -1,5 +1,6 @@
 import type { SupabaseServerClient } from "@/lib/auth/session"
 import { sendNotificationEmailForNotificationId } from "@/lib/services/notification-emails"
+import { createAdminClient } from "@/lib/supabase/admin"
 
 export type SetlistNotificationType =
   | "setlist_invite"
@@ -33,7 +34,12 @@ export async function notifySingleUser({
 }) {
   if (recipientUserId === actorUserId) return null
 
-  const { data: notification, error } = await supabase
+  const insertClient =
+    notificationType === "setlist_invite"
+      ? (createAdminClient() as unknown as SupabaseServerClient)
+      : supabase
+
+  const { data: notification, error } = await insertClient
     .from("user_notifications")
     .insert({
       recipient_user_id: recipientUserId,

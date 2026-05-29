@@ -234,3 +234,57 @@ export async function acceptFriendRequest(formData: FormData) {
 
   redirect(appendQueryParam(redirectTo, "friend_accept", "accepted"))
 }
+
+export async function declineFriendRequest(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const connectionId = Number(formData.get("connection_id"))
+  const redirectTo = String(formData.get("redirect_to") ?? "/friends")
+
+  if (!connectionId || Number.isNaN(connectionId)) {
+    redirect(
+      appendQueryParam(redirectTo, "friend_decline", "missing_connection")
+    )
+  }
+
+  const { data: connection, error: connectionError } = await supabase
+    .from("connections")
+    .select("id, addressee_id, status")
+    .eq("id", connectionId)
+    .maybeSingle()
+
+  if (connectionError) {
+    throw new Error(connectionError.message)
+  }
+
+  if (!connection) {
+    redirect(appendQueryParam(redirectTo, "friend_decline", "not_found"))
+  }
+
+  if (connection.addressee_id !== user.id) {
+    redirect(appendQueryParam(redirectTo, "friend_decline", "forbidden"))
+  }
+
+  if (connection.status !== "pending") {
+    redirect(appendQueryParam(redirectTo, "friend_decline", "invalid_status"))
+  }
+
+  const { error: deleteError } = await supabase
+    .from("connections")
+    .delete()
+    .eq("id", connectionId)
+
+  if (deleteError) {
+    throw new Error(deleteError.message)
+  }
+
+  redirect(appendQueryParam(redirectTo, "friend_decline", "declined"))
+}

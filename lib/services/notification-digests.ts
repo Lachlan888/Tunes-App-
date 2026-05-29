@@ -266,17 +266,31 @@ async function markNotificationsDigestSent({
   notificationIds: number[]
   deliveryLogId: number
 }) {
-  const { error } = await supabase
-    .from("user_notifications")
-    .update({
-      digest_email_sent_at: new Date().toISOString(),
-      digest_email_log_id: deliveryLogId,
-    })
-    .in("id", notificationIds)
+  let lastError: { message?: string } | null = null
 
-  if (error) {
-    throw new Error(error.message)
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const { error } = await supabase
+      .from("user_notifications")
+      .update({
+        digest_email_sent_at: new Date().toISOString(),
+        digest_email_log_id: deliveryLogId,
+      })
+      .in("id", notificationIds)
+
+    if (!error) return
+
+    lastError = error
+    console.error("Error marking digest notifications as sent:", {
+      deliveryLogId,
+      notificationCount: notificationIds.length,
+      attempt,
+      error,
+    })
   }
+
+  throw new Error(
+    lastError?.message ?? "Digest notification sent markers were not updated."
+  )
 }
 
 async function processDigestForUser({

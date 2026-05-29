@@ -7,7 +7,11 @@ import RecentFriendActivitySection from "@/components/friends/RecentFriendActivi
 import SubmitButton from "@/components/SubmitButton"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import { statusStyles, type StatusTone } from "@/components/ui/statusStyles"
-import { acceptFriendRequest, sendFriendRequest } from "@/lib/actions/friends"
+import {
+  acceptFriendRequest,
+  declineFriendRequest,
+  sendFriendRequest,
+} from "@/lib/actions/friends"
 import { loadFriendsPageData } from "@/lib/loaders/friends"
 
 type FriendsPageProps = {
@@ -15,6 +19,7 @@ type FriendsPageProps = {
     q?: string | string[]
     friend_request?: string
     friend_accept?: string
+    friend_decline?: string
   }>
 }
 
@@ -199,22 +204,46 @@ function IncomingRequestsSection({
                 )}
               </div>
 
-              <form action={acceptFriendRequest} className="shrink-0">
-                <input
-                  type="hidden"
-                  name="connection_id"
-                  value={request.connection_id}
-                />
-                <input type="hidden" name="redirect_to" value="/friends" />
-                <SubmitButton
-                  label="Accept"
-                  pendingLabel="Accepting..."
-                  className={joinClasses(
-                    buttonStyles.primary,
-                    "min-h-9 px-3 py-1.5 text-xs sm:px-4 sm:text-sm"
-                  )}
-                />
-              </form>
+              <div className="flex w-full flex-col gap-2 min-[420px]:w-auto min-[420px]:shrink-0 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-end">
+                <form
+                  action={acceptFriendRequest}
+                  className="w-full min-[420px]:w-auto"
+                >
+                  <input
+                    type="hidden"
+                    name="connection_id"
+                    value={request.connection_id}
+                  />
+                  <input type="hidden" name="redirect_to" value="/friends" />
+                  <SubmitButton
+                    label="Accept"
+                    pendingLabel="Accepting..."
+                    className={joinClasses(
+                      buttonStyles.primary,
+                      "min-h-9 px-3 py-1.5 text-xs sm:px-4 sm:text-sm"
+                    )}
+                  />
+                </form>
+                <form
+                  action={declineFriendRequest}
+                  className="w-full min-[420px]:w-auto"
+                >
+                  <input
+                    type="hidden"
+                    name="connection_id"
+                    value={request.connection_id}
+                  />
+                  <input type="hidden" name="redirect_to" value="/friends" />
+                  <SubmitButton
+                    label="Refuse"
+                    pendingLabel="Refusing..."
+                    className={joinClasses(
+                      buttonStyles.destructiveSecondary,
+                      "min-h-9 px-3 py-1.5 text-xs sm:px-4 sm:text-sm"
+                    )}
+                  />
+                </form>
+              </div>
             </article>
           ))}
         </div>
@@ -230,6 +259,9 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
     resolvedSearchParams?.friend_request
   )
   const friendAcceptStatus = getSingleValue(resolvedSearchParams?.friend_accept)
+  const friendDeclineStatus = getSingleValue(
+    resolvedSearchParams?.friend_decline
+  )
 
   const {
     pendingIncomingRequests,
@@ -321,6 +353,34 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
       )}
 
       {friendAcceptStatus === "invalid_status" && (
+        <StatusBanner tone="warning">
+          That request is no longer pending.
+        </StatusBanner>
+      )}
+
+      {friendDeclineStatus === "declined" && (
+        <StatusBanner tone="success">Friend request refused.</StatusBanner>
+      )}
+
+      {friendDeclineStatus === "missing_connection" && (
+        <StatusBanner tone="warning">
+          Could not tell which friend request to refuse.
+        </StatusBanner>
+      )}
+
+      {friendDeclineStatus === "not_found" && (
+        <StatusBanner tone="error">
+          That friend request could not be found.
+        </StatusBanner>
+      )}
+
+      {friendDeclineStatus === "forbidden" && (
+        <StatusBanner tone="error">
+          You are not allowed to refuse that request.
+        </StatusBanner>
+      )}
+
+      {friendDeclineStatus === "invalid_status" && (
         <StatusBanner tone="warning">
           That request is no longer pending.
         </StatusBanner>
