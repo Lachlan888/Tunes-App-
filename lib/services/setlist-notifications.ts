@@ -1,4 +1,5 @@
 import type { SupabaseServerClient } from "@/lib/auth/session"
+import { sendNotificationEmailForNotificationId } from "@/lib/services/notification-emails"
 
 export type SetlistNotificationType =
   | "setlist_invite"
@@ -30,21 +31,51 @@ export async function notifySingleUser({
 }: NotifySetlistMembersInput & {
   recipientUserId: string
 }) {
-  if (recipientUserId === actorUserId) return
+  if (recipientUserId === actorUserId) return null
 
-  const { error } = await supabase.from("user_notifications").insert({
-    recipient_user_id: recipientUserId,
-    actor_user_id: actorUserId,
-    notification_type: notificationType,
-    setlist_id: setlistId,
-    setlist_item_id: setlistItemId,
-    piece_id: pieceId,
-    body_preview: bodyPreview,
-  })
+  const { data: notification, error } = await supabase
+    .from("user_notifications")
+    .insert({
+      recipient_user_id: recipientUserId,
+      actor_user_id: actorUserId,
+      notification_type: notificationType,
+      setlist_id: setlistId,
+      setlist_item_id: setlistItemId,
+      piece_id: pieceId,
+      body_preview: bodyPreview,
+    })
+    .select("id")
+    .single()
 
-  if (error) {
+  if (error || !notification) {
     console.error("Error creating setlist notification:", error)
+    return null
   }
+
+  if (notificationType !== "setlist_invite") {
+    return notification
+  }
+
+  try {
+    const emailResult = await sendNotificationEmailForNotificationId(
+      notification.id
+    )
+
+    if (!emailResult.ok) {
+      console.error("Setlist invite notification email did not send:", {
+        notificationId: notification.id,
+        status: emailResult.status,
+        reason: emailResult.reason,
+      })
+    }
+  } catch (emailError) {
+    console.error("Setlist invite notification email failed unexpectedly:", {
+      notificationId: notification.id,
+      error: emailError,
+    })
+  }
+
+  return notification
 }
 
 export async function notifySetlistMembers({
