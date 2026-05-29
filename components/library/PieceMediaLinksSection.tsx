@@ -7,8 +7,7 @@ import FindReferenceModal from "@/components/reference-media/FindReferenceModal"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { getEffectiveReference } from "@/lib/effective-reference"
 import type { UserPieceMetadata } from "@/lib/loaders/tune-detail"
-import type { UserPieceMediaLoop } from "@/lib/types"
-import type { Piece } from "@/lib/types"
+import type { Piece, UserPieceMediaLoop } from "@/lib/types"
 
 type PieceMediaLinksSectionProps = {
   piece: Piece
@@ -85,6 +84,9 @@ export default function PieceMediaLinksSection({
                 pieceId={piece.id}
                 redirectTo={redirectTo}
                 savedLoops={savedLoops}
+                inlinePreview
+                triggerLabel="Open loop controls"
+                triggerClassName={buttonStyles.secondary}
               />
             </div>
           ) : null}
