@@ -30,6 +30,44 @@ export type Profile = {
   practice_diary_enabled: boolean
 }
 
+export type NotificationDigestFrequency = "daily" | "weekly" | "never"
+
+export type NotificationPreferences = {
+  user_id: string
+  email_enabled: boolean
+  email_friend_requests: boolean
+  email_direct_messages: boolean
+  email_comment_replies: boolean
+  email_setlist_invites: boolean
+  email_badges: boolean
+  email_activity_replies: boolean
+  email_practice_reminders: boolean
+  email_weekly_summary: boolean
+  email_public_list_activity: boolean
+  email_product_updates: boolean
+  digest_frequency: NotificationDigestFrequency
+  created_at?: string | null
+  updated_at?: string | null
+}
+
+export const DEFAULT_NOTIFICATION_PREFERENCES: Omit<
+  NotificationPreferences,
+  "user_id" | "created_at" | "updated_at"
+> = {
+  email_enabled: true,
+  email_friend_requests: true,
+  email_direct_messages: true,
+  email_comment_replies: true,
+  email_setlist_invites: true,
+  email_badges: true,
+  email_activity_replies: true,
+  email_practice_reminders: false,
+  email_weekly_summary: false,
+  email_public_list_activity: false,
+  email_product_updates: false,
+  digest_frequency: "weekly",
+}
+
 export type PublicProfileList = {
   id: number
   name: string
@@ -60,6 +98,7 @@ export type OwnProfileData = {
     email: string | null
   }
   profile: Profile | null
+  notificationPreferences: NotificationPreferences
   instruments: UserInstrument[]
 }
 

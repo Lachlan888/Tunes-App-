@@ -12,6 +12,7 @@ type SubmitButtonProps = {
   disabled?: boolean
   name?: string
   value?: string
+  form?: string
   title?: string
   ariaDescribedBy?: string
   children?: ReactNode
@@ -26,6 +27,7 @@ export default function SubmitButton({
   disabled = false,
   name,
   value,
+  form,
   title,
   ariaDescribedBy,
   children,
@@ -40,6 +42,7 @@ export default function SubmitButton({
       type="submit"
       name={name}
       value={value}
+      form={form}
       title={title}
       disabled={isDisabled}
       aria-disabled={isDisabled}

@@ -24,6 +24,7 @@ type DashboardPageProps = {
     show_compare_discoverability?: string | string[]
     compare_requires_friend?: string | string[]
     practice_diary_enabled?: string | string[]
+    communication_settings?: string | string[]
     page_options?: string | string[]
   }>
 }
@@ -97,6 +98,31 @@ function getPageOptionsMessage(status: string) {
   return null
 }
 
+function getCommunicationSettingsMessage(status: string) {
+  if (status === "saved") {
+    return {
+      tone: "success" as const,
+      text: "Communication settings saved.",
+    }
+  }
+
+  if (status === "invalid_digest") {
+    return {
+      tone: "warning" as const,
+      text: "Choose a valid digest frequency.",
+    }
+  }
+
+  if (status === "error") {
+    return {
+      tone: "error" as const,
+      text: "Could not save communication settings.",
+    }
+  }
+
+  return null
+}
+
 export default async function DashboardPage({
   searchParams,
 }: DashboardPageProps) {
@@ -108,7 +134,8 @@ export default async function DashboardPage({
   const showSection = (sectionId: string) =>
     pagePreferences.visibleSections[sectionId] ?? true
 
-  const { user, profile, instruments } = await loadOwnProfileData()
+  const { user, profile, notificationPreferences, instruments } =
+    await loadOwnProfileData()
 
   const saved = getSingleValue(resolvedSearchParams?.saved) === "1"
   const instrumentSaved =
@@ -126,6 +153,10 @@ export default async function DashboardPage({
 
   const pageOptionsMessage = getPageOptionsMessage(
     getSingleValue(resolvedSearchParams?.page_options)
+  )
+
+  const communicationSettingsMessage = getCommunicationSettingsMessage(
+    getSingleValue(resolvedSearchParams?.communication_settings)
   )
 
   const initialUsername =
@@ -230,6 +261,8 @@ export default async function DashboardPage({
         <ProfileEditor
           email={user.email}
           profile={profile}
+          notificationPreferences={notificationPreferences}
+          communicationSettingsMessage={communicationSettingsMessage}
           instruments={instruments}
           errorMessage={errorMessage}
           saved={saved}

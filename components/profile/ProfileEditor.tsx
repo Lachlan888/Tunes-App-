@@ -1,13 +1,19 @@
 "use client"
 
 import { useState } from "react"
+import CommunicationSettingsModal from "@/components/profile/CommunicationSettingsModal"
 import ProfileDetailsSection from "@/components/profile/ProfileDetailsSection"
 import UserInstrumentsSection from "@/components/profile/UserInstrumentsSection"
-import type { Profile, UserInstrument } from "@/lib/types"
+import type { NotificationPreferences, Profile, UserInstrument } from "@/lib/types"
 
 type ProfileEditorProps = {
   email: string | null
   profile: Profile | null
+  notificationPreferences: NotificationPreferences
+  communicationSettingsMessage: {
+    tone: "success" | "warning" | "error"
+    text: string
+  } | null
   instruments: UserInstrument[]
   errorMessage: string | null
   saved: boolean
@@ -32,6 +38,8 @@ type ProfileEditorProps = {
 export default function ProfileEditor({
   email,
   profile,
+  notificationPreferences,
+  communicationSettingsMessage,
   instruments,
   errorMessage,
   saved,
@@ -141,6 +149,12 @@ export default function ProfileEditor({
         instrumentSaved={instrumentSaved}
         instrumentRemoved={instrumentRemoved}
         profileDraft={profileDraft}
+      />
+
+      <CommunicationSettingsModal
+        preferences={notificationPreferences}
+        statusMessage={communicationSettingsMessage?.text ?? null}
+        statusTone={communicationSettingsMessage?.tone ?? null}
       />
     </div>
   )
