@@ -69,6 +69,7 @@ export default function MobileCompareAddPersonSheet({
 
     startTransition(() => {
       router.push(href)
+      router.refresh()
       onClose()
     })
   }

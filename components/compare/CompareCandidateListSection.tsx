@@ -16,6 +16,7 @@ type CompareCandidateListSectionProps = {
   profiles: CompareCandidateProfile[]
   primarySearchValue: string
   filterPreservedUsers: string[]
+  includePractice: boolean
   redirectTo: string
 }
 
@@ -51,11 +52,13 @@ function CandidateCard({
   profile,
   primarySearchValue,
   filterPreservedUsers,
+  includePractice,
   redirectTo,
 }: {
   profile: CompareCandidateProfile
   primarySearchValue: string
   filterPreservedUsers: string[]
+  includePractice: boolean
   redirectTo: string
 }) {
   const router = useRouter()
@@ -109,10 +112,11 @@ function CandidateCard({
       <div data-card-action className="flex flex-wrap gap-2">
         {profile.username ? (
           <PendingLinkButton
-            href={buildCompareHref(nextUsers)}
+            href={buildCompareHref(nextUsers, { includePractice })}
             label="Add to compare"
             pendingLabel="Loading..."
             className={primaryButtonClass}
+            refresh
           />
         ) : (
           <span className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm text-muted-foreground">
@@ -140,6 +144,7 @@ export default function CompareCandidateListSection({
   profiles,
   primarySearchValue,
   filterPreservedUsers,
+  includePractice,
   redirectTo,
 }: CompareCandidateListSectionProps) {
   if (profiles.length === 0) {
@@ -163,6 +168,7 @@ export default function CompareCandidateListSection({
             profile={profile}
             primarySearchValue={primarySearchValue}
             filterPreservedUsers={filterPreservedUsers}
+            includePractice={includePractice}
             redirectTo={redirectTo}
           />
         ))}

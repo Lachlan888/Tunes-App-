@@ -49,6 +49,7 @@ export default function CompareSearchForm({
         : "/compare"
 
       router.push(nextHref)
+      router.refresh()
       setQuery("")
     })
   }

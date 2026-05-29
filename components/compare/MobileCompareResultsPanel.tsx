@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { useEffect, useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import UserIdentityLink from "@/components/UserIdentityLink"
 import MobileCompareTuneRow from "@/components/compare/MobileCompareTuneRow"
@@ -99,11 +99,26 @@ export default function MobileCompareResultsPanel({
   const activeFilterCount =
     selectedKeys.length + selectedStyles.length + selectedTimeSignatures.length
 
+  useEffect(() => {
+    setSelectedKeys((currentKeys) =>
+      currentKeys.filter((key) => availableKeys.includes(key))
+    )
+    setSelectedStyles((currentStyles) =>
+      currentStyles.filter((style) => availableStyles.includes(style))
+    )
+    setSelectedTimeSignatures((currentTimeSignatures) =>
+      currentTimeSignatures.filter((timeSignature) =>
+        availableTimeSignatures.includes(timeSignature)
+      )
+    )
+  }, [availableKeys, availableStyles, availableTimeSignatures])
+
   function pushHref(href: string, pendingLabel: string) {
     setPendingAction(pendingLabel)
 
     startTransition(() => {
       router.push(href)
+      router.refresh()
     })
   }
 

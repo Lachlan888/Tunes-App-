@@ -13,6 +13,8 @@ import {
 import { loadCompareData } from "@/lib/loaders/compare"
 import type { Piece } from "@/lib/types"
 
+export const dynamic = "force-dynamic"
+
 type ComparePageProps = {
   searchParams?: Promise<{
     user?: string | string[]

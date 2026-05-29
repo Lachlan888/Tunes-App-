@@ -66,8 +66,8 @@ export default function CompareMutualPiecesSection({
     : "You and this player or group do not currently have overlapping known tunes."
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0">
+    <div>
+      <div>
         <PieceSearchFilters
           basePath="/compare"
           searchLabel="Search by title"
@@ -109,8 +109,8 @@ export default function CompareMutualPiecesSection({
           )}
         </div>
       ) : (
-        <div className="mt-3 min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-background/70">
-          <ul className="h-full divide-y divide-border overflow-y-auto">
+        <div className="mt-3 rounded-2xl border border-border bg-background/70">
+          <ul className="divide-y divide-border">
             {filteredPieces.map((piece) => {
               const href = `/library/${piece.id}`
               const meta = getPieceMeta(piece)

@@ -68,15 +68,12 @@ export default function CurrentCompareGroupSection({
                 {profile.username && (
                   <PendingLinkButton
                     href={buildCompareHref(nextUsers, {
-                      q: titleQuery,
-                      key: selectedKeys,
-                      style: selectedStyles,
-                      time_signature: selectedTimeSignatures,
                       includePractice,
                     })}
                     label="Remove"
                     pendingLabel="Removing..."
                     className="rounded-full border border-border bg-transparent px-3 py-1 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                    refresh
                   />
                 )}
               </div>

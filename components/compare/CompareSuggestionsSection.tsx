@@ -91,6 +91,7 @@ function SuggestionCard({
             href={buildCompareHref(nextUsers, { includePractice })}
             label={alreadySelected ? "Already added" : "Add to compare"}
             pendingLabel="Loading..."
+            refresh
             className={
               alreadySelected
                 ? "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"

@@ -36,6 +36,10 @@ export default function CompareMobile(props: CompareViewProps) {
     error === "self_compare" ||
     (error === null && !matchedProfile && searchMatches.length > 0)
 
+  const compareResultsKey = selectedProfiles
+    .map((profile) => profile.id)
+    .join(":")
+
   useEffect(() => {
     if (hasSearchResolution) {
       setIsAddSheetOpen(true)
@@ -46,6 +50,7 @@ export default function CompareMobile(props: CompareViewProps) {
     <>
       {canShowResults ? (
         <MobileCompareResultsPanel
+          key={compareResultsKey}
           compareHeading={compareHeading}
           selectedProfiles={selectedProfiles}
           filterPreservedUsers={filterPreservedUsers}

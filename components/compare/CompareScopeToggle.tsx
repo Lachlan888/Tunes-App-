@@ -36,6 +36,7 @@ export default function CompareScopeToggle({
   function handleToggle() {
     startTransition(() => {
       router.push(nextHref)
+      router.refresh()
     })
   }
 

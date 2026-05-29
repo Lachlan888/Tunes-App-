@@ -86,6 +86,7 @@ export default function CompareDesktop({
               profiles={matchingProfiles}
               primarySearchValue={primarySearchValue}
               filterPreservedUsers={filterPreservedUsers}
+              includePractice={includePractice}
               redirectTo={redirectTo}
             />
           ) : null}
@@ -97,6 +98,7 @@ export default function CompareDesktop({
               profiles={searchMatches}
               primarySearchValue={primarySearchValue}
               filterPreservedUsers={filterPreservedUsers}
+              includePractice={includePractice}
               redirectTo={redirectTo}
             />
           ) : null}
@@ -110,8 +112,8 @@ export default function CompareDesktop({
           ) : null}
         </section>
 
-        <aside className="min-w-0 lg:sticky lg:top-8 lg:h-full">
-          <section className="flex h-full min-h-0 flex-col rounded-3xl border border-border bg-card p-5 shadow-sm">
+        <aside className="min-w-0 lg:sticky lg:top-8">
+          <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
             {canShowResults ? (
               <>
                 <CompareResultsHeader

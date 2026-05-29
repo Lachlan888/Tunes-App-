@@ -9,6 +9,7 @@ type PendingLinkButtonProps = {
   label: string
   pendingLabel?: string
   className?: string
+  refresh?: boolean
 }
 
 export default function PendingLinkButton({
@@ -16,6 +17,7 @@ export default function PendingLinkButton({
   label,
   pendingLabel,
   className = "",
+  refresh = false,
 }: PendingLinkButtonProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -27,6 +29,9 @@ export default function PendingLinkButton({
       onClick={() => {
         startTransition(() => {
           router.push(href)
+          if (refresh) {
+            router.refresh()
+          }
         })
       }}
       className={`${className} disabled:cursor-not-allowed disabled:opacity-60`}
