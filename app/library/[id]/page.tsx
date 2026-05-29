@@ -27,6 +27,11 @@ import {
   getSingleSearchParamValue,
   getTuneDetailStatusMessage,
 } from "@/lib/tune-detail-status"
+import type { LearningList } from "@/lib/types"
+import type {
+  LearningListItemRow,
+  PublicTuneListSummary,
+} from "@/lib/loaders/tune-detail"
 
 type PiecePageProps = {
   params: Promise<{
@@ -76,6 +81,130 @@ function DetailErrorShell({
   )
 }
 
+function getProfileName(publicList: PublicTuneListSummary) {
+  const profile = Array.isArray(publicList.profiles)
+    ? publicList.profiles[0]
+    : publicList.profiles
+
+  return profile?.display_name || profile?.username || "Unknown user"
+}
+
+function TuneListChip({
+  href,
+  label,
+  helper,
+}: {
+  href: string
+  label: string
+  helper?: string
+}) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex max-w-[16rem] items-center gap-2 rounded-full border border-border bg-background/70 px-3 py-1.5 text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+    >
+      <span className="truncate">{label}</span>
+      {helper ? (
+        <span className="shrink-0 text-xs font-medium text-muted-foreground/80">
+          {helper}
+        </span>
+      ) : null}
+    </Link>
+  )
+}
+
+function MoreListCount({ count }: { count: number }) {
+  if (count <= 0) {
+    return null
+  }
+
+  return (
+    <span className="inline-flex items-center rounded-full border border-border bg-background/50 px-3 py-1.5 text-sm font-semibold text-muted-foreground">
+      +{count} more
+    </span>
+  )
+}
+
+function DesktopTuneListMemberships({
+  userLists,
+  userListItems,
+  publicLists,
+}: {
+  userLists: LearningList[]
+  userListItems: LearningListItemRow[]
+  publicLists: PublicTuneListSummary[]
+}) {
+  const visibleLimit = 3
+  const userListIdsForTune = new Set(
+    userListItems.map((item) => item.learning_list_id)
+  )
+  const userListsForTune = userLists.filter((list) =>
+    userListIdsForTune.has(list.id)
+  )
+
+  const visibleUserLists = userListsForTune.slice(0, visibleLimit)
+  const hiddenUserListCount = Math.max(
+    userListsForTune.length - visibleUserLists.length,
+    0
+  )
+
+  const visiblePublicLists = publicLists.slice(0, visibleLimit)
+  const hiddenPublicListCount = Math.max(
+    publicLists.length - visiblePublicLists.length,
+    0
+  )
+
+  if (userListsForTune.length === 0 && publicLists.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="mt-5 hidden min-w-0 flex-col gap-3 md:flex">
+      {userListsForTune.length > 0 ? (
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Your lists
+          </p>
+
+          <div className="mt-2 flex min-w-0 flex-wrap gap-2">
+            {visibleUserLists.map((list) => (
+              <TuneListChip
+                key={list.id}
+                href={`/learning-lists/${list.id}`}
+                label={list.name}
+                helper={list.visibility === "public" ? "Public" : undefined}
+              />
+            ))}
+
+            <MoreListCount count={hiddenUserListCount} />
+          </div>
+        </div>
+      ) : null}
+
+      {publicLists.length > 0 ? (
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Public lists
+          </p>
+
+          <div className="mt-2 flex min-w-0 flex-wrap gap-2">
+            {visiblePublicLists.map((list) => (
+              <TuneListChip
+                key={list.id}
+                href={`/public-lists/${list.id}`}
+                label={list.name}
+                helper={getProfileName(list)}
+              />
+            ))}
+
+            <MoreListCount count={hiddenPublicListCount} />
+          </div>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 export default async function PiecePage({
   params,
   searchParams,
@@ -115,6 +244,7 @@ export default async function PiecePage({
     typedUserKnownPiece,
     typedLearningLists,
     typedLearningListItems,
+    typedPublicTuneLists,
     typedPracticeNotes,
     typedTunePagePreferences,
     practiceDiaryEnabled,
@@ -197,6 +327,12 @@ export default async function PiecePage({
                 </span>
               ) : null}
             </div>
+
+            <DesktopTuneListMemberships
+              userLists={typedLearningLists}
+              userListItems={typedLearningListItems}
+              publicLists={typedPublicTuneLists}
+            />
           </div>
 
           <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">

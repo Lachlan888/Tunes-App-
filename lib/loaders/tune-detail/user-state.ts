@@ -3,8 +3,22 @@ import type { LearningList, UserKnownPiece, UserPiece } from "@/lib/types"
 import type {
   LearningListItemRow,
   PracticeProfileRow,
+  PublicTuneListSummary,
   UserPieceMetadata,
 } from "./types"
+
+type PublicListRow = {
+  id: number
+  name: string
+  description: string | null
+  user_id: string
+}
+
+type ProfileRow = {
+  id: string
+  username: string | null
+  display_name: string | null
+}
 
 export async function loadTuneUserState(
   supabase: SupabaseClient,
@@ -16,6 +30,7 @@ export async function loadTuneUserState(
   typedUserKnownPiece: UserKnownPiece | null
   typedLearningLists: LearningList[]
   typedLearningListItems: LearningListItemRow[]
+  typedPublicTuneLists: PublicTuneListSummary[]
   practiceDiaryEnabled: boolean
 }> {
   const [
@@ -48,7 +63,7 @@ export async function loadTuneUserState(
 
     supabase
       .from("learning_lists")
-      .select("id, name, description")
+      .select("id, name, description, visibility, is_imported")
       .eq("user_id", userId)
       .order("name", { ascending: true }),
 
@@ -62,14 +77,85 @@ export async function loadTuneUserState(
   const typedLearningLists =
     (learningListsResult.data as LearningList[] | null) ?? []
   const ownedListIds = typedLearningLists.map((list) => list.id)
-  const learningListItemsResult =
+
+  const [learningListItemsResult, tuneMembershipsResult] = await Promise.all([
     ownedListIds.length > 0
-      ? await supabase
+      ? supabase
           .from("learning_list_items")
           .select("learning_list_id, piece_id")
           .eq("piece_id", pieceId)
           .in("learning_list_id", ownedListIds)
-      : { data: [], error: null }
+      : Promise.resolve({ data: [], error: null }),
+
+    supabase
+      .from("learning_list_items")
+      .select("learning_list_id")
+      .eq("piece_id", pieceId)
+      .limit(250),
+  ])
+
+  const tuneMembershipListIds = [
+    ...new Set(
+      ((tuneMembershipsResult.data as Array<{ learning_list_id: number }> | null) ??
+        []).map((row) => row.learning_list_id)
+    ),
+  ]
+
+  let publicLists: PublicListRow[] = []
+
+  if (tuneMembershipListIds.length > 0) {
+    const { data: publicListRows } = await supabase
+      .from("learning_lists")
+      .select("id, name, description, user_id")
+      .in("id", tuneMembershipListIds)
+      .eq("visibility", "public")
+      .neq("user_id", userId)
+      .order("name", { ascending: true })
+      .limit(50)
+
+    publicLists = (publicListRows as PublicListRow[] | null) ?? []
+  }
+
+  const publicListOwnerIds = [
+    ...new Set(publicLists.map((list) => list.user_id)),
+  ]
+
+  let profilesById: Record<
+    string,
+    { username: string | null; display_name: string | null }
+  > = {}
+
+  if (publicListOwnerIds.length > 0) {
+    const { data: profileRows } = await supabase
+      .from("profiles")
+      .select("id, username, display_name")
+      .in("id", publicListOwnerIds)
+
+    profilesById = ((profileRows as ProfileRow[] | null) ?? []).reduce(
+      (acc, profile) => {
+        acc[profile.id] = {
+          username: profile.username,
+          display_name: profile.display_name,
+        }
+
+        return acc
+      },
+      {} as Record<
+        string,
+        { username: string | null; display_name: string | null }
+      >
+    )
+  }
+
+  const typedPublicTuneLists: PublicTuneListSummary[] = publicLists.map(
+    (list) => ({
+      id: list.id,
+      name: list.name,
+      description: list.description,
+      user_id: list.user_id,
+      profiles: profilesById[list.user_id] ?? null,
+    })
+  )
 
   return {
     typedUserPieceMetadata:
@@ -80,6 +166,7 @@ export async function loadTuneUserState(
     typedLearningLists,
     typedLearningListItems:
       (learningListItemsResult.data as LearningListItemRow[] | null) ?? [],
+    typedPublicTuneLists,
     practiceDiaryEnabled: Boolean(
       (practiceProfileResult.data as PracticeProfileRow | null)
         ?.practice_diary_enabled

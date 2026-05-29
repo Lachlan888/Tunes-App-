@@ -68,6 +68,23 @@ export type LearningListItemRow = {
   piece_id: number
 }
 
+export type PublicTuneListSummary = {
+  id: number
+  name: string
+  description: string | null
+  user_id: string
+  profiles:
+    | {
+        username: string | null
+        display_name: string | null
+      }
+    | {
+        username: string | null
+        display_name: string | null
+      }[]
+    | null
+}
+
 export type ProfileRow = {
   id: string
   username: string | null
@@ -134,6 +151,7 @@ export type TuneDetailLoadedData = {
   typedUserKnownPiece: UserKnownPiece | null
   typedLearningLists: LearningList[]
   typedLearningListItems: LearningListItemRow[]
+  typedPublicTuneLists: PublicTuneListSummary[]
   typedPracticeNotes: TunePracticeNote[]
   typedTunePagePreferences: PageOptionsPreferences
   practiceDiaryEnabled: boolean
