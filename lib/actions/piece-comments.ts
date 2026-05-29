@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { recordCommentAddedEvent } from "@/lib/services/activity-events"
+import { sendNotificationEmailForNotificationId } from "@/lib/services/notification-emails"
 
 type ParentCommentRow = {
   id: number
@@ -102,7 +103,7 @@ export async function addPieceComment(formData: FormData) {
   await recordCommentAddedEvent(user.id, pieceId, insertedComment.id)
 
   if (parentComment && parentComment.user_id !== user.id) {
-    const { error: notificationError } = await supabase
+    const { data: notification, error: notificationError } = await supabase
       .from("user_notifications")
       .insert({
         recipient_user_id: parentComment.user_id,
@@ -112,9 +113,30 @@ export async function addPieceComment(formData: FormData) {
         comment_id: insertedComment.id,
         body_preview: previewBody(body),
       })
+      .select("id")
+      .single()
 
-    if (notificationError) {
+    if (notificationError || !notification) {
       console.error("Error creating comment reply notification:", notificationError)
+    } else {
+      try {
+        const emailResult = await sendNotificationEmailForNotificationId(
+          notification.id
+        )
+
+        if (!emailResult.ok) {
+          console.error("Comment reply notification email did not send:", {
+            notificationId: notification.id,
+            status: emailResult.status,
+            reason: emailResult.reason,
+          })
+        }
+      } catch (emailError) {
+        console.error("Comment reply notification email failed unexpectedly:", {
+          notificationId: notification.id,
+          error: emailError,
+        })
+      }
     }
   }
 

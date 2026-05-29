@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { sendNotificationEmailForNotificationId } from "@/lib/services/notification-emails"
 import { createClient } from "@/lib/supabase/server"
 import {
   ActivityEventRow,
@@ -76,21 +77,47 @@ async function createActivityReplyNotification({
       ? "comment_reply"
       : "activity_reply"
 
-  const { error } = await supabase.from("user_notifications").insert({
-    recipient_user_id: recipientUserId,
-    actor_user_id: actorUserId,
-    notification_type: notificationType,
-    activity_event_id: activityEvent.id,
-    activity_reply_id: activityReplyId,
-    piece_id: activityEvent.piece_id,
-    learning_list_id: activityEvent.learning_list_id,
-    comment_id: commentId,
-    badge_id: badgeId,
-    body_preview: previewBody(body),
-  })
+  const { data: notification, error } = await supabase
+    .from("user_notifications")
+    .insert({
+      recipient_user_id: recipientUserId,
+      actor_user_id: actorUserId,
+      notification_type: notificationType,
+      activity_event_id: activityEvent.id,
+      activity_reply_id: activityReplyId,
+      piece_id: activityEvent.piece_id,
+      learning_list_id: activityEvent.learning_list_id,
+      comment_id: commentId,
+      badge_id: badgeId,
+      body_preview: previewBody(body),
+    })
+    .select("id")
+    .single()
 
-  if (error) {
-    throw new Error(error.message)
+  if (error || !notification) {
+    console.error("Error creating activity reply notification:", error)
+    return
+  }
+
+  try {
+    const emailResult = await sendNotificationEmailForNotificationId(
+      notification.id
+    )
+
+    if (!emailResult.ok) {
+      console.error("Activity reply notification email did not send:", {
+        notificationId: notification.id,
+        notificationType,
+        status: emailResult.status,
+        reason: emailResult.reason,
+      })
+    }
+  } catch (emailError) {
+    console.error("Activity reply notification email failed unexpectedly:", {
+      notificationId: notification.id,
+      notificationType,
+      error: emailError,
+    })
   }
 }
 
