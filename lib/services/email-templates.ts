@@ -7,11 +7,27 @@ export type NotificationEmailTemplateKey =
   | "activity_reply"
   | "setlist_invite"
   | "badge_awarded"
+  | "daily_notification_digest"
+  | "weekly_notification_digest"
   | "generic_notification"
+
+export type NotificationDigestFrequency = "daily" | "weekly"
 
 export type NotificationEmailTemplateInput = {
   actorName?: string | null
   bodyPreview?: string | null
+  targetUrl?: string | null
+}
+
+export type NotificationDigestItem = {
+  type: "comment_reply" | "activity_reply" | "badge_awarded"
+  actorName: string
+  bodyPreview: string | null
+}
+
+export type NotificationDigestTemplateInput = {
+  frequency: NotificationDigestFrequency
+  items: NotificationDigestItem[]
   targetUrl?: string | null
 }
 
@@ -176,6 +192,100 @@ export function buildGenericNotificationEmail({
     targetUrl,
     actionLabel: "Open notification",
   })
+}
+
+function digestTypeLabel(type: NotificationDigestItem["type"]) {
+  if (type === "comment_reply") return "Comment replies"
+  if (type === "activity_reply") return "Activity replies"
+  return "Badge awards"
+}
+
+function digestLine(item: NotificationDigestItem) {
+  if (item.type === "comment_reply") {
+    return `${item.actorName} replied to your tune comment${
+      item.bodyPreview ? `: ${item.bodyPreview}` : "."
+    }`
+  }
+
+  if (item.type === "activity_reply") {
+    return `${item.actorName} replied to your activity${
+      item.bodyPreview ? `: ${item.bodyPreview}` : "."
+    }`
+  }
+
+  return `${item.actorName} awarded you a badge${
+    item.bodyPreview ? `: ${item.bodyPreview}` : "."
+  }`
+}
+
+export function buildNotificationDigestEmailTemplate({
+  frequency,
+  items,
+  targetUrl,
+}: NotificationDigestTemplateInput): NotificationEmailTemplate {
+  const label = frequency === "daily" ? "daily" : "weekly"
+  const subject = `Tunes App ${label} digest`
+  const groupedItems = items.reduce<
+    Record<NotificationDigestItem["type"], NotificationDigestItem[]>
+  >(
+    (groups, item) => {
+      groups[item.type].push(item)
+      return groups
+    },
+    {
+      comment_reply: [],
+      activity_reply: [],
+      badge_awarded: [],
+    }
+  )
+  const actionText = targetUrl ? `\n\nOpen inbox: ${targetUrl}` : ""
+  const textGroups = (
+    Object.entries(groupedItems) as Array<
+      [NotificationDigestItem["type"], NotificationDigestItem[]]
+    >
+  )
+    .filter(([, groupItems]) => groupItems.length > 0)
+    .map(([type, groupItems]) => {
+      const lines = groupItems.map((item) => `- ${digestLine(item)}`).join("\n")
+      return `${digestTypeLabel(type)}\n${lines}`
+    })
+    .join("\n\n")
+
+  const htmlGroups = (
+    Object.entries(groupedItems) as Array<
+      [NotificationDigestItem["type"], NotificationDigestItem[]]
+    >
+  )
+    .filter(([, groupItems]) => groupItems.length > 0)
+    .map(([type, groupItems]) =>
+      [
+        `<h2>${escapeHtml(digestTypeLabel(type))}</h2>`,
+        "<ul>",
+        groupItems
+          .map((item) => `<li>${escapeHtml(digestLine(item))}</li>`)
+          .join(""),
+        "</ul>",
+      ].join("")
+    )
+    .join("")
+
+  const intro = `You have ${items.length} ${items.length === 1 ? "update" : "updates"} in Tunes App.`
+  const htmlAction = targetUrl
+    ? `<p><a href="${escapeHtml(targetUrl)}">Open inbox</a></p>`
+    : ""
+
+  return {
+    subject,
+    textContent: `${intro}\n\n${textGroups}${actionText}\n\n${preferencesFooter}`,
+    htmlContent: [
+      `<p>${escapeHtml(intro)}</p>`,
+      htmlGroups,
+      htmlAction,
+      `<p>${escapeHtml(preferencesFooter)}</p>`,
+    ]
+      .filter(Boolean)
+      .join(""),
+  }
 }
 
 export function buildNotificationEmailTemplate(

@@ -5,7 +5,10 @@ import {
   buildNotificationEmailTemplate,
   type NotificationEmailTemplateKey,
 } from "@/lib/services/email-templates"
-import { getUserEmailForNotificationRecipient } from "@/lib/supabase/admin"
+import {
+  createAdminClient,
+  getUserEmailForNotificationRecipient,
+} from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
 import {
   DEFAULT_NOTIFICATION_PREFERENCES,
@@ -542,7 +545,7 @@ async function sendNotificationEmail(
 export async function sendNotificationEmailForNotificationId(
   notificationId: number
 ): Promise<NotificationEmailResult> {
-  const supabase = await createClient()
+  const supabase = createAdminClient() as unknown as SupabaseServerClient
 
   try {
     const notification = await loadNotification(supabase, notificationId)
@@ -575,7 +578,7 @@ export async function sendNotificationEmailForNotificationId(
 export async function sendNotificationEmailForNotification(
   notification: UserNotificationRow | { id: number }
 ): Promise<NotificationEmailResult> {
-  const supabase = await createClient()
+  const supabase = createAdminClient() as unknown as SupabaseServerClient
 
   try {
     const fullNotification =

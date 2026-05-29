@@ -2,7 +2,6 @@ import {
   calculateBadgeProgress,
   normaliseBadgeConditionLogic,
 } from "@/lib/badges/conditions"
-import { sendNotificationEmailForNotificationId } from "@/lib/services/notification-emails"
 import { createClient } from "@/lib/supabase/server"
 import type { Badge, BadgeAward, BadgeConditionLogic } from "@/lib/types"
 
@@ -38,7 +37,7 @@ async function createBadgeAwardNotification({
     return
   }
 
-  const { data: notification, error } = await supabase
+  const { error } = await supabase
     .from("user_notifications")
     .insert({
       recipient_user_id: recipientUserId,
@@ -47,36 +46,12 @@ async function createBadgeAwardNotification({
       badge_id: badge.id,
       body_preview: `You received the badge “${badge.name}”.`,
     })
-    .select("id")
-    .single()
 
-  if (error || !notification) {
+  if (error) {
     console.error("Error creating badge award notification:", {
       badgeId: badge.id,
       recipientUserId,
       error,
-    })
-    return
-  }
-
-  try {
-    const emailResult = await sendNotificationEmailForNotificationId(
-      notification.id
-    )
-
-    if (!emailResult.ok) {
-      console.error("Badge award notification email did not send:", {
-        badgeId: badge.id,
-        notificationId: notification.id,
-        status: emailResult.status,
-        reason: emailResult.reason,
-      })
-    }
-  } catch (emailError) {
-    console.error("Badge award notification email failed unexpectedly:", {
-      badgeId: badge.id,
-      notificationId: notification.id,
-      error: emailError,
     })
   }
 }

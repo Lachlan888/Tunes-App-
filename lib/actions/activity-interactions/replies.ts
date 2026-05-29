@@ -1,7 +1,6 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { sendNotificationEmailForNotificationId } from "@/lib/services/notification-emails"
 import { createClient } from "@/lib/supabase/server"
 import {
   ActivityEventRow,
@@ -77,7 +76,7 @@ async function createActivityReplyNotification({
       ? "comment_reply"
       : "activity_reply"
 
-  const { data: notification, error } = await supabase
+  const { error } = await supabase
     .from("user_notifications")
     .insert({
       recipient_user_id: recipientUserId,
@@ -91,33 +90,9 @@ async function createActivityReplyNotification({
       badge_id: badgeId,
       body_preview: previewBody(body),
     })
-    .select("id")
-    .single()
 
-  if (error || !notification) {
+  if (error) {
     console.error("Error creating activity reply notification:", error)
-    return
-  }
-
-  try {
-    const emailResult = await sendNotificationEmailForNotificationId(
-      notification.id
-    )
-
-    if (!emailResult.ok) {
-      console.error("Activity reply notification email did not send:", {
-        notificationId: notification.id,
-        notificationType,
-        status: emailResult.status,
-        reason: emailResult.reason,
-      })
-    }
-  } catch (emailError) {
-    console.error("Activity reply notification email failed unexpectedly:", {
-      notificationId: notification.id,
-      notificationType,
-      error: emailError,
-    })
   }
 }
 

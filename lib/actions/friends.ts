@@ -1,6 +1,7 @@
 "use server"
 
 import { sendNotificationEmailForNotificationId } from "@/lib/services/notification-emails"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
@@ -19,14 +20,21 @@ function profileLabel(profile: {
   return profile?.display_name || profile?.username || "Someone"
 }
 
+function sideEffectErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message
+  return String(error)
+}
+
 async function createFriendRequestNotificationAndEmail({
   supabase,
   requesterId,
   addresseeId,
+  connectionId,
 }: {
   supabase: SupabaseServerClient
   requesterId: string
   addresseeId: string
+  connectionId: number
 }) {
   const { data: requesterProfile, error: requesterProfileError } =
     await supabase
@@ -43,8 +51,11 @@ async function createFriendRequestNotificationAndEmail({
   }
 
   const actorName = profileLabel(requesterProfile ?? null)
+  const supabaseAdmin = createAdminClient()
 
-  const { data: notification, error: notificationError } = await supabase
+  const { data: notification, error: notificationError } = await (
+    supabaseAdmin as SupabaseServerClient
+  )
     .from("user_notifications")
     .insert({
       recipient_user_id: addresseeId,
@@ -57,9 +68,14 @@ async function createFriendRequestNotificationAndEmail({
 
   if (notificationError || !notification) {
     console.error("Error creating friend request notification:", {
+      connectionId,
       requesterId,
       addresseeId,
-      error: notificationError,
+      fullError: notificationError,
+      errorCode: notificationError?.code,
+      errorMessage: notificationError?.message,
+      errorDetails: notificationError?.details,
+      errorHint: notificationError?.hint,
     })
     return
   }
@@ -70,6 +86,7 @@ async function createFriendRequestNotificationAndEmail({
 
   if (!emailResult.ok) {
     console.error("Friend request notification email did not send:", {
+      connectionId,
       notificationId: notification.id,
       status: emailResult.status,
       reason: emailResult.reason,
@@ -130,14 +147,18 @@ export async function sendFriendRequest(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "friend_request", "duplicate"))
   }
 
-  const { error: insertError } = await supabase.from("connections").insert({
-    requester_id: user.id,
-    addressee_id: addresseeId,
-    status: "pending",
-  })
+  const { data: connection, error: insertError } = await supabase
+    .from("connections")
+    .insert({
+      requester_id: user.id,
+      addressee_id: addresseeId,
+      status: "pending",
+    })
+    .select("id")
+    .single()
 
-  if (insertError) {
-    throw new Error(insertError.message)
+  if (insertError || !connection) {
+    throw new Error(insertError?.message ?? "Friend request was not created.")
   }
 
   try {
@@ -145,12 +166,14 @@ export async function sendFriendRequest(formData: FormData) {
       supabase,
       requesterId: user.id,
       addresseeId,
+      connectionId: connection.id,
     })
   } catch (error) {
     console.error("Friend request notification side effect failed:", {
+      connectionId: connection.id,
       requesterId: user.id,
       addresseeId,
-      error,
+      errorMessage: sideEffectErrorMessage(error),
     })
   }
 

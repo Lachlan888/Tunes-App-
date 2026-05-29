@@ -39,52 +39,52 @@ const toggleOptions: ToggleOption[] = [
   {
     name: "email_friend_requests",
     label: "Friend requests",
-    description: "Email me when another musician sends a friend request.",
+    description: "Immediate email when another musician sends a friend request.",
   },
   {
     name: "email_direct_messages",
     label: "Direct messages",
-    description: "Email me when someone sends a direct message.",
+    description: "Reserved for direct message email when that workflow is enabled.",
   },
   {
     name: "email_comment_replies",
     label: "Comment replies",
-    description: "Email me when someone replies to my tune comment.",
+    description: "Include replies to your tune comments in a daily or weekly digest.",
   },
   {
     name: "email_activity_replies",
     label: "Activity replies",
-    description: "Email me when someone replies to my activity.",
+    description: "Include replies to your activity in a daily or weekly digest.",
   },
   {
     name: "email_setlist_invites",
     label: "Setlist invites",
-    description: "Email me about setlist invitations and collaborator updates.",
+    description: "Immediate email when someone invites you to collaborate on a setlist.",
   },
   {
     name: "email_badges",
     label: "Badge activity",
-    description: "Email me when badge activity needs my attention.",
+    description: "Include badge awards in a daily or weekly digest.",
   },
   {
     name: "email_practice_reminders",
     label: "Practice reminders",
-    description: "Email me reminders about practice work.",
+    description: "Not active yet. Keep this on only if you want future reminders.",
   },
   {
     name: "email_weekly_summary",
     label: "Weekly practice summary",
-    description: "Email me a summary of recent practice activity.",
+    description: "Not active yet. Keep this on only if you want future summaries.",
   },
   {
     name: "email_public_list_activity",
     label: "Public list activity summary",
-    description: "Email me summaries about public list activity.",
+    description: "Not active yet. Keep this on only if you want future list summaries.",
   },
   {
     name: "email_product_updates",
     label: "Product updates",
-    description: "Email me occasional Tunes App product updates.",
+    description: "Not active yet. Keep this on only if you want future product updates.",
   },
 ]
 
@@ -154,7 +154,8 @@ export default function CommunicationSettingsModal({
           </h2>
 
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-            Choose when Tunes App emails you and what stays in the app.
+            Choose immediate emails for actionable updates and digest emails for
+            lower-urgency summaries.
           </p>
 
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -192,7 +193,7 @@ export default function CommunicationSettingsModal({
         desktopMaxWidth="md:max-w-3xl"
         eyebrow="Profile"
         title="Communication settings"
-        description="Choose which updates can be sent by email. Important activity can still appear inside Tunes App even when email is off."
+        description="Friend requests and setlist invites can send immediate emails. Comment replies, activity replies, and badge awards can be bundled into a digest. Important activity can still appear inside Tunes App when email is off."
         footer={
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <button
@@ -264,6 +265,11 @@ export default function CommunicationSettingsModal({
             <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Digest frequency
             </h3>
+
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Digests only include lower-urgency updates you have allowed:
+              comment replies, activity replies, and badge awards.
+            </p>
 
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               {digestOptions.map((option) => (
