@@ -20,6 +20,7 @@ export function buildCompareHref(
     style?: string[]
     time_signature?: string[]
     includePractice?: boolean
+    userSearch?: string
   }
 ) {
   const params = new URLSearchParams()
@@ -30,6 +31,10 @@ export function buildCompareHref(
 
   if (extraParams?.includePractice) {
     params.set("include_practice", "1")
+  }
+
+  if (extraParams?.userSearch?.trim()) {
+    params.set("user_search", extraParams.userSearch.trim())
   }
 
   if (extraParams?.q) {
@@ -50,6 +55,25 @@ export function buildCompareHref(
 
   const query = params.toString()
   return query ? `/compare?${query}` : "/compare"
+}
+
+export function addConfirmedCompareUser(users: string[], selectedUsername: string) {
+  const safeSelectedUsername = selectedUsername.trim()
+
+  if (!safeSelectedUsername) {
+    return users.filter(Boolean)
+  }
+
+  const nextUsers = users.map((user) => user.trim()).filter(Boolean)
+  const alreadySelected = nextUsers.some(
+    (user) => user.toLowerCase() === safeSelectedUsername.toLowerCase()
+  )
+
+  if (!alreadySelected) {
+    nextUsers.push(safeSelectedUsername)
+  }
+
+  return nextUsers
 }
 
 export function removeUserOnce(users: string[], userToRemove: string) {

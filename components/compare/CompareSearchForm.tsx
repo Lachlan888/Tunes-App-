@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import LoadingSpinner from "@/components/ui/LoadingSpinner"
+import { buildCompareHref } from "@/lib/compare-page"
 
 type CompareSearchFormProps = {
   initialQuery?: string
@@ -26,27 +27,10 @@ export default function CompareSearchForm({
     const existingUsers = selectedUsers.filter(Boolean)
 
     startTransition(() => {
-      const nextUsers = trimmedQuery
-        ? existingUsers.some(
-            (user) => user.toLowerCase() === trimmedQuery.toLowerCase()
-          )
-          ? existingUsers
-          : [...existingUsers, trimmedQuery]
-        : existingUsers
-
-      const params = new URLSearchParams()
-
-      nextUsers.forEach((user) => {
-        params.append("user", user)
+      const nextHref = buildCompareHref(existingUsers, {
+        includePractice,
+        userSearch: trimmedQuery,
       })
-
-      if (includePractice) {
-        params.set("include_practice", "1")
-      }
-
-      const nextHref = params.toString()
-        ? `/compare?${params.toString()}`
-        : "/compare"
 
       router.push(nextHref)
       router.refresh()

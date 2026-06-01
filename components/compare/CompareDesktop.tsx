@@ -84,19 +84,17 @@ export default function CompareDesktop({
               title="Choose a user"
               description={`More than one user matched “${primarySearchValue}”.`}
               profiles={matchingProfiles}
-              primarySearchValue={primarySearchValue}
               filterPreservedUsers={filterPreservedUsers}
               includePractice={includePractice}
               redirectTo={redirectTo}
             />
           ) : null}
 
-          {error === null && !matchedProfile && searchMatches.length > 0 ? (
+          {error === null && searchMatches.length > 0 ? (
             <CompareCandidateListSection
               title="Choose a user"
               description="Select the person you want to add to this compare group."
               profiles={searchMatches}
-              primarySearchValue={primarySearchValue}
               filterPreservedUsers={filterPreservedUsers}
               includePractice={includePractice}
               redirectTo={redirectTo}

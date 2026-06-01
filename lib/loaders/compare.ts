@@ -12,12 +12,14 @@ import type { ProfileSearchRow } from "@/lib/profile-search"
 import type {
   CompareLoaderOptions,
   CompareLoaderResult,
+  CompareSearchResolution,
 } from "@/lib/loaders/compare/types"
 
 export type {
   CompareError,
   CompareLoaderOptions,
   CompareLoaderResult,
+  CompareSearchResolution,
   CompareSuggestion,
   ConnectionRow,
   PieceIdRow,
@@ -239,5 +241,20 @@ export async function loadCompareData(
     canCompare: true,
     error: null,
     selectedProfiles: resolvedProfiles,
+  }
+}
+
+export async function loadCompareUserSearch(
+  currentUserId: string,
+  rawSearchValue: string
+): Promise<CompareSearchResolution> {
+  const resolution = await resolveSelectedProfile(currentUserId, rawSearchValue)
+
+  return {
+    searchValue: resolution.searchValue,
+    matchedProfile: resolution.matchedProfile,
+    matchingProfiles: resolution.matchingProfiles,
+    searchMatches: resolution.searchMatches,
+    error: resolution.error,
   }
 }

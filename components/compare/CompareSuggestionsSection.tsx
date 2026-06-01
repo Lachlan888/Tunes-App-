@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import UserIdentityLink from "@/components/UserIdentityLink"
 import type { CompareSuggestion } from "@/lib/loaders/compare"
-import { buildCompareHref } from "@/lib/compare-page"
+import { addConfirmedCompareUser, buildCompareHref } from "@/lib/compare-page"
 
 type CompareSuggestionsSectionProps = {
   compareSuggestions: CompareSuggestion[]
@@ -51,9 +51,7 @@ function SuggestionCard({
     (user) => user.toLowerCase() === friend.username.toLowerCase()
   )
 
-  const nextUsers = alreadySelected
-    ? filterPreservedUsers
-    : [...filterPreservedUsers, friend.username]
+  const nextUsers = addConfirmedCompareUser(filterPreservedUsers, friend.username)
 
   function openProfile(event: React.MouseEvent<HTMLElement>) {
     if (clickedInsideInteractiveElement(event.target)) return

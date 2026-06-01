@@ -6,7 +6,10 @@ import PendingLinkButton from "@/components/PendingLinkButton"
 import UserIdentityLink from "@/components/UserIdentityLink"
 import { sendFriendRequest } from "@/lib/actions/friends"
 import type { ProfileSearchRow, RankedProfileMatch } from "@/lib/profile-search"
-import { buildCompareHref, removeUserOnce } from "@/lib/compare-page"
+import {
+  addConfirmedCompareUser,
+  buildCompareHref,
+} from "@/lib/compare-page"
 
 type CompareCandidateProfile = ProfileSearchRow | RankedProfileMatch
 
@@ -14,7 +17,6 @@ type CompareCandidateListSectionProps = {
   title: string
   description: string
   profiles: CompareCandidateProfile[]
-  primarySearchValue: string
   filterPreservedUsers: string[]
   includePractice: boolean
   redirectTo: string
@@ -50,13 +52,11 @@ function clickedInsideInteractiveElement(target: EventTarget | null) {
 
 function CandidateCard({
   profile,
-  primarySearchValue,
   filterPreservedUsers,
   includePractice,
   redirectTo,
 }: {
   profile: CompareCandidateProfile
-  primarySearchValue: string
   filterPreservedUsers: string[]
   includePractice: boolean
   redirectTo: string
@@ -67,10 +67,10 @@ function CandidateCard({
     ? `/users/${encodeURIComponent(profile.username)}`
     : null
 
-  const nextUsers = [
-    ...removeUserOnce(filterPreservedUsers, primarySearchValue),
-    profile.username ?? "",
-  ].filter(Boolean)
+  const nextUsers = addConfirmedCompareUser(
+    filterPreservedUsers,
+    profile.username ?? ""
+  )
 
   function openProfile(event: React.MouseEvent<HTMLElement>) {
     if (!profileHref) return
@@ -142,7 +142,6 @@ export default function CompareCandidateListSection({
   title,
   description,
   profiles,
-  primarySearchValue,
   filterPreservedUsers,
   includePractice,
   redirectTo,
@@ -166,7 +165,6 @@ export default function CompareCandidateListSection({
           <CandidateCard
             key={profile.id}
             profile={profile}
-            primarySearchValue={primarySearchValue}
             filterPreservedUsers={filterPreservedUsers}
             includePractice={includePractice}
             redirectTo={redirectTo}

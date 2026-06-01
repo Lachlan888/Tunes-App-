@@ -6,7 +6,10 @@ import UserIdentityLink from "@/components/UserIdentityLink"
 import LoadingSpinner from "@/components/ui/LoadingSpinner"
 import type { CompareError, CompareSuggestion } from "@/lib/loaders/compare"
 import type { ProfileSearchRow, RankedProfileMatch } from "@/lib/profile-search"
-import { buildCompareHref, removeUserOnce } from "@/lib/compare-page"
+import {
+  addConfirmedCompareUser,
+  buildCompareHref,
+} from "@/lib/compare-page"
 
 type CompareCandidateProfile = ProfileSearchRow | RankedProfileMatch
 
@@ -74,37 +77,43 @@ export default function MobileCompareAddPersonSheet({
     })
   }
 
+  function searchForUser(searchValue: string) {
+    const href = buildCompareHref(filterPreservedUsers, {
+      includePractice,
+      userSearch: searchValue,
+    })
+    setPendingValue(searchValue)
+
+    startTransition(() => {
+      router.push(href)
+      router.refresh()
+    })
+  }
+
   function addQuery(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const trimmedQuery = query.trim()
     if (!trimmedQuery) return
 
-    const existingUsers = filterPreservedUsers.filter(Boolean)
-
-    const nextUsers = existingUsers.some(
-      (user) => user.toLowerCase() === trimmedQuery.toLowerCase()
-    )
-      ? existingUsers
-      : [...existingUsers, trimmedQuery]
-
-    goToCompareWithUsers(nextUsers, trimmedQuery)
+    searchForUser(trimmedQuery)
   }
 
   function addProfile(profile: CompareCandidateProfile) {
     if (!profile.username) return
 
-    const nextUsers = [
-      ...removeUserOnce(filterPreservedUsers, primarySearchValue),
-      profile.username,
-    ].filter(Boolean)
+    const nextUsers = addConfirmedCompareUser(
+      filterPreservedUsers,
+      profile.username
+    )
 
     goToCompareWithUsers(nextUsers, profile.username)
   }
 
   function addSuggestion(suggestion: CompareSuggestion) {
-    const nextUsers = [...filterPreservedUsers, suggestion.username].filter(
-      Boolean
+    const nextUsers = addConfirmedCompareUser(
+      filterPreservedUsers,
+      suggestion.username
     )
 
     goToCompareWithUsers(nextUsers, suggestion.username)

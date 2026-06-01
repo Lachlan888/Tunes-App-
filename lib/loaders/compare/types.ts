@@ -42,6 +42,15 @@ export type CompareLoaderResult = {
   selectedProfiles: ProfileSearchRow[]
 }
 
+export type CompareSearchResolution = Pick<
+  CompareLoaderResult,
+  | "searchValue"
+  | "matchedProfile"
+  | "matchingProfiles"
+  | "searchMatches"
+  | "error"
+>
+
 export type CompareLoaderOptions = {
   includePractice?: boolean
 }

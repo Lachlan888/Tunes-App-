@@ -10,7 +10,7 @@ import {
   getIncludePracticeFromParam,
   toArray,
 } from "@/lib/compare-page"
-import { loadCompareData } from "@/lib/loaders/compare"
+import { loadCompareData, loadCompareUserSearch } from "@/lib/loaders/compare"
 import type { Piece } from "@/lib/types"
 
 export const dynamic = "force-dynamic"
@@ -23,6 +23,7 @@ type ComparePageProps = {
     style?: string | string[]
     time_signature?: string | string[]
     include_practice?: string | string[]
+    user_search?: string | string[]
     friend_request?: string
   }>
 }
@@ -31,7 +32,9 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
   const resolvedSearchParams = await searchParams
 
   const selectedUsers = toArray(resolvedSearchParams?.user)
-  const primarySearchValue = selectedUsers[selectedUsers.length - 1] ?? ""
+  const userSearch = Array.isArray(resolvedSearchParams?.user_search)
+    ? resolvedSearchParams?.user_search[0]?.trim() ?? ""
+    : resolvedSearchParams?.user_search?.trim() ?? ""
 
   const titleQuery = Array.isArray(resolvedSearchParams?.q)
     ? resolvedSearchParams?.q[0] ?? ""
@@ -47,6 +50,12 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
   const selectedStyles = toArray(resolvedSearchParams?.style)
   const selectedTimeSignatures = toArray(resolvedSearchParams?.time_signature)
 
+  const compareData = await loadCompareData(selectedUsers, { includePractice })
+
+  const userSearchResolution = userSearch
+    ? await loadCompareUserSearch(compareData.currentUserId, userSearch)
+    : null
+
   const {
     matchedProfile,
     matchingProfiles,
@@ -57,7 +66,15 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
     canCompare,
     error,
     selectedProfiles,
-  } = await loadCompareData(selectedUsers, { includePractice })
+  } = compareData
+
+  const activeError = userSearchResolution?.error ?? error
+  const primarySearchValue =
+    userSearchResolution?.searchValue ?? compareData.searchValue
+  const candidateMatchingProfiles =
+    userSearchResolution?.matchingProfiles ?? matchingProfiles
+  const candidateSearchMatches =
+    userSearchResolution?.searchMatches ?? searchMatches
 
   const {
     keys: availableKeys,
@@ -82,18 +99,10 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
 
   const redirectTo = buildCompareHref(selectedUsers, { includePractice })
 
-  const unresolvedUsers =
-    error === "multiple_matches" ||
-    error === "user_not_found" ||
-    error === "self_compare"
-      ? [primarySearchValue]
-      : []
-
   const stableSelectedUsernames = [
     ...selectedProfiles
       .map((profile) => profile.username)
       .filter((username): username is string => Boolean(username)),
-    ...unresolvedUsers.filter(Boolean),
   ]
 
   const compareSummaryNames = selectedProfiles.map(
@@ -122,12 +131,12 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
     selectedTimeSignatures,
     includePractice,
     friendRequestStatus,
-    error,
+    error: activeError,
     primarySearchValue,
     compareSuggestions,
-    matchingProfiles,
-    searchMatches,
-    matchedProfile,
+    matchingProfiles: candidateMatchingProfiles,
+    searchMatches: candidateSearchMatches,
+    matchedProfile: userSearchResolution ? null : matchedProfile,
     isAcceptedFriend,
     canCompare,
     redirectTo,
