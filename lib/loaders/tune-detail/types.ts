@@ -22,6 +22,17 @@ export type PieceSheetMusicLink = {
   label: string | null
 }
 
+export type PieceMediaLink = {
+  id: number
+  piece_id: number
+  url: string
+  label: string | null
+  media_type: string
+  notes: string | null
+  created_by: string
+  created_at: string
+}
+
 export type { UserPieceMediaLoop }
 
 export type PieceCommentRow = {
@@ -143,6 +154,7 @@ export type TuneDetailLoadedData = {
   redirectTo: string
   typedPiece: Piece
   typedUserPieceMetadata: UserPieceMetadata | null
+  typedMediaLinks: PieceMediaLink[]
   typedSheetMusicLinks: PieceSheetMusicLink[]
   typedMediaLoops: UserPieceMediaLoop[]
   typedPieceComments: PieceCommentRow[]

@@ -1,4 +1,5 @@
 import Link from "next/link"
+import PendingLinkButton from "@/components/PendingLinkButton"
 import HomeBadgesPanel from "@/components/home/HomeBadgesPanel"
 import HomeFriendsActivityBox from "@/components/home/HomeFriendsActivityBox"
 import HomeMobileSummarySwitcher from "@/components/home/HomeMobileSummarySwitcher"
@@ -233,6 +234,108 @@ function PreviewLink({
   )
 }
 
+function TodayActionPanel({
+  summary,
+  density,
+  previewLimit,
+}: {
+  summary: HomeSummaryData
+  density: PageOptionsPreferences["density"]
+  previewLimit: number
+}) {
+  return (
+    <section
+      className={joinClasses(
+        "hidden rounded-2xl border border-border bg-card shadow-sm md:block",
+        getPanelPadding(density)
+      )}
+    >
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Today
+          </p>
+          <h2 className="mt-1 font-serif text-2xl font-bold text-foreground">
+            Practice action state
+          </h2>
+        </div>
+
+        <PendingLinkButton
+          href="/review#due-today"
+          label="Start Practice"
+          pendingLabel="Opening Practice..."
+          className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        />
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,0.45fr)_minmax(0,1fr)]">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+          <Link
+            href="/review#due-today"
+            className="rounded-xl border border-border border-l-8 border-l-accent bg-background/70 p-4 transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          >
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Due today
+            </p>
+            <p className="mt-2 font-serif text-4xl font-bold leading-none">
+              {summary.dueTodayCount}
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Scheduled reviews ready now.
+            </p>
+          </Link>
+
+          <Link
+            href="/review?mode=catch-up#catch-up"
+            className="rounded-xl border border-border border-l-8 border-l-warning-strong bg-background/70 p-4 transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          >
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Attention
+            </p>
+            <p className="mt-2 font-serif text-4xl font-bold leading-none">
+              {summary.needsAttentionCount}
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Overdue tunes for catch-up.
+            </p>
+          </Link>
+        </div>
+
+        <div>
+          <div className="mb-3 flex items-center justify-between gap-4">
+            <p className="text-sm font-semibold text-foreground">Due next</p>
+            <Link
+              href="/review#due-today"
+              className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            >
+              View all
+            </Link>
+          </div>
+
+          {summary.dueTodayPreview.length === 0 ? (
+            <EmptyPreview>Nothing due today.</EmptyPreview>
+          ) : (
+            <ul className="space-y-3">
+              {summary.dueTodayPreview
+                .slice(0, previewLimit)
+                .map((userPiece) => (
+                  <li key={userPiece.user_piece_id}>
+                    <PreviewLink
+                      href={`/library/${userPiece.piece_id}`}
+                      title={userPiece.title}
+                      meta={`Stage ${userPiece.stage}`}
+                      density={density}
+                    />
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export default function HomeSummarySection({
   summary,
   recentFriendActivity,
@@ -241,6 +344,18 @@ export default function HomeSummarySection({
 }: HomeSummarySectionProps) {
   const density = homePreferences.density
   const previewLimit = getPreviewLimit(density)
+  const showRepertoireState = isSectionVisible(
+    homePreferences,
+    "repertoire_state"
+  )
+  const showLearningQueue = isSectionVisible(homePreferences, "learning_queue")
+  const showDueNext = isSectionVisible(homePreferences, "due_next")
+  const showCurrentlyInPractice = isSectionVisible(
+    homePreferences,
+    "currently_in_practice"
+  )
+  const showCurrentlyInPracticePanel =
+    showCurrentlyInPractice && !showRepertoireState
 
   return (
     <section className="space-y-5 md:space-y-8">
@@ -251,7 +366,15 @@ export default function HomeSummarySection({
         homePreferences={homePreferences}
       />
 
-      {isSectionVisible(homePreferences, "repertoire_state") ? (
+      {showDueNext ? (
+        <TodayActionPanel
+          summary={summary}
+          density={density}
+          previewLimit={previewLimit}
+        />
+      ) : null}
+
+      {showRepertoireState ? (
         <section className="hidden md:block">
           <div className="mb-4">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -259,7 +382,7 @@ export default function HomeSummarySection({
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <OverviewCard
               href="/library/known"
               label="Known"
@@ -271,28 +394,10 @@ export default function HomeSummarySection({
 
             <OverviewCard
               href="/library/practice"
-              label="Practice"
+              label="In practice"
               value={summary.practiceCount}
-              helper="Tunes inside the review system."
+              helper="Tunes inside Stage review."
               tone="practice"
-              density={density}
-            />
-
-            <OverviewCard
-              href="/review#due-today"
-              label="Due today"
-              value={summary.dueTodayCount}
-              helper="Scheduled reviews for today."
-              tone="due"
-              density={density}
-            />
-
-            <OverviewCard
-              href="/review?mode=catch-up#catch-up"
-              label="Attention"
-              value={summary.needsAttentionCount}
-              helper="Overdue tunes waiting for catch-up."
-              tone="warning"
               density={density}
             />
 
@@ -314,11 +419,9 @@ export default function HomeSummarySection({
           getLowerGridClass(homePreferences)
         )}
       >
-        {isSectionVisible(homePreferences, "learning_queue") ||
-        isSectionVisible(homePreferences, "due_next") ||
-        isSectionVisible(homePreferences, "currently_in_practice") ? (
+        {showLearningQueue || showCurrentlyInPracticePanel ? (
           <div className="space-y-4">
-            {isSectionVisible(homePreferences, "learning_queue") ? (
+            {showLearningQueue ? (
               <PreviewPanel
                 title="Learning queue"
                 href="/learning-lists"
@@ -352,35 +455,7 @@ export default function HomeSummarySection({
               </PreviewPanel>
             ) : null}
 
-            {isSectionVisible(homePreferences, "due_next") ? (
-              <PreviewPanel
-                title="Due next"
-                href="/review#due-today"
-                linkLabel="View all"
-                density={density}
-              >
-                {summary.dueTodayPreview.length === 0 ? (
-                  <EmptyPreview>Nothing due today.</EmptyPreview>
-                ) : (
-                  <ul className="space-y-3">
-                    {summary.dueTodayPreview
-                      .slice(0, previewLimit)
-                      .map((userPiece) => (
-                        <li key={userPiece.user_piece_id}>
-                          <PreviewLink
-                            href={`/library/${userPiece.piece_id}`}
-                            title={userPiece.title}
-                            meta={`Stage ${userPiece.stage}`}
-                            density={density}
-                          />
-                        </li>
-                      ))}
-                  </ul>
-                )}
-              </PreviewPanel>
-            ) : null}
-
-            {isSectionVisible(homePreferences, "currently_in_practice") ? (
+            {showCurrentlyInPracticePanel ? (
               <PreviewPanel
                 title="Currently in practice"
                 href="/library/practice"

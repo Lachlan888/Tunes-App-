@@ -2,12 +2,14 @@
 
 import { useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
+import AdditionalMediaLinksSection from "@/components/library/AdditionalMediaLinksSection"
 import ReferenceMediaEmbed from "@/components/library/ReferenceMediaEmbed"
 import FindReferenceModal from "@/components/reference-media/FindReferenceModal"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import { getEffectiveReference } from "@/lib/effective-reference"
 import type {
   PieceSheetMusicLink,
+  PieceMediaLink,
   UserPieceMediaLoop,
   UserPieceMetadata,
 } from "@/lib/loaders/tune-detail"
@@ -15,14 +17,18 @@ import type { Piece } from "@/lib/types"
 
 type MobileTuneMediaSectionProps = {
   piece: Piece
+  currentUserId: string
   redirectTo: string
   userPieceMetadata: UserPieceMetadata | null
   savedLoops: UserPieceMediaLoop[]
+  mediaLinks: PieceMediaLink[]
   sheetMusicLinks: PieceSheetMusicLink[]
   showMediaLinks: boolean
   showSheetMusic: boolean
   upsertPreferredReferenceUrl: (formData: FormData) => Promise<void>
   removePreferredReferenceUrl: (formData: FormData) => Promise<void>
+  addPieceMediaLink: (formData: FormData) => Promise<void>
+  removePieceMediaLink: (formData: FormData) => Promise<void>
   addPieceSheetMusicLink: (formData: FormData) => Promise<void>
   addReferenceUrlToPiece: (formData: FormData) => Promise<void>
 }
@@ -51,14 +57,18 @@ function MobileSection({
 
 export default function MobileTuneMediaSection({
   piece,
+  currentUserId,
   redirectTo,
   userPieceMetadata,
   savedLoops,
+  mediaLinks,
   sheetMusicLinks,
   showMediaLinks,
   showSheetMusic,
   upsertPreferredReferenceUrl,
   removePreferredReferenceUrl,
+  addPieceMediaLink,
+  removePieceMediaLink,
   addPieceSheetMusicLink,
   addReferenceUrlToPiece,
 }: MobileTuneMediaSectionProps) {
@@ -90,7 +100,11 @@ export default function MobileTuneMediaSection({
     <div className="min-w-0 space-y-6">
       {showMediaLinks ? (
         <>
-          <MobileSection title="Primary reference">
+          <MobileSection title="Reference media">
+            <p className="mb-2 text-sm leading-6 text-muted-foreground">
+              The main reference version for this tune.
+            </p>
+
             <p className="text-sm leading-6 text-muted-foreground">
               {isUsingPreferredReference
                 ? "Using your preferred reference."
@@ -192,6 +206,15 @@ export default function MobileTuneMediaSection({
               </form>
             ) : null}
           </MobileSection>
+
+          <AdditionalMediaLinksSection
+            pieceId={piece.id}
+            currentUserId={currentUserId}
+            redirectTo={redirectTo}
+            mediaLinks={mediaLinks}
+            addPieceMediaLink={addPieceMediaLink}
+            removePieceMediaLink={removePieceMediaLink}
+          />
         </>
       ) : null}
 

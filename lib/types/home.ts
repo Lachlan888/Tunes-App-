@@ -10,9 +10,9 @@ export type GettingStartedTaskId =
   | "finish_today"
 
 export type GettingStartedTaskGroup =
-  | "Set up your account"
-  | "Build repertoire state"
-  | "Learn the practice loop"
+  | "Account setup"
+  | "Repertoire setup"
+  | "Practice setup"
 
 export type GettingStartedTask = {
   id: GettingStartedTaskId

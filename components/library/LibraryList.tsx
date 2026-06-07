@@ -20,7 +20,6 @@ import type {
   UserRole,
 } from "@/lib/types"
 import type {
-  LibraryPieceMediaLink,
   LibraryUserPieceMetadata,
 } from "@/lib/loaders/library"
 
@@ -32,7 +31,6 @@ type LibraryListProps = {
   learningLists: LearningList[] | null
   learningListItems: LearningListItemMembership[] | null
   userPieceMetadata: LibraryUserPieceMetadata[] | null
-  mediaLinks: LibraryPieceMediaLink[] | null
   mediaLoops: UserPieceMediaLoop[] | null
   currentUserRole: UserRole
   startLearning: (formData: FormData) => Promise<void>
@@ -119,7 +117,6 @@ export default function LibraryList({
   learningLists,
   learningListItems,
   userPieceMetadata,
-  mediaLinks,
   mediaLoops,
   currentUserRole,
   startLearning,
@@ -171,9 +168,6 @@ export default function LibraryList({
     const referenceMetadata =
       (userPieceMetadata ?? []).find((metadata) => metadata.piece_id === piece.id) ??
       null
-    const pieceMediaLinks = (mediaLinks ?? []).filter(
-      (link) => link.piece_id === piece.id
-    )
     const pieceMediaLoops = (mediaLoops ?? []).filter(
       (loop) => loop.piece_id === piece.id
     )
@@ -188,7 +182,6 @@ export default function LibraryList({
         style={piece.style}
         timeSignature={piece.time_signature}
         referenceUrl={piece.reference_url}
-        mediaLinks={pieceMediaLinks}
         referenceMetadata={referenceMetadata}
         pieceStyles={piece.piece_styles}
         listLinks={listLinks}

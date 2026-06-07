@@ -21,11 +21,6 @@ type TuneCardProps = {
   style: Piece["style"]
   timeSignature: Piece["time_signature"]
   referenceUrl?: Piece["reference_url"]
-  mediaLinks?: Array<{
-    id: number
-    url: string
-    label: string | null
-  }>
   referenceMetadata?: PreferredReferenceMetadata
   pieceStyles?: Piece["piece_styles"]
   listNames?: string[]
@@ -33,7 +28,6 @@ type TuneCardProps = {
   redirectTo?: string
   savedLoops?: UserPieceMediaLoop[]
   upsertPreferredReferenceUrl?: (formData: FormData) => Promise<void>
-  addPieceMediaLink?: (formData: FormData) => Promise<void>
   topRightAction?: ReactNode
   children?: ReactNode
 }
@@ -45,7 +39,6 @@ export default function TuneCard({
   style,
   timeSignature,
   referenceUrl,
-  mediaLinks,
   referenceMetadata,
   pieceStyles,
   listNames = [],
@@ -53,7 +46,6 @@ export default function TuneCard({
   redirectTo,
   savedLoops,
   upsertPreferredReferenceUrl,
-  addPieceMediaLink,
   topRightAction,
   children,
 }: TuneCardProps) {
@@ -117,17 +109,15 @@ export default function TuneCard({
         ) : null}
       </div>
 
-      {(referenceUrl || (mediaLinks && mediaLinks.length > 0)) && (
+      {referenceUrl ? (
         <div data-card-action className="mt-4">
           <PreferredReferenceControl
             pieceId={id}
             title={title}
             defaultReferenceUrl={referenceUrl}
-            mediaLinks={mediaLinks}
             metadata={referenceMetadata}
             redirectTo={redirectTo ?? `/library/${id}`}
             upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
-            addPieceMediaLink={addPieceMediaLink}
             savedLoops={savedLoops}
             compact
             openLabel="Open reference video"
@@ -135,7 +125,7 @@ export default function TuneCard({
             triggerClassName="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
           />
         </div>
-      )}
+      ) : null}
 
       {allListLinks.length > 0 && (
         <p

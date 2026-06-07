@@ -125,35 +125,6 @@ export async function loadPreferredReferencesByPieceId(
   return referencesByPieceId
 }
 
-export async function loadReviewMediaLinksByPieceId(
-  supabase: SupabaseServerClient,
-  pieceIds: number[]
-): Promise<Map<number, ReviewPieceMediaLink[]>> {
-  const linksByPieceId = new Map<number, ReviewPieceMediaLink[]>()
-
-  if (pieceIds.length === 0) {
-    return linksByPieceId
-  }
-
-  const { data, error } = await supabase
-    .from("piece_media_links")
-    .select("id, piece_id, url, label")
-    .in("piece_id", pieceIds)
-    .order("created_at", { ascending: true })
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  for (const link of (data ?? []) as ReviewPieceMediaLink[]) {
-    const links = linksByPieceId.get(link.piece_id) ?? []
-    links.push(link)
-    linksByPieceId.set(link.piece_id, links)
-  }
-
-  return linksByPieceId
-}
-
 export function buildReviewQueueItems({
   rows,
   today,

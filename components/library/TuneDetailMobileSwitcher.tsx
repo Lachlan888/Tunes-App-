@@ -12,6 +12,7 @@ import type {
   LearningListItemRow,
   PieceCommentRow,
   PieceLoreEntryRow,
+  PieceMediaLink,
   PieceSheetMusicLink,
   ProfileRow,
   TunePracticeNote,
@@ -39,6 +40,7 @@ type TuneDetailMobileSwitcherProps = {
   userPiece: UserPiece | null
   userKnownPiece: UserKnownPiece | null
   userPieceMetadata: UserPieceMetadata | null
+  mediaLinks: PieceMediaLink[]
   sheetMusicLinks: PieceSheetMusicLink[]
   mediaLoops: UserPieceMediaLoop[]
   pieceComments: PieceCommentRow[]
@@ -58,6 +60,8 @@ type TuneDetailMobileSwitcherProps = {
   upsertUserPieceNotes: (formData: FormData) => Promise<void>
   upsertPreferredReferenceUrl: (formData: FormData) => Promise<void>
   removePreferredReferenceUrl: (formData: FormData) => Promise<void>
+  addPieceMediaLink: (formData: FormData) => Promise<void>
+  removePieceMediaLink: (formData: FormData) => Promise<void>
   addPieceSheetMusicLink: (formData: FormData) => Promise<void>
   addReferenceUrlToPiece: (formData: FormData) => Promise<void>
 }
@@ -121,6 +125,7 @@ export default function TuneDetailMobileSwitcher({
   userPiece,
   userKnownPiece,
   userPieceMetadata,
+  mediaLinks,
   sheetMusicLinks,
   mediaLoops,
   pieceComments,
@@ -140,6 +145,8 @@ export default function TuneDetailMobileSwitcher({
   upsertUserPieceNotes,
   upsertPreferredReferenceUrl,
   removePreferredReferenceUrl,
+  addPieceMediaLink,
+  removePieceMediaLink,
   addPieceSheetMusicLink,
   addReferenceUrlToPiece,
 }: TuneDetailMobileSwitcherProps) {
@@ -180,14 +187,18 @@ export default function TuneDetailMobileSwitcher({
       {activeTab === "media" ? (
         <MobileTuneMediaSection
           piece={piece}
+          currentUserId={currentUserId}
           redirectTo={redirectTo}
           userPieceMetadata={userPieceMetadata}
           savedLoops={mediaLoops}
+          mediaLinks={mediaLinks}
           sheetMusicLinks={sheetMusicLinks}
           showMediaLinks={showMediaLinks}
           showSheetMusic={showSheetMusic}
           upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
           removePreferredReferenceUrl={removePreferredReferenceUrl}
+          addPieceMediaLink={addPieceMediaLink}
+          removePieceMediaLink={removePieceMediaLink}
           addPieceSheetMusicLink={addPieceSheetMusicLink}
           addReferenceUrlToPiece={addReferenceUrlToPiece}
         />

@@ -10,7 +10,6 @@ import {
   buildReviewQueueItems,
   getReviewPieceIds,
   loadPreferredReferencesByPieceId,
-  loadReviewMediaLinksByPieceId,
   loadReviewMediaLoopsByPieceId,
   loadReviewPieceRows,
 } from "@/lib/loaders/review/queue"
@@ -72,14 +71,12 @@ export async function loadReviewPageData() {
     activeFociByPieceId,
     activeFocusOptions,
     savedMediaLoopsByPieceId,
-    mediaLinksByPieceId,
     preferredReferencesByPieceId,
   ] = await Promise.all([
     loadRecentPracticeNotesByPieceId(supabase, user.id, pieceIds),
     loadActivePracticeFociByPieceId(supabase, user.id, pieceIds),
     loadActivePracticeFocusOptions(supabase, user.id),
     loadReviewMediaLoopsByPieceId(supabase, user.id, pieceIds),
-    loadReviewMediaLinksByPieceId(supabase, pieceIds),
     loadPreferredReferencesByPieceId(supabase, user.id, pieceIds),
   ])
 
@@ -92,7 +89,7 @@ export async function loadReviewPageData() {
     activeFociByPieceId,
     activeFocusOptions,
     savedMediaLoopsByPieceId,
-    mediaLinksByPieceId,
+    mediaLinksByPieceId: new Map(),
     preferredReferencesByPieceId,
   })
 

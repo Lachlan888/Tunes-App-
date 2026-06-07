@@ -23,13 +23,6 @@ export type LibraryUserPieceMetadata = {
   preferred_reference_label: string | null
 }
 
-export type LibraryPieceMediaLink = {
-  id: number
-  piece_id: number
-  url: string
-  label: string | null
-}
-
 export type LibrarySort = "title_asc" | "newest" | "oldest"
 
 type LoadLibraryDataParams = {
@@ -445,7 +438,6 @@ export async function loadLibraryData({
   let userKnownPieces: UserKnownPiece[] = []
   let learningListItems: LearningListItemMembership[] = []
   let userPieceMetadata: LibraryUserPieceMetadata[] = []
-  let mediaLinks: LibraryPieceMediaLink[] = []
   let mediaLoops: UserPieceMediaLoop[] = []
 
   if (displayPieceIds.length > 0) {
@@ -454,7 +446,6 @@ export async function loadLibraryData({
       { data: userKnownPiecesRows, error: userKnownPiecesError },
       { data: learningListItemsRows, error: learningListItemsError },
       { data: userPieceMetadataRows, error: userPieceMetadataError },
-      { data: mediaLinksRows, error: mediaLinksError },
       { data: mediaLoopsRows, error: mediaLoopsError },
     ] = await Promise.all([
       supabase
@@ -484,12 +475,6 @@ export async function loadLibraryData({
         .in("piece_id", displayPieceIds),
 
       supabase
-        .from("piece_media_links")
-        .select("id, piece_id, url, label")
-        .in("piece_id", displayPieceIds)
-        .order("created_at", { ascending: true }),
-
-      supabase
         .from("user_piece_media_loops")
         .select(
           "id, piece_id, youtube_video_id, label, start_seconds, end_seconds, playback_rate, notes, created_at, updated_at"
@@ -515,10 +500,6 @@ export async function loadLibraryData({
       throw new Error(userPieceMetadataError.message)
     }
 
-    if (mediaLinksError) {
-      throw new Error(mediaLinksError.message)
-    }
-
     if (mediaLoopsError) {
       throw new Error(mediaLoopsError.message)
     }
@@ -527,7 +508,6 @@ export async function loadLibraryData({
     userKnownPieces = (userKnownPiecesRows ?? []) as UserKnownPiece[]
     userPieceMetadata =
       (userPieceMetadataRows ?? []) as LibraryUserPieceMetadata[]
-    mediaLinks = (mediaLinksRows ?? []) as LibraryPieceMediaLink[]
     mediaLoops = (mediaLoopsRows ?? []) as UserPieceMediaLoop[]
 
     learningListItems = ((learningListItemsRows ?? []) as LearningListItemRow[])
@@ -548,7 +528,6 @@ export async function loadLibraryData({
     userPieces,
     userKnownPieces,
     userPieceMetadata,
-    mediaLinks,
     mediaLoops,
     learningLists,
     learningListItems,

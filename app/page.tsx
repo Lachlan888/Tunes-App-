@@ -55,7 +55,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </div>
       ) : null}
 
-      <section className="mb-8 hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
+      <section className="mb-6 hidden md:block">
         <div className="flex flex-wrap items-end justify-between gap-5">
           <div>
             <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -70,11 +70,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {showSignedInCard ? (
-              <div className="rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm">
+              <div className="max-w-xs text-right text-sm">
                 <p className="font-semibold text-foreground">Signed in</p>
-                <p className="mt-1 text-muted-foreground">{user.email}</p>
+                <p className="truncate text-muted-foreground">{user.email}</p>
               </div>
             ) : null}
 

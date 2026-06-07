@@ -138,7 +138,6 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     userPieces,
     userKnownPieces,
     userPieceMetadata,
-    mediaLinks,
     mediaLoops,
     learningLists,
     learningListItems,
@@ -386,7 +385,6 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
           addReferenceUrlToPiece={addReferenceUrlToPiece}
           upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
           userPieceMetadata={userPieceMetadata}
-          mediaLinks={mediaLinks}
           mediaLoops={mediaLoops}
           redirectTo={redirectTo}
           scrollPieceId={scrollPieceId}

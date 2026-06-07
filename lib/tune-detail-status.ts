@@ -6,6 +6,7 @@ export type TuneDetailStatusMessageInput = {
   moderatorEdit: string
   referenceUrl: string
   preferredReference: string
+  mediaLink: string
   diary: string
   loop: string
   pageOptions: string
@@ -26,6 +27,7 @@ export function getTuneDetailStatusMessage({
   moderatorEdit,
   referenceUrl,
   preferredReference,
+  mediaLink,
   diary,
   loop,
   pageOptions,
@@ -82,6 +84,15 @@ export function getTuneDetailStatusMessage({
     return "Could not find that tune."
   if (preferredReference === "error")
     return "Could not update preferred reference."
+
+  if (mediaLink === "added") return "Additional media link saved."
+  if (mediaLink === "removed") return "Additional media link removed."
+  if (mediaLink === "missing_fields")
+    return "Add a title and URL for the media link."
+  if (mediaLink === "invalid_url") return "That media link URL is not valid."
+  if (mediaLink === "missing_piece") return "Could not find that tune."
+  if (mediaLink === "missing_link") return "Could not find that media link."
+  if (mediaLink === "error") return "Could not update media links."
 
   if (diary === "note_saved") return "Practice note saved."
   if (diary === "note_deleted") return "Practice note deleted."

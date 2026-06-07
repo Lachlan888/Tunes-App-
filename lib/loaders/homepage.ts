@@ -300,7 +300,7 @@ function buildGettingStartedState(options: {
   const tasks: GettingStartedTask[] = [
     {
       id: "complete_profile",
-      group: "Set up your account",
+      group: "Account setup",
       label: "Complete your profile",
       description:
         "Add your name, username, and at least one instrument so other musicians can recognise you.",
@@ -311,10 +311,10 @@ function buildGettingStartedState(options: {
     },
     {
       id: "add_tunes",
-      group: "Set up your account",
-      label: "Import or add your known tunes",
+      group: "Repertoire setup",
+      label: "Import or add tunes",
       description:
-        "The fastest start is to import tunes you already know, or browse the catalogue and mark tunes as known.",
+        "Add tunes you already know, then place them into Known or Practice.",
       href: "/library?import=known",
       actionLabel: "Import Known Tunes",
       pendingLabel: "Opening import...",
@@ -322,8 +322,8 @@ function buildGettingStartedState(options: {
     },
     {
       id: "create_list",
-      group: "Set up your account",
-      label: "Create your first list",
+      group: "Repertoire setup",
+      label: "Create a list",
       description:
         "Use lists to organise tunes by session, gig, teacher, style, or learning goal.",
       href: "/learning-lists",
@@ -333,8 +333,8 @@ function buildGettingStartedState(options: {
     },
     {
       id: "mark_known",
-      group: "Build repertoire state",
-      label: "Mark a tune as known",
+      group: "Repertoire setup",
+      label: "Mark a tune Known",
       description:
         "Known tunes count as part of your repertoire without putting them into active review.",
       href: "/library",
@@ -344,10 +344,10 @@ function buildGettingStartedState(options: {
     },
     {
       id: "start_practice",
-      group: "Build repertoire state",
+      group: "Practice setup",
       label: "Start Practice on a tune",
       description:
-        "Put one or two tunes into the practice system so the app can schedule review.",
+        "Put one tune In practice so Stage review can begin.",
       href: "/library",
       actionLabel: "Start Practice",
       pendingLabel: "Opening Tunes...",
@@ -355,10 +355,10 @@ function buildGettingStartedState(options: {
     },
     {
       id: "complete_first_review",
-      group: "Learn the practice loop",
+      group: "Practice setup",
       label: "Complete your first review",
       description:
-        "Review a due tune and choose Failed, Shaky, or Solid to move it through the schedule.",
+        "Review a due tune and choose an outcome to move it through Stage scheduling.",
       href: "/review",
       actionLabel: "Go to Practice",
       pendingLabel: "Opening Practice...",
@@ -366,7 +366,7 @@ function buildGettingStartedState(options: {
     },
     {
       id: "finish_today",
-      group: "Learn the practice loop",
+      group: "Practice setup",
       label: "Finish today’s due practice",
       description:
         "Clear anything due today so Home can show that your practice work is up to date.",

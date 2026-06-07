@@ -1,6 +1,7 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
 import AddToListAction from "@/components/AddToListAction"
+import AdditionalMediaLinksSection from "@/components/library/AdditionalMediaLinksSection"
 import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import PieceCommentsSection from "@/components/library/PieceCommentsSection"
 import PieceLoreSection from "@/components/library/PieceLoreSection"
@@ -17,6 +18,10 @@ import {
   upsertPreferredReferenceUrl,
   upsertUserPieceNotes,
 } from "@/lib/actions/user-piece-metadata"
+import {
+  addPieceMediaLink,
+  removePieceMediaLink,
+} from "@/lib/actions/media-links"
 import { addPieceSheetMusicLink } from "@/lib/actions/piece-links"
 import { addToLearningList } from "@/lib/actions/lists"
 import { addReferenceUrlToPiece } from "@/lib/actions/reference-media"
@@ -45,6 +50,7 @@ type PiecePageProps = {
     moderator_edit?: string | string[]
     reference_url?: string | string[]
     preferred_reference?: string | string[]
+    media_link?: string | string[]
     diary?: string | string[]
     loop?: string | string[]
     page_options?: string | string[]
@@ -236,6 +242,7 @@ export default async function PiecePage({
     redirectTo,
     typedPiece,
     typedUserPieceMetadata,
+    typedMediaLinks,
     typedSheetMusicLinks,
     typedMediaLoops,
     typedPieceComments,
@@ -273,6 +280,7 @@ export default async function PiecePage({
     preferredReference: getSingleSearchParamValue(
       resolvedSearchParams?.preferred_reference
     ),
+    mediaLink: getSingleSearchParamValue(resolvedSearchParams?.media_link),
     diary: getSingleSearchParamValue(resolvedSearchParams?.diary),
     loop: getSingleSearchParamValue(resolvedSearchParams?.loop),
     pageOptions: getSingleSearchParamValue(
@@ -364,6 +372,7 @@ export default async function PiecePage({
           userPiece={typedUserPiece}
           userKnownPiece={typedUserKnownPiece}
           userPieceMetadata={typedUserPieceMetadata}
+          mediaLinks={typedMediaLinks}
           sheetMusicLinks={typedSheetMusicLinks}
           mediaLoops={typedMediaLoops}
           pieceComments={typedPieceComments}
@@ -383,6 +392,8 @@ export default async function PiecePage({
           upsertUserPieceNotes={upsertUserPieceNotes}
           upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
           removePreferredReferenceUrl={removePreferredReferenceUrl}
+          addPieceMediaLink={addPieceMediaLink}
+          removePieceMediaLink={removePieceMediaLink}
           addPieceSheetMusicLink={addPieceSheetMusicLink}
           addReferenceUrlToPiece={addReferenceUrlToPiece}
         />
@@ -391,15 +402,26 @@ export default async function PiecePage({
       <div className="mt-8 hidden grid-cols-1 gap-6 md:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)]">
         <div className="min-w-0 space-y-6">
           {showTuneSection("media_links") ? (
-            <PieceMediaLinksSection
-              piece={typedPiece}
-              redirectTo={redirectTo}
-              userPieceMetadata={typedUserPieceMetadata}
-              savedLoops={typedMediaLoops}
-              upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
-              removePreferredReferenceUrl={removePreferredReferenceUrl}
-              addReferenceUrlToPiece={addReferenceUrlToPiece}
-            />
+            <>
+              <PieceMediaLinksSection
+                piece={typedPiece}
+                redirectTo={redirectTo}
+                userPieceMetadata={typedUserPieceMetadata}
+                savedLoops={typedMediaLoops}
+                upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
+                removePreferredReferenceUrl={removePreferredReferenceUrl}
+                addReferenceUrlToPiece={addReferenceUrlToPiece}
+              />
+
+              <AdditionalMediaLinksSection
+                pieceId={pieceId}
+                currentUserId={user.id}
+                redirectTo={redirectTo}
+                mediaLinks={typedMediaLinks}
+                addPieceMediaLink={addPieceMediaLink}
+                removePieceMediaLink={removePieceMediaLink}
+              />
+            </>
           ) : null}
 
           {showTuneSection("sheet_music") ? (

@@ -16,13 +16,6 @@ export type ListDetailUserPieceMetadata = {
   preferred_reference_label: string | null
 }
 
-export type ListDetailPieceMediaLink = {
-  id: number
-  piece_id: number
-  url: string
-  label: string | null
-}
-
 function extractPiece(piece: Piece | Piece[] | null): Piece | null {
   if (!piece) return null
   return Array.isArray(piece) ? piece[0] ?? null : piece
@@ -100,14 +93,12 @@ export async function loadLearningListDetailData(rawListId: string) {
   let activePieceIds = new Set<number>()
   let knownPieceIds = new Set<number>()
   let userPieceMetadata: ListDetailUserPieceMetadata[] = []
-  let mediaLinks: ListDetailPieceMediaLink[] = []
 
   if (pieceIds.length > 0) {
     const [
       { data: userPieces, error: userPiecesError },
       { data: userKnownPieces, error: userKnownPiecesError },
       { data: userPieceMetadataRows, error: userPieceMetadataError },
-      { data: mediaLinksRows, error: mediaLinksError },
     ] = await Promise.all([
       supabase
         .from("user_pieces")
@@ -126,12 +117,6 @@ export async function loadLearningListDetailData(rawListId: string) {
         .select("piece_id, preferred_reference_url, preferred_reference_label")
         .eq("user_id", user.id)
         .in("piece_id", pieceIds),
-
-      supabase
-        .from("piece_media_links")
-        .select("id, piece_id, url, label")
-        .in("piece_id", pieceIds)
-        .order("created_at", { ascending: true }),
     ])
 
     if (userPiecesError) {
@@ -150,16 +135,11 @@ export async function loadLearningListDetailData(rawListId: string) {
       throw new Error(userPieceMetadataError.message)
     }
 
-    if (mediaLinksError) {
-      throw new Error(mediaLinksError.message)
-    }
-
     knownPieceIds = new Set(
       ((userKnownPieces ?? []) as PieceIdRow[]).map((row) => row.piece_id)
     )
     userPieceMetadata =
       (userPieceMetadataRows ?? []) as ListDetailUserPieceMetadata[]
-    mediaLinks = (mediaLinksRows ?? []) as ListDetailPieceMediaLink[]
   }
 
   return {
@@ -170,7 +150,6 @@ export async function loadLearningListDetailData(rawListId: string) {
     activePieceIds,
     knownPieceIds,
     userPieceMetadata,
-    mediaLinks,
     redirectTo,
   }
 }

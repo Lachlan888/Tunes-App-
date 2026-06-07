@@ -47,10 +47,6 @@ export default function PieceMediaLinksSection({
   const preferredReferenceLabel =
     userPieceMetadata?.preferred_reference_label || ""
 
-  const referenceHeading = isUsingPreferredReference
-    ? "Your preferred reference"
-    : "Primary reference"
-
   const referenceStatus = isUsingPreferredReference
     ? "Using your preferred reference for this tune."
     : piece.reference_url
@@ -62,10 +58,14 @@ export default function PieceMediaLinksSection({
       <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
         <div className="min-w-0">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            {referenceHeading}
+            Reference media
           </h2>
 
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            The main reference version for this tune.
+          </p>
+
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
             {referenceStatus}
           </p>
 
