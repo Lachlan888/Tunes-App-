@@ -35,6 +35,9 @@ type PreferredReferenceControlProps = {
   triggerClassName?: string
   compact?: boolean
   allowAddMediaLink?: boolean
+  openLabel?: string
+  showPickerTrigger?: boolean
+  pickerTriggerLabel?: string
 }
 
 const inputClassName =
@@ -103,6 +106,7 @@ function ReferenceOpenButton({
   redirectTo,
   savedLoops,
   className,
+  openLabel,
 }: {
   option: ReferenceMediaOption
   title: string
@@ -110,6 +114,7 @@ function ReferenceOpenButton({
   redirectTo: string
   savedLoops: UserPieceMediaLoop[]
   className?: string
+  openLabel: string
 }) {
   const videoId = getYouTubeVideoId(option.url)
   const label = getOptionLabel(option)
@@ -120,7 +125,7 @@ function ReferenceOpenButton({
         referenceUrl={option.url}
         title={label || title}
         showHeading={false}
-        triggerLabel="Open"
+        triggerLabel={openLabel}
         triggerClassName={className ?? buttonStyles.secondary}
         pieceId={pieceId}
         redirectTo={redirectTo}
@@ -136,7 +141,7 @@ function ReferenceOpenButton({
       rel="noreferrer"
       className={className ?? buttonStyles.secondary}
     >
-      Open
+      {openLabel}
     </a>
   )
 }
@@ -156,6 +161,9 @@ export default function PreferredReferenceControl({
   triggerClassName,
   compact = false,
   allowAddMediaLink = false,
+  openLabel = "Open",
+  showPickerTrigger = true,
+  pickerTriggerLabel = "Change",
 }: PreferredReferenceControlProps) {
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   const preferredUrl = metadata?.preferred_reference_url || null
@@ -198,15 +206,18 @@ export default function PreferredReferenceControl({
             redirectTo={redirectTo}
             savedLoops={savedLoops}
             className={directTriggerClassName}
+            openLabel={openLabel}
           />
 
-          {(options.length > 1 || canAddMedia) && canChoosePreferred ? (
+          {showPickerTrigger &&
+          (options.length > 1 || canAddMedia) &&
+          canChoosePreferred ? (
             <button
               type="button"
               className={buttonStyles.text}
               onClick={() => setIsPickerOpen(true)}
             >
-              Change
+              {pickerTriggerLabel}
             </button>
           ) : null}
         </div>
@@ -257,6 +268,7 @@ export default function PreferredReferenceControl({
                           redirectTo={redirectTo}
                           savedLoops={savedLoops}
                           className={buttonStyles.secondary}
+                          openLabel={openLabel}
                         />
 
                         {upsertPreferredReferenceUrl && !isPreferred ? (

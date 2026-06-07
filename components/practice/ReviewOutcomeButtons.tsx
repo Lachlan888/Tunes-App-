@@ -9,6 +9,8 @@ import {
 
 type DirectReviewFormsProps = {
   userPieceId: number
+  stage: number
+  nextReviewDue: string | null
   redirectTo: string
 }
 
@@ -42,6 +44,26 @@ function getTooltipPositionClassName(alignment: TooltipAlignment) {
   return "left-1/2 -translate-x-1/2"
 }
 
+export function buildReviewSubmissionKey({
+  userPieceId,
+  stage,
+  nextReviewDue,
+  outcome,
+}: {
+  userPieceId: number
+  stage: number
+  nextReviewDue: string | null
+  outcome: string
+}) {
+  return [
+    "formal-review",
+    userPieceId,
+    stage,
+    nextReviewDue ?? "no-due-date",
+    outcome,
+  ].join(":")
+}
+
 function ReviewOutcomeTooltip({
   tooltip,
   alignment,
@@ -63,6 +85,8 @@ function ReviewOutcomeTooltip({
 
 export function DirectReviewForms({
   userPieceId,
+  stage,
+  nextReviewDue,
   redirectTo,
 }: DirectReviewFormsProps) {
   return (
@@ -78,6 +102,16 @@ export function DirectReviewForms({
           >
             <input type="hidden" name="userPieceId" value={userPieceId} />
             <input type="hidden" name="redirectTo" value={redirectTo} />
+            <input
+              type="hidden"
+              name="reviewSubmissionKey"
+              value={buildReviewSubmissionKey({
+                userPieceId,
+                stage,
+                nextReviewDue,
+                outcome: reviewOutcome.outcome,
+              })}
+            />
 
             <SubmitButton
               label={reviewOutcome.label}

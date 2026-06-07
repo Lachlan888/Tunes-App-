@@ -10,9 +10,11 @@ import { notifyComposerTuneStartedPractice } from "@/lib/services/composer-notif
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 
 function appendQueryParam(url: string, key: string, value: string) {
-  return url.includes("?")
-    ? `${url}&${key}=${encodeURIComponent(value)}`
-    : `${url}?${key}=${encodeURIComponent(value)}`
+  const [baseUrl, hash] = url.split("#", 2)
+  const separator = baseUrl.includes("?") ? "&" : "?"
+  const nextUrl = `${baseUrl}${separator}${key}=${encodeURIComponent(value)}`
+
+  return hash ? `${nextUrl}#${hash}` : nextUrl
 }
 
 export async function startPracticeForUser(

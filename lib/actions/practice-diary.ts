@@ -10,6 +10,19 @@ import { getToday } from "@/lib/review"
 import { createClient } from "@/lib/supabase/server"
 
 type TunePracticeCheckOutcome = "rough" | "shaky" | "solid"
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
+
+type PracticeEventForNote = {
+  id: number
+  practice_day_id: number
+  piece_id: number | null
+  review_event_id: number | null
+}
+
+type ReviewEventForNote = {
+  id: number
+  piece_id: number | null
+}
 
 function asNullablePositiveNumber(value: FormDataEntryValue | null) {
   const numberValue = Number(value)
@@ -64,7 +77,7 @@ function getTunePracticeCheckOutcome(
 }
 
 async function getPracticeDiaryEnabled(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: SupabaseServerClient,
   userId: string
 ) {
   const { data: profile, error } = await supabase
@@ -78,6 +91,273 @@ async function getPracticeDiaryEnabled(
   }
 
   return Boolean(profile?.practice_diary_enabled)
+}
+
+async function validatePracticeNoteCategory({
+  supabase,
+  userId,
+  categoryId,
+  redirectTo,
+}: {
+  supabase: SupabaseServerClient
+  userId: string
+  categoryId: number | null
+  redirectTo: string
+}) {
+  if (!categoryId) {
+    return null
+  }
+
+  const { data, error } = await supabase
+    .from("practice_note_categories")
+    .select("id")
+    .eq("id", categoryId)
+    .eq("user_id", userId)
+    .eq("is_active", true)
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  if (!data) {
+    redirect(appendStatus(redirectTo, "diary", "invalid_category"))
+  }
+
+  return categoryId
+}
+
+async function validatePracticeEventForNote({
+  supabase,
+  userId,
+  practiceEventId,
+  redirectTo,
+}: {
+  supabase: SupabaseServerClient
+  userId: string
+  practiceEventId: number | null
+  redirectTo: string
+}): Promise<PracticeEventForNote | null> {
+  if (!practiceEventId) {
+    return null
+  }
+
+  const { data, error } = await supabase
+    .from("practice_events")
+    .select("id, practice_day_id, piece_id, review_event_id")
+    .eq("id", practiceEventId)
+    .eq("user_id", userId)
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  if (!data) {
+    redirect(appendStatus(redirectTo, "diary", "invalid_note_context"))
+  }
+
+  return data as PracticeEventForNote
+}
+
+async function loadReviewEventThroughPracticeEvent({
+  supabase,
+  userId,
+  reviewEventId,
+}: {
+  supabase: SupabaseServerClient
+  userId: string
+  reviewEventId: number
+}): Promise<ReviewEventForNote | null> {
+  const { data, error } = await supabase
+    .from("practice_events")
+    .select("review_event_id, piece_id")
+    .eq("user_id", userId)
+    .eq("review_event_id", reviewEventId)
+    .limit(1)
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  if (!data?.review_event_id) {
+    return null
+  }
+
+  return {
+    id: data.review_event_id,
+    piece_id: data.piece_id,
+  }
+}
+
+async function loadReviewEventThroughUserPiece({
+  supabase,
+  userId,
+  reviewEventId,
+}: {
+  supabase: SupabaseServerClient
+  userId: string
+  reviewEventId: number
+}): Promise<ReviewEventForNote | null> {
+  const { data: reviewEvent, error: reviewEventError } = await supabase
+    .from("review_events")
+    .select("id, user_piece_id")
+    .eq("id", reviewEventId)
+    .maybeSingle()
+
+  if (reviewEventError) {
+    throw new Error(reviewEventError.message)
+  }
+
+  const userPieceId = Number(reviewEvent?.user_piece_id)
+
+  if (!Number.isInteger(userPieceId) || userPieceId <= 0) {
+    return null
+  }
+
+  const { data: userPiece, error: userPieceError } = await supabase
+    .from("user_pieces")
+    .select("piece_id")
+    .eq("id", userPieceId)
+    .eq("user_id", userId)
+    .maybeSingle()
+
+  if (userPieceError) {
+    throw new Error(userPieceError.message)
+  }
+
+  if (!userPiece) {
+    return null
+  }
+
+  return {
+    id: reviewEventId,
+    piece_id: userPiece.piece_id,
+  }
+}
+
+async function validateReviewEventForNote({
+  supabase,
+  userId,
+  reviewEventId,
+  practiceEvent,
+  redirectTo,
+}: {
+  supabase: SupabaseServerClient
+  userId: string
+  reviewEventId: number | null
+  practiceEvent: PracticeEventForNote | null
+  redirectTo: string
+}): Promise<ReviewEventForNote | null> {
+  if (!reviewEventId) {
+    return null
+  }
+
+  if (practiceEvent) {
+    if (practiceEvent.review_event_id !== reviewEventId) {
+      redirect(appendStatus(redirectTo, "diary", "invalid_note_context"))
+    }
+
+    return {
+      id: reviewEventId,
+      piece_id: practiceEvent.piece_id,
+    }
+  }
+
+  const reviewEvent =
+    (await loadReviewEventThroughPracticeEvent({
+      supabase,
+      userId,
+      reviewEventId,
+    })) ??
+    (await loadReviewEventThroughUserPiece({
+      supabase,
+      userId,
+      reviewEventId,
+    }))
+
+  if (!reviewEvent) {
+    redirect(appendStatus(redirectTo, "diary", "invalid_note_context"))
+  }
+
+  return reviewEvent
+}
+
+async function validatePieceForNote({
+  supabase,
+  userId,
+  pieceId,
+  practiceEvent,
+  reviewEvent,
+  redirectTo,
+}: {
+  supabase: SupabaseServerClient
+  userId: string
+  pieceId: number | null
+  practiceEvent: PracticeEventForNote | null
+  reviewEvent: ReviewEventForNote | null
+  redirectTo: string
+}) {
+  const relatedPieceId = practiceEvent?.piece_id ?? reviewEvent?.piece_id ?? null
+
+  if (pieceId && relatedPieceId && pieceId !== relatedPieceId) {
+    redirect(appendStatus(redirectTo, "diary", "invalid_note_context"))
+  }
+
+  const resolvedPieceId = pieceId ?? relatedPieceId
+
+  if (!resolvedPieceId) {
+    return null
+  }
+
+  const { data, error } = await supabase
+    .from("pieces")
+    .select("id")
+    .eq("id", resolvedPieceId)
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  if (!data) {
+    redirect(appendStatus(redirectTo, "diary", "missing_piece"))
+  }
+
+  if (!relatedPieceId) {
+    const [
+      { data: learningPiece, error: learningPieceError },
+      { data: knownPiece, error: knownPieceError },
+    ] = await Promise.all([
+      supabase
+        .from("user_pieces")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("piece_id", resolvedPieceId)
+        .maybeSingle(),
+      supabase
+        .from("user_known_pieces")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("piece_id", resolvedPieceId)
+        .maybeSingle(),
+    ])
+
+    if (learningPieceError) {
+      throw new Error(learningPieceError.message)
+    }
+
+    if (knownPieceError) {
+      throw new Error(knownPieceError.message)
+    }
+
+    if (!learningPiece && !knownPiece) {
+      redirect(appendStatus(redirectTo, "diary", "invalid_note_context"))
+    }
+  }
+
+  return resolvedPieceId
 }
 
 export async function saveDailyReflection(formData: FormData) {
@@ -149,13 +429,46 @@ export async function createPracticeNote(formData: FormData) {
   const reviewEventId = asNullablePositiveNumber(formData.get("review_event_id"))
   const categoryId = asNullablePositiveNumber(formData.get("category_id"))
 
+  const validCategoryId = await validatePracticeNoteCategory({
+    supabase,
+    userId: user.id,
+    categoryId,
+    redirectTo,
+  })
+  const practiceEvent = await validatePracticeEventForNote({
+    supabase,
+    userId: user.id,
+    practiceEventId,
+    redirectTo,
+  })
+
+  if (practiceEvent && practiceEvent.practice_day_id !== practiceDay.id) {
+    redirect(appendStatus(redirectTo, "diary", "invalid_note_context"))
+  }
+
+  const reviewEvent = await validateReviewEventForNote({
+    supabase,
+    userId: user.id,
+    reviewEventId,
+    practiceEvent,
+    redirectTo,
+  })
+  const validPieceId = await validatePieceForNote({
+    supabase,
+    userId: user.id,
+    pieceId,
+    practiceEvent,
+    reviewEvent,
+    redirectTo,
+  })
+
   const { error } = await supabase.from("practice_notes").insert({
     user_id: user.id,
     practice_day_id: practiceDay.id,
-    practice_event_id: practiceEventId,
-    piece_id: pieceId,
-    review_event_id: reviewEventId,
-    category_id: categoryId,
+    practice_event_id: practiceEvent?.id ?? null,
+    piece_id: validPieceId,
+    review_event_id: reviewEvent?.id ?? null,
+    category_id: validCategoryId,
     body,
   })
 
@@ -165,8 +478,8 @@ export async function createPracticeNote(formData: FormData) {
 
   revalidatePath("/review/diary")
 
-  if (pieceId) {
-    revalidatePath(`/library/${pieceId}`)
+  if (validPieceId) {
+    revalidatePath(`/library/${validPieceId}`)
   }
 
   redirect(appendStatus(redirectTo, "diary", "note_saved"))
@@ -196,29 +509,18 @@ export async function updatePracticeNote(formData: FormData) {
     redirect(appendStatus(redirectTo, "diary", "empty_note"))
   }
 
-  if (categoryId) {
-    const { data: category, error: categoryError } = await supabase
-      .from("practice_note_categories")
-      .select("id")
-      .eq("id", categoryId)
-      .eq("user_id", user.id)
-      .eq("is_active", true)
-      .maybeSingle()
-
-    if (categoryError) {
-      throw new Error(categoryError.message)
-    }
-
-    if (!category) {
-      redirect(appendStatus(redirectTo, "diary", "invalid_category"))
-    }
-  }
+  const validCategoryId = await validatePracticeNoteCategory({
+    supabase,
+    userId: user.id,
+    categoryId,
+    redirectTo,
+  })
 
   const { data: updatedNote, error } = await supabase
     .from("practice_notes")
     .update({
       body,
-      category_id: categoryId,
+      category_id: validCategoryId,
       updated_at: new Date().toISOString(),
     })
     .eq("id", noteId)
@@ -293,6 +595,13 @@ export async function logTunePracticeCheck(formData: FormData) {
     redirect(appendStatus(redirectTo, "diary", "missing_piece"))
   }
 
+  const validCategoryId = await validatePracticeNoteCategory({
+    supabase,
+    userId: user.id,
+    categoryId,
+    redirectTo,
+  })
+
   const practiceDay = await ensureTodayPracticeDay(supabase, user.id)
 
   const { data: practiceEvent, error: practiceEventError } = await supabase
@@ -322,7 +631,7 @@ export async function logTunePracticeCheck(formData: FormData) {
       practice_event_id: practiceEvent.id,
       piece_id: pieceId,
       review_event_id: null,
-      category_id: categoryId,
+      category_id: validCategoryId,
       body: noteBody,
     })
 

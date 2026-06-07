@@ -4,6 +4,7 @@ import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import ActivePracticeSection from "@/components/practice/ActivePracticeSection"
 import CatchUpSection from "@/components/practice/CatchUpSection"
 import DueTodaySection from "@/components/practice/DueTodaySection"
+import PracticeMetronome from "@/components/practice/PracticeMetronome"
 import PracticeStatusMessages from "@/components/practice/PracticeStatusMessages"
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import PracticeDiaryNav from "@/components/practice-diary/PracticeDiaryNav"
@@ -105,7 +106,10 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     catchUpQueue,
   } = await loadReviewPageData()
 
-  const redirectTo = "/review"
+  const dueTodayRedirectTo = "/review#review-queue"
+  const catchUpRedirectTo = "/review?mode=catch-up#review-queue"
+  const redirectTo =
+    mobileReviewMode === "catch-up" ? catchUpRedirectTo : dueTodayRedirectTo
   const shouldOpenCatchUp = mode === "catch-up"
 
   if (!streakSummary) {
@@ -128,14 +132,14 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
           <div className="mt-3 grid grid-cols-2 gap-2">
             <MobileReviewModeLink
-              href="/review#due-today"
+              href="/review#review-queue"
               label="Due today"
               count={dueTodayPieces.length}
               isActive={mobileReviewMode === "due-today"}
             />
 
             <MobileReviewModeLink
-              href="/review?mode=catch-up#catch-up"
+              href="/review?mode=catch-up#review-queue"
               label="Catch-up"
               count={catchUpQueue.length}
               isActive={mobileReviewMode === "catch-up"}
@@ -193,38 +197,42 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         />
       ) : null}
 
-      {showSection("due_today") ? (
-        <div
-          className={
-            mobileReviewMode === "catch-up" ? "hidden md:block" : undefined
-          }
-        >
-          <DueTodaySection
-            dueTodayPieces={dueTodayPieces}
-            redirectTo={redirectTo}
-            practiceDiaryEnabled={practiceDiaryEnabled}
-            noteCategories={noteCategories}
-            upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
-          />
-        </div>
-      ) : null}
+      <PracticeMetronome />
 
-      {showSection("catch_up") ? (
-        <div
-          className={
-            mobileReviewMode === "due-today" ? "hidden md:block" : undefined
-          }
-        >
-          <CatchUpSection
-            catchUpQueue={catchUpQueue}
-            redirectTo={redirectTo}
-            defaultOpen={shouldOpenCatchUp}
-            practiceDiaryEnabled={practiceDiaryEnabled}
-            noteCategories={noteCategories}
-            upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
-          />
-        </div>
-      ) : null}
+      <div id="review-queue" className="scroll-mt-4 md:scroll-mt-6">
+        {showSection("due_today") ? (
+          <div
+            className={
+              mobileReviewMode === "catch-up" ? "hidden md:block" : undefined
+            }
+          >
+            <DueTodaySection
+              dueTodayPieces={dueTodayPieces}
+              redirectTo={dueTodayRedirectTo}
+              practiceDiaryEnabled={practiceDiaryEnabled}
+              noteCategories={noteCategories}
+              upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
+            />
+          </div>
+        ) : null}
+
+        {showSection("catch_up") ? (
+          <div
+            className={
+              mobileReviewMode === "due-today" ? "hidden md:block" : undefined
+            }
+          >
+            <CatchUpSection
+              catchUpQueue={catchUpQueue}
+              redirectTo={catchUpRedirectTo}
+              defaultOpen={shouldOpenCatchUp}
+              practiceDiaryEnabled={practiceDiaryEnabled}
+              noteCategories={noteCategories}
+              upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
+            />
+          </div>
+        ) : null}
+      </div>
 
       <div className="mt-6 md:hidden">
         {showSection("streaks") ? (

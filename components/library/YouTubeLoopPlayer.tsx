@@ -175,6 +175,16 @@ function numericInputValue(value: number | null) {
   return value === null ? "" : value.toFixed(2)
 }
 
+function getLoopLength(loopStart: number | null, loopEnd: number | null) {
+  if (loopStart === null || loopEnd === null) {
+    return null
+  }
+
+  const loopLength = loopEnd - loopStart
+
+  return loopLength > 0 ? loopLength : null
+}
+
 export default function YouTubeLoopPlayer({
   videoId,
   title,
@@ -201,6 +211,13 @@ export default function YouTubeLoopPlayer({
 
   const hasValidLoop =
     loopStart !== null && loopEnd !== null && loopEnd > loopStart + 0.2
+  const loopLength = hasValidLoop ? getLoopLength(loopStart, loopEnd) : null
+  const canMoveToPreviousSection =
+    loopLength !== null && loopStart !== null && loopStart - loopLength >= 0
+  const canMoveToNextSection =
+    loopLength !== null && loopEnd !== null && duration > 0
+      ? loopEnd + loopLength <= duration
+      : false
 
   useEffect(() => {
     let cancelled = false
@@ -356,6 +373,34 @@ export default function YouTubeLoopPlayer({
 
     setLoopEnd(nextEnd)
     setLoopEnabled(true)
+  }
+
+  function advanceLoop(direction: 1 | -1) {
+    if (
+      !hasValidLoop ||
+      loopStart === null ||
+      loopEnd === null ||
+      loopLength === null
+    ) {
+      return
+    }
+
+    if (direction === -1 && !canMoveToPreviousSection) return
+    if (direction === 1 && !canMoveToNextSection) return
+
+    const nextStart = loopStart + loopLength * direction
+    const nextEnd = loopEnd + loopLength * direction
+
+    setLoopStart(nextStart)
+    setLoopEnd(nextEnd)
+    setLoopEnabled(true)
+
+    const player = playerRef.current
+
+    if (player) {
+      player.seekTo(nextStart, true)
+      player.playVideo()
+    }
   }
 
   function handleNudgeLoopStart(amount: number) {
@@ -698,6 +743,24 @@ export default function YouTubeLoopPlayer({
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                <button
+                  type="button"
+                  className={compactButton(buttonStyles.secondary)}
+                  onClick={() => advanceLoop(-1)}
+                  disabled={!canMoveToPreviousSection}
+                >
+                  ← Previous section
+                </button>
+
+                <button
+                  type="button"
+                  className={compactButton(buttonStyles.secondary)}
+                  onClick={() => advanceLoop(1)}
+                  disabled={!canMoveToNextSection}
+                >
+                  Next section →
+                </button>
+
                 <button
                   type="button"
                   className={compactButton(buttonStyles.secondary)}

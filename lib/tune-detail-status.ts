@@ -90,6 +90,10 @@ export function getTuneDetailStatusMessage({
   if (diary === "diary_disabled")
     return "Enable Practice Diary before logging tune practice checks."
   if (diary === "invalid_outcome") return "Choose Rough, Shaky, or Solid."
+  if (diary === "invalid_category")
+    return "Choose one of your active practice note categories."
+  if (diary === "invalid_note_context")
+    return "Could not attach that note to the selected practice item."
   if (diary === "missing_piece") return "Could not find that tune."
 
   if (loop === "saved") return "Loop saved."

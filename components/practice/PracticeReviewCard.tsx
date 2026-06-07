@@ -119,6 +119,8 @@ export default function PracticeReviewCard({
         ) : (
           <DirectReviewForms
             userPieceId={userPiece.id}
+            stage={userPiece.stage}
+            nextReviewDue={userPiece.next_review_due}
             redirectTo={redirectTo}
           />
         )}

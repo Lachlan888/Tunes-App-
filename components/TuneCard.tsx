@@ -130,6 +130,8 @@ export default function TuneCard({
             addPieceMediaLink={addPieceMediaLink}
             savedLoops={savedLoops}
             compact
+            openLabel="Open reference video"
+            showPickerTrigger={false}
             triggerClassName="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
           />
         </div>

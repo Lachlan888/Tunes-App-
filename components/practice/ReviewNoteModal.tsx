@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import AddCategoryInReviewDisclosure from "@/components/practice/AddCategoryInReviewDisclosure"
+import { buildReviewSubmissionKey } from "@/components/practice/ReviewOutcomeButtons"
 import SubmitButton from "@/components/SubmitButton"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles } from "@/components/ui/buttonStyles"
@@ -73,6 +74,16 @@ export default function ReviewNoteModal({
         >
           <input type="hidden" name="userPieceId" value={userPiece.id} />
           <input type="hidden" name="redirectTo" value={redirectTo} />
+          <input
+            type="hidden"
+            name="reviewSubmissionKey"
+            value={buildReviewSubmissionKey({
+              userPieceId: userPiece.id,
+              stage: userPiece.stage,
+              nextReviewDue: userPiece.next_review_due,
+              outcome: selectedOutcome.outcome,
+            })}
+          />
 
           <label className="block">
             <span className="text-sm font-semibold text-foreground">
