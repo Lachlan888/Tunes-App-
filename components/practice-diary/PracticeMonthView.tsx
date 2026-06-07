@@ -244,7 +244,7 @@ function MobileMonthHeader({
         {[
           ["month", "Month"],
           ["tunes", "Tunes"],
-          ["foci", "Foci"],
+          ["foci", "Focus"],
           ["categories", "Notes"],
         ].map(([panel, label]) => (
           <button
@@ -325,7 +325,7 @@ function MobileMonthCalendar({ data }: { data: PracticeDiaryMonthData }) {
 
         <div className="rounded-xl border border-border bg-background/70 p-3">
           <p className="text-xs font-semibold uppercase tracking-[0.12em]">
-            Foci touched
+            Focus areas touched
           </p>
           <p className="mt-1 font-serif text-2xl font-bold text-foreground">
             {data.summary.fociTouched}
@@ -428,7 +428,7 @@ function MobileFocusDistribution({
   return (
     <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:hidden">
       <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        Foci touched
+        Focus areas touched
       </h2>
 
       {visibleSummaries.length === 0 ? (
@@ -481,7 +481,7 @@ function MobileFocusDistribution({
 
       {summaries.length > visibleSummaries.length ? (
         <p className="mt-3 text-sm text-muted-foreground">
-          Showing {visibleSummaries.length} of {summaries.length} foci.
+          Showing {visibleSummaries.length} of {summaries.length} focus areas.
         </p>
       ) : null}
     </section>
@@ -638,7 +638,7 @@ function DesktopMonthSummary({ data }: { data: PracticeDiaryMonthData }) {
         />
 
         <SummaryCard
-          label="Foci touched"
+          label="Focus areas touched"
           value={data.summary.fociTouched}
           helper="Linked this month"
         />
@@ -740,7 +740,7 @@ export default function PracticeMonthView({ data }: PracticeMonthViewProps) {
 
         <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Foci touched
+            Focus areas touched
           </h2>
 
           <p className="mt-3 text-sm leading-6 text-muted-foreground">

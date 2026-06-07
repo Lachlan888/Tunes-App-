@@ -90,8 +90,8 @@ export default function CompareMobile(props: CompareViewProps) {
 
             <div className="mt-3 border-y border-border py-4">
               <p className="text-sm leading-6 text-muted-foreground">
-                You are always included. Add another player to start comparing
-                repertoire.
+                You’re included automatically. Add another player to compare
+                tunes.
               </p>
 
               <button
@@ -107,13 +107,12 @@ export default function CompareMobile(props: CompareViewProps) {
           {matchedProfile && !canCompare ? (
             <section className="border-y border-border py-4">
               <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Permission needed
+                Friend request needed
               </h2>
 
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                This user requires friendship before comparison is available.
-                Send a request from the full desktop compare view for now, or
-                open their profile.
+                This player only allows friends to compare repertoire. Open
+                their profile to send a request.
               </p>
             </section>
           ) : null}

@@ -54,7 +54,7 @@ export default function FriendUserActionCard({
   hiddenFields,
 }: FriendUserActionCardProps) {
   const router = useRouter()
-  const label = displayName || username || "Unnamed user"
+  const label = displayName || username || "Unnamed player"
   const profileHref = username ? `/users/${encodeURIComponent(username)}` : null
 
   function openProfile(event: React.MouseEvent<HTMLElement>) {

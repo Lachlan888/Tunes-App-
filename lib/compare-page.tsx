@@ -93,7 +93,7 @@ export function renderProfileLink(
   username: string | null,
   label: string | null | undefined
 ) {
-  const safeLabel = label || username || "Unnamed user"
+  const safeLabel = label || username || "Unnamed player"
 
   if (!username) {
     return <span>{safeLabel}</span>

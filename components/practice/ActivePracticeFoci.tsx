@@ -27,7 +27,7 @@ export default function ActivePracticeFoci({
       >
         <span>
           <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Active foci
+            Active focus areas
           </span>
 
           <span className="mt-1 block text-sm text-muted-foreground">
@@ -43,7 +43,7 @@ export default function ActivePracticeFoci({
 
       <div className="hidden md:block">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Active foci
+          Active focus areas
         </p>
 
         <ul className="mt-2 flex flex-wrap gap-2">

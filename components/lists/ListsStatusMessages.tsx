@@ -40,7 +40,7 @@ export default function ListsStatusMessages({
       )}
 
       {createListStatus === "error" && (
-        <StatusBanner tone="error">Could not create list.</StatusBanner>
+        <StatusBanner tone="error">Couldn’t create list.</StatusBanner>
       )}
 
       {editListStatus === "success" && (
@@ -59,7 +59,7 @@ export default function ListsStatusMessages({
 
       {editListStatus === "missing_list" && (
         <StatusBanner tone="warning">
-          Could not tell which list to edit.
+          Couldn’t tell which list to edit.
         </StatusBanner>
       )}
 
@@ -69,7 +69,7 @@ export default function ListsStatusMessages({
 
       {editListStatus === "missing_item" && (
         <StatusBanner tone="warning">
-          Could not tell which tune to remove from the list.
+          Couldn’t tell which tune to remove from the list.
         </StatusBanner>
       )}
 
@@ -84,7 +84,7 @@ export default function ListsStatusMessages({
       )}
 
       {editListStatus === "error" && (
-        <StatusBanner tone="error">Could not update list.</StatusBanner>
+        <StatusBanner tone="error">Couldn’t update list.</StatusBanner>
       )}
     </>
   )

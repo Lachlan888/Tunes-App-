@@ -95,11 +95,10 @@ export default function GettingStartedSection({
               First session
             </p>
             <h2 className="mt-1 font-serif text-2xl font-bold">
-              Start with the next useful step
+              Next useful step
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Home updates from real app activity as you add tunes, mark Known,
-              start Practice, create lists, and review.
+              Home updates as you add tunes, create lists, and review.
             </p>
 
             {state.nextTask ? (
@@ -169,10 +168,8 @@ export default function GettingStartedSection({
             </p>
             <h2 className="mt-1 font-serif text-3xl font-bold">Get started</h2>
             <p className="mt-3 max-w-2xl text-muted-foreground">
-              Set up enough of the app that it can start acting like your
-              repertoire memory system. These steps use the real app, so Home
-              updates as soon as you add tunes, start practice, create lists,
-              or review.
+              Start by adding a few tunes, making a list, or beginning
+              practice. Home will update as you go.
             </p>
             <p className="mt-3 text-sm font-medium text-muted-foreground">
               Progress: {state.completedCount} of {state.totalCount} complete

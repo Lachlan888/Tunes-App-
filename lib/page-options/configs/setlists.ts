@@ -34,7 +34,7 @@ const setlistsAllVisible = visibleSections({
 
 export const SETLISTS_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
   pageKey: "setlists",
-  title: "Setlists Page Options",
+  title: "Setlists display options",
   description: "Choose how your setlist workspace is arranged.",
   helperText:
     "These settings only affect the Setlists page layout. They do not change setlists or invitations.",

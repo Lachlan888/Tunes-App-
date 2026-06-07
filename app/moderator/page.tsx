@@ -31,27 +31,27 @@ function getStatusMessage(status: string) {
   if (status === "report_dismissed") return "Comment report dismissed."
   if (status === "lore_actioned") return "Lore report marked actioned."
   if (status === "lore_dismissed") return "Lore report dismissed."
-  if (status === "missing_request") return "Could not tell which request to update."
+  if (status === "missing_request") return "Couldn’t tell which request to update."
   if (status === "request_not_found") return "That request could not be found."
   if (status === "piece_not_found") return "That tune could not be found."
-  if (status === "missing_comment") return "Could not tell which comment to update."
+  if (status === "missing_comment") return "Couldn’t tell which comment to update."
   if (status === "comment_not_found") return "That comment could not be found."
-  if (status === "missing_report") return "Could not tell which report to update."
-  if (status === "missing_lore_report") return "Could not tell which lore report to update."
+  if (status === "missing_report") return "Couldn’t tell which report to update."
+  if (status === "missing_lore_report") return "Couldn’t tell which lore report to update."
   if (status === "invalid_key") return "One of the proposed keys was invalid."
   if (status === "invalid_url") return "One of the proposed URLs was invalid."
   if (status === "error") return "Something went wrong. Please try again."
 
-  if (status === "saved") return "Moderator page options saved."
-  if (status === "reset") return "Moderator page options reset."
+  if (status === "saved") return "Moderator display options saved."
+  if (status === "reset") return "Moderator display options reset."
 
   return null
 }
 
 function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Moderator page options saved."
-  if (status === "reset") return "Moderator page options reset."
-  if (status === "error") return "Could not save Moderator page options."
+  if (status === "saved") return "Moderator display options saved."
+  if (status === "reset") return "Moderator display options reset."
+  if (status === "error") return "Couldn’t save display options."
 
   return null
 }
@@ -112,8 +112,8 @@ export default async function ModeratorPage({
               Tune edits, comment reports, and lore reports
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-              Review proposed corrections to canonical tune details, handle reported
-              comments, and judge reported lore entries.
+              Review proposed corrections to shared tune details, handle
+              reported comments, and judge reported lore entries.
             </p>
           </div>
 

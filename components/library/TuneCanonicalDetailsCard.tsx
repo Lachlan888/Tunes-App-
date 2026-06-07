@@ -133,7 +133,7 @@ const destructivePrimaryButtonClass = joinClasses(
 )
 
 function getProfileDisplayName(profile: ProfileRow) {
-  return profile.display_name || profile.username || "Unknown user"
+  return profile.display_name || profile.username || "Unknown player"
 }
 
 function getProfileSearchText(profile: ProfileRow) {
@@ -221,7 +221,7 @@ function ComposerProfilePicker({
         </p>
         <p className="mt-1 text-sm leading-6 text-muted-foreground">
           Link this tune to a user profile when the tune is composed by that
-          Tunes App user.
+          Tunes App player.
         </p>
       </div>
 
@@ -352,7 +352,7 @@ export default function TuneCanonicalDetailsCard({
         </h2>
 
         <p className="mt-2 hidden max-w-3xl text-sm leading-6 text-muted-foreground sm:block">
-          Shared canonical tune data.
+          Shared tune details.
         </p>
       </div>
 
@@ -412,7 +412,7 @@ export default function TuneCanonicalDetailsCard({
               }}
               className={primaryButtonClass}
             >
-              Edit canonical details
+              Edit shared tune details
             </button>
 
             <button
@@ -420,7 +420,7 @@ export default function TuneCanonicalDetailsCard({
               onClick={() => setModalMode("delete")}
               className={destructiveButtonClass}
             >
-              Delete canonical tune
+              Delete shared tune
             </button>
           </>
         ) : (
@@ -449,7 +449,7 @@ export default function TuneCanonicalDetailsCard({
       {modalMode === "missing" ? (
         <ModalShell
           title="Add missing details"
-          description="Add canonical information that is currently missing. Existing details should be changed through a correction request."
+          description="Add missing tune details. To change existing details, submit a correction."
           onClose={() => setModalMode(null)}
         >
           <form action={updateMissingPieceDetails} className="space-y-3">
@@ -538,8 +538,8 @@ export default function TuneCanonicalDetailsCard({
 
       {modalMode === "moderator" ? (
         <ModalShell
-          title="Edit canonical details"
-          description="Update shared tune data directly. This affects the canonical tune record and creates an audit log entry."
+          title="Edit shared tune details"
+          description="Update the shared tune record directly. This will be logged."
           onClose={() => setModalMode(null)}
         >
           <form action={directModeratorUpdatePiece} className="space-y-3">
@@ -618,7 +618,7 @@ export default function TuneCanonicalDetailsCard({
 
             <div className="grid gap-2 pt-2">
               <SubmitButton
-                label="Save canonical details"
+                label="Save shared tune details"
                 pendingLabel="Saving..."
                 className={primaryButtonClass}
               />
@@ -637,8 +637,8 @@ export default function TuneCanonicalDetailsCard({
 
       {modalMode === "delete" ? (
         <ModalShell
-          title="Delete canonical tune"
-          description="This permanently removes this tune from the shared catalogue for everyone. It may also remove connected practice state, known status, list entries, comments, lore, media links, moderation requests, and notifications."
+          title="Delete shared tune"
+          description="This permanently removes this tune from the shared catalogue for everyone. It may also remove connected practice status, Known status, list entries, comments, lore, media links, moderation requests, and notifications."
           destructive
           onClose={() => setModalMode(null)}
         >
@@ -665,7 +665,7 @@ export default function TuneCanonicalDetailsCard({
 
             <div className="grid gap-2 pt-2">
               <SubmitButton
-                label="Delete canonical tune"
+                label="Delete shared tune"
                 pendingLabel="Deleting..."
                 className={destructivePrimaryButtonClass}
               />

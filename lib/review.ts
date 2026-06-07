@@ -21,7 +21,7 @@ function getAppDateParts() {
   const day = parts.find((part) => part.type === "day")?.value
 
   if (!year || !month || !day) {
-    throw new Error("Could not determine app date parts")
+    throw new Error("Couldn’t determine app date parts")
   }
 
   return { year, month, day }

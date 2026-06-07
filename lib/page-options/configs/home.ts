@@ -4,7 +4,7 @@ import { preferences, visibleSections } from "./shared"
 const HOME_SECTIONS = [
   {
     id: "repertoire_state",
-    label: "Repertoire state",
+    label: "Repertoire",
     description: "Known, Practice, Due today, Attention, and Lists summary.",
     isCore: true,
   },
@@ -72,10 +72,10 @@ const homeAllVisible = visibleSections({
 
 export const HOME_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
   pageKey: "home",
-  title: "Home Page Options",
+  title: "Home display options",
   description: "Choose what Home prioritises when you open the app.",
   helperText:
-    "These settings only affect how Home is arranged. They do not change your tunes, lists, practice state, or review schedule.",
+    "These settings only affect how Home is arranged. They do not change your tunes, lists, practice status, or review schedule.",
   sections: [...HOME_SECTIONS],
   allowColumns: true,
   allowDensity: true,
@@ -119,7 +119,7 @@ export const HOME_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
       id: "organiser",
       label: "Organiser",
       description:
-        "Prioritises lists, learning queue, repertoire state, and current practice organisation.",
+        "Prioritises lists, learning queue, repertoire, and current practice organisation.",
       preferences: preferences({
         layoutPreset: "organiser",
         visibleSections: visibleSections({

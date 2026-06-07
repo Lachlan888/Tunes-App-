@@ -118,8 +118,8 @@ export default function ProfileVisibilitySection({
         </h3>
 
         <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-          Control what other users can see on your public profile, whether they
-          can compare with you, and which kinds of activity appear to friends.
+          Control what other musicians can see on your public profile, whether
+          they can compare with you, and which activity appears to friends.
         </p>
 
         <div className="mt-5 grid gap-3 lg:grid-cols-2">
@@ -136,7 +136,7 @@ export default function ProfileVisibilitySection({
             checked={showInstruments}
             onChange={setShowInstruments}
             title="Show instruments"
-            description="Let other users see the instruments listed on your profile."
+            description="Let other musicians see the instruments listed on your profile."
           />
 
           <VisibilityToggle
@@ -152,7 +152,7 @@ export default function ProfileVisibilitySection({
             checked={showComposedTunesOnProfile}
             onChange={setShowComposedTunesOnProfile}
             title="Show composed tunes"
-            description="Display canonical tunes that are attributed to you as composer on your public profile."
+            description="Show shared tunes where you are listed as the composer."
           />
 
           <VisibilityToggle
@@ -184,7 +184,7 @@ export default function ProfileVisibilitySection({
             checked={showCompareDiscoverability}
             onChange={setShowCompareDiscoverability}
             title="Allow compare discovery"
-            description="Let other users find and compare with your profile."
+            description="Let other musicians find and compare with your profile."
           />
 
           <VisibilityToggle
@@ -192,7 +192,7 @@ export default function ProfileVisibilitySection({
             checked={compareRequiresFriend}
             onChange={setCompareRequiresFriend}
             title="Require friendship for compare"
-            description="If enabled, users must be friends with you before they can compare."
+            description="If enabled, people must be friends with you before they can compare."
           />
         </div>
 

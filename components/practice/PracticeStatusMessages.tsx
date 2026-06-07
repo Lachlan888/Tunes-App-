@@ -43,7 +43,7 @@ export default function PracticeStatusMessages({
 
       {removeFromPracticeStatus === "missing_user_piece" && (
         <StatusBox tone="warning">
-          Could not tell which practice item to remove.
+          Couldn’t tell which practice item to remove.
         </StatusBox>
       )}
 
@@ -52,7 +52,7 @@ export default function PracticeStatusMessages({
       )}
 
       {removeFromPracticeStatus === "error" && (
-        <StatusBox tone="error">Could not remove tune from practice.</StatusBox>
+        <StatusBox tone="error">Couldn’t remove tune from practice.</StatusBox>
       )}
 
       {loopStatus === "saved" && (
@@ -65,26 +65,26 @@ export default function PracticeStatusMessages({
 
       {loopStatus === "missing_fields" && (
         <StatusBox tone="warning">
-          Could not save loop: missing label or video.
+          Couldn’t save loop: missing label or video.
         </StatusBox>
       )}
 
       {loopStatus === "invalid_range" && (
         <StatusBox tone="warning">
-          Could not save loop: choose a valid start and end point.
+          Couldn’t save loop: choose a valid start and end point.
         </StatusBox>
       )}
 
       {loopStatus === "missing_loop" && (
-        <StatusBox tone="warning">Could not find that saved loop.</StatusBox>
+        <StatusBox tone="warning">Couldn’t find that saved loop.</StatusBox>
       )}
 
       {loopStatus === "missing_piece" && (
-        <StatusBox tone="warning">Could not find that tune.</StatusBox>
+        <StatusBox tone="warning">Couldn’t find that tune.</StatusBox>
       )}
 
       {loopStatus === "error" && (
-        <StatusBox tone="error">Could not update loop.</StatusBox>
+        <StatusBox tone="error">Couldn’t update loop.</StatusBox>
       )}
 
       {preferredReferenceStatus === "saved" && (
@@ -105,7 +105,7 @@ export default function PracticeStatusMessages({
 
       {preferredReferenceStatus === "error" && (
         <StatusBox tone="error">
-          Could not update preferred reference.
+          Couldn’t update preferred reference.
         </StatusBox>
       )}
     </>

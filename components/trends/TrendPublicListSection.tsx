@@ -28,7 +28,7 @@ export default function TrendPublicListSection({
           </div>
 
           <p className="mt-2 text-sm text-muted-foreground">
-            By {entry.ownerUsername ?? "Unknown user"}
+            By {entry.ownerUsername ?? "Unknown player"}
           </p>
 
           {entry.description && (

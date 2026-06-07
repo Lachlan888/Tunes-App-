@@ -50,7 +50,7 @@ function getSetlistMessage(status: string | undefined): Message | null {
     },
     missing_setlist: {
       key: "setlist-missing-setlist",
-      text: "Could not find the setlist.",
+      text: "Couldn’t find the setlist.",
       tone: "error",
     },
     not_found: {
@@ -99,7 +99,7 @@ function getInviteMessage(status: string | undefined): Message | null {
     },
     missing_setlist: {
       key: "invite-missing-setlist",
-      text: "Could not find the setlist for that invitation.",
+      text: "Couldn’t find the setlist for that invitation.",
       tone: "error",
     },
     missing_user: {
@@ -109,7 +109,7 @@ function getInviteMessage(status: string | undefined): Message | null {
     },
     missing_invite: {
       key: "invite-missing-invite",
-      text: "Could not find that invitation.",
+      text: "Couldn’t find that invitation.",
       tone: "error",
     },
     self: {
@@ -124,7 +124,7 @@ function getInviteMessage(status: string | undefined): Message | null {
     },
     duplicate: {
       key: "invite-duplicate",
-      text: "That user has already been invited to this setlist.",
+      text: "That person has already been invited to this setlist.",
       tone: "warning",
     },
     invalid_status: {
@@ -183,12 +183,12 @@ function getItemMessage(status: string | undefined): Message | null {
     },
     missing_item: {
       key: "item-missing-item",
-      text: "Could not find the tune or setlist item.",
+      text: "Couldn’t find the tune or setlist item.",
       tone: "error",
     },
     invalid_move: {
       key: "item-invalid-move",
-      text: "Could not move that tune.",
+      text: "Couldn’t move that tune.",
       tone: "warning",
     },
     not_found: {

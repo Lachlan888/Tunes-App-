@@ -23,8 +23,7 @@ export default function RecentFriendActivitySection({
           Recent activity
         </h2>
         <p className="mt-2 hidden text-sm leading-6 text-muted-foreground md:block">
-          Activity from musicians you are connected with. React, reply, or open
-          the tune for more context.
+          Activity from your friends. React, reply, or open the tune.
         </p>
       </div>
 

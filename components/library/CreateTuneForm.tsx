@@ -81,8 +81,8 @@ export default function CreateTuneForm({
                 required
               />
               <p className={helperClass}>
-                Use the common tune title only. Avoid adding key names,
-                instrument notes, or version labels in the title.
+                Use the common tune title. Leave out keys, instruments, and
+                version labels.
               </p>
             </div>
 

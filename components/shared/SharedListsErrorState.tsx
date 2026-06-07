@@ -13,7 +13,7 @@ export default function SharedListsErrorState({
         </h1>
 
         <p className="mt-3 text-sm text-muted-foreground">
-          Could not load public lists.
+          Couldn’t load public lists.
         </p>
 
         <p className="mt-4 border-y border-destructive py-4 text-sm text-destructive md:rounded-2xl md:border md:bg-background/70 md:p-4">

@@ -46,7 +46,7 @@ function clickedInsideInteractiveElement(target: EventTarget | null) {
 
 function FriendCard({ friend }: { friend: AcceptedFriend }) {
   const router = useRouter()
-  const label = friend.display_name || friend.username || "Unnamed user"
+  const label = friend.display_name || friend.username || "Unnamed player"
   const profileHref = friend.username
     ? `/users/${encodeURIComponent(friend.username)}`
     : null
@@ -133,9 +133,9 @@ export default function FriendsListSection({ friends }: FriendsListSectionProps)
       {friends.length === 0 ? (
         <EmptyState
           title="No friends yet"
-          description="Search for another user, send a request, and then compare your repertoire once connected."
+          description="Search for a musician, send a request, then compare your repertoire once connected."
           primaryActionHref="/friends"
-          primaryActionLabel="Search users"
+          primaryActionLabel="Search people"
           secondaryActionHref="/compare"
           secondaryActionLabel="Compare tunes"
         />

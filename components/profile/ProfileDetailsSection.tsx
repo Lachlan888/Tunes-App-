@@ -164,7 +164,7 @@ export default function ProfileDetailsSection({
               value={displayName}
               onChange={(event) => setDisplayName(event.target.value)}
               className={inputClassName}
-              placeholder="How other users should see your name"
+              placeholder="How other musicians should see your name"
             />
           </div>
         </div>
@@ -181,7 +181,7 @@ export default function ProfileDetailsSection({
             onChange={(event) => setBio(event.target.value)}
             rows={4}
             className={inputClassName}
-            placeholder="Tell other users a little about yourself"
+            placeholder="Tell other musicians a little about yourself"
           />
         </div>
 

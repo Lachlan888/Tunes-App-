@@ -20,8 +20,7 @@ export default async function PracticeDiaryIndexPage() {
         </h1>
 
         <p className="mt-3 hidden max-w-3xl text-base leading-7 text-muted-foreground md:block">
-          Search across foci, note categories, and recent practice notes without
-          digging through the diary day by day.
+          Search focus areas, note categories, and recent practice notes.
         </p>
 
         <PracticeDiaryNav active="index" />

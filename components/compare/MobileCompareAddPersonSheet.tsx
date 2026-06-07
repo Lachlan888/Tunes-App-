@@ -183,7 +183,7 @@ export default function MobileCompareAddPersonSheet({
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
           {error === "user_not_found" ? (
             <p className="mb-5 border-y border-border py-3 text-sm text-muted-foreground">
-              No user found for “{primarySearchValue}”.
+              No player found for “{primarySearchValue}”.
             </p>
           ) : null}
 

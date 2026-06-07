@@ -21,7 +21,7 @@ function formatLabel(value: string) {
 }
 
 function getReporterName(item: BetaFeedbackItem) {
-  return item.userDisplayName || item.username || "Unknown user"
+  return item.userDisplayName || item.username || "Unknown player"
 }
 
 function getSafeInternalPath(value: string | null | undefined) {

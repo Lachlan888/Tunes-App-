@@ -15,7 +15,7 @@ const BADGES_SECTIONS = [
   {
     id: "badge_browser",
     label: "Badge browser",
-    description: "The main public badge browsing surface.",
+    description: "The main public badge browsing section.",
     isCore: true,
   },
   {
@@ -34,7 +34,7 @@ const badgesAllVisible = visibleSections({
 
 export const BADGES_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
   pageKey: "badges",
-  title: "Badges Page Options",
+  title: "Badges display options",
   description: "Choose how the Badges page is arranged.",
   helperText:
     "These settings affect only badge browsing layout. They do not create, award, or remove badges.",

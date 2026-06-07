@@ -130,7 +130,7 @@ export type DirectMessageThread = {
 }
 
 function profileLabel(profile: ProfileRow | null | undefined) {
-  return profile?.display_name || profile?.username || "Unknown user"
+  return profile?.display_name || profile?.username || "Unknown player"
 }
 
 export async function loadInboxData() {

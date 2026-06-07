@@ -48,16 +48,16 @@ function getSingleValue(value: string | string[] | undefined) {
 }
 
 function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Lists page options saved."
-  if (status === "reset") return "Lists page options reset."
-  if (status === "error") return "Could not save Lists page options."
+  if (status === "saved") return "Lists display options saved."
+  if (status === "reset") return "Lists display options reset."
+  if (status === "error") return "Couldn’t save display options."
 
   return null
 }
 
 function getBookmarkMessage(status: string) {
   if (status === "removed") return "Bookmark removed."
-  if (status === "error") return "Could not update that bookmark."
+  if (status === "error") return "Couldn’t update that bookmark."
   if (status === "not_found") return "That shared list could not be found."
   if (status === "unavailable") {
     return "Bookmarking is not available until the bookmark table migration has been applied."

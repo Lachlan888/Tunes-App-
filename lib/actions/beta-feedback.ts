@@ -129,7 +129,7 @@ export async function submitBetaFeedback(
 
     return {
       status: "error",
-      message: "Could not send feedback. Please try again.",
+      message: "Couldn’t send feedback. Please try again.",
     }
   }
 

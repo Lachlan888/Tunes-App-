@@ -74,7 +74,7 @@ export default function OptimisticActivityReactionButton({
 
       {errorMessage ? (
         <p className="text-xs font-medium text-destructive">
-          Could not sync reaction. It may update after refresh.
+          Couldn’t sync reaction. It may update after refresh.
         </p>
       ) : null}
     </div>

@@ -5,7 +5,7 @@ const PRACTICE_SECTIONS = [
   {
     id: "practice_nav",
     label: "Practice navigation",
-    description: "Links between Review, Diary, and future practice surfaces.",
+    description: "Links between Review, Diary, and future practice sections.",
   },
   {
     id: "streaks",
@@ -15,7 +15,7 @@ const PRACTICE_SECTIONS = [
   {
     id: "status_messages",
     label: "Status messages",
-    description: "Feedback after updating practice state.",
+    description: "Feedback after updating practice.",
   },
   {
     id: "catch_up",
@@ -47,7 +47,7 @@ const practiceAllVisible = visibleSections({
 
 export const PRACTICE_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
   pageKey: "practice",
-  title: "Practice Page Options",
+  title: "Practice display options",
   description: "Choose how the Practice page prioritises review work.",
   helperText:
     "Practice options only change the view. Review scheduling, due dates, and stages are unchanged.",

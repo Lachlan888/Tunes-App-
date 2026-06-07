@@ -148,7 +148,7 @@ export default async function TrendsStylePage({
           description={
             isAuthenticated
               ? "Widely known tunes in this style that are not yet in your known or practice set."
-              : "Strong entry-point tunes in this style based on how many users already know them."
+              : "Strong entry-point tunes in this style based on how many players already know them."
           }
           count={recommendedTunes.length}
         >

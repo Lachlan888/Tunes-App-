@@ -46,7 +46,7 @@ export default function SetlistCoverageSection({
           </h2>
 
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Coverage comes from each collaborator’s Known and Practice state.
+            Coverage comes from each collaborator’s Known and Practice status.
             Setlist membership itself does not make a tune known.
           </p>
         </div>

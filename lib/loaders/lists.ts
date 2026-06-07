@@ -165,7 +165,7 @@ function formatBookmarkOwnerLabel(profile: {
     return `@${profile.username}`
   }
 
-  return "Unknown user"
+  return "Unknown player"
 }
 
 function getQueueSortValue(item: LearningListItemWithPieceRow) {

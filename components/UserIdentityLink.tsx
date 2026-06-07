@@ -12,7 +12,7 @@ type UserIdentityLinkProps = {
 export default function UserIdentityLink({
   username,
   displayName,
-  fallbackLabel = "Unnamed user",
+  fallbackLabel = "Unnamed player",
   className = "font-medium text-foreground underline underline-offset-4 transition hover:text-primary",
   handleClassName = "text-sm text-muted-foreground underline underline-offset-4 transition hover:text-foreground",
   showHandle = false,

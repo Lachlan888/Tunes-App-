@@ -20,9 +20,9 @@ function getCreateBadgeMessage(status: string) {
   }
   if (status === "invalid_category") return "Choose a valid badge type."
   if (status === "invalid_condition") {
-    return "Choose a condition type and complete the matching condition fields."
+    return "Choose what earns this badge and complete the matching details."
   }
-  if (status === "error") return "Could not create badge."
+  if (status === "error") return "Couldn’t create badge."
 
   return null
 }
@@ -71,8 +71,8 @@ export default async function NewBadgePage({
         </h1>
 
         <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
-          Create a public badge by defining what it rewards. The app checks the
-          condition, and the badge is attributed to you when users receive it.
+          Create a public badge and choose what earns it. When someone meets
+          the condition, the badge is awarded under your name.
         </p>
       </section>
 

@@ -45,7 +45,7 @@ function getDirectMessageMessage(status?: string) {
   if (status === "missing_user") {
     return {
       tone: "warning" as const,
-      text: "Could not tell which user to message.",
+      text: "Couldn’t tell which person to message.",
     }
   }
 
@@ -59,7 +59,7 @@ function getDirectMessageMessage(status?: string) {
   if (status === "missing_message") {
     return {
       tone: "warning" as const,
-      text: "Could not tell which message to update.",
+      text: "Couldn’t tell which message to update.",
     }
   }
 
@@ -73,7 +73,7 @@ function getDirectMessageMessage(status?: string) {
   if (status === "not_found") {
     return {
       tone: "error" as const,
-      text: "That user could not be found.",
+      text: "That person couldn’t be found.",
     }
   }
 

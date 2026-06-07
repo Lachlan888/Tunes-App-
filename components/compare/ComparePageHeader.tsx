@@ -20,7 +20,7 @@ export default function ComparePageHeader({
           </h1>
 
           <p className="mt-3 max-w-3xl text-lg text-muted-foreground">
-            Build a group, then see the tunes common to everyone in it.
+            Add players to see the tunes everyone has in common.
           </p>
         </div>
 

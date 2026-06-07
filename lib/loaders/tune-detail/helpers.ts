@@ -67,7 +67,7 @@ export async function loadProfileMapForCommunityRows(
     typedProfiles.map((profile) => [
       profile.id,
       {
-        displayName: profile.display_name || profile.username || "Unknown user",
+        displayName: profile.display_name || profile.username || "Unknown player",
         username: profile.username,
       },
     ])

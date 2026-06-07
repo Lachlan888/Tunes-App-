@@ -19,7 +19,7 @@ type ActivityInteractionPanelProps = {
 }
 
 function getAuthorName(reply: FriendActivityItem["replies"][number]) {
-  return reply.author?.display_name || reply.author?.username || "Unknown user"
+  return reply.author?.display_name || reply.author?.username || "Unknown player"
 }
 
 export default async function ActivityInteractionPanel({

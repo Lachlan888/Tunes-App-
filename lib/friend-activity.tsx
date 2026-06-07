@@ -169,7 +169,8 @@ export function getActivityContextHref(item: FriendActivityItem) {
 }
 
 function renderProfileLink(profile: FriendActivityProfile | null) {
-  const profileName = profile?.display_name || profile?.username || "Unnamed user"
+  const profileName =
+    profile?.display_name || profile?.username || "Unnamed player"
 
   return profile?.username ? (
     <Link

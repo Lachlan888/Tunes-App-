@@ -43,7 +43,7 @@ function StatusMessage({
   if (type === "remove_tune" && status === "missing_piece") {
     return (
       <div className="mb-6 rounded-2xl border border-warning bg-warning/20 p-4 text-sm font-medium text-warning-foreground">
-        Could not tell which tune to remove.
+        Couldn’t tell which tune to remove.
       </div>
     )
   }
@@ -51,7 +51,7 @@ function StatusMessage({
   if (type === "remove_tune" && status === "error") {
     return (
       <div className="mb-6 rounded-2xl border border-destructive bg-destructive/10 p-4 text-sm font-medium text-destructive">
-        Could not remove tune.
+        Couldn’t remove tune.
       </div>
     )
   }

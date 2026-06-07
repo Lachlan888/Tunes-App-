@@ -16,7 +16,7 @@ const profileAllVisible = visibleSections({
 
 export const PROFILE_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
   pageKey: "profile",
-  title: "Profile Page Options",
+  title: "Profile display options",
   description: "Choose how your private profile page is shown.",
   helperText:
     "These settings only affect the Profile page view. They do not change public visibility settings.",

@@ -5,9 +5,9 @@ export default function ReviewLoading() {
     <RouteLoadingShell
       label="Practice"
       title="Loading today’s practice"
-      description="Checking due tunes, catch-up work, active practice items, and streak state."
+      description="Checking due tunes, catch-up work, active practice items, and streaks."
       primarySectionTitle="Due next"
-      secondarySectionTitle="Practice state"
+      secondarySectionTitle="Practice status"
       mode="split"
     />
   )

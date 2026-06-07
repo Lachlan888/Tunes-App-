@@ -5,7 +5,7 @@ export default function LibraryLoading() {
     <RouteLoadingShell
       label="Tunes"
       title="Loading the tune catalogue"
-      description="Finding tunes, filters, list state, known repertoire, and practice state."
+      description="Finding tunes, filters, lists, Known repertoire, and Practice tunes."
       primarySectionTitle="Tunes"
     />
   )

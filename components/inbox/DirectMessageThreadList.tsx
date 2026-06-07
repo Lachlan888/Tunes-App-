@@ -16,7 +16,7 @@ function getUserLabel(thread: DirectMessageThread) {
   return (
     thread.otherUser.display_name ||
     thread.otherUser.username ||
-    "Unknown user"
+    "Unknown player"
   )
 }
 

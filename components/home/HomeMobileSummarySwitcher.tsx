@@ -306,7 +306,7 @@ function RepertoirePanel({
     <div className="space-y-5">
       {isSectionVisible(homePreferences, "repertoire_state") ? (
         <MobilePanel>
-          <MobileSectionHeading title="Repertoire state" />
+          <MobileSectionHeading title="Repertoire" />
 
           <div className="mt-4">
             <MobileStatGrid

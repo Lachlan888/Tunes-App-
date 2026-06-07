@@ -28,7 +28,7 @@ function getSingleValue(value: string | string[] | undefined) {
 }
 
 function renderUserLink(username: string | null, displayName: string | null) {
-  const label = displayName || username || "Unnamed user"
+  const label = displayName || username || "Unnamed player"
 
   if (!username) {
     return <span>{label}</span>
@@ -92,8 +92,8 @@ function SearchResultsSection({
           Find friends
         </h2>
         <p className="mt-2 hidden max-w-3xl text-sm leading-6 text-muted-foreground md:block">
-          Search returns users you are not already connected with. Existing
-          friends and pending requests appear in the sections below.
+          Search shows people you’re not already connected with. Friends and
+          pending requests appear below.
         </p>
       </div>
 
@@ -102,15 +102,15 @@ function SearchResultsSection({
       {!searchQuery && (
         <EmptyState
           title="Find musicians to connect with"
-          description="Search by username or display name. Once connected, you can compare repertoire and see relevant activity."
+          description="Search by username or display name. Once connected, you can compare repertoire and see activity."
           className="mt-4 hidden md:block"
         />
       )}
 
       {searchQuery && searchMatches.length === 0 && (
         <EmptyState
-          title="No new users found"
-          description="No unconnected users matched that search. If you are already friends or already have a pending request, they will appear in your friends or requests sections instead."
+          title="No new people found"
+          description="No unconnected people matched that search. Friends and pending requests appear below."
           className="mt-4"
         />
       )}
@@ -184,7 +184,7 @@ function IncomingRequestsSection({
       {pendingIncomingRequests.length === 0 ? (
         <EmptyState
           title="No incoming requests"
-          description="Friend requests from other users will appear here."
+          description="Friend requests from other musicians will appear here."
         />
       ) : (
         <div className="divide-y divide-border/70 md:space-y-3 md:divide-y-0">
@@ -299,8 +299,8 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
           Find musicians
         </h1>
         <p className="mt-3 hidden max-w-3xl text-sm leading-6 text-muted-foreground md:block">
-          Search for musicians, send friend requests, compare repertoire, and
-          see relevant activity from people you are connected with.
+          Find musicians, send friend requests, compare repertoire, and see
+          activity from people you know.
         </p>
       </section>
 
@@ -310,7 +310,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
 
       {friendRequestStatus === "missing_user" && (
         <StatusBanner tone="warning">
-          Please choose a user from the search results.
+          Please choose a person from the search results.
         </StatusBanner>
       )}
 
@@ -321,12 +321,12 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
       )}
 
       {friendRequestStatus === "not_found" && (
-        <StatusBanner tone="error">That user could not be found.</StatusBanner>
+        <StatusBanner tone="error">That person could not be found.</StatusBanner>
       )}
 
       {friendRequestStatus === "duplicate" && (
         <StatusBanner tone="neutral">
-          A pending or accepted connection already exists with that user.
+          A pending or accepted connection already exists with that person.
         </StatusBanner>
       )}
 
@@ -336,7 +336,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
 
       {friendAcceptStatus === "missing_connection" && (
         <StatusBanner tone="warning">
-          Could not tell which friend request to accept.
+          Couldn’t tell which friend request to accept.
         </StatusBanner>
       )}
 
@@ -364,7 +364,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
 
       {friendDeclineStatus === "missing_connection" && (
         <StatusBanner tone="warning">
-          Could not tell which friend request to refuse.
+          Couldn’t tell which friend request to refuse.
         </StatusBanner>
       )}
 

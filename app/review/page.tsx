@@ -30,9 +30,9 @@ function getSingleValue(value: string | string[] | undefined) {
 }
 
 function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Practice page options saved."
-  if (status === "reset") return "Practice page options reset."
-  if (status === "error") return "Could not save Practice page options."
+  if (status === "saved") return "Practice display options saved."
+  if (status === "reset") return "Practice display options reset."
+  if (status === "error") return "Couldn’t save display options."
 
   return null
 }

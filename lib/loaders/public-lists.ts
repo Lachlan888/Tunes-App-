@@ -66,7 +66,7 @@ function formatOwnerLabel(list: {
     return `@${list.ownerUsername}`
   }
 
-  return "Unknown user"
+  return "Unknown player"
 }
 
 function getPieceStyle(row: LearningListItemRow) {

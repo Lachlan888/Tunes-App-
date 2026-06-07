@@ -194,7 +194,7 @@ export default function LibraryList({
               type="button"
               className={buttonStyles.iconDestructive}
               title="Moderator only. Review the warning before deleting this shared tune for everyone."
-              aria-label={`Delete canonical tune ${piece.title}`}
+              aria-label={`Delete shared tune ${piece.title}`}
               onClick={() => setDeletePiece(piece)}
             >
               ×
@@ -241,7 +241,7 @@ export default function LibraryList({
     ) : (
       <EmptyState
         title="No tunes in the library yet"
-        description="Use Create Tune or Bulk Import Known Tunes above to start building the canonical tune library."
+        description="Use Create Tune or Bulk Import Known Tunes above to start building the shared tune library."
       />
     )
   }

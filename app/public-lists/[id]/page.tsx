@@ -30,10 +30,10 @@ type PublicListDetailPageProps = {
 
 function renderOwnerLabel(owner: PublicListOwnerProfile | null) {
   if (!owner) {
-    return <span>Unknown user</span>
+    return <span>Unknown player</span>
   }
 
-  const ownerLabel = owner.display_name || owner.username || "Unknown user"
+  const ownerLabel = owner.display_name || owner.username || "Unknown player"
 
   if (owner.username) {
     return (
@@ -394,7 +394,7 @@ export default async function PublicListDetailPage({
 
       {bookmarkStatus === "error" && (
         <StatusMessage tone="error">
-          Could not update that bookmark.
+          Couldn’t update that bookmark.
         </StatusMessage>
       )}
 
@@ -477,7 +477,7 @@ export default async function PublicListDetailPage({
 
       {importStatus === "error" && (
         <StatusMessage tone="error">
-          Could not complete that copy.
+          Couldn’t complete that copy.
         </StatusMessage>
       )}
 

@@ -97,8 +97,8 @@ export type ModeratorLoreReportItem = LoreReportRow & {
 }
 
 function getProfileName(profile: ProfileSummary | undefined) {
-  if (!profile) return "Unknown user"
-  return profile.display_name || profile.username || "Unknown user"
+  if (!profile) return "Unknown player"
+  return profile.display_name || profile.username || "Unknown player"
 }
 
 export async function loadModerationData() {

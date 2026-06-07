@@ -30,8 +30,7 @@ export default function CurrentCompareGroupSection({
       </h2>
 
       <p className="mt-3 max-w-3xl text-sm text-muted-foreground md:text-base">
-        You are always included. Add other players to find tunes common to the
-        whole group.
+        You’re included automatically. Add other players to find shared tunes.
       </p>
 
       <CompareScopeToggle
@@ -82,7 +81,7 @@ export default function CurrentCompareGroupSection({
         </div>
       ) : (
         <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-          No confirmed users in the group yet.
+          No confirmed players in the group yet.
         </p>
       )}
     </section>

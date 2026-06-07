@@ -27,7 +27,7 @@ function profileName(profile: {
   username: string | null
   display_name: string | null
 } | null) {
-  return profile?.display_name || profile?.username || "Unknown user"
+  return profile?.display_name || profile?.username || "Unknown player"
 }
 
 function profileHref(profile: { username: string | null } | null) {
@@ -51,7 +51,7 @@ function getPageMessage({
   if (updateStatus === "success") return "Badge updated."
   if (updateStatus === "not_owner") return "Only the badge creator can edit this badge."
   if (deleteStatus === "not_owner") return "Only the badge creator can delete this badge."
-  if (deleteStatus === "error") return "Could not delete badge."
+  if (deleteStatus === "error") return "Couldn’t delete badge."
 
   return null
 }
@@ -158,7 +158,7 @@ export default async function BadgeDetailPage({
 
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
               This badge is public. The condition was created by {ownerName}.
-              When a user meets the condition, the badge is attributed to{" "}
+              When a player meets the condition, the badge is awarded under{" "}
               {ownerName}.
             </p>
 

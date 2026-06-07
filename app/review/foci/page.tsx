@@ -17,14 +17,14 @@ function getFociStatusMessage(status: string | undefined) {
   if (status === "tune_added") return "Tune added to focus."
   if (status === "tune_removed") return "Tune removed from focus."
   if (status === "missing_title") return "Add a title before creating a focus."
-  if (status === "missing_focus") return "Could not find that focus."
+  if (status === "missing_focus") return "Couldn’t find that focus."
   if (status === "missing_piece") return "Choose a tune first."
   if (status === "missing_focus_tune") {
-    return "Could not find that tune link."
+    return "Couldn’t find that tune link."
   }
   if (status === "focus_not_found") return "That focus could not be found."
   if (status === "focus_not_active") {
-    return "Only active foci can be changed."
+    return "Only active focus areas can be changed."
   }
   if (status === "not_in_practice") {
     return "Only active-practice tunes can be added to a focus."
@@ -50,7 +50,7 @@ export default async function PracticeFociPage({
         </p>
 
         <h1 className="mt-2 font-serif text-3xl font-bold leading-tight tracking-tight">
-          Practice foci
+          Practice focus areas
         </h1>
 
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -66,12 +66,12 @@ export default async function PracticeFociPage({
         </p>
 
         <h1 className="mt-2 font-serif text-5xl font-bold leading-tight tracking-tight">
-          Practice foci
+          Practice focus areas
         </h1>
 
         <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
-          Group active-practice tunes around broader musical projects, without
-          changing Stage, due dates, streaks, or diary history.
+          Group practice tunes around a musical goal. This won’t change due
+          dates, streaks, or diary history.
         </p>
 
         <PracticeDiaryNav active="foci" />

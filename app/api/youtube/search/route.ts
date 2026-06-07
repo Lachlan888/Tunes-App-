@@ -148,7 +148,7 @@ async function consumeSearchQuota() {
     return {
       allowed: false,
       status: 500,
-      message: "Could not check YouTube search quota.",
+      message: "Couldn’t check YouTube search quota.",
     }
   }
 

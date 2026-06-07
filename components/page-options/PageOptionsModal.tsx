@@ -39,7 +39,7 @@ const columnOptions: Array<{
   {
     value: "comfortable",
     label: "Comfortable",
-    description: "Two-column layout for a calmer working surface.",
+    description: "Two-column layout for a calmer workspace.",
   },
   {
     value: "wide",
@@ -78,7 +78,7 @@ export default function PageOptionsModal({
   config,
   preferences,
   redirectTo,
-  buttonLabel = "Page Options",
+  buttonLabel = "Display options",
 }: PageOptionsModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [layoutPreset, setLayoutPreset] = useState<PageLayoutPresetId>(
@@ -142,7 +142,7 @@ export default function PageOptionsModal({
         closeOnEscape={!isSubmitting}
         mobileMode="full-screen"
         desktopMaxWidth="md:max-w-4xl"
-        eyebrow="Page Options"
+        eyebrow="Display options"
         title={config.title}
         description={config.description}
       >
@@ -321,7 +321,7 @@ export default function PageOptionsModal({
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <SubmitButton
-              label="Save Page Options"
+              label="Save display options"
               pendingLabel="Saving..."
               className={buttonStyles.primary}
             />

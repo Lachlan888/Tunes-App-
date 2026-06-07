@@ -60,7 +60,7 @@ export default function CreateTuneModal({
         desktopMaxWidth="md:max-w-5xl"
         eyebrow="Catalogue"
         title="Create Tune"
-        description="Add a tune to the shared catalogue, then optionally place it straight into your own repertoire workflow."
+        description="Add a tune to the shared catalogue, then add it to your own repertoire if you want."
         bodyClassName="flex min-h-0 flex-1 p-0"
       >
         <CreateTuneForm

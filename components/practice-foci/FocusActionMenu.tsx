@@ -72,19 +72,19 @@ function FocusPickerModal({
 }) {
   const groups = [
     {
-      title: "Active foci",
+      title: "Active focus areas",
       foci: foci.filter((focus) => focus.status === "active"),
     },
     {
-      title: "Paused foci",
+      title: "Paused focus areas",
       foci: foci.filter((focus) => focus.status === "paused"),
     },
     {
-      title: "Completed foci",
+      title: "Completed focus areas",
       foci: foci.filter((focus) => focus.status === "completed"),
     },
     {
-      title: "Archived foci",
+      title: "Archived focus areas",
       foci: foci.filter((focus) => focus.status === "archived"),
     },
   ]
@@ -101,7 +101,7 @@ function FocusPickerModal({
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Practice foci
+                Practice focus areas
               </p>
 
               <h2 className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground">
@@ -109,7 +109,7 @@ function FocusPickerModal({
               </h2>
 
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Open another focus from your current practice foci.
+                Open another focus from your current focus areas.
               </p>
             </div>
 

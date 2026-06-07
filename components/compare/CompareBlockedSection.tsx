@@ -59,10 +59,10 @@ export default function CompareBlockedSection({
     <section className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div className="mb-5">
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Permission needed
+          Friend request needed
         </p>
         <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
-          User found
+          Player found
         </h2>
       </div>
 
@@ -110,7 +110,7 @@ export default function CompareBlockedSection({
       </article>
 
       <p className="mt-4 text-sm leading-6 text-muted-foreground">
-        This user requires friendship before others can compare with them.
+        This player only allows friends to compare repertoire with them.
       </p>
     </section>
   )

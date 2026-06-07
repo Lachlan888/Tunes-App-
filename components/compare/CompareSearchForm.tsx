@@ -47,7 +47,7 @@ export default function CompareSearchForm({
         htmlFor="user"
         className="block text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground"
       >
-        Add user to compare
+        Add player to compare
       </label>
 
       <div className="mt-4 flex gap-3">

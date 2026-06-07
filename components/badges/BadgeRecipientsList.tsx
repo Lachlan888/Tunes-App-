@@ -6,7 +6,7 @@ type BadgeRecipientsListProps = {
 }
 
 function profileName(profile: BadgeAwardWithProfiles["recipient_profile"]) {
-  return profile?.display_name || profile?.username || "Unknown user"
+  return profile?.display_name || profile?.username || "Unknown player"
 }
 
 function profileHref(profile: BadgeAwardWithProfiles["recipient_profile"]) {

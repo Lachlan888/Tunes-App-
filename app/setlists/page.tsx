@@ -26,9 +26,9 @@ function getSingleValue(value: string | string[] | undefined) {
 }
 
 function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Setlists page options saved."
-  if (status === "reset") return "Setlists page options reset."
-  if (status === "error") return "Could not save Setlists page options."
+  if (status === "saved") return "Setlists display options saved."
+  if (status === "reset") return "Setlists display options reset."
+  if (status === "error") return "Couldn’t save display options."
 
   return null
 }

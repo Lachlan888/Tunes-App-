@@ -236,7 +236,7 @@ function MobileWeekHeader({
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
-          Foci
+          Focus
         </button>
 
         <button
@@ -369,7 +369,7 @@ function MobileFocusPatterns({
   return (
     <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:hidden">
       <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        Foci touched
+        Focus areas touched
       </h2>
 
       {visibleSummaries.length === 0 ? (
@@ -424,7 +424,7 @@ function MobileFocusPatterns({
 
       {summaries.length > visibleSummaries.length ? (
         <p className="mt-3 text-sm text-muted-foreground">
-          Showing {visibleSummaries.length} of {summaries.length} foci.
+          Showing {visibleSummaries.length} of {summaries.length} focus areas.
         </p>
       ) : null}
     </section>
@@ -590,7 +590,7 @@ function DesktopWeekSummary({ data }: { data: PracticeDiaryWeekData }) {
         />
 
         <SummaryCard
-          label="Foci touched"
+          label="Focus areas touched"
           value={data.summary.fociTouched}
           helper="Linked this week"
         />
@@ -686,7 +686,7 @@ export default function PracticeWeekView({ data }: PracticeWeekViewProps) {
 
         <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Foci touched
+            Focus areas touched
           </h2>
 
           <p className="mt-3 text-sm leading-6 text-muted-foreground">

@@ -29,11 +29,11 @@ function getPageMessage({
   if (createStatus === "success") return "Badge created."
   if (deleteStatus === "success") return "Badge deleted."
   if (deleteStatus === "not_found") return "Badge was already gone."
-  if (deleteStatus === "error") return "Could not delete badge."
+  if (deleteStatus === "error") return "Couldn’t delete badge."
 
-  if (pageOptionsStatus === "saved") return "Badges page options saved."
-  if (pageOptionsStatus === "reset") return "Badges page options reset."
-  if (pageOptionsStatus === "error") return "Could not save Badges page options."
+  if (pageOptionsStatus === "saved") return "Badges display options saved."
+  if (pageOptionsStatus === "reset") return "Badges display options reset."
+  if (pageOptionsStatus === "error") return "Couldn’t save display options."
 
   return null
 }
@@ -112,9 +112,8 @@ export default async function BadgesPage({ searchParams }: BadgesPageProps) {
             No badges yet
           </h2>
           <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            Create the first public badge to start turning community values into
-            visible recognition. A good first test is a repertoire badge based
-            on a public list, such as Monroe Mayhem.
+            Create the first badge. A good starting point is a repertoire badge
+            based on a public list, such as Monroe Mayhem.
           </p>
         </section>
       ) : null}

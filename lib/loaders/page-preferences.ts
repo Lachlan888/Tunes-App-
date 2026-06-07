@@ -14,7 +14,7 @@ export async function loadPagePreferences(pageKey: PageKey) {
   const config = getPageOptionsConfig(pageKey)
 
   if (!config) {
-    throw new Error(`Unknown page options key: ${pageKey}`)
+    throw new Error(`Unknown display options key: ${pageKey}`)
   }
 
   const supabase = await createClient()

@@ -9,7 +9,7 @@ type InviteSetlistCollaboratorFormProps = {
 }
 
 function friendLabel(friend: SetlistInviteOption) {
-  const name = friend.display_name || friend.username || "Unnamed user"
+  const name = friend.display_name || friend.username || "Unnamed player"
   return friend.username ? `${name} (@${friend.username})` : name
 }
 
@@ -60,7 +60,7 @@ export default function InviteSetlistCollaboratorForm({
       )}
 
       <p className="mt-2 text-xs leading-5 text-muted-foreground">
-        Only accepted friends appear here. Invited users receive an Inbox
+        Only accepted friends appear here. Invited friends receive an Inbox
         notification and can accept from the Setlists page.
       </p>
     </form>

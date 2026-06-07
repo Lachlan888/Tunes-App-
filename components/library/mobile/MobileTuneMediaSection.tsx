@@ -91,7 +91,7 @@ export default function MobileTuneMediaSection({
   if (!showMediaLinks && !showSheetMusic) {
     return (
       <p className="text-sm leading-6 text-muted-foreground">
-        Media and sheet music sections are hidden in Tune Page Options.
+        Media and sheet music sections are hidden in Display options.
       </p>
     )
   }

@@ -31,7 +31,7 @@ function getFriendRequestMessage(status?: string) {
   if (status === "missing_user") {
     return {
       tone: "warning" as const,
-      text: "Could not tell which user to send the request to.",
+      text: "Couldn’t tell which person to send the request to.",
     }
   }
 
@@ -45,14 +45,14 @@ function getFriendRequestMessage(status?: string) {
   if (status === "not_found") {
     return {
       tone: "error" as const,
-      text: "That user could not be found.",
+      text: "That person couldn’t be found.",
     }
   }
 
   if (status === "duplicate") {
     return {
       tone: "neutral" as const,
-      text: "A pending or accepted connection already exists with that user.",
+      text: "A pending or accepted connection already exists with that person.",
     }
   }
 
@@ -70,7 +70,7 @@ function getFriendAcceptMessage(status?: string) {
   if (status === "missing_connection") {
     return {
       tone: "warning" as const,
-      text: "Could not tell which friend request to accept.",
+      text: "Couldn’t tell which friend request to accept.",
     }
   }
 
@@ -109,7 +109,7 @@ function getDirectMessageMessage(status?: string) {
   if (status === "missing_user") {
     return {
       tone: "warning" as const,
-      text: "Could not tell which user to message.",
+      text: "Couldn’t tell which person to message.",
     }
   }
 
@@ -130,7 +130,7 @@ function getDirectMessageMessage(status?: string) {
   if (status === "not_found") {
     return {
       tone: "error" as const,
-      text: "That user could not be found.",
+      text: "That person couldn’t be found.",
     }
   }
 

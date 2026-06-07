@@ -21,7 +21,7 @@ function getOwnerName(badge: BadgeWithOwner) {
   return (
     badge.owner_profile?.display_name ||
     badge.owner_profile?.username ||
-    "Unknown user"
+    "Unknown player"
   )
 }
 

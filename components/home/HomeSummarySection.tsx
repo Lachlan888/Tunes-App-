@@ -256,7 +256,7 @@ function TodayActionPanel({
             Today
           </p>
           <h2 className="mt-1 font-serif text-2xl font-bold text-foreground">
-            Practice action state
+            Today’s practice
           </h2>
         </div>
 
@@ -378,7 +378,7 @@ export default function HomeSummarySection({
         <section className="hidden md:block">
           <div className="mb-4">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Repertoire state
+              Repertoire
             </p>
           </div>
 
@@ -387,7 +387,7 @@ export default function HomeSummarySection({
               href="/library/known"
               label="Known"
               value={summary.knownCount}
-              helper="Tunes already in your hands."
+              helper="Tunes you already know."
               tone="success"
               density={density}
             />
@@ -396,7 +396,7 @@ export default function HomeSummarySection({
               href="/library/practice"
               label="In practice"
               value={summary.practiceCount}
-              helper="Tunes inside Stage review."
+              helper="Tunes you’re actively practising."
               tone="practice"
               density={density}
             />
@@ -430,8 +430,7 @@ export default function HomeSummarySection({
               >
                 {summary.learningQueuePreview.length === 0 ? (
                   <EmptyPreview>
-                    No saved tunes waiting to start. Add tunes to lists before
-                    starting Practice to build this queue.
+                    Add tunes to a list, then start practice from there.
                   </EmptyPreview>
                 ) : (
                   <ul className="space-y-3">

@@ -47,10 +47,10 @@ const listsAllVisible = visibleSections({
 
 export const LISTS_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
   pageKey: "lists",
-  title: "Lists Page Options",
+  title: "Lists display options",
   description: "Choose how your list-management page is arranged.",
   helperText:
-    "These settings affect only how the Lists page is shown. They do not change list contents, queue order, practice state, or list visibility.",
+    "These settings affect only how the Lists page is shown. They do not change list contents, queue order, practice status, or list visibility.",
   sections: [...LISTS_SECTIONS],
   allowColumns: false,
   allowDensity: true,
@@ -73,7 +73,7 @@ export const LISTS_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
       id: "management",
       label: "Management",
       description:
-        "Keeps every list-management and learning-queue surface visible.",
+        "Keeps every list-management and learning-queue section visible.",
       preferences: preferences({
         layoutPreset: "management",
         visibleSections: listsAllVisible,

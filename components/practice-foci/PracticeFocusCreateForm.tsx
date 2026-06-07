@@ -17,7 +17,7 @@ export default function PracticeFocusCreateForm() {
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Use foci for broader arcs of work, like right-hand looseness,
+              Use focus areas for bigger goals, like right-hand looseness,
               session tempo, Australian tunes in D, or festival set prep.
             </p>
           </div>

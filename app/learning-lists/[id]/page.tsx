@@ -356,12 +356,12 @@ export default async function LearningListDetailPage({
 
       {removeTuneStatus === "missing_piece" && (
         <StatusMessage tone="warning">
-          Could not tell which tune to remove.
+          Couldn’t tell which tune to remove.
         </StatusMessage>
       )}
 
       {removeTuneStatus === "error" && (
-        <StatusMessage tone="error">Could not remove tune.</StatusMessage>
+        <StatusMessage tone="error">Couldn’t remove tune.</StatusMessage>
       )}
 
       {editListStatus === "success" && (
@@ -380,7 +380,7 @@ export default async function LearningListDetailPage({
 
       {editListStatus === "missing_list" && (
         <StatusMessage tone="warning">
-          Could not tell which list to edit.
+          Couldn’t tell which list to edit.
         </StatusMessage>
       )}
 
@@ -390,7 +390,7 @@ export default async function LearningListDetailPage({
 
       {editListStatus === "missing_item" && (
         <StatusMessage tone="warning">
-          Could not tell which tune to remove from the list.
+          Couldn’t tell which tune to remove from the list.
         </StatusMessage>
       )}
 
@@ -405,7 +405,7 @@ export default async function LearningListDetailPage({
       )}
 
       {editListStatus === "error" && (
-        <StatusMessage tone="error">Could not update list.</StatusMessage>
+        <StatusMessage tone="error">Couldn’t update list.</StatusMessage>
       )}
 
       <section className="mt-8 md:hidden">

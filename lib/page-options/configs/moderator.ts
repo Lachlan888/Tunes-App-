@@ -34,7 +34,7 @@ const moderatorAllVisible = visibleSections({
 
 export const MODERATOR_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
   pageKey: "moderator",
-  title: "Moderator Page Options",
+  title: "Moderator display options",
   description: "Choose how the moderator workspace is arranged.",
   helperText:
     "These settings only affect the moderator page layout. They do not approve, dismiss, hide, or delete anything.",
@@ -59,7 +59,7 @@ export const MODERATOR_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
     {
       id: "tune_edits",
       label: "Tune edits",
-      description: "Prioritises canonical tune edit requests.",
+      description: "Prioritises shared tune edit requests.",
       preferences: preferences({
         layoutPreset: "tune_edits",
         visibleSections: visibleSections({

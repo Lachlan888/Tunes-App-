@@ -52,7 +52,7 @@ const CONDITIONS_BY_CATEGORY: Record<BadgeCategory, ConditionOption[]> = {
     {
       value: "added_media_links",
       label: "Add reference media links",
-      help: "Recognise users who add useful listening or video references.",
+      help: "Recognise players who add useful listening or video references.",
     },
   ],
   lore: [
@@ -66,7 +66,7 @@ const CONDITIONS_BY_CATEGORY: Record<BadgeCategory, ConditionOption[]> = {
     {
       value: "added_missing_details",
       label: "Add missing tune details",
-      help: "Recognise users who improve incomplete catalogue metadata.",
+      help: "Recognise players who improve incomplete tune details.",
     },
   ],
   practice: [],
@@ -260,19 +260,18 @@ export default function CreateBadgeForm({
               className={inputClassName}
             />
             <p className="text-xs leading-5 text-muted-foreground">
-              This is the public explanation users will see on the badge.
+              This is the public explanation people will see on the badge.
             </p>
           </div>
 
           <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
-            Badges are public. You define the conditions. When another user
-            meets the condition, the badge can be awarded automatically and
-            attributed to you.
+            Badges are public. Choose what earns the badge, and it will be
+            awarded under your name.
           </p>
 
           {conditionIsLocked ? (
             <p className="mt-4 rounded-2xl border border-warning bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
-              This badge has already been awarded to {awardCount} user
+              This badge has already been awarded to {awardCount} player
               {awardCount === 1 ? "" : "s"}, so its unlock condition is locked.
               You can still edit the name and description.
             </p>
@@ -324,7 +323,7 @@ export default function CreateBadgeForm({
                   Public list
                 </h3>
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  The badge is awarded when the user knows every tune in this
+                  The badge is awarded when a player knows every tune in this
                   list.
                 </p>
 
@@ -389,7 +388,7 @@ export default function CreateBadgeForm({
                   Known tune count
                 </h3>
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  The badge is awarded when the user knows enough tunes matching
+                  The badge is awarded when a player knows enough tunes matching
                   these filters.
                 </p>
 

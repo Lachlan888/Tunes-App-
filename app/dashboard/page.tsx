@@ -60,7 +60,7 @@ function getProfileErrorMessage(error: string) {
   }
 
   if (error === "save_failed") {
-    return "Could not save profile. Please try again."
+    return "Couldn’t save profile. Please try again."
   }
 
   return null
@@ -76,24 +76,24 @@ function getInstrumentErrorMessage(error: string) {
   }
 
   if (error === "missing") {
-    return "Could not tell which instrument to remove."
+    return "Couldn’t tell which instrument to remove."
   }
 
   if (error === "delete_failed") {
-    return "Could not remove instrument. Please try again."
+    return "Couldn’t remove instrument. Please try again."
   }
 
   if (error === "save_failed") {
-    return "Could not save instrument. Please try again."
+    return "Couldn’t save instrument. Please try again."
   }
 
   return null
 }
 
 function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Profile page options saved."
-  if (status === "reset") return "Profile page options reset."
-  if (status === "error") return "Could not save Profile page options."
+  if (status === "saved") return "Profile display options saved."
+  if (status === "reset") return "Profile display options reset."
+  if (status === "error") return "Couldn’t save display options."
 
   return null
 }
@@ -116,7 +116,7 @@ function getCommunicationSettingsMessage(status: string) {
   if (status === "error") {
     return {
       tone: "error" as const,
-      text: "Could not save communication settings.",
+      text: "Couldn’t save communication settings.",
     }
   }
 

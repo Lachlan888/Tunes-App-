@@ -100,7 +100,7 @@ function AwardedByLink({
 }: {
   profile: PublicProfileReceivedBadge["awarded_by_profile"]
 }) {
-  const label = profile?.display_name || profile?.username || "Unknown user"
+  const label = profile?.display_name || profile?.username || "Unknown player"
 
   if (!profile?.username) {
     return <span>{label}</span>

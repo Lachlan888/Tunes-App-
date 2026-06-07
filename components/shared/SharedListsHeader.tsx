@@ -6,7 +6,7 @@ export default function SharedListsHeader() {
       </h1>
 
       <p className="mt-3 hidden max-w-3xl text-lg text-muted-foreground md:block">
-        Browse public tune lists from other users, bookmark useful references,
+        Browse public tune lists from other players, bookmark useful references,
         or copy tunes into your own editable lists.
       </p>
     </section>

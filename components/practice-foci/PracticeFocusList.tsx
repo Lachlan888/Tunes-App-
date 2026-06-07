@@ -273,7 +273,7 @@ function FocusPickerModal({
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Practice foci
+                Practice focus areas
               </p>
 
               <h2 className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground">
@@ -357,27 +357,27 @@ export default function PracticeFocusList({
     () => [
       {
         status: "active",
-        title: "Active foci",
+        title: "Active focus areas",
         emptyMessage:
-          "No active foci yet. Create one when a few tunes are connected by the same musical problem or preparation goal.",
+          "No active focus areas yet. Create one when a few tunes are connected by the same musical problem or preparation goal.",
         foci: activeFoci,
       },
       {
         status: "paused",
-        title: "Paused foci",
-        emptyMessage: "No paused foci.",
+        title: "Paused focus areas",
+        emptyMessage: "No paused focus areas.",
         foci: pausedFoci,
       },
       {
         status: "completed",
-        title: "Completed foci",
-        emptyMessage: "No completed foci.",
+        title: "Completed focus areas",
+        emptyMessage: "No completed focus areas.",
         foci: completedFoci,
       },
       {
         status: "archived",
-        title: "Archived foci",
-        emptyMessage: "No archived foci.",
+        title: "Archived focus areas",
+        emptyMessage: "No archived focus areas.",
         foci: archivedFoci,
       },
     ],
@@ -406,12 +406,12 @@ export default function PracticeFocusList({
     return (
       <section className="grid gap-4 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Your foci
+          Your focus areas
         </h2>
 
         <p className="text-sm leading-6 text-muted-foreground">
-          No practice foci yet. Create one when a few tunes are connected by the
-          same musical problem or preparation goal.
+          No focus areas yet. Create one when several tunes share the same
+          problem or goal.
         </p>
       </section>
     )

@@ -99,7 +99,7 @@ export default function MobileTuneStateSection({
   if (!showTuneState && !showTuneReview && !showCanonicalDetails) {
     return (
       <p className="text-sm leading-6 text-muted-foreground">
-        Practice and tune-detail sections are hidden in Tune Page Options.
+        Practice and tune-detail sections are hidden in Display options.
       </p>
     )
   }
@@ -107,7 +107,7 @@ export default function MobileTuneStateSection({
   return (
     <div className="min-w-0 space-y-6">
       {showTuneState ? (
-        <MobileSection title="Tune state">
+        <MobileSection title="Tune status">
           <div className="divide-y divide-border">
             <StateRow
               label="Practice"

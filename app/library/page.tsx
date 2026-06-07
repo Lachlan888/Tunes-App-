@@ -102,9 +102,9 @@ function parseSort(value: SearchParamValue): LibrarySort {
 }
 
 function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Tunes page options saved."
-  if (status === "reset") return "Tunes page options reset."
-  if (status === "error") return "Could not save Tunes page options."
+  if (status === "saved") return "Tunes display options saved."
+  if (status === "reset") return "Tunes display options reset."
+  if (status === "error") return "Couldn’t save display options."
 
   return null
 }

@@ -124,7 +124,7 @@ export default function PieceMediaLinksSection({
 
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               This only changes the reference you see. The default tune
-              reference stays unchanged for other users.
+              reference stays unchanged for other players.
             </p>
 
             <form

@@ -218,7 +218,7 @@ export default function PieceCommentsSection({
         <ul className="mt-6 space-y-4">
           {parentComments.map((comment) => {
             const author = profileMap[comment.user_id] ?? {
-              displayName: "Unknown user",
+              displayName: "Unknown player",
               username: null,
             }
 
@@ -269,7 +269,7 @@ export default function PieceCommentsSection({
                   <div className="mt-4 space-y-3 border-l-2 border-border pl-4">
                     {replies.map((reply) => {
                       const replyAuthor = profileMap[reply.user_id] ?? {
-                        displayName: "Unknown user",
+                        displayName: "Unknown player",
                         username: null,
                       }
 

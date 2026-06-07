@@ -49,7 +49,7 @@ export async function GET(request: Request) {
 
   if (error) {
     return NextResponse.json(
-      { error: "Could not load media loops" },
+      { error: "Couldn’t load media loops" },
       { status: 500 }
     )
   }

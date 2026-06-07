@@ -11,7 +11,7 @@ export default function PublicProfileHeader({
 }: PublicProfileHeaderProps) {
   const title = profile.show_identity
     ? profile.display_name || profile.username
-    : "Tunes App user"
+    : "Tunes App musician"
   const showUsername =
     profile.show_identity && profile.display_name && profile.display_name !== profile.username
 
@@ -35,8 +35,8 @@ export default function PublicProfileHeader({
 
       {isOwnProfile ? (
         <div className="mt-5 border-t border-border pt-4 text-sm leading-6 text-muted-foreground md:mt-6 md:rounded-2xl md:border md:bg-background/70 md:p-4">
-          This is your public profile as other musicians see it. Visibility
-          settings on your Profile page control what appears here.
+          This is how other musicians see your profile. Change what appears
+          from your Profile settings.
         </div>
       ) : null}
 

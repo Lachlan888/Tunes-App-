@@ -164,7 +164,7 @@ export default function PieceLoreSection({
         </h2>
 
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Add shared background, source notes, alternate titles, regional notes,
+          Add background, source notes, alternate titles, regional notes,
           tune-family links, or folklore.
         </p>
       </div>
@@ -207,7 +207,7 @@ export default function PieceLoreSection({
               <ul className="mt-3 space-y-3">
                 {group.entries.map((entry) => {
                   const author = profileMap[entry.user_id] ?? {
-                    displayName: "Unknown user",
+                    displayName: "Unknown player",
                     username: null,
                   }
 

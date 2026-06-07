@@ -346,7 +346,7 @@ function getEventFamily(eventType: string) {
   }
 
   if (eventType.includes("focus") || eventType.includes("foci")) {
-    return "Foci"
+    return "Focus areas"
   }
 
   if (eventType.includes("badge")) {
@@ -513,7 +513,7 @@ function buildStateVisualisation(
       },
       {
         id: "foci",
-        label: "Practice foci",
+        label: "Practice focus areas",
         value: stateCounts.practiceFoci,
         helper: "practice_foci",
       },
@@ -1084,10 +1084,10 @@ function buildMetricVisualisations({
     }),
     buildGenericUserVisualisation({
       id: "foci_by_user",
-      label: "Foci by user",
+      label: "Focus areas by user",
       description:
-        "Which users have created the most practice foci, where the table is present.",
-      primaryLabel: "Foci",
+        "Which users have created the most practice focus areas, where the table is present.",
+      primaryLabel: "Focus areas",
       countByUser: focusCountByUser,
       userActivity,
     }),

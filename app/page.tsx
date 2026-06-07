@@ -16,9 +16,9 @@ function getSingleValue(value: string | string[] | undefined) {
 }
 
 function getStatusMessage(pageOptions: string) {
-  if (pageOptions === "saved") return "Home page options saved."
-  if (pageOptions === "reset") return "Home page options reset."
-  if (pageOptions === "error") return "Could not save page options."
+  if (pageOptions === "saved") return "Home display options saved."
+  if (pageOptions === "reset") return "Home display options reset."
+  if (pageOptions === "error") return "Couldn’t save display options."
 
   return null
 }
@@ -65,8 +65,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               Tunes App
             </h1>
             <p className="mt-2 max-w-2xl text-base text-muted-foreground">
-              A working memory system for tunes you know, tunes you are
-              practising, and the lists that hold them together.
+              Keep track of the tunes you know, the ones you’re practising, and
+              the lists that organise them.
             </p>
           </div>
 

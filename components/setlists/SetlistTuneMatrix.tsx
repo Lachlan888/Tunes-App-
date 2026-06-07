@@ -147,7 +147,7 @@ function MyStatusDropdown({
             </p>
 
             <p className="mt-1 text-sm leading-5 text-muted-foreground">
-              This changes your own practice or known state. It does not change
+              This changes your own Practice or Known status. It does not change
               the shared setlist.
             </p>
           </div>
@@ -159,7 +159,7 @@ function MyStatusDropdown({
                 if (!isKnown) return
 
                 const confirmed = window.confirm(
-                  `Move "${title}" from Known into Practice? This removes its known-only state and starts the review schedule.`
+                  `Move "${title}" from Known into Practice? This removes its Known-only status and starts the review schedule.`
                 )
 
                 if (!confirmed) {

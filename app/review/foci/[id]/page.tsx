@@ -19,14 +19,14 @@ function getFociStatusMessage(status: string | undefined) {
   if (status === "tune_added") return "Tune added to focus."
   if (status === "tune_removed") return "Tune removed from focus."
   if (status === "missing_title") return "Add a title before saving this focus."
-  if (status === "missing_focus") return "Could not find that focus."
+  if (status === "missing_focus") return "Couldn’t find that focus."
   if (status === "missing_piece") return "Choose a tune first."
   if (status === "missing_focus_tune") {
-    return "Could not find that tune link."
+    return "Couldn’t find that tune link."
   }
   if (status === "focus_not_found") return "That focus could not be found."
   if (status === "focus_not_active") {
-    return "Only active foci can be changed."
+    return "Only active focus areas can be changed."
   }
   if (status === "not_in_repertoire") {
     return "Only tunes in your known repertoire or active practice can be added to a focus."
@@ -53,7 +53,7 @@ export default async function PracticeFocusDetailPage({
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       <section className="mb-5 md:hidden">
         <Link href="/review/foci" className={buttonStyles.text}>
-          Back to foci
+          Back to focus areas
         </Link>
 
         <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -77,7 +77,7 @@ export default async function PracticeFocusDetailPage({
         <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
             <Link href="/review/foci" className={buttonStyles.text}>
-              Back to foci
+              Back to focus areas
             </Link>
 
             <p className="mt-4 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">

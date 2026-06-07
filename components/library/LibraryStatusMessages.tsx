@@ -83,7 +83,7 @@ export default function LibraryStatusMessages({
       )}
 
       {createTuneStatus === "error" && (
-        <StatusBanner tone="error">Could not create tune.</StatusBanner>
+        <StatusBanner tone="error">Couldn’t create tune.</StatusBanner>
       )}
 
       {listAddStatus === "success" && (
@@ -112,12 +112,12 @@ export default function LibraryStatusMessages({
 
       {listAddStatus === "missing_piece" && (
         <StatusBanner tone="warning">
-          Could not tell which tune to add.
+          Couldn’t tell which tune to add.
         </StatusBanner>
       )}
 
       {listAddStatus === "error" && (
-        <StatusBanner tone="error">Could not add tune to list/s.</StatusBanner>
+        <StatusBanner tone="error">Couldn’t add tune to list/s.</StatusBanner>
       )}
 
       {referenceUrlStatus === "added" && (
@@ -132,7 +132,7 @@ export default function LibraryStatusMessages({
 
       {referenceUrlStatus === "missing_piece" && (
         <StatusBanner tone="warning">
-          Could not tell which tune to update.
+          Couldn’t tell which tune to update.
         </StatusBanner>
       )}
 
@@ -149,7 +149,7 @@ export default function LibraryStatusMessages({
       )}
 
       {referenceUrlStatus === "error" && (
-        <StatusBanner tone="error">Could not add reference.</StatusBanner>
+        <StatusBanner tone="error">Couldn’t add reference.</StatusBanner>
       )}
 
       {preferredReferenceStatus === "saved" && (
@@ -162,7 +162,7 @@ export default function LibraryStatusMessages({
 
       {preferredReferenceStatus === "missing_piece" && (
         <StatusBanner tone="warning">
-          Could not tell which tune to update.
+          Couldn’t tell which tune to update.
         </StatusBanner>
       )}
 
@@ -180,7 +180,7 @@ export default function LibraryStatusMessages({
 
       {preferredReferenceStatus === "error" && (
         <StatusBanner tone="error">
-          Could not update preferred reference.
+          Couldn’t update preferred reference.
         </StatusBanner>
       )}
 
@@ -190,12 +190,12 @@ export default function LibraryStatusMessages({
 
       {removeTuneStatus === "missing_piece" && (
         <StatusBanner tone="warning">
-          Could not tell which tune to remove.
+          Couldn’t tell which tune to remove.
         </StatusBanner>
       )}
 
       {removeTuneStatus === "error" && (
-        <StatusBanner tone="error">Could not remove tune.</StatusBanner>
+        <StatusBanner tone="error">Couldn’t remove tune.</StatusBanner>
       )}
 
       {removeFromPracticeStatus === "success" && (
@@ -206,7 +206,7 @@ export default function LibraryStatusMessages({
 
       {removeFromPracticeStatus === "missing_user_piece" && (
         <StatusBanner tone="warning">
-          Could not tell which practice item to remove.
+          Couldn’t tell which practice item to remove.
         </StatusBanner>
       )}
 
@@ -218,23 +218,23 @@ export default function LibraryStatusMessages({
 
       {removeFromPracticeStatus === "error" && (
         <StatusBanner tone="error">
-          Could not remove tune from practice.
+          Couldn’t remove tune from practice.
         </StatusBanner>
       )}
 
       {deleteTuneStatus === "success" && (
-        <StatusBanner tone="success">Canonical tune deleted.</StatusBanner>
+        <StatusBanner tone="success">Shared tune deleted.</StatusBanner>
       )}
 
       {deleteTuneStatus === "missing_piece" && (
         <StatusBanner tone="warning">
-          Could not tell which canonical tune to delete.
+          Couldn’t tell which shared tune to delete.
         </StatusBanner>
       )}
 
       {deleteTuneStatus === "not_allowed" && (
         <StatusBanner tone="error">
-          Only moderators can delete canonical tunes.
+          Only moderators can delete shared tunes.
         </StatusBanner>
       )}
 
@@ -246,13 +246,13 @@ export default function LibraryStatusMessages({
 
       {deleteTuneStatus === "confirmation_mismatch" && (
         <StatusBanner tone="error">
-          Typed confirmation did not match. The canonical tune was not deleted.
+          Typed confirmation did not match. The shared tune was not deleted.
         </StatusBanner>
       )}
 
       {deleteTuneStatus === "error" && (
         <StatusBanner tone="error">
-          Could not delete canonical tune.
+          Couldn’t delete shared tune.
         </StatusBanner>
       )}
 
@@ -266,26 +266,26 @@ export default function LibraryStatusMessages({
 
       {loopStatus === "missing_fields" && (
         <StatusBanner tone="warning">
-          Could not save loop: missing label or video.
+          Couldn’t save loop: missing label or video.
         </StatusBanner>
       )}
 
       {loopStatus === "invalid_range" && (
         <StatusBanner tone="warning">
-          Could not save loop: choose a valid start and end point.
+          Couldn’t save loop: choose a valid start and end point.
         </StatusBanner>
       )}
 
       {loopStatus === "missing_loop" && (
-        <StatusBanner tone="warning">Could not find that saved loop.</StatusBanner>
+        <StatusBanner tone="warning">Couldn’t find that saved loop.</StatusBanner>
       )}
 
       {loopStatus === "missing_piece" && (
-        <StatusBanner tone="warning">Could not find that tune.</StatusBanner>
+        <StatusBanner tone="warning">Couldn’t find that tune.</StatusBanner>
       )}
 
       {loopStatus === "error" && (
-        <StatusBanner tone="error">Could not update loop.</StatusBanner>
+        <StatusBanner tone="error">Couldn’t update loop.</StatusBanner>
       )}
 
       {bulkUploadStatus === "received" && (

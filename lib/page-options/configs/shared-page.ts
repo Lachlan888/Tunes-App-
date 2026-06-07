@@ -28,7 +28,7 @@ const sharedAllVisible = visibleSections({
 
 export const SHARED_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
   pageKey: "shared",
-  title: "Public Lists Page Options",
+  title: "Public lists display options",
   description: "Choose how public list discovery is shown.",
   helperText:
     "These settings only affect the Public Lists page view. They do not change public-list visibility.",
@@ -43,7 +43,7 @@ export const SHARED_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
     {
       id: "discovery",
       label: "Discovery",
-      description: "Shows the full public-list discovery surface.",
+      description: "Shows the full public-list discovery page.",
       preferences: preferences({
         layoutPreset: "discovery",
         visibleSections: sharedAllVisible,

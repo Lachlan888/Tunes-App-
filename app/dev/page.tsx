@@ -25,14 +25,14 @@ function getStatusMessage(status: string) {
     return "Feedback resolved, archived, and the submitting user was messaged."
   }
   if (status === "missing_feedback") {
-    return "Could not tell which feedback item to update."
+    return "Couldn’t tell which feedback item to update."
   }
   if (status === "invalid_status") return "Invalid feedback status."
   if (status === "invalid_priority") return "Invalid feedback priority."
   if (status === "message_error") {
     return "Feedback was updated, but the user message could not be sent."
   }
-  if (status === "error") return "Could not update feedback."
+  if (status === "error") return "Couldn’t update feedback."
 
   return null
 }

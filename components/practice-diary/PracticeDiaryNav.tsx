@@ -23,7 +23,7 @@ const links = [
   },
   {
     href: "/review/foci",
-    label: "Foci",
+    label: "Focus areas",
     value: "foci",
   },
 ] as const

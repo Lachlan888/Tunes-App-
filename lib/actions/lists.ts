@@ -246,7 +246,7 @@ export async function createListInline(
   if (error || !createdList) {
     return {
       status: "error",
-      error: "Could not create list.",
+      error: "Couldn’t create list.",
       createdList: null,
     }
   }

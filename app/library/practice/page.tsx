@@ -43,7 +43,7 @@ function StatusMessage({
   if (type === "remove_from_practice" && status === "missing_user_piece") {
     return (
       <div className="mb-6 rounded-2xl border border-warning bg-warning/20 p-4 text-sm font-medium text-warning-foreground">
-        Could not tell which practice tune to remove.
+        Couldn’t tell which practice tune to remove.
       </div>
     )
   }
@@ -59,7 +59,7 @@ function StatusMessage({
   if (type === "remove_from_practice" && status === "error") {
     return (
       <div className="mb-6 rounded-2xl border border-destructive bg-destructive/10 p-4 text-sm font-medium text-destructive">
-        Could not remove tune from practice.
+        Couldn’t remove tune from practice.
       </div>
     )
   }

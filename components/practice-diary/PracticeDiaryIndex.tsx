@@ -26,10 +26,10 @@ const views: {
 }[] = [
   {
     value: "foci",
-    label: "Foci",
-    heading: "Foci",
-    searchLabel: "Search foci",
-    searchPlaceholder: "Search foci...",
+    label: "Focus areas",
+    heading: "Focus areas",
+    searchLabel: "Search focus areas",
+    searchPlaceholder: "Search focus areas...",
   },
   {
     value: "notes",
@@ -401,7 +401,7 @@ function FallbackMatches({
       {fallbackFoci.length > 0 ? (
         <section className="grid gap-2">
           <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Foci
+            Focus areas
           </h4>
 
           <ul className="rounded-2xl border border-border bg-card px-3 shadow-sm md:bg-background/70">
@@ -565,20 +565,20 @@ export default function PracticeDiaryIndex({ data }: PracticeDiaryIndexProps) {
               renderItem={(focus) => <PracticeFocusCard focus={focus} />}
               emptyState={
                 <EmptyState>
-                  No practice foci yet. Create one when a few tunes are
-                  connected by the same musical problem or preparation goal.
+                  No focus areas yet. Create one when several tunes share the
+                  same problem or goal.
                 </EmptyState>
               }
-              label="Practice foci"
+              label="Practice focus areas"
             />
           ) : data.focusSummaries.length === 0 ? (
             <EmptyState>
-              No practice foci yet. Create one when a few tunes are connected by
-              the same musical problem or preparation goal.
+              No focus areas yet. Create one when several tunes share the same
+              problem or goal.
             </EmptyState>
           ) : (
             <div className="grid gap-4">
-              <EmptyState>No foci match “{query}”.</EmptyState>
+              <EmptyState>No focus areas match “{query}”.</EmptyState>
               {fallback}
             </div>
           )

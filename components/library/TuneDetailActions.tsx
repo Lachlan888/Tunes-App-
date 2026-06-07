@@ -68,7 +68,7 @@ export default function TuneDetailActions({
   return (
     <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
       <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        Tune state
+        Tune status
       </h2>
 
       <div className="mt-5 grid min-w-0 gap-3 sm:grid-cols-3">

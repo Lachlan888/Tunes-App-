@@ -46,10 +46,10 @@ const libraryAllVisible = visibleSections({
 
 export const LIBRARY_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
   pageKey: "library",
-  title: "Tunes Page Options",
+  title: "Tunes display options",
   description: "Choose how the tune catalogue page is arranged.",
   helperText:
-    "These settings affect only the catalogue page layout. They do not change canonical tune data or your practice state.",
+    "These settings affect only the catalogue page layout. They do not change shared tune details or your practice status.",
   sections: [...LIBRARY_SECTIONS],
   allowColumns: false,
   allowDensity: true,

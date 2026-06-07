@@ -92,7 +92,7 @@ function getProfileName(publicList: PublicTuneListSummary) {
     ? publicList.profiles[0]
     : publicList.profiles
 
-  return profile?.display_name || profile?.username || "Unknown user"
+  return profile?.display_name || profile?.username || "Unknown player"
 }
 
 function TuneListChip({
@@ -222,7 +222,7 @@ export default async function PiecePage({
   if (tuneDetail.status === "load_error") {
     return (
       <DetailErrorShell title="Tune">
-        <p className="text-destructive">Could not load tune.</p>
+        <p className="text-destructive">Couldn’t load tune.</p>
       </DetailErrorShell>
     )
   }

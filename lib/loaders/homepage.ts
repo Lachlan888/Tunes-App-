@@ -347,7 +347,7 @@ function buildGettingStartedState(options: {
       group: "Practice setup",
       label: "Start Practice on a tune",
       description:
-        "Put one tune In practice so Stage review can begin.",
+        "Put one tune into practice so reviews can begin.",
       href: "/library",
       actionLabel: "Start Practice",
       pendingLabel: "Opening Tunes...",
@@ -358,7 +358,7 @@ function buildGettingStartedState(options: {
       group: "Practice setup",
       label: "Complete your first review",
       description:
-        "Review a due tune and choose an outcome to move it through Stage scheduling.",
+        "Review a due tune and choose how it went.",
       href: "/review",
       actionLabel: "Go to Practice",
       pendingLabel: "Opening Practice...",

@@ -90,7 +90,7 @@ export default function PublicProfileOverview({
           ) : (
             <EmptyState
               title="No instruments listed"
-              description="This user has not added instruments to their profile yet."
+              description="This musician has not added instruments to their profile yet."
               className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
             />
           )}
@@ -151,7 +151,7 @@ export default function PublicProfileOverview({
           ) : isOwnProfile ? (
             <EmptyState
               title="No public lists yet"
-              description="Make one of your lists public if you want other users to browse or import it."
+              description="Make one of your lists public if you want other musicians to browse or import it."
               primaryActionHref="/learning-lists"
               primaryActionLabel="Manage Lists"
               className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
@@ -159,7 +159,7 @@ export default function PublicProfileOverview({
           ) : (
             <EmptyState
               title="No public lists yet"
-              description="Public lists this user chooses to share will appear here."
+              description="Public lists this musician chooses to share will appear here."
               className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
             />
           )}

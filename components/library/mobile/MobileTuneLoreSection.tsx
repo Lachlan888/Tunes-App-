@@ -285,7 +285,7 @@ export default function MobileTuneLoreSection({
   if (!showLore && !showComments) {
     return (
       <p className="text-sm leading-6 text-muted-foreground">
-        Lore and comment sections are hidden in Tune Page Options.
+        Lore and comment sections are hidden in Display options.
       </p>
     )
   }
@@ -332,7 +332,7 @@ export default function MobileTuneLoreSection({
                   <ul className="mt-2 divide-y divide-border">
                     {group.entries.map((entry) => {
                       const author = profileMap[entry.user_id] ?? {
-                        displayName: "Unknown user",
+                        displayName: "Unknown player",
                         username: null,
                       }
                       const isOwnEntry = entry.user_id === currentUserId
@@ -432,7 +432,7 @@ export default function MobileTuneLoreSection({
             <ul className="mt-6 divide-y divide-border">
               {parentComments.map((comment) => {
                 const author = profileMap[comment.user_id] ?? {
-                  displayName: "Unknown user",
+                  displayName: "Unknown player",
                   username: null,
                 }
                 const isOwnComment = comment.user_id === currentUserId
@@ -479,7 +479,7 @@ export default function MobileTuneLoreSection({
                       <div className="mt-4 space-y-4 border-l-2 border-border pl-4">
                         {replies.map((reply) => {
                           const replyAuthor = profileMap[reply.user_id] ?? {
-                            displayName: "Unknown user",
+                            displayName: "Unknown player",
                             username: null,
                           }
                           const isOwnReply = reply.user_id === currentUserId

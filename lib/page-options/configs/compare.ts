@@ -5,7 +5,7 @@ const COMPARE_SECTIONS = [
   {
     id: "search_panel",
     label: "Search panel",
-    description: "The controls for adding users to a compare group.",
+    description: "The controls for adding players to a compare group.",
     isCore: true,
   },
   {
@@ -21,12 +21,12 @@ const COMPARE_SECTIONS = [
   {
     id: "suggestions",
     label: "Suggestions",
-    description: "Suggested users or compare prompts.",
+    description: "Suggested players or compare prompts.",
   },
   {
     id: "candidate_matches",
     label: "Candidate matches",
-    description: "User match lists when a search is ambiguous.",
+    description: "Player match lists when a search is ambiguous.",
   },
   {
     id: "results_panel",
@@ -47,7 +47,7 @@ const compareAllVisible = visibleSections({
 
 export const COMPARE_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
   pageKey: "compare",
-  title: "Compare Page Options",
+  title: "Compare display options",
   description: "Choose how the Compare page is arranged.",
   helperText:
     "Compare options only change the page view. They do not affect friend status or repertoire overlap.",

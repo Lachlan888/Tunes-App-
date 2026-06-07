@@ -64,7 +64,7 @@ export default function ReferenceMediaModal({
         })
 
         if (!response.ok) {
-          throw new Error("Could not load saved loops.")
+          throw new Error("Couldn’t load saved loops.")
         }
 
         const data = (await response.json()) as {
@@ -74,7 +74,7 @@ export default function ReferenceMediaModal({
         setLoadedLoops(data.loops ?? [])
       } catch {
         if (!controller.signal.aborted) {
-          setLoopLoadError("Could not refresh saved loops.")
+          setLoopLoadError("Couldn’t refresh saved loops.")
         }
       } finally {
         if (!controller.signal.aborted) {

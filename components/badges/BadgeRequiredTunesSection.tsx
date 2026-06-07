@@ -106,8 +106,8 @@ export default function BadgeRequiredTunesSection({
           </h2>
 
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            These are the tunes this badge is built around. Open a tune page to
-            inspect it, or add missing tunes to one of your lists.
+            These are the tunes required for this badge. Open a tune, or add
+            missing ones to a list.
           </p>
         </div>
 

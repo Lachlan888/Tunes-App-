@@ -24,12 +24,12 @@ function getUpdateBadgeMessage(status: string) {
   }
   if (status === "invalid_category") return "Choose a valid badge type."
   if (status === "invalid_condition") {
-    return "Choose a condition type and complete the matching condition fields."
+    return "Choose what earns this badge and complete the matching details."
   }
   if (status === "condition_locked") {
     return "This badge has already been awarded, so its unlock condition cannot be changed."
   }
-  if (status === "error") return "Could not update badge."
+  if (status === "error") return "Couldn’t update badge."
 
   return null
 }

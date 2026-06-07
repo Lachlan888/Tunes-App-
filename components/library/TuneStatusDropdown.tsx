@@ -69,7 +69,7 @@ export function TuneStatusActionForms({
             if (!isKnown) return
 
             const confirmed = window.confirm(
-              `Move "${piece.title}" from Known into Practice? This removes its known-only state and starts the review schedule.`
+              `Move "${piece.title}" from Known into Practice? This removes its Known-only status and starts the review schedule.`
             )
 
             if (!confirmed) {

@@ -22,7 +22,7 @@ export default function ComparePageStatusMessages({
 
       {friendRequestStatus === "missing_user" ? (
         <CompareStatusMessage tone="warning">
-          Please choose a valid user.
+          Please choose a valid player.
         </CompareStatusMessage>
       ) : null}
 
@@ -34,25 +34,25 @@ export default function ComparePageStatusMessages({
 
       {friendRequestStatus === "not_found" ? (
         <CompareStatusMessage tone="error">
-          That user could not be found.
+          That player could not be found.
         </CompareStatusMessage>
       ) : null}
 
       {friendRequestStatus === "duplicate" ? (
         <CompareStatusMessage tone="neutral">
-          A pending or accepted connection already exists with that user.
+          A pending or accepted connection already exists with that player.
         </CompareStatusMessage>
       ) : null}
 
       {error === "missing_search" ? (
         <CompareStatusMessage tone="neutral">
-          Add at least one username or display name to start comparing.
+          Search for a player to start comparing.
         </CompareStatusMessage>
       ) : null}
 
       {error === "user_not_found" ? (
         <CompareStatusMessage tone="error">
-          No user found for “{primarySearchValue}”.
+          No player found for “{primarySearchValue}”.
         </CompareStatusMessage>
       ) : null}
 

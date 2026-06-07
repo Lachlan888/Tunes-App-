@@ -43,7 +43,7 @@ export default function CompareDesktop({
         </h1>
 
         <p className="mt-3 max-w-3xl text-base text-muted-foreground sm:text-lg">
-          Build a group, then see the tunes common to everyone in it.
+          Add players to see the tunes everyone has in common.
         </p>
       </section>
 
@@ -81,8 +81,8 @@ export default function CompareDesktop({
 
           {error === "multiple_matches" ? (
             <CompareCandidateListSection
-              title="Choose a user"
-              description={`More than one user matched “${primarySearchValue}”.`}
+              title="Choose a player"
+              description={`More than one player matched “${primarySearchValue}”.`}
               profiles={matchingProfiles}
               filterPreservedUsers={filterPreservedUsers}
               includePractice={includePractice}
@@ -92,7 +92,7 @@ export default function CompareDesktop({
 
           {error === null && searchMatches.length > 0 ? (
             <CompareCandidateListSection
-              title="Choose a user"
+              title="Choose a player"
               description="Select the person you want to add to this compare group."
               profiles={searchMatches}
               filterPreservedUsers={filterPreservedUsers}
@@ -143,8 +143,7 @@ export default function CompareDesktop({
                 </h2>
 
                 <p className="mt-3 text-sm text-muted-foreground md:text-base">
-                  Add one or more players on the left. Tunes shared by everyone
-                  in the group will appear here.
+                  Add players to see your shared tunes.
                 </p>
               </div>
             )}

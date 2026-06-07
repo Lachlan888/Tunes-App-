@@ -45,7 +45,7 @@ export default function EditSetlistItemModal({
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   These details belong to this setlist only. They do not edit
-                  the canonical tune record.
+                  the shared tune record.
                 </p>
               </div>
 

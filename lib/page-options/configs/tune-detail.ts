@@ -4,7 +4,7 @@ import { preferences, visibleSections } from "./shared"
 const TUNE_DETAIL_SECTIONS = [
   {
     id: "tune_state",
-    label: "Tune state",
+    label: "Tune status",
     description: "Practice, known, list count, and main tune actions.",
     isCore: true,
   },
@@ -16,9 +16,9 @@ const TUNE_DETAIL_SECTIONS = [
   },
   {
     id: "canonical_details",
-    label: "Canonical details",
+    label: "Tune details",
     description:
-      "Shared tune metadata such as key, style, time signature, and reference URL.",
+      "Shared tune details such as key, style, time signature, and reference URL.",
     isCore: true,
   },
   {
@@ -68,10 +68,10 @@ const tuneDetailAllVisible = visibleSections({
 
 export const TUNE_DETAIL_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
   pageKey: "tune_detail",
-  title: "Tune Page Options",
+  title: "Tune display options",
   description: "Choose which sections appear on tune detail pages.",
   helperText:
-    "These settings apply to every tune detail page. They do not change canonical tune data.",
+    "These settings apply to every tune detail page. They do not change shared tune details.",
   sections: [...TUNE_DETAIL_SECTIONS],
   allowColumns: true,
   allowDensity: true,
@@ -84,7 +84,7 @@ export const TUNE_DETAIL_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
       id: "working",
       label: "Working View",
       description:
-        "Shows practice state, review, notes, media, lore, and comments.",
+        "Shows practice status, review, notes, media, lore, and comments.",
       preferences: preferences({
         layoutPreset: "working",
         visibleSections: tuneDetailAllVisible,
@@ -93,7 +93,7 @@ export const TUNE_DETAIL_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
     {
       id: "reference",
       label: "Reference View",
-      description: "Prioritises canonical details, media, sheet music, and lore.",
+      description: "Prioritises tune details, media, sheet music, and lore.",
       preferences: preferences({
         layoutPreset: "reference",
         visibleSections: visibleSections({
@@ -112,7 +112,7 @@ export const TUNE_DETAIL_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
     {
       id: "practice_first",
       label: "Practice First",
-      description: "Prioritises tune state, review, notes, and practice history.",
+      description: "Prioritises tune status, review, notes, and practice history.",
       preferences: preferences({
         layoutPreset: "practice_first",
         visibleSections: visibleSections({
@@ -151,7 +151,7 @@ export const TUNE_DETAIL_PAGE_OPTIONS_CONFIG: PageOptionsConfig = {
     {
       id: "minimal",
       label: "Minimal",
-      description: "Shows only the main tune state and canonical tune details.",
+      description: "Shows only the main tune status and shared tune details.",
       preferences: preferences({
         layoutPreset: "minimal",
         columnMode: "comfortable",

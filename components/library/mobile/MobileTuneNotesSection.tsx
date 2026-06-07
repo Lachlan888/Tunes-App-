@@ -56,7 +56,7 @@ export default function MobileTuneNotesSection({
   if (!showMyNotes && !showPracticeHistory) {
     return (
       <p className="text-sm leading-6 text-muted-foreground">
-        Notes sections are hidden in Tune Page Options.
+        Notes sections are hidden in Display options.
       </p>
     )
   }

@@ -221,7 +221,7 @@ export default function LoginPage() {
           {isLogin &&
             "Sign in to manage your tunes, lists, practice, and repertoire."}
           {isSignup &&
-            "Create an account to start building your repertoire memory system."}
+            "Create an account to start tracking your tunes and practice."}
           {isReset &&
             "Enter your email and we’ll send you a link to set a new password."}
         </p>

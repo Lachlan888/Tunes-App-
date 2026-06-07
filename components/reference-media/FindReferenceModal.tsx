@@ -124,8 +124,8 @@ export default function FindReferenceModal({
           </div>
 
           <p className="text-sm leading-6 text-muted-foreground">
-            Choose a useful public reference recording. This saves the selected
-            video to the shared tune record, so other users can use it too.
+            Choose a useful public reference recording. Other players will be
+            able to use it too.
           </p>
         </form>
 

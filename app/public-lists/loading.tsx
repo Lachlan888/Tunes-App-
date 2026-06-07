@@ -5,7 +5,7 @@ export default function PublicListsLoading() {
     <RouteLoadingShell
       label="Shared"
       title="Loading public lists"
-      description="Finding public tune lists from other users."
+      description="Finding public tune lists from other players."
       primarySectionTitle="Public lists"
     />
   )

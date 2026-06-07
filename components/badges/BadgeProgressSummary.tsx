@@ -72,8 +72,7 @@ export default function BadgeProgressSummary({
 
       {!progress.isCalculable ? (
         <p className="mt-3 text-xs text-muted-foreground">
-          This badge includes a condition that is only partly measurable in the
-          current app.
+          Some parts of this badge can’t be checked automatically yet.
         </p>
       ) : null}
     </div>

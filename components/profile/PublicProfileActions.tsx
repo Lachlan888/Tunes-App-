@@ -149,7 +149,7 @@ export default function PublicProfileActions({
 
       {!showCompareDiscoverability ? (
         <p className="mt-4 break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-3">
-          This user is not discoverable through compare.
+          This musician is not discoverable through Compare.
         </p>
       ) : null}
 
