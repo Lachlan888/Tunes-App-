@@ -1,13 +1,23 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import {
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react"
 import SubmitButton from "@/components/SubmitButton"
 import LoadingSpinner from "@/components/ui/LoadingSpinner"
-import { createMediaLoop, deleteMediaLoop } from "@/lib/actions/media-loops"
+import {
+  createMediaLoopInPlace,
+  deleteMediaLoop,
+} from "@/lib/actions/media-loops"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import type { UserPieceMediaLoop } from "@/lib/types"
 
-type YouTubePlayer = {
+export type YouTubePlayer = {
   destroy: () => void
   getCurrentTime: () => number
   getDuration: () => number
@@ -24,11 +34,16 @@ type YouTubePlayerEvent = {
   target: YouTubePlayer
 }
 
+type YouTubePlayerStateEvent = YouTubePlayerEvent & {
+  data: number
+}
+
 type YouTubePlayerOptions = {
   videoId: string
   playerVars?: Record<string, string | number>
   events?: {
     onReady?: (event: YouTubePlayerEvent) => void
+    onStateChange?: (event: YouTubePlayerStateEvent) => void
   }
 }
 
@@ -54,6 +69,20 @@ type YouTubeLoopPlayerProps = {
   pieceId?: number
   redirectTo?: string
   savedLoops?: UserPieceMediaLoop[]
+  initialPlaybackState?: YouTubePlaybackSnapshot | null
+  isActive?: boolean
+  defaultShowLoopControls?: boolean
+  onPlaybackSnapshotChange?: (snapshot: YouTubePlaybackSnapshot) => void
+  onLoopSaved?: (loop: UserPieceMediaLoop) => void
+}
+
+export type YouTubePlaybackSnapshot = {
+  currentTime: number
+  playbackRate: number
+  isPlaying: boolean
+  loopStart: number | null
+  loopEnd: number | null
+  loopEnabled: boolean
 }
 
 const DEFAULT_SPEEDS = [0.5, 0.75, 1]
@@ -63,7 +92,7 @@ type NudgeAmount = (typeof NUDGE_AMOUNTS)[number]
 
 let youtubeApiPromise: Promise<void> | null = null
 
-function loadYouTubeIframeApi() {
+export function loadYouTubeIframeApi() {
   if (typeof window === "undefined") {
     return Promise.resolve()
   }
@@ -97,7 +126,7 @@ function loadYouTubeIframeApi() {
   return youtubeApiPromise
 }
 
-function safeNumber(value: number) {
+export function safeNumber(value: number) {
   return Number.isFinite(value) ? value : 0
 }
 
@@ -117,7 +146,7 @@ function formatTime(seconds: number | null, showTenths = false) {
     .padStart(2, "0")}`
 }
 
-function getPlayerTime(player: YouTubePlayer | null) {
+export function getPlayerTime(player: YouTubePlayer | null) {
   if (!player) return 0
 
   try {
@@ -192,20 +221,54 @@ export default function YouTubeLoopPlayer({
   pieceId,
   redirectTo,
   savedLoops = [],
+  initialPlaybackState,
+  isActive = true,
+  defaultShowLoopControls = false,
+  onPlaybackSnapshotChange,
+  onLoopSaved,
 }: YouTubeLoopPlayerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const playerRef = useRef<YouTubePlayer | null>(null)
+  const saveInFlightRef = useRef(false)
+  const latestSnapshotRef = useRef<YouTubePlaybackSnapshot>({
+    currentTime: initialPlaybackState?.currentTime ?? 0,
+    playbackRate: initialPlaybackState?.playbackRate ?? 1,
+    isPlaying: initialPlaybackState?.isPlaying ?? false,
+    loopStart: initialPlaybackState?.loopStart ?? null,
+    loopEnd: initialPlaybackState?.loopEnd ?? null,
+    loopEnabled: initialPlaybackState?.loopEnabled ?? false,
+  })
 
   const [isReady, setIsReady] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
+  const [currentTime, setCurrentTime] = useState(
+    initialPlaybackState?.currentTime ?? 0
+  )
   const [duration, setDuration] = useState(0)
-  const [loopStart, setLoopStart] = useState<number | null>(null)
-  const [loopEnd, setLoopEnd] = useState<number | null>(null)
-  const [loopEnabled, setLoopEnabled] = useState(false)
-  const [playbackRate, setPlaybackRateState] = useState(1)
+  const [loopStart, setLoopStart] = useState<number | null>(
+    initialPlaybackState?.loopStart ?? null
+  )
+  const [loopEnd, setLoopEnd] = useState<number | null>(
+    initialPlaybackState?.loopEnd ?? null
+  )
+  const [loopEnabled, setLoopEnabled] = useState(
+    initialPlaybackState?.loopEnabled ?? false
+  )
+  const [playbackRate, setPlaybackRateState] = useState(
+    initialPlaybackState?.playbackRate ?? 1
+  )
+  const [isPlaying, setIsPlaying] = useState(
+    initialPlaybackState?.isPlaying ?? false
+  )
   const [availableRates, setAvailableRates] = useState<number[]>(DEFAULT_SPEEDS)
   const [nudgeAmount, setNudgeAmount] = useState<NudgeAmount>(0.5)
-  const [showLoopControls, setShowLoopControls] = useState(false)
+  const [showLoopControls, setShowLoopControls] = useState(
+    defaultShowLoopControls
+  )
+  const [saveLabel, setSaveLabel] = useState("")
+  const [saveNotes, setSaveNotes] = useState("")
+  const [saveMessage, setSaveMessage] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [isSavingLoop, startSavingLoop] = useTransition()
 
   const canSaveLoops = Boolean(pieceId && redirectTo)
 
@@ -219,6 +282,58 @@ export default function YouTubeLoopPlayer({
       ? loopEnd + loopLength <= duration
       : false
 
+  const buildSnapshot = useCallback(
+    (
+      player: YouTubePlayer | null = playerRef.current
+    ): YouTubePlaybackSnapshot => {
+      return {
+        currentTime: getPlayerTime(player),
+        playbackRate,
+        isPlaying,
+        loopStart,
+        loopEnd,
+        loopEnabled,
+      }
+    },
+    [isPlaying, loopEnabled, loopEnd, loopStart, playbackRate]
+  )
+
+  const publishSnapshot = useCallback(
+    (snapshot = buildSnapshot()) => {
+      latestSnapshotRef.current = snapshot
+      onPlaybackSnapshotChange?.(snapshot)
+    },
+    [buildSnapshot, onPlaybackSnapshotChange]
+  )
+
+  useEffect(() => {
+    publishSnapshot({
+      currentTime,
+      playbackRate,
+      isPlaying,
+      loopStart,
+      loopEnd,
+      loopEnabled,
+    })
+  }, [
+    currentTime,
+    isPlaying,
+    loopEnabled,
+    loopEnd,
+    loopStart,
+    playbackRate,
+    publishSnapshot,
+  ])
+
+  useEffect(() => {
+    if (isActive) return
+
+    const player = playerRef.current
+    publishSnapshot(buildSnapshot(player))
+    player?.pauseVideo?.()
+    setIsPlaying(false)
+  }, [buildSnapshot, isActive, publishSnapshot])
+
   useEffect(() => {
     let cancelled = false
     const container = containerRef.current
@@ -226,15 +341,22 @@ export default function YouTubeLoopPlayer({
     if (!container) return
 
     setIsReady(false)
-    setCurrentTime(0)
+    const initialState = initialPlaybackState
+    const initialTime = initialState?.currentTime ?? 0
+    const initialRate = initialState?.playbackRate ?? 1
+
+    setCurrentTime(initialTime)
     setDuration(0)
-    setLoopStart(null)
-    setLoopEnd(null)
-    setLoopEnabled(false)
-    setPlaybackRateState(1)
+    setLoopStart(initialState?.loopStart ?? null)
+    setLoopEnd(initialState?.loopEnd ?? null)
+    setLoopEnabled(initialState?.loopEnabled ?? false)
+    setPlaybackRateState(initialRate)
+    setIsPlaying(initialState?.isPlaying ?? false)
     setAvailableRates(DEFAULT_SPEEDS)
     setNudgeAmount(0.5)
-    setShowLoopControls(false)
+    setShowLoopControls(defaultShowLoopControls)
+    setSaveMessage(null)
+    setSaveError(null)
 
     loadYouTubeIframeApi().then(() => {
       if (cancelled || !container || !window.YT?.Player) return
@@ -246,6 +368,7 @@ export default function YouTubeLoopPlayer({
           rel: 0,
           playsinline: 1,
           enablejsapi: 1,
+          start: Math.floor(initialTime),
         },
         events: {
           onReady: (event) => {
@@ -257,10 +380,25 @@ export default function YouTubeLoopPlayer({
             setAvailableRates(getAvailableRates(event.target))
 
             try {
-              setPlaybackRateState(event.target.getPlaybackRate?.() ?? 1)
+              event.target.setPlaybackRate(initialRate)
+              setPlaybackRateState(event.target.getPlaybackRate?.() ?? initialRate)
             } catch {
-              setPlaybackRateState(1)
+              setPlaybackRateState(initialRate)
             }
+
+            if (initialTime > 0) {
+              event.target.seekTo(initialTime, true)
+            }
+
+            if (initialState?.isPlaying && isActive) {
+              event.target.playVideo()
+            } else {
+              event.target.pauseVideo?.()
+            }
+          },
+          onStateChange: (event) => {
+            const playingState = window.YT?.PlayerState?.PLAYING
+            setIsPlaying(playingState !== undefined && event.data === playingState)
           },
         },
       })
@@ -281,7 +419,7 @@ export default function YouTubeLoopPlayer({
 
       playerRef.current = null
     }
-  }, [videoId])
+  }, [defaultShowLoopControls, initialPlaybackState, isActive, videoId])
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -483,6 +621,52 @@ export default function YouTubeLoopPlayer({
       player.seekTo(start, true)
       player.playVideo()
     }
+  }
+
+  function handleSaveLoop(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (
+      !canSaveLoops ||
+      !pieceId ||
+      isSavingLoop ||
+      saveInFlightRef.current ||
+      !hasValidLoop
+    ) {
+      return
+    }
+
+    const form = event.currentTarget
+    const formData = new FormData(form)
+    formData.set("piece_id", String(pieceId))
+    formData.set("youtube_video_id", videoId)
+    formData.set("start_seconds", numericInputValue(loopStart))
+    formData.set("end_seconds", numericInputValue(loopEnd))
+    formData.set("playback_rate", String(playbackRate))
+
+    setSaveMessage(null)
+    setSaveError(null)
+    saveInFlightRef.current = true
+
+    startSavingLoop(async () => {
+      try {
+        const result = await createMediaLoopInPlace(formData)
+
+        if (!result.ok) {
+          setSaveError(result.error)
+          return
+        }
+
+        onLoopSaved?.(result.loop)
+        setSaveLabel("")
+        setSaveNotes("")
+        setSaveMessage("Loop saved")
+      } catch {
+        setSaveError("Couldn’t save this loop. Try again.")
+      } finally {
+        saveInFlightRef.current = false
+      }
+    })
   }
 
   return (
@@ -813,7 +997,7 @@ export default function YouTubeLoopPlayer({
 
             {canSaveLoops && pieceId && redirectTo ? (
               <form
-                action={createMediaLoop}
+                onSubmit={handleSaveLoop}
                 className="min-w-0 space-y-3 rounded-2xl border border-border bg-card/50 p-3"
               >
                 <input type="hidden" name="piece_id" value={pieceId} />
@@ -848,23 +1032,41 @@ export default function YouTubeLoopPlayer({
                 <input
                   name="label"
                   placeholder="Label, eg B part"
+                  value={saveLabel}
+                  onChange={(event) => setSaveLabel(event.target.value)}
                   className="w-full min-w-0 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
                   required
-                  disabled={!hasValidLoop}
+                  disabled={!hasValidLoop || isSavingLoop}
                 />
 
                 <textarea
                   name="notes"
                   placeholder="Optional note"
                   rows={3}
+                  value={saveNotes}
+                  onChange={(event) => setSaveNotes(event.target.value)}
                   className="w-full min-w-0 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
-                  disabled={!hasValidLoop}
+                  disabled={!hasValidLoop || isSavingLoop}
                 />
+
+                {saveMessage ? (
+                  <p className="rounded-2xl border border-border bg-background/70 p-3 text-sm font-medium text-foreground">
+                    {saveMessage}
+                  </p>
+                ) : null}
+
+                {saveError ? (
+                  <p className="rounded-2xl border border-destructive/40 bg-background/70 p-3 text-sm font-medium text-destructive">
+                    {saveError}
+                  </p>
+                ) : null}
 
                 <SubmitButton
                   label="Save loop"
                   pendingLabel="Saving..."
                   className={buttonStyles.primary}
+                  forcePending={isSavingLoop}
+                  disabled={!hasValidLoop || isSavingLoop}
                 />
               </form>
             ) : null}

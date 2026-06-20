@@ -1,8 +1,10 @@
 "use client"
 
 import { usePathname, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
-import YouTubeLoopPlayer from "@/components/library/YouTubeLoopPlayer"
+import { useEffect, useRef, useState } from "react"
+import YouTubeLoopPlayer, {
+  type YouTubePlaybackSnapshot,
+} from "@/components/library/YouTubeLoopPlayer"
 import LoadingSpinner from "@/components/ui/LoadingSpinner"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
@@ -18,6 +20,10 @@ type ReferenceMediaModalProps = {
   savedLoops?: UserPieceMediaLoop[]
   triggerLabel?: string
   triggerClassName?: string
+  onOpen?: () => void
+  onClose?: (snapshot?: YouTubePlaybackSnapshot) => void
+  initialPlaybackState?: YouTubePlaybackSnapshot | null
+  onPlaybackSnapshotChange?: (snapshot: YouTubePlaybackSnapshot) => void
 }
 
 export default function ReferenceMediaModal({
@@ -30,6 +36,10 @@ export default function ReferenceMediaModal({
   savedLoops = [],
   triggerLabel = "Open reference media",
   triggerClassName,
+  onOpen,
+  onClose,
+  initialPlaybackState,
+  onPlaybackSnapshotChange,
 }: ReferenceMediaModalProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -38,9 +48,22 @@ export default function ReferenceMediaModal({
     useState<UserPieceMediaLoop[]>(savedLoops)
   const [isLoadingLoops, setIsLoadingLoops] = useState(false)
   const [loopLoadError, setLoopLoadError] = useState<string | null>(null)
+  const latestPlaybackSnapshotRef = useRef<YouTubePlaybackSnapshot | null>(
+    initialPlaybackState ?? null
+  )
   const search = searchParams.toString()
   const effectiveRedirectTo =
     redirectTo || (search ? `${pathname}?${search}` : pathname)
+
+  useEffect(() => {
+    setLoadedLoops(savedLoops)
+  }, [savedLoops])
+
+  useEffect(() => {
+    if (isOpen && initialPlaybackState) {
+      latestPlaybackSnapshotRef.current = initialPlaybackState
+    }
+  }, [initialPlaybackState, isOpen])
 
   useEffect(() => {
     if (!isOpen || !pieceId) {
@@ -91,12 +114,20 @@ export default function ReferenceMediaModal({
   const trigger = (
     <button
       type="button"
-      onClick={() => setIsOpen(true)}
+      onClick={() => {
+        onOpen?.()
+        setIsOpen(true)
+      }}
       className={triggerClassName ?? buttonStyles.secondary}
     >
       {triggerLabel}
     </button>
   )
+
+  function handleClose() {
+    onClose?.(latestPlaybackSnapshotRef.current ?? undefined)
+    setIsOpen(false)
+  }
 
   return (
     <>
@@ -116,7 +147,7 @@ export default function ReferenceMediaModal({
 
       <ResponsiveModal
         isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={handleClose}
         mobileMode="full-screen"
         desktopMaxWidth="md:max-w-5xl"
         eyebrow="Reference media"
@@ -147,6 +178,15 @@ export default function ReferenceMediaModal({
           pieceId={pieceId}
           redirectTo={effectiveRedirectTo}
           savedLoops={loadedLoops}
+          initialPlaybackState={initialPlaybackState}
+          defaultShowLoopControls
+          onPlaybackSnapshotChange={(snapshot) => {
+            latestPlaybackSnapshotRef.current = snapshot
+            onPlaybackSnapshotChange?.(snapshot)
+          }}
+          onLoopSaved={(loop) => {
+            setLoadedLoops((currentLoops) => [...currentLoops, loop])
+          }}
         />
       </ResponsiveModal>
     </>

@@ -3,6 +3,17 @@
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import type { UserPieceMediaLoop } from "@/lib/types"
+
+type CreateMediaLoopResult =
+  | {
+      ok: true
+      loop: UserPieceMediaLoop
+    }
+  | {
+      ok: false
+      error: string
+    }
 
 function getRedirectTarget(formData: FormData, pieceId: number, status: string) {
   const rawRedirectTo =
@@ -75,6 +86,84 @@ export async function createMediaLoop(formData: FormData) {
 
   revalidatePath(`/library/${pieceId}`)
   redirect(getRedirectTarget(formData, pieceId, "saved"))
+}
+
+export async function createMediaLoopInPlace(
+  formData: FormData
+): Promise<CreateMediaLoopResult> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { ok: false, error: "Please log in to save loops." }
+  }
+
+  const pieceId = Number(formData.get("piece_id"))
+  const youtubeVideoId =
+    formData.get("youtube_video_id")?.toString().trim() || ""
+  const label = formData.get("label")?.toString().trim() || ""
+  const rawNotes = formData.get("notes")?.toString().trim() || ""
+  const notes = rawNotes || null
+  const startSeconds = readPositiveNumber(formData.get("start_seconds"))
+  const endSeconds = readPositiveNumber(formData.get("end_seconds"))
+  const playbackRate = readPositiveNumber(formData.get("playback_rate")) ?? 1
+
+  if (!Number.isInteger(pieceId) || pieceId <= 0) {
+    return { ok: false, error: "Couldn’t find this tune." }
+  }
+
+  if (!youtubeVideoId) {
+    return { ok: false, error: "Couldn’t find this video." }
+  }
+
+  if (!label) {
+    return { ok: false, error: "Add a label before saving this loop." }
+  }
+
+  if (
+    startSeconds === null ||
+    endSeconds === null ||
+    startSeconds < 0 ||
+    endSeconds <= startSeconds + 0.2 ||
+    playbackRate <= 0
+  ) {
+    return {
+      ok: false,
+      error: "Set valid Tap in and Tap out points before saving.",
+    }
+  }
+
+  const { data, error } = await supabase
+    .from("user_piece_media_loops")
+    .insert({
+      user_id: user.id,
+      piece_id: pieceId,
+      youtube_video_id: youtubeVideoId,
+      label,
+      start_seconds: startSeconds,
+      end_seconds: endSeconds,
+      playback_rate: playbackRate,
+      notes,
+    })
+    .select(
+      "id, piece_id, youtube_video_id, label, start_seconds, end_seconds, playback_rate, notes, created_at, updated_at"
+    )
+    .single()
+
+  if (error || !data) {
+    console.error("Error creating media loop:", error)
+    return { ok: false, error: "Couldn’t save this loop. Try again." }
+  }
+
+  revalidatePath(`/library/${pieceId}`)
+
+  return {
+    ok: true,
+    loop: data as UserPieceMediaLoop,
+  }
 }
 
 export async function deleteMediaLoop(formData: FormData) {
