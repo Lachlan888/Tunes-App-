@@ -6,7 +6,10 @@ import SubmitButton from "@/components/SubmitButton"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { statusStyles } from "@/components/ui/statusStyles"
+import UserSearchPicker from "@/components/users/UserSearchPicker"
+import type { ListShareRecipientSearchResponse } from "@/lib/actions/lists"
 import type { Piece } from "@/lib/types"
+import type { LearningListShareRecipient } from "@/lib/loaders/list-detail"
 
 type EditListModalProps = {
   listId: number
@@ -18,6 +21,14 @@ type EditListModalProps = {
   updateList: (formData: FormData) => Promise<void>
   removeTuneFromList: (formData: FormData) => Promise<void>
   deleteList: (formData: FormData) => Promise<void>
+  shareLearningListPrivately?: (formData: FormData) => Promise<void>
+  searchLearningListShareRecipients?: (input: {
+    learningListId: number
+    query: string
+    limit?: number
+  }) => Promise<ListShareRecipientSearchResponse>
+  revokeLearningListPrivateShare?: (formData: FormData) => Promise<void>
+  shareRecipients?: LearningListShareRecipient[]
   triggerLabel?: string
   triggerClassName?: string
 }
@@ -35,6 +46,10 @@ export default function EditListModal({
   updateList,
   removeTuneFromList,
   deleteList,
+  shareLearningListPrivately,
+  searchLearningListShareRecipients,
+  revokeLearningListPrivateShare,
+  shareRecipients = [],
   triggerLabel = "Manage List",
   triggerClassName = buttonStyles.secondary,
 }: EditListModalProps) {
@@ -159,6 +174,88 @@ export default function EditListModal({
               />
             </form>
           </section>
+
+          {shareLearningListPrivately &&
+          searchLearningListShareRecipients &&
+          revokeLearningListPrivateShare ? (
+            <section>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Share privately
+              </h3>
+
+              <form
+                action={async (formData: FormData) => {
+                  setIsBusy(true)
+                  await shareLearningListPrivately(formData)
+                }}
+                className="mt-4"
+              >
+                <input type="hidden" name="learning_list_id" value={listId} />
+                <input type="hidden" name="redirect_to" value={redirectTo} />
+
+                <UserSearchPicker
+                  learningListId={listId}
+                  disabled={isBusy}
+                  searchUsers={searchLearningListShareRecipients}
+                />
+              </form>
+
+              <div className="mt-5 divide-y divide-border/70 border-y border-border/70">
+                {shareRecipients.length === 0 ? (
+                  <p className="py-4 text-sm text-muted-foreground">
+                    This list is not privately shared.
+                  </p>
+                ) : (
+                  shareRecipients.map((recipient) => (
+                    <div
+                      key={recipient.id}
+                      className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground">
+                          {recipient.label}
+                        </p>
+                        {recipient.username ? (
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            @{recipient.username}
+                          </p>
+                        ) : null}
+                      </div>
+
+                      <form
+                        action={async (formData: FormData) => {
+                          setIsBusy(true)
+                          await revokeLearningListPrivateShare(formData)
+                        }}
+                      >
+                        <input
+                          type="hidden"
+                          name="learning_list_id"
+                          value={listId}
+                        />
+                        <input
+                          type="hidden"
+                          name="share_id"
+                          value={recipient.id}
+                        />
+                        <input
+                          type="hidden"
+                          name="redirect_to"
+                          value={redirectTo}
+                        />
+
+                        <SubmitButton
+                          label="Remove access"
+                          pendingLabel="Removing access..."
+                          className={buttonStyles.secondary}
+                        />
+                      </form>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+          ) : null}
 
           <section>
             <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">

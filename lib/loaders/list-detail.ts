@@ -16,9 +16,71 @@ export type ListDetailUserPieceMetadata = {
   preferred_reference_label: string | null
 }
 
+export type ListDetailAccessMode = "owner" | "shared_viewer" | "public_viewer"
+
+export type LearningListShareRecipient = {
+  id: number
+  sharedWithUserId: string
+  username: string | null
+  displayName: string | null
+  label: string
+}
+
+export type LearningListOwnerProfile = {
+  id: string
+  username: string | null
+  displayName: string | null
+  label: string
+}
+
+type LearningListShareRow = {
+  id: number
+  shared_with_user_id: string
+  profiles:
+    | {
+        username: string | null
+        display_name: string | null
+      }
+    | {
+        username: string | null
+        display_name: string | null
+      }[]
+    | null
+}
+
+type ProfileRow = {
+  id: string
+  username: string | null
+  display_name: string | null
+}
+
 function extractPiece(piece: Piece | Piece[] | null): Piece | null {
   if (!piece) return null
   return Array.isArray(piece) ? piece[0] ?? null : piece
+}
+
+function extractJoinedRow<T>(row: T | T[] | null): T | null {
+  if (!row) return null
+  return Array.isArray(row) ? row[0] ?? null : row
+}
+
+function formatProfileLabel(profile: {
+  username: string | null
+  displayName: string | null
+}) {
+  if (profile.displayName && profile.username) {
+    return `${profile.displayName} (@${profile.username})`
+  }
+
+  if (profile.displayName) {
+    return profile.displayName
+  }
+
+  if (profile.username) {
+    return `@${profile.username}`
+  }
+
+  return "Unknown player"
 }
 
 export async function loadLearningListDetailData(rawListId: string) {
@@ -42,8 +104,7 @@ export async function loadLearningListDetailData(rawListId: string) {
     .from("learning_lists")
     .select("id, user_id, name, description, visibility, is_imported")
     .eq("id", listId)
-    .eq("user_id", user.id)
-    .single()
+    .maybeSingle()
 
   if (listError || !list) {
     notFound()
@@ -51,6 +112,12 @@ export async function loadLearningListDetailData(rawListId: string) {
 
   const typedList = list as LearningListDetail
   const redirectTo = `/learning-lists/${typedList.id}`
+  const accessMode: ListDetailAccessMode =
+    typedList.user_id === user.id
+      ? "owner"
+      : typedList.visibility === "public"
+        ? "public_viewer"
+        : "shared_viewer"
 
   const { data: items, error: itemsError } = await supabase
     .from("learning_list_items")
@@ -142,6 +209,68 @@ export async function loadLearningListDetailData(rawListId: string) {
       (userPieceMetadataRows ?? []) as ListDetailUserPieceMetadata[]
   }
 
+  const [{ data: ownerProfileRows, error: ownerProfileError }, shareResult] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id, username, display_name")
+        .eq("id", typedList.user_id)
+        .limit(1),
+
+      accessMode === "owner"
+        ? supabase
+            .from("learning_list_shares")
+            .select(
+              `
+                id,
+                shared_with_user_id,
+                profiles!learning_list_shares_shared_with_user_id_fkey (
+                  username,
+                  display_name
+                )
+              `
+            )
+            .eq("learning_list_id", typedList.id)
+            .order("created_at", { ascending: false })
+        : Promise.resolve({ data: [], error: null }),
+    ])
+
+  if (ownerProfileError) {
+    throw new Error(ownerProfileError.message)
+  }
+
+  if (shareResult.error) {
+    throw new Error(shareResult.error.message)
+  }
+
+  const ownerProfileRow =
+    ((ownerProfileRows ?? []) as ProfileRow[])[0] ?? null
+  const ownerProfile: LearningListOwnerProfile = {
+    id: typedList.user_id,
+    username: ownerProfileRow?.username ?? null,
+    displayName: ownerProfileRow?.display_name ?? null,
+    label: formatProfileLabel({
+      username: ownerProfileRow?.username ?? null,
+      displayName: ownerProfileRow?.display_name ?? null,
+    }),
+  }
+
+  const shareRecipients: LearningListShareRecipient[] = (
+    (shareResult.data ?? []) as LearningListShareRow[]
+  ).map((share) => {
+    const profile = extractJoinedRow(share.profiles)
+    const displayName = profile?.display_name ?? null
+    const username = profile?.username ?? null
+
+    return {
+      id: share.id,
+      sharedWithUserId: share.shared_with_user_id,
+      username,
+      displayName,
+      label: formatProfileLabel({ username, displayName }),
+    }
+  })
+
   return {
     user,
     typedList,
@@ -150,6 +279,9 @@ export async function loadLearningListDetailData(rawListId: string) {
     activePieceIds,
     knownPieceIds,
     userPieceMetadata,
+    ownerProfile,
+    shareRecipients,
+    accessMode,
     redirectTo,
   }
 }

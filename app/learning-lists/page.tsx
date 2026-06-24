@@ -1,5 +1,6 @@
 import EmptyState from "@/components/EmptyState"
 import CreateListModal from "@/components/lists/CreateListModal"
+import DirectSharedListsSection from "@/components/lists/DirectSharedListsSection"
 import ListOverviewCard from "@/components/lists/ListOverviewCard"
 import ListSearchFilters from "@/components/lists/ListSearchFilters"
 import ListsMobileSwitcher from "@/components/lists/ListsMobileSwitcher"
@@ -135,6 +136,7 @@ export default async function LearningListsPage({
     unlistedPracticeTunes,
     unlistedKnownTunes,
     bookmarkedSharedLists,
+    directSharedLists,
   } = await loadListsData()
 
   const { styles: availableStyles } = getListFilterOptions(listOverviews)
@@ -184,6 +186,7 @@ export default async function LearningListsPage({
           myTunes={myTunes}
           learningQueueTunes={learningQueueTunes}
           bookmarkedSharedLists={bookmarkedSharedLists}
+          directSharedLists={directSharedLists}
           unlistedPracticeTunes={unlistedPracticeTunes}
           unlistedKnownTunes={unlistedKnownTunes}
           learningLists={learningLists}
@@ -267,6 +270,11 @@ export default async function LearningListsPage({
             redirectTo={redirectTo}
           />
         ) : null}
+
+        <DirectSharedListsSection
+          directSharedLists={directSharedLists}
+          className="mb-8"
+        />
 
         {listOverviews.length > 0 &&
         (showSection("filters") || showSection("results_header")) ? (

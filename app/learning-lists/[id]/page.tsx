@@ -8,6 +8,9 @@ import TuneCard from "@/components/TuneCard"
 import {
   deleteList,
   removeTuneFromList,
+  revokeLearningListPrivateShare,
+  searchLearningListShareRecipients,
+  shareLearningListPrivately,
   updateList,
 } from "@/lib/actions/lists"
 import { markAsKnown } from "@/lib/actions/known-pieces"
@@ -25,6 +28,7 @@ type LearningListDetailPageProps = {
   searchParams?: Promise<{
     remove_tune?: string
     edit_list?: string
+    share_list?: string
   }>
 }
 
@@ -264,6 +268,7 @@ export default async function LearningListDetailPage({
   const resolvedSearchParams = await searchParams
   const removeTuneStatus = resolvedSearchParams?.remove_tune ?? ""
   const editListStatus = resolvedSearchParams?.edit_list ?? ""
+  const shareListStatus = resolvedSearchParams?.share_list ?? ""
 
   const {
     typedList,
@@ -272,8 +277,12 @@ export default async function LearningListDetailPage({
     activePieceIds,
     knownPieceIds,
     userPieceMetadata,
+    ownerProfile,
+    shareRecipients,
+    accessMode,
     redirectTo,
   } = await loadLearningListDetailData(id)
+  const isOwner = accessMode === "owner"
 
   const visibleItems = typedItems
     .map((item) => ({
@@ -322,6 +331,13 @@ export default async function LearningListDetailPage({
                   </span>
                 </>
               )}
+
+              {accessMode === "shared_viewer" ? (
+                <>
+                  <span aria-hidden="true">•</span>
+                  <span>Shared by {ownerProfile.label}</span>
+                </>
+              ) : null}
             </div>
 
             {typedList.description ? (
@@ -335,18 +351,24 @@ export default async function LearningListDetailPage({
             )}
           </div>
 
-          <EditListModal
-            listId={typedList.id}
-            name={typedList.name}
-            description={typedList.description}
-            visibility={typedList.visibility}
-            redirectTo={redirectTo}
-            tunes={tunes}
-            updateList={updateList}
-            removeTuneFromList={removeTuneFromList}
-            deleteList={deleteList}
-            triggerLabel="Manage List"
-          />
+          {isOwner ? (
+            <EditListModal
+              listId={typedList.id}
+              name={typedList.name}
+              description={typedList.description}
+              visibility={typedList.visibility}
+              redirectTo={redirectTo}
+              tunes={tunes}
+              updateList={updateList}
+              removeTuneFromList={removeTuneFromList}
+              deleteList={deleteList}
+              shareLearningListPrivately={shareLearningListPrivately}
+              searchLearningListShareRecipients={searchLearningListShareRecipients}
+              revokeLearningListPrivateShare={revokeLearningListPrivateShare}
+              shareRecipients={shareRecipients}
+              triggerLabel="Manage List"
+            />
+          ) : null}
         </div>
       </header>
 
@@ -406,6 +428,53 @@ export default async function LearningListDetailPage({
 
       {editListStatus === "error" && (
         <StatusMessage tone="error">Couldn’t update list.</StatusMessage>
+      )}
+
+      {shareListStatus === "success" && (
+        <StatusMessage tone="success">Private access shared.</StatusMessage>
+      )}
+
+      {shareListStatus === "removed" && (
+        <StatusMessage tone="success">Private access removed.</StatusMessage>
+      )}
+
+      {(shareListStatus === "duplicate" ||
+        shareListStatus === "already_shared") && (
+        <StatusMessage tone="warning">
+          That person already has access.
+        </StatusMessage>
+      )}
+
+      {(shareListStatus === "self" || shareListStatus === "self_share") && (
+        <StatusMessage tone="warning">
+          You already own this list, so you cannot share it with yourself.
+        </StatusMessage>
+      )}
+
+      {(shareListStatus === "unknown_user" ||
+        shareListStatus === "invalid_recipient" ||
+        shareListStatus === "recipient_not_available") && (
+        <StatusMessage tone="warning">
+          No matching user could be shared with.
+        </StatusMessage>
+      )}
+
+      {shareListStatus === "not_owner" && (
+        <StatusMessage tone="error">
+          You can only share lists you own.
+        </StatusMessage>
+      )}
+
+      {["missing_list", "missing_recipient", "missing_share"].includes(
+        shareListStatus
+      ) && (
+        <StatusMessage tone="warning">
+          Check the sharing details and try again.
+        </StatusMessage>
+      )}
+
+      {(shareListStatus === "error" || shareListStatus === "insert_error") && (
+        <StatusMessage tone="error">Couldn’t update private access.</StatusMessage>
       )}
 
       <section className="mt-8 md:hidden">

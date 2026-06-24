@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { getActivitySummaryText } from "@/lib/friend-activity"
 
 export type InboxNotificationType =
   | "activity_reaction"
@@ -8,6 +9,7 @@ export type InboxNotificationType =
   | "composer_attribution_added"
   | "composer_tune_started_practice"
   | "direct_message"
+  | "learning_list_shared"
   | "piece_edit_request_approved"
   | "piece_edit_request_rejected"
   | "setlist_invite"
@@ -74,6 +76,14 @@ type DirectMessageRow = {
   read_at: string | null
 }
 
+type ActivityEventRow = {
+  id: number
+  event_type: string
+  piece_id: number | null
+  learning_list_id: number | null
+  metadata: Record<string, unknown> | null
+}
+
 export type InboxItem = {
   id: number
   notification_type: InboxNotificationType
@@ -105,6 +115,10 @@ export type InboxItem = {
   direct_message: {
     id: number
     body: string
+  } | null
+  activity_context: {
+    summary: string
+    href: string | null
   } | null
 }
 
@@ -210,6 +224,50 @@ export async function loadInboxData() {
     )
   )
 
+  const activityEventIds = Array.from(
+    new Set(
+      typedNotifications
+        .map((notification) => notification.activity_event_id)
+        .filter((value): value is number => value !== null)
+    )
+  )
+
+  let activityEventsById = new Map<number, ActivityEventRow>()
+
+  if (activityEventIds.length > 0) {
+    const { data: activityEvents, error: activityEventsError } = await supabase
+      .from("user_activity_events")
+      .select("id, event_type, piece_id, learning_list_id, metadata")
+      .in("id", activityEventIds)
+
+    if (activityEventsError) {
+      throw new Error(activityEventsError.message)
+    }
+
+    activityEventsById = new Map(
+      ((activityEvents ?? []) as ActivityEventRow[]).map((event) => [
+        event.id,
+        event,
+      ])
+    )
+  }
+
+  const activityPieceIds = Array.from(
+    new Set(
+      Array.from(activityEventsById.values())
+        .map((event) => event.piece_id)
+        .filter((value): value is number => value !== null)
+    )
+  )
+
+  const activityLearningListIds = Array.from(
+    new Set(
+      Array.from(activityEventsById.values())
+        .map((event) => event.learning_list_id)
+        .filter((value): value is number => value !== null)
+    )
+  )
+
   const learningListIds = Array.from(
     new Set(
       typedNotifications
@@ -254,6 +312,11 @@ export async function loadInboxData() {
   let setlistsById = new Map<number, SetlistRow>()
   let badgesById = new Map<number, BadgeRow>()
 
+  const allPieceIds = Array.from(new Set([...pieceIds, ...activityPieceIds]))
+  const allLearningListIds = Array.from(
+    new Set([...learningListIds, ...activityLearningListIds])
+  )
+
   ;[
     profilesById,
     piecesById,
@@ -277,11 +340,11 @@ export async function loadInboxData() {
           })
       : Promise.resolve(new Map<string, ProfileRow>()),
 
-    pieceIds.length > 0
+    allPieceIds.length > 0
       ? supabase
           .from("pieces")
           .select("id, title")
-          .in("id", pieceIds)
+          .in("id", allPieceIds)
           .then(({ data, error }) => {
             if (error) throw new Error(error.message)
             return new Map(
@@ -290,11 +353,11 @@ export async function loadInboxData() {
           })
       : Promise.resolve(new Map<number, PieceRow>()),
 
-    learningListIds.length > 0
+    allLearningListIds.length > 0
       ? supabase
           .from("learning_lists")
           .select("id, name")
-          .in("id", learningListIds)
+          .in("id", allLearningListIds)
           .then(({ data, error }) => {
             if (error) throw new Error(error.message)
             return new Map(
@@ -360,6 +423,35 @@ export async function loadInboxData() {
           ? badgesById.get(notification.badge_id) ?? null
           : null
 
+      const activityEvent =
+        notification.activity_event_id != null
+          ? activityEventsById.get(notification.activity_event_id) ?? null
+          : null
+      const activityPiece =
+        activityEvent?.piece_id != null
+          ? piecesById.get(activityEvent.piece_id) ?? null
+          : null
+      const activityLearningList =
+        activityEvent?.learning_list_id != null
+          ? learningListsById.get(activityEvent.learning_list_id) ?? null
+          : null
+      const activityHref = activityPiece
+        ? `/library/${activityPiece.id}`
+        : activityLearningList
+          ? `/public-lists/${activityLearningList.id}`
+          : null
+      const activityContext = activityEvent
+        ? {
+            summary: getActivitySummaryText({
+              event_type: activityEvent.event_type,
+              metadata: activityEvent.metadata,
+              piece: activityPiece,
+              learning_list: activityLearningList,
+            }),
+            href: activityHref,
+          }
+        : null
+
       return {
         id: notification.id,
         notification_type: notification.notification_type,
@@ -399,6 +491,7 @@ export async function loadInboxData() {
             }
           : null,
         direct_message: null,
+        activity_context: activityContext,
       }
     }
   )

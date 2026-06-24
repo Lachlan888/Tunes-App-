@@ -168,6 +168,69 @@ export function getActivityContextHref(item: FriendActivityItem) {
   return "/friends"
 }
 
+export function getActivitySummaryText(item: {
+  event_type: ActivityEventType | string
+  metadata: Record<string, unknown> | null
+  piece: { title: string } | null
+  learning_list: { name: string } | null
+  badge?: { name: string; category?: BadgeCategory } | null
+}) {
+  if (item.event_type === "started_practice" && item.piece) {
+    return `Started practising ${item.piece.title}`
+  }
+
+  if (item.event_type === "tune_reviewed" && item.piece) {
+    return `Practised ${item.piece.title}`
+  }
+
+  if (item.event_type === "marked_known" && item.piece) {
+    return `Marked ${item.piece.title} as known`
+  }
+
+  if (item.event_type === "comment_added" && item.piece) {
+    return `Commented on ${item.piece.title}`
+  }
+
+  if (item.event_type === "piece_created" && item.piece) {
+    return `Added ${item.piece.title}`
+  }
+
+  if (item.event_type === "piece_details_added" && item.piece) {
+    return `Added ${renderAddedFields(item.metadata)} to ${item.piece.title}`
+  }
+
+  if (item.event_type === "piece_lore_added" && item.piece) {
+    return `Added lore to ${item.piece.title}`
+  }
+
+  if (item.event_type === "piece_media_link_added" && item.piece) {
+    return `Added reference media to ${item.piece.title}`
+  }
+
+  if (item.event_type === "piece_sheet_music_link_added" && item.piece) {
+    return `Added sheet music to ${item.piece.title}`
+  }
+
+  if (item.event_type === "public_list_created" && item.learning_list) {
+    return `Published the list ${item.learning_list.name}`
+  }
+
+  if (item.event_type === "public_list_updated" && item.learning_list) {
+    return `Updated the list ${item.learning_list.name}`
+  }
+
+  if (item.event_type === "badge_created" && item.badge) {
+    const category = item.badge.category ? titleCase(item.badge.category) : ""
+    return `Created ${category ? `${category} ` : ""}badge ${item.badge.name}`
+  }
+
+  if (item.event_type === "badge_awarded" && item.badge) {
+    return `Received the badge ${item.badge.name}`
+  }
+
+  return "Activity details unavailable"
+}
+
 function renderProfileLink(profile: FriendActivityProfile | null) {
   const profileName =
     profile?.display_name || profile?.username || "Unnamed player"

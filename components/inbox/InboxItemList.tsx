@@ -88,6 +88,16 @@ function notificationTitle(item: InboxItem) {
     )
   }
 
+  if (item.notification_type === "learning_list_shared") {
+    return (
+      <>
+        {actorLink(item)} shared
+        {item.learning_list ? <> "{item.learning_list.name}"</> : <> a list</>}{" "}
+        with you.
+      </>
+    )
+  }
+
   if (item.notification_type === "piece_edit_request_approved") {
     return (
       <>
@@ -152,6 +162,10 @@ function notificationTitle(item: InboxItem) {
 }
 
 function contextHref(item: InboxItem) {
+  if (item.notification_type === "activity_reaction" && item.activity_context?.href) {
+    return item.activity_context.href
+  }
+
   if (item.badge) {
     return `/badges/${item.badge.slug}`
   }
@@ -165,6 +179,10 @@ function contextHref(item: InboxItem) {
   }
 
   if (item.learning_list) {
+    if (item.notification_type === "learning_list_shared") {
+      return `/learning-lists/${item.learning_list.id}`
+    }
+
     return `/public-lists/${item.learning_list.id}`
   }
 
@@ -266,6 +284,29 @@ export default function InboxItemList({ items }: InboxItemListProps) {
                   <p className="mt-3 whitespace-pre-wrap rounded-2xl border border-border bg-muted/70 p-3 text-sm leading-6 text-foreground">
                     {body}
                   </p>
+                ) : null}
+
+                {item.notification_type === "activity_reaction" ? (
+                  item.activity_context ? (
+                    item.activity_context.href ? (
+                      <Link
+                        href={item.activity_context.href}
+                        onClick={stopCardNavigation}
+                        onKeyDown={stopCardNavigation}
+                        className="relative z-20 mt-2 block text-sm leading-6 text-muted-foreground underline underline-offset-4 hover:text-primary"
+                      >
+                        {item.activity_context.summary}
+                      </Link>
+                    ) : (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.activity_context.summary}
+                      </p>
+                    )
+                  ) : (
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      Activity details unavailable
+                    </p>
+                  )
                 ) : null}
 
                 <p className="mt-3 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">

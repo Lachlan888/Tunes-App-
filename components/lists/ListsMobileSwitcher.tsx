@@ -5,6 +5,7 @@ import { useState } from "react"
 import EmptyState from "@/components/EmptyState"
 import BookmarkedSharedListsModal from "@/components/lists/BookmarkedSharedListsModal"
 import CreateListModal from "@/components/lists/CreateListModal"
+import DirectSharedListsSection from "@/components/lists/DirectSharedListsSection"
 import LearningQueueModal from "@/components/lists/LearningQueueModal"
 import ListOverviewCard from "@/components/lists/ListOverviewCard"
 import ListSearchFilters from "@/components/lists/ListSearchFilters"
@@ -14,6 +15,7 @@ import UnlistedPracticeTunesModal from "@/components/lists/UnlistedPracticeTunes
 import { joinClasses } from "@/components/ui/buttonStyles"
 import type {
   BookmarkedSharedListSummary,
+  DirectSharedListSummary,
   LearningQueueTune,
 } from "@/lib/loaders/lists"
 import type {
@@ -31,6 +33,7 @@ type ListsMobileSwitcherProps = {
   myTunes: MyTuneRow[]
   learningQueueTunes: LearningQueueTune[]
   bookmarkedSharedLists: BookmarkedSharedListSummary[]
+  directSharedLists: DirectSharedListSummary[]
   unlistedPracticeTunes: UserPieceWithPiece[]
   unlistedKnownTunes: UserKnownPieceWithPiece[]
   learningLists: LearningList[]
@@ -189,6 +192,7 @@ function OverviewTab({
   myTunes,
   learningQueueTunes,
   bookmarkedSharedLists,
+  directSharedLists,
   learningLists,
   unbookmarkPublicList,
   showCreateList,
@@ -201,6 +205,7 @@ function OverviewTab({
   | "myTunes"
   | "learningQueueTunes"
   | "bookmarkedSharedLists"
+  | "directSharedLists"
   | "learningLists"
   | "unbookmarkPublicList"
   | "showCreateList"
@@ -250,6 +255,11 @@ function OverviewTab({
               triggerClassName={compactActionClassName}
             />
           </div>
+
+          <DirectSharedListsSection
+            directSharedLists={directSharedLists}
+            className="mt-5"
+          />
         </section>
       ) : null}
     </div>

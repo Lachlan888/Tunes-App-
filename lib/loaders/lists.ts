@@ -51,6 +51,11 @@ type LearningListBookmarkRow = {
     | null
 }
 
+type DirectSharedListRow = {
+  created_at: string | null
+  learning_lists: LearningListBookmarkRow["learning_lists"]
+}
+
 type BookmarkOwnerProfileRow = {
   id: string
   username: string | null
@@ -66,6 +71,14 @@ function isMissingBookmarksTableError(error: { code?: string; message?: string }
     error.code === "PGRST205" ||
     error.code === "42P01" ||
     Boolean(error.message?.includes("learning_list_bookmarks"))
+  )
+}
+
+function isMissingSharesTableError(error: { code?: string; message?: string }) {
+  return (
+    error.code === "PGRST205" ||
+    error.code === "42P01" ||
+    Boolean(error.message?.includes("learning_list_shares"))
   )
 }
 
@@ -89,6 +102,18 @@ export type BookmarkedSharedListSummary = {
   ownerLabel: string
   tuneCount: number
   bookmarkedAt: string | null
+}
+
+export type DirectSharedListSummary = {
+  id: number
+  name: string
+  description: string | null
+  ownerUserId: string
+  ownerUsername: string | null
+  ownerDisplayName: string | null
+  ownerLabel: string
+  tuneCount: number
+  sharedAt: string | null
 }
 
 function extractPieceTitle(
@@ -149,6 +174,10 @@ function extractBookmarkedList(
   return list
 }
 
+function extractDirectSharedList(list: DirectSharedListRow["learning_lists"]) {
+  return extractBookmarkedList(list)
+}
+
 function formatBookmarkOwnerLabel(profile: {
   username: string | null
   displayName: string | null
@@ -192,6 +221,7 @@ export async function loadListsData() {
       error: learningListItemsWithPiecesError,
     },
     { data: bookmarkedSharedListRows, error: bookmarkedSharedListRowsError },
+    { data: directSharedListRows, error: directSharedListRowsError },
   ] = await Promise.all([
     supabase
       .from("learning_lists")
@@ -276,6 +306,23 @@ export async function loadListsData() {
       .eq("user_id", user.id)
       .eq("learning_lists.visibility", "public")
       .order("created_at", { ascending: false }),
+
+    supabase
+      .from("learning_list_shares")
+      .select(
+        `
+        created_at,
+        learning_lists!inner(
+          id,
+          user_id,
+          name,
+          description,
+          visibility
+        )
+      `
+      )
+      .eq("shared_with_user_id", user.id)
+      .order("created_at", { ascending: false }),
   ])
 
   if (learningListsError) {
@@ -301,6 +348,13 @@ export async function loadListsData() {
     throw new Error(bookmarkedSharedListRowsError.message)
   }
 
+  if (
+    directSharedListRowsError &&
+    !isMissingSharesTableError(directSharedListRowsError)
+  ) {
+    throw new Error(directSharedListRowsError.message)
+  }
+
   const typedLearningLists = (learningLists ?? []) as LearningList[]
   const typedUserPieces = (userPieces ?? []) as UserPieceWithPiece[]
   const typedUserKnownPieces = (userKnownPieces ??
@@ -310,6 +364,9 @@ export async function loadListsData() {
   const typedBookmarkedSharedListRows = bookmarkedSharedListRowsError
     ? []
     : ((bookmarkedSharedListRows ?? []) as LearningListBookmarkRow[])
+  const typedDirectSharedListRows = directSharedListRowsError
+    ? []
+    : ((directSharedListRows ?? []) as DirectSharedListRow[])
 
   const listedPieceIds = new Set(
     typedLearningListItemsWithPieces.map((item) => item.piece_id)
@@ -440,8 +497,26 @@ export async function loadListsData() {
     )
 
   const bookmarkedListIds = bookmarkedListRows.map((entry) => entry.list.id)
+  const directSharedListRowsWithLists = typedDirectSharedListRows
+    .map((share) => ({
+      share,
+      list: extractDirectSharedList(share.learning_lists),
+    }))
+    .filter(
+      (entry): entry is {
+        share: DirectSharedListRow
+        list: NonNullable<ReturnType<typeof extractDirectSharedList>>
+      } => entry.list !== null
+    )
+
+  const directSharedListIds = directSharedListRowsWithLists.map(
+    (entry) => entry.list.id
+  )
   const bookmarkedOwnerIds = [
     ...new Set(bookmarkedListRows.map((entry) => entry.list.user_id)),
+  ]
+  const directSharedOwnerIds = [
+    ...new Set(directSharedListRowsWithLists.map((entry) => entry.list.user_id)),
   ]
 
   let bookmarkProfilesById: Record<
@@ -450,12 +525,16 @@ export async function loadListsData() {
   > = {}
   let bookmarkCountsByListId: Record<number, number> = {}
 
-  if (bookmarkedOwnerIds.length > 0) {
+  const sharedOwnerIds = Array.from(
+    new Set([...bookmarkedOwnerIds, ...directSharedOwnerIds])
+  )
+
+  if (sharedOwnerIds.length > 0) {
     const { data: bookmarkProfiles, error: bookmarkProfilesError } =
       await supabase
         .from("profiles")
         .select("id, username, display_name")
-        .in("id", bookmarkedOwnerIds)
+        .in("id", sharedOwnerIds)
 
     if (bookmarkProfilesError) {
       throw new Error(bookmarkProfilesError.message)
@@ -494,6 +573,27 @@ export async function loadListsData() {
     }, {} as Record<number, number>)
   }
 
+  let directSharedCountsByListId: Record<number, number> = {}
+
+  if (directSharedListIds.length > 0) {
+    const { data: directSharedCountRows, error: directSharedCountRowsError } =
+      await supabase
+        .from("learning_list_items")
+        .select("learning_list_id")
+        .in("learning_list_id", directSharedListIds)
+
+    if (directSharedCountRowsError) {
+      throw new Error(directSharedCountRowsError.message)
+    }
+
+    directSharedCountsByListId = (
+      (directSharedCountRows ?? []) as BookmarkCountRow[]
+    ).reduce((acc, row) => {
+      acc[row.learning_list_id] = (acc[row.learning_list_id] ?? 0) + 1
+      return acc
+    }, {} as Record<number, number>)
+  }
+
   const bookmarkedSharedLists: BookmarkedSharedListSummary[] =
     bookmarkedListRows.map(({ bookmark, list }) => {
       const ownerProfile = bookmarkProfilesById[list.user_id] ?? {
@@ -511,6 +611,26 @@ export async function loadListsData() {
         ownerLabel: formatBookmarkOwnerLabel(ownerProfile),
         tuneCount: bookmarkCountsByListId[list.id] ?? 0,
         bookmarkedAt: bookmark.created_at,
+      }
+    })
+
+  const directSharedLists: DirectSharedListSummary[] =
+    directSharedListRowsWithLists.map(({ share, list }) => {
+      const ownerProfile = bookmarkProfilesById[list.user_id] ?? {
+        username: null,
+        displayName: null,
+      }
+
+      return {
+        id: list.id,
+        name: list.name,
+        description: list.description,
+        ownerUserId: list.user_id,
+        ownerUsername: ownerProfile.username,
+        ownerDisplayName: ownerProfile.displayName,
+        ownerLabel: formatBookmarkOwnerLabel(ownerProfile),
+        tuneCount: directSharedCountsByListId[list.id] ?? 0,
+        sharedAt: share.created_at,
       }
     })
 
@@ -544,5 +664,6 @@ export async function loadListsData() {
     unlistedPracticeTunes,
     unlistedKnownTunes,
     bookmarkedSharedLists,
+    directSharedLists,
   }
 }

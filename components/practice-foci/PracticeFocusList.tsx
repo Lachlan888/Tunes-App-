@@ -281,7 +281,7 @@ function FocusPickerModal({
               </h2>
 
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Select one focus to display on this page.
+                Choose which focus to display on this page.
               </p>
             </div>
 
@@ -427,7 +427,7 @@ export default function PracticeFocusList({
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Choose one focus to display here.
+              Choose which focus to display here.
             </p>
           </div>
 

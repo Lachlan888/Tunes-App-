@@ -18,6 +18,33 @@ type ListAddStatus =
   | "missing_list"
   | "error"
 
+export type ListShareRecipientSearchResult = {
+  id: string
+  username: string | null
+  displayName: string | null
+  isFriend: boolean
+}
+
+export type ListShareRecipientSearchResponse = {
+  status: "idle" | "success" | "error"
+  group: "friends" | "other" | null
+  results: ListShareRecipientSearchResult[]
+  message: string | null
+}
+
+type ProfileIdentityRow = {
+  id: string
+  username: string | null
+  display_name: string | null
+  show_compare_discoverability?: boolean | null
+}
+
+type ConnectionIdentityRow = {
+  requester_id: string
+  addressee_id: string
+  status: string
+}
+
 function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")
     ? `${url}&${key}=${encodeURIComponent(value)}`
@@ -57,6 +84,66 @@ function getSelectedLearningListIds(formData: FormData) {
         .map((value) => Number(value))
         .filter((value) => Number.isInteger(value) && value > 0)
     )
+  )
+}
+
+function getSafeRedirectTo(formData: FormData, fallback = "/learning-lists") {
+  const redirectTo = String(formData.get("redirect_to") ?? fallback)
+
+  return redirectTo.startsWith("/") ? redirectTo : fallback
+}
+
+function getTrimmedSearchQuery(query: string) {
+  return query.trim().replace(/^@+/, "").replace(/\s+/g, " ")
+}
+
+function buildProfileSearchFilter(query: string) {
+  const escapedQuery = query
+    .replace(/[(),]/g, " ")
+    .replace(/[%_]/g, "\\$&")
+    .trim()
+  return `username.ilike.%${escapedQuery}%,display_name.ilike.%${escapedQuery}%`
+}
+
+function mapProfileSearchResult(
+  profile: ProfileIdentityRow,
+  friendIds: Set<string>
+): ListShareRecipientSearchResult {
+  return {
+    id: profile.id,
+    username: profile.username,
+    displayName: profile.display_name,
+    isFriend: friendIds.has(profile.id),
+  }
+}
+
+function sortProfileIdentities(
+  a: ListShareRecipientSearchResult,
+  b: ListShareRecipientSearchResult
+) {
+  const aLabel = a.displayName ?? a.username ?? ""
+  const bLabel = b.displayName ?? b.username ?? ""
+  return aLabel.localeCompare(bLabel, undefined, { sensitivity: "base" })
+}
+
+async function loadAcceptedFriendIds(
+  supabase: SupabaseServerClient,
+  userId: string
+) {
+  const { data, error } = await supabase
+    .from("connections")
+    .select("requester_id, addressee_id, status")
+    .eq("status", "accepted")
+    .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return ((data ?? []) as ConnectionIdentityRow[]).map((connection) =>
+    connection.requester_id === userId
+      ? connection.addressee_id
+      : connection.requester_id
   )
 }
 
@@ -793,6 +880,363 @@ export async function deleteList(formData: FormData) {
   }
 
   redirect(appendQueryParam(redirectTo, "edit_list", "deleted"))
+}
+
+export async function searchLearningListShareRecipients(input: {
+  learningListId: number
+  query: string
+  limit?: number
+}): Promise<ListShareRecipientSearchResponse> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return {
+      status: "error",
+      group: null,
+      results: [],
+      message: "Please log in again.",
+    }
+  }
+
+  const listId = Number(input.learningListId)
+  const query = getTrimmedSearchQuery(input.query)
+  const limit = Math.min(Math.max(input.limit ?? 8, 1), 10)
+
+  if (!Number.isInteger(listId) || listId <= 0 || query.length < 2) {
+    return {
+      status: "idle",
+      group: null,
+      results: [],
+      message: null,
+    }
+  }
+
+  const { data: ownedList, error: ownedListError } = await supabase
+    .from("learning_lists")
+    .select("id")
+    .eq("id", listId)
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (ownedListError) {
+    return {
+      status: "error",
+      group: null,
+      results: [],
+      message: "Couldn’t search users. Try again.",
+    }
+  }
+
+  if (!ownedList) {
+    return {
+      status: "error",
+      group: null,
+      results: [],
+      message: "You can only share lists you own.",
+    }
+  }
+
+  try {
+    const [friendIds, { data: shareRows, error: sharesError }] =
+      await Promise.all([
+        loadAcceptedFriendIds(supabase, user.id),
+        supabase
+          .from("learning_list_shares")
+          .select("shared_with_user_id")
+          .eq("learning_list_id", listId),
+      ])
+
+    if (sharesError) {
+      throw new Error(sharesError.message)
+    }
+
+    const alreadySharedIds = new Set(
+      ((shareRows ?? []) as Array<{ shared_with_user_id: string }>).map(
+        (share) => share.shared_with_user_id
+      )
+    )
+    const excludedIds = new Set<string>([user.id, ...alreadySharedIds])
+    const uniqueFriendIds = Array.from(new Set(friendIds)).filter(
+      (friendId) => !excludedIds.has(friendId)
+    )
+    const friendIdSet = new Set(uniqueFriendIds)
+    const searchFilter = buildProfileSearchFilter(query)
+
+    if (uniqueFriendIds.length > 0) {
+      const { data: friendProfiles, error: friendProfilesError } =
+        await supabase
+          .from("profiles")
+          .select("id, username, display_name")
+          .in("id", uniqueFriendIds)
+          .or(searchFilter)
+          .limit(limit)
+
+      if (friendProfilesError) {
+        throw new Error(friendProfilesError.message)
+      }
+
+      const friendResults = ((friendProfiles ?? []) as ProfileIdentityRow[])
+        .filter((profile) => !excludedIds.has(profile.id))
+        .map((profile) => mapProfileSearchResult(profile, friendIdSet))
+        .sort(sortProfileIdentities)
+        .slice(0, limit)
+
+      if (friendResults.length > 0) {
+        return {
+          status: "success",
+          group: "friends",
+          results: friendResults,
+          message: null,
+        }
+      }
+    }
+
+    const { data: generalProfiles, error: generalProfilesError } =
+      await supabase
+        .from("profiles")
+        .select("id, username, display_name, show_compare_discoverability")
+        .eq("show_compare_discoverability", true)
+        .or(searchFilter)
+        .limit(limit * 2)
+
+    if (generalProfilesError) {
+      throw new Error(generalProfilesError.message)
+    }
+
+    const generalResults = ((generalProfiles ?? []) as ProfileIdentityRow[])
+      .filter((profile) => !excludedIds.has(profile.id))
+      .map((profile) => mapProfileSearchResult(profile, friendIdSet))
+      .sort(sortProfileIdentities)
+      .slice(0, limit)
+
+    return {
+      status: "success",
+      group: generalResults.length > 0 ? "other" : null,
+      results: generalResults,
+      message: null,
+    }
+  } catch {
+    return {
+      status: "error",
+      group: null,
+      results: [],
+      message: "Couldn’t search users. Try again.",
+    }
+  }
+}
+
+export async function shareLearningListPrivately(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const ownerUserId = user.id
+  const listId = Number(formData.get("learning_list_id"))
+  const recipientUserId = String(formData.get("recipient_user_id") ?? "").trim()
+  const redirectTo = getSafeRedirectTo(formData)
+
+  function logShareFailure(step: string, error: unknown) {
+    console.error("Private list share failed", {
+      listId,
+      ownerUserId,
+      recipientUserId,
+      step,
+      error,
+    })
+  }
+
+  if (!Number.isInteger(listId) || listId <= 0) {
+    redirect(appendQueryParam(redirectTo, "share_list", "missing_list"))
+  }
+
+  if (!recipientUserId) {
+    redirect(appendQueryParam(redirectTo, "share_list", "missing_recipient"))
+  }
+
+  const { data: ownedList, error: ownedListError } = await supabase
+    .from("learning_lists")
+    .select("id, name")
+    .eq("id", listId)
+    .eq("user_id", ownerUserId)
+    .maybeSingle()
+
+  if (ownedListError) {
+    logShareFailure("load_owned_list", ownedListError)
+    redirect(appendQueryParam(redirectTo, "share_list", "not_owner"))
+  }
+
+  if (!ownedList) {
+    redirect(appendQueryParam(redirectTo, "share_list", "not_owner"))
+  }
+
+  const { data: recipient, error: recipientError } = await supabase
+    .from("profiles")
+    .select("id, username, display_name, show_compare_discoverability")
+    .eq("id", recipientUserId)
+    .maybeSingle()
+
+  if (recipientError) {
+    logShareFailure("load_recipient", recipientError)
+    redirect(appendQueryParam(redirectTo, "share_list", "invalid_recipient"))
+  }
+
+  if (!recipient) {
+    redirect(appendQueryParam(redirectTo, "share_list", "invalid_recipient"))
+  }
+
+  if (recipient.id === user.id) {
+    redirect(appendQueryParam(redirectTo, "share_list", "self_share"))
+  }
+
+  const { data: acceptedConnection, error: acceptedConnectionError } =
+    await supabase
+      .from("connections")
+      .select("id")
+      .eq("status", "accepted")
+      .or(
+        `and(requester_id.eq.${ownerUserId},addressee_id.eq.${recipient.id}),and(requester_id.eq.${recipient.id},addressee_id.eq.${ownerUserId})`
+      )
+      .maybeSingle()
+
+  if (acceptedConnectionError) {
+    logShareFailure("load_friendship", acceptedConnectionError)
+    redirect(appendQueryParam(redirectTo, "share_list", "recipient_not_available"))
+  }
+
+  const isFriend = Boolean(acceptedConnection)
+  const isDiscoverable =
+    (recipient as { show_compare_discoverability?: boolean | null })
+      .show_compare_discoverability === true
+
+  if (!isFriend && !isDiscoverable) {
+    redirect(appendQueryParam(redirectTo, "share_list", "recipient_not_available"))
+  }
+
+  const { data: existingShare, error: existingShareError } = await supabase
+    .from("learning_list_shares")
+    .select("id")
+    .eq("learning_list_id", listId)
+    .eq("shared_with_user_id", recipient.id)
+    .maybeSingle()
+
+  if (existingShareError) {
+    logShareFailure("load_existing_share", existingShareError)
+    redirect(appendQueryParam(redirectTo, "share_list", "insert_error"))
+  }
+
+  if (existingShare) {
+    redirect(appendQueryParam(redirectTo, "share_list", "already_shared"))
+  }
+
+  const { data: insertedShare, error: insertError } = await supabase
+    .from("learning_list_shares")
+    .insert({
+      learning_list_id: listId,
+      shared_with_user_id: recipient.id,
+      permission: "view",
+    })
+    .select("id")
+    .single()
+
+  if (insertError) {
+    logShareFailure("insert_share", insertError)
+
+    if (insertError.code === "23505") {
+      redirect(appendQueryParam(redirectTo, "share_list", "already_shared"))
+    }
+
+    redirect(appendQueryParam(redirectTo, "share_list", "insert_error"))
+  }
+
+  if (!insertedShare) {
+    logShareFailure("insert_share_empty_result", null)
+    redirect(appendQueryParam(redirectTo, "share_list", "insert_error"))
+  }
+
+  const { error: notificationError } = await supabase
+    .from("user_notifications")
+    .insert({
+      recipient_user_id: recipient.id,
+      actor_user_id: user.id,
+      notification_type: "learning_list_shared",
+      learning_list_id: listId,
+      body_preview: `shared "${ownedList.name}" with you.`,
+    })
+
+  if (notificationError) {
+    console.error("Private list share notification failed", {
+      listId,
+      ownerUserId,
+      recipientUserId: recipient.id,
+      shareId: insertedShare.id,
+      error: notificationError,
+    })
+  } else {
+    revalidatePath("/inbox")
+  }
+
+  revalidatePath("/learning-lists")
+  revalidatePath(`/learning-lists/${listId}`)
+  redirect(appendQueryParam(redirectTo, "share_list", "success"))
+}
+
+export async function revokeLearningListPrivateShare(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const shareId = Number(formData.get("share_id"))
+  const listId = Number(formData.get("learning_list_id"))
+  const redirectTo = getSafeRedirectTo(formData)
+
+  if (!Number.isInteger(shareId) || shareId <= 0) {
+    redirect(appendQueryParam(redirectTo, "share_list", "missing_share"))
+  }
+
+  if (!Number.isInteger(listId) || listId <= 0) {
+    redirect(appendQueryParam(redirectTo, "share_list", "missing_list"))
+  }
+
+  const { data: ownedList, error: ownedListError } = await supabase
+    .from("learning_lists")
+    .select("id")
+    .eq("id", listId)
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (ownedListError || !ownedList) {
+    redirect(appendQueryParam(redirectTo, "share_list", "not_found"))
+  }
+
+  const { error: deleteError } = await supabase
+    .from("learning_list_shares")
+    .delete()
+    .eq("id", shareId)
+    .eq("learning_list_id", listId)
+
+  if (deleteError) {
+    redirect(appendQueryParam(redirectTo, "share_list", "error"))
+  }
+
+  revalidatePath("/learning-lists")
+  revalidatePath(`/learning-lists/${listId}`)
+  redirect(appendQueryParam(redirectTo, "share_list", "removed"))
 }
 
 export async function toggleLearningListVisibility(formData: FormData) {
