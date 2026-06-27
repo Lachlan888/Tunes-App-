@@ -4,6 +4,7 @@ import type { ReactNode } from "react"
 import { useEffect, useId, useState } from "react"
 import { createPortal } from "react-dom"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock"
 
 type ResponsiveModalMode = "sheet" | "full-screen"
 type ResponsiveModalTone = "default" | "destructive"
@@ -61,6 +62,8 @@ export default function ResponsiveModal({
     onClose()
   }
 
+  useBodyScrollLock(isOpen)
+
   useEffect(() => {
     setIsMounted(true)
   }, [])
@@ -80,17 +83,6 @@ export default function ResponsiveModal({
       document.removeEventListener("keydown", handleEscape)
     }
   }, [isOpen, closeDisabled, closeOnEscape, onClose])
-
-  useEffect(() => {
-    if (!isOpen) return
-
-    const originalOverflow = document.body.style.overflow
-    document.body.style.overflow = "hidden"
-
-    return () => {
-      document.body.style.overflow = originalOverflow
-    }
-  }, [isOpen])
 
   if (!isMounted || !isOpen) return null
 
