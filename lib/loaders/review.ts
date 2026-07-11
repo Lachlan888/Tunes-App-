@@ -9,13 +9,12 @@ import {
   buildDueTodayPieces,
   buildReviewQueueItems,
   getReviewPieceIds,
-  loadPreferredReferencesByPieceId,
-  loadReviewMediaLoopsByPieceId,
   loadReviewPieceRows,
 } from "@/lib/loaders/review/queue"
 import { getToday } from "@/lib/review"
 import { reconcileStreaksForUser } from "@/lib/streaks"
 import { createClient } from "@/lib/supabase/server"
+import { loadTuneMediaBundles } from "@/lib/tune-media"
 import type { StreakSummary } from "@/lib/types"
 
 export type {
@@ -70,14 +69,24 @@ export async function loadReviewPageData() {
     recentNotesByPieceId,
     activeFociByPieceId,
     activeFocusOptions,
-    savedMediaLoopsByPieceId,
-    preferredReferencesByPieceId,
+    mediaBundlesByPieceId,
   ] = await Promise.all([
     loadRecentPracticeNotesByPieceId(supabase, user.id, pieceIds),
     loadActivePracticeFociByPieceId(supabase, user.id, pieceIds),
     loadActivePracticeFocusOptions(supabase, user.id),
-    loadReviewMediaLoopsByPieceId(supabase, user.id, pieceIds),
-    loadPreferredReferencesByPieceId(supabase, user.id, pieceIds),
+    loadTuneMediaBundles({
+      supabase,
+      pieces: rows
+        .map((row) => {
+          const piece = Array.isArray(row.pieces)
+            ? row.pieces[0] ?? null
+            : row.pieces
+
+          return piece
+        })
+        .filter((piece): piece is NonNullable<typeof piece> => Boolean(piece)),
+      userId: user.id,
+    }),
   ])
 
   const today = getToday()
@@ -88,9 +97,23 @@ export async function loadReviewPageData() {
     recentNotesByPieceId,
     activeFociByPieceId,
     activeFocusOptions,
-    savedMediaLoopsByPieceId,
-    mediaLinksByPieceId: new Map(),
-    preferredReferencesByPieceId,
+    savedMediaLoopsByPieceId: new Map(),
+    mediaLinksByPieceId: new Map(
+      Array.from(mediaBundlesByPieceId.entries()).map(([pieceId, bundle]) => [
+        pieceId,
+        bundle.additionalMedia.map((source) => ({
+          id: Number(source.id.replace("media-", "")) || 0,
+          piece_id: pieceId,
+          url: source.url,
+          label: source.label,
+          media_type: source.mediaType,
+          notes: source.notes ?? null,
+          created_by: source.createdBy ?? null,
+        })),
+      ])
+    ),
+    mediaBundlesByPieceId,
+    preferredReferencesByPieceId: new Map(),
   })
 
   const dueTodayPieces = buildDueTodayPieces(practiceItems)

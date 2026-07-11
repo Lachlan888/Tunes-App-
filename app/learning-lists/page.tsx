@@ -1,13 +1,16 @@
+import Link from "next/link"
 import EmptyState from "@/components/EmptyState"
 import CreateListModal from "@/components/lists/CreateListModal"
-import DirectSharedListsSection from "@/components/lists/DirectSharedListsSection"
 import ListOverviewCard from "@/components/lists/ListOverviewCard"
 import ListSearchFilters from "@/components/lists/ListSearchFilters"
-import ListsMobileSwitcher from "@/components/lists/ListsMobileSwitcher"
+import {
+  LearningQueueView,
+  SavedSharedView,
+  UnsortedView,
+} from "@/components/lists/ListsPageViews"
 import ListsResultsHeader from "@/components/lists/ListsResultsHeader"
 import ListsStatusMessages from "@/components/lists/ListsStatusMessages"
-import ListsSummaryGrid from "@/components/lists/ListsSummaryGrid"
-import PageOptionsModal from "@/components/page-options/PageOptionsModal"
+import { joinClasses } from "@/components/ui/buttonStyles"
 import {
   addToLearningList,
   deleteList,
@@ -17,8 +20,6 @@ import {
 } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadListsData } from "@/lib/loaders/lists"
-import { loadPagePreferences } from "@/lib/loaders/page-preferences"
-import { LISTS_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 import {
   getListFilterOptions,
   listMatchesFilters,
@@ -29,14 +30,56 @@ type LearningListsPageProps = {
     create_list?: string
     edit_list?: string
     bookmark_public?: string
-    page_options?: string | string[]
     q?: string | string[]
     size?: string | string[]
     style?: string | string[]
     source?: string | string[]
     visibility?: string | string[]
+    view?: string | string[]
   }>
 }
+
+type ListsView = "my-lists" | "learning-queue" | "unsorted" | "saved-shared"
+
+const LISTS_VIEWS: Array<{
+  id: ListsView
+  label: string
+  eyebrow: string
+  title: string
+  description: string
+}> = [
+  {
+    id: "my-lists",
+    label: "My Lists",
+    eyebrow: "Owned lists",
+    title: "My Lists",
+    description: "User-created and copied lists you can edit, organise, share, or delete.",
+  },
+  {
+    id: "learning-queue",
+    label: "Learning Queue",
+    eyebrow: "Saved for later",
+    title: "Learning Queue",
+    description:
+      "Tunes intentionally collected in lists for possible future Practice. This is not active Practice.",
+  },
+  {
+    id: "unsorted",
+    label: "Unsorted",
+    eyebrow: "Needs organisation",
+    title: "Unsorted",
+    description:
+      "Known or in-practice tunes that are not in any list yet, grouped by why they need attention.",
+  },
+  {
+    id: "saved-shared",
+    label: "Saved and Shared",
+    eyebrow: "External lists",
+    title: "Saved and Shared",
+    description:
+      "Bookmarked public lists and private lists shared directly with you.",
+  },
+]
 
 function toArray(value: string | string[] | undefined) {
   if (!value) return []
@@ -48,12 +91,10 @@ function getSingleValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? "" : value
 }
 
-function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Lists display options saved."
-  if (status === "reset") return "Lists display options reset."
-  if (status === "error") return "Couldn’t save display options."
-
-  return null
+function getListsView(value: string): ListsView {
+  return LISTS_VIEWS.some((view) => view.id === value)
+    ? (value as ListsView)
+    : "my-lists"
 }
 
 function getBookmarkMessage(status: string) {
@@ -73,8 +114,13 @@ function buildListsHref(options: {
   styles: string[]
   source: string
   visibility: string
+  view?: ListsView
 }) {
   const params = new URLSearchParams()
+
+  if (options.view && options.view !== "my-lists") {
+    params.set("view", options.view)
+  }
 
   if (options.q) {
     params.set("q", options.q)
@@ -101,37 +147,38 @@ function buildListsHref(options: {
     : "/learning-lists"
 }
 
+function buildViewHref(view: ListsView) {
+  return view === "my-lists" ? "/learning-lists" : `/learning-lists?view=${view}`
+}
+
 export default async function LearningListsPage({
   searchParams,
 }: LearningListsPageProps) {
   const resolvedSearchParams = await searchParams
-  const pagePreferences = await loadPagePreferences(
-    LISTS_PAGE_OPTIONS_CONFIG.pageKey
-  )
-
-  const showSection = (sectionId: string) =>
-    pagePreferences.visibleSections[sectionId] ?? true
+  const showSection = (sectionId: string) => {
+    void sectionId
+    return true
+  }
 
   const createListStatus = resolvedSearchParams?.create_list ?? ""
   const editListStatus = resolvedSearchParams?.edit_list ?? ""
   const bookmarkMessage = getBookmarkMessage(
     getSingleValue(resolvedSearchParams?.bookmark_public)
   )
-  const pageOptionsMessage = getPageOptionsMessage(
-    getSingleValue(resolvedSearchParams?.page_options)
-  )
-
   const searchQuery = getSingleValue(resolvedSearchParams?.q)
   const selectedSize = getSingleValue(resolvedSearchParams?.size)
   const selectedStyles = toArray(resolvedSearchParams?.style)
   const selectedSource = getSingleValue(resolvedSearchParams?.source)
   const selectedVisibility = getSingleValue(resolvedSearchParams?.visibility)
+  const activeView = getListsView(getSingleValue(resolvedSearchParams?.view))
+  const activeViewConfig =
+    LISTS_VIEWS.find((view) => view.id === activeView) ?? LISTS_VIEWS[0]
 
   const {
     user,
     learningLists,
     listOverviews,
-    myTunes,
+    personalTuneCounts,
     learningQueueTunes,
     unlistedPracticeTunes,
     unlistedKnownTunes,
@@ -164,118 +211,139 @@ export default async function LearningListsPage({
     styles: selectedStyles,
     source: selectedSource,
     visibility: selectedVisibility,
+    view: activeView,
   })
+
+  const unsortedCount = unlistedPracticeTunes.length + unlistedKnownTunes.length
+  const savedSharedCount =
+    bookmarkedSharedLists.length + directSharedLists.length
+  const viewCounts: Record<ListsView, number> = {
+    "my-lists": learningLists.length,
+    "learning-queue": learningQueueTunes.length,
+    unsorted: unsortedCount,
+    "saved-shared": savedSharedCount,
+  }
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      {pageOptionsMessage ? (
-        <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
-          {pageOptionsMessage}
-        </div>
-      ) : null}
-
       {bookmarkMessage ? (
         <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
           {bookmarkMessage}
         </div>
       ) : null}
 
-      <div className="md:hidden">
-        <ListsMobileSwitcher
-          userEmail={user.email}
-          myTunes={myTunes}
-          learningQueueTunes={learningQueueTunes}
-          bookmarkedSharedLists={bookmarkedSharedLists}
-          directSharedLists={directSharedLists}
-          unlistedPracticeTunes={unlistedPracticeTunes}
-          unlistedKnownTunes={unlistedKnownTunes}
-          learningLists={learningLists}
-          listOverviews={listOverviews}
-          filteredListOverviews={filteredListOverviews}
-          availableStyles={availableStyles}
-          searchQuery={searchQuery}
-          selectedSize={selectedSize}
-          selectedStyles={selectedStyles}
-          selectedSource={selectedSource}
-          selectedVisibility={selectedVisibility}
-          hasActiveFilters={hasActiveFilters}
+      <section className="mb-6 rounded-3xl border border-border bg-card p-5 shadow-sm md:mb-8 md:p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Lists
+            </p>
+            <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
+              Organise your tunes
+            </h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+              Lists now split owned collections, future Practice intentions,
+              unsorted personal tunes, and saved or shared lists into separate
+              views.
+            </p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Logged in as {user.email}
+            </p>
+          </div>
+
+        </div>
+
+        <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          {LISTS_VIEWS.map((view) => {
+            const isActive = activeView === view.id
+
+            return (
+              <Link
+                key={view.id}
+                href={buildViewHref(view.id)}
+                aria-current={isActive ? "page" : undefined}
+                className={joinClasses(
+                  "rounded-2xl border p-4 transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
+                  isActive
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                    : "border-border bg-background/70 text-foreground hover:bg-muted"
+                )}
+              >
+                <span
+                  className={joinClasses(
+                    "text-xs font-semibold uppercase tracking-[0.14em]",
+                    isActive
+                      ? "text-primary-foreground/85"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  {view.label}
+                </span>
+                <span className="mt-2 block font-serif text-3xl font-bold leading-none">
+                  {viewCounts[view.id]}
+                </span>
+              </Link>
+            )
+          })}
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
+          <p className="text-sm font-semibold text-foreground">
+            My Tunes lives in Tunes now.
+          </p>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            You have {personalTuneCounts.total} personal tune
+            {personalTuneCounts.total === 1 ? "" : "s"}:{" "}
+            {personalTuneCounts.inPractice} in Practice and{" "}
+            {personalTuneCounts.known} Known. Use the dedicated repertoire
+            views instead of another full Lists-page surface.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Link
+              href="/library/practice"
+              className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            >
+              Practice Tunes
+            </Link>
+            <Link
+              href="/library/known"
+              className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            >
+              Known Tunes
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {showSection("status_messages") ? (
+        <ListsStatusMessages
           createListStatus={createListStatus}
           editListStatus={editListStatus}
-          showCreateList={showSection("create_list")}
-          showSummaryGrid={showSection("summary_grid")}
-          showFilters={showSection("filters")}
-          showResultsHeader={showSection("results_header")}
-          showListResults={showSection("list_results")}
-          redirectTo={redirectTo}
-          addToLearningList={addToLearningList}
-          startLearning={startLearning}
-          unbookmarkPublicList={unbookmarkPublicList}
-          updateList={updateList}
-          removeTuneFromList={removeTuneFromList}
-          deleteList={deleteList}
         />
-      </div>
+      ) : null}
 
-      <div className="hidden md:block">
-        <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
-          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Lists
-              </p>
-              <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
-                Organise your tunes
-              </h1>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-                Keep repertoire, practice queues, session sets, and copied
-                collections in clear working lists.
-              </p>
-              <p className="mt-4 text-sm text-muted-foreground">
-                Logged in as {user.email}
-              </p>
-            </div>
-
-            <PageOptionsModal
-              config={LISTS_PAGE_OPTIONS_CONFIG}
-              preferences={pagePreferences}
-              redirectTo={redirectTo}
-            />
+      <section className="mb-5">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          {activeViewConfig.eyebrow}
+        </p>
+        <div className="mt-2 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 className="font-serif text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+              {activeViewConfig.title}
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+              {activeViewConfig.description}
+            </p>
           </div>
-        </section>
 
-        {showSection("create_list") ? (
-          <div className="mb-8">
+          {activeView === "my-lists" && showSection("create_list") ? (
             <CreateListModal />
-          </div>
-        ) : null}
+          ) : null}
+        </div>
+      </section>
 
-        {showSection("status_messages") ? (
-          <ListsStatusMessages
-            createListStatus={createListStatus}
-            editListStatus={editListStatus}
-          />
-        ) : null}
-
-        {showSection("summary_grid") ? (
-          <ListsSummaryGrid
-            myTunes={myTunes}
-            learningQueueTunes={learningQueueTunes}
-            unlistedPracticeTunes={unlistedPracticeTunes}
-            unlistedKnownTunes={unlistedKnownTunes}
-            bookmarkedSharedLists={bookmarkedSharedLists}
-            learningLists={learningLists}
-            addToLearningList={addToLearningList}
-            startLearning={startLearning}
-            unbookmarkPublicList={unbookmarkPublicList}
-            redirectTo={redirectTo}
-          />
-        ) : null}
-
-        <DirectSharedListsSection
-          directSharedLists={directSharedLists}
-          className="mb-8"
-        />
-
+      {activeView === "my-lists" ? (
+        <>
         {listOverviews.length > 0 &&
         (showSection("filters") || showSection("results_header")) ? (
           <>
@@ -349,7 +417,35 @@ export default async function LearningListsPage({
             )}
           </>
         ) : null}
-      </div>
+        </>
+      ) : null}
+
+      {activeView === "learning-queue" ? (
+        <LearningQueueView
+          learningQueueTunes={learningQueueTunes}
+          startLearning={startLearning}
+          redirectTo={redirectTo}
+        />
+      ) : null}
+
+      {activeView === "unsorted" ? (
+        <UnsortedView
+          unlistedPracticeTunes={unlistedPracticeTunes}
+          unlistedKnownTunes={unlistedKnownTunes}
+          learningLists={learningLists}
+          addToLearningList={addToLearningList}
+          redirectTo={redirectTo}
+        />
+      ) : null}
+
+      {activeView === "saved-shared" ? (
+        <SavedSharedView
+          bookmarkedSharedLists={bookmarkedSharedLists}
+          directSharedLists={directSharedLists}
+          unbookmarkPublicList={unbookmarkPublicList}
+          redirectTo={redirectTo}
+        />
+      ) : null}
     </main>
   )
 }

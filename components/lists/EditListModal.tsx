@@ -311,7 +311,7 @@ export default function EditListModal({
                       />
 
                       <SubmitButton
-                        label="Remove from List"
+                        label="Remove from this list"
                         pendingLabel="Removing..."
                         className={buttonStyles.secondary}
                       />

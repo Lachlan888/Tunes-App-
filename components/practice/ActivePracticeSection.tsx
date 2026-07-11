@@ -1,6 +1,7 @@
 import Link from "next/link"
 import PracticeProgress from "@/components/practice/PracticeProgress"
 import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeButton"
+import TuneMediaLauncher from "@/components/reference-media/TuneMediaLauncher"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { cardStyles } from "@/components/ui/cardStyles"
 import { APP_TIME_ZONE } from "@/lib/review"
@@ -90,12 +91,22 @@ export default function ActivePracticeSection({
                         className="mt-3 max-w-sm"
                       />
 
-                      <div className="mt-3">
+                      <div className="mt-3 flex flex-wrap items-center gap-3">
+                        {userPiece.piece &&
+                        userPiece.media_bundle.effectiveReference ? (
+                          <TuneMediaLauncher
+                            pieceId={userPiece.piece.id}
+                            title={userPiece.piece.title}
+                            mediaBundle={userPiece.media_bundle}
+                            redirectTo={redirectTo}
+                            label="Open Reference Media"
+                            className={buttonStyles.secondary}
+                          />
+                        ) : null}
+
                         <RemoveFromPracticeButton
                           userPieceId={userPiece.id}
                           redirectTo={redirectTo}
-                          label="Remove from practice"
-                          pendingLabel="Removing..."
                           className={buttonStyles.destructiveSecondary}
                         />
                       </div>

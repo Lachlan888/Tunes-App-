@@ -16,9 +16,9 @@ type RemoveFromPracticeButtonProps = {
 export default function RemoveFromPracticeButton({
   userPieceId,
   redirectTo,
-  confirmMessage = "Remove this tune from your practice system? It will stay in your lists and known tunes.",
-  label = "Remove from practice",
-  pendingLabel = "Removing...",
+  confirmMessage = "Stop Practice for this tune? Review scheduling will stop. The tune will remain in any lists, the shared tune will not be deleted, and stopping Practice does not automatically mark it Known.",
+  label = "Stop Practice",
+  pendingLabel = "Stopping...",
   className = buttonStyles.destructiveSecondary,
 }: RemoveFromPracticeButtonProps) {
   return (

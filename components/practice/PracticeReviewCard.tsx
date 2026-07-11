@@ -5,8 +5,8 @@ import ActivePracticeFoci from "@/components/practice/ActivePracticeFoci"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import PracticeProgress from "@/components/practice/PracticeProgress"
 import RecentPracticeNotes from "@/components/practice/RecentPracticeNotes"
-import PreferredReferenceControl from "@/components/reference-media/PreferredReferenceControl"
 import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeButton"
+import ReferenceMediaEmbed from "@/components/library/ReferenceMediaEmbed"
 import ReviewNoteModal from "@/components/practice/ReviewNoteModal"
 import {
   DiaryReviewButtons,
@@ -15,6 +15,7 @@ import {
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 import type { ReviewOutcomeConfig } from "@/components/practice/reviewOutcomeConfig"
+import { getLoopsForSource } from "@/lib/tune-media"
 
 type PracticeReviewCardProps = {
   userPiece: ReviewQueueItem
@@ -23,7 +24,6 @@ type PracticeReviewCardProps = {
   badgeClassName: string
   practiceDiaryEnabled: boolean
   noteCategories: PracticeNoteCategory[]
-  upsertPreferredReferenceUrl: (formData: FormData) => Promise<void>
 }
 
 export default function PracticeReviewCard({
@@ -31,7 +31,6 @@ export default function PracticeReviewCard({
   redirectTo,
   practiceDiaryEnabled,
   noteCategories,
-  upsertPreferredReferenceUrl,
 }: PracticeReviewCardProps) {
   const [selectedOutcome, setSelectedOutcome] =
     useState<ReviewOutcomeConfig | null>(null)
@@ -39,20 +38,20 @@ export default function PracticeReviewCard({
   const title = userPiece.piece?.title ?? "Untitled piece"
 
   return (
-    <article className="relative min-w-0 rounded-2xl border border-border bg-background/70 p-3 shadow-sm transition hover:bg-muted/70 sm:p-5">
-      <div className="absolute right-3 top-3 z-10 sm:right-4 sm:top-4">
+    <article className="min-w-0 rounded-2xl border border-border bg-background/70 p-3 shadow-sm transition hover:bg-muted/70 sm:p-5">
+      <div className="mb-2 flex justify-end">
         <RemoveFromPracticeButton
           userPieceId={userPiece.id}
           redirectTo={redirectTo}
-          confirmMessage={`Remove "${title}" from active practice? This stops review scheduling for this tune, but does not delete the shared tune or remove it from your lists.`}
-          label="×"
-          pendingLabel="…"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background/80 text-lg font-semibold leading-none text-muted-foreground shadow-sm transition hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          confirmMessage={`Stop Practice for "${title}"? Review scheduling will stop. The tune will remain in any lists, the shared tune will not be deleted, and stopping Practice does not automatically mark it Known.`}
+          label="Stop Practice"
+          pendingLabel="Stopping..."
+          className="inline-flex min-h-9 items-center justify-center rounded-full border border-destructive/50 bg-background/80 px-3 py-1.5 text-xs font-semibold text-destructive shadow-sm transition hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
         />
       </div>
 
-      <div className="min-w-0 pr-10 sm:pr-12">
-        <h2 className="break-words pr-1 text-center font-serif text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
+      <div className="min-w-0">
+        <h2 className="break-words text-center font-serif text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
           {userPiece.piece ? (
             <PendingLinkButton
               href={`/library/${userPiece.piece.id}`}
@@ -81,25 +80,39 @@ export default function PracticeReviewCard({
         </p>
       </div>
 
-      {userPiece.piece &&
-      (userPiece.piece.reference_url || userPiece.media_links.length > 0) ? (
+      {userPiece.piece && userPiece.media_bundle.effectiveReference ? (
         <div className="mt-5 w-full">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {userPiece.is_using_preferred_reference
-              ? "Preferred reference"
-              : "Reference"}
+            Reference Media
           </p>
-          <PreferredReferenceControl
+          <ReferenceMediaEmbed
+            referenceUrl={userPiece.media_bundle.effectiveReference.url}
+            title={userPiece.media_bundle.effectiveReference.label || title}
+            showHeading={false}
             pieceId={userPiece.piece.id}
-            title={userPiece.piece.title}
-            defaultReferenceUrl={userPiece.piece.reference_url}
-            mediaLinks={userPiece.media_links}
-            metadata={userPiece.preferred_reference_metadata}
             redirectTo={redirectTo}
-            savedLoops={userPiece.saved_media_loops}
-            upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
+            savedLoops={getLoopsForSource(
+              userPiece.media_bundle,
+              userPiece.media_bundle.effectiveReference
+            )}
+            triggerLabel="Open Reference Media"
             triggerClassName="flex w-full items-center justify-center rounded-full border border-border bg-muted px-4 py-2 text-center text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
+          <div className="mt-2 text-center">
+            <PendingLinkButton
+              href={`/library/${userPiece.piece.id}#reference-media`}
+              label="Tune Detail"
+              pendingLabel="Opening..."
+              className="text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            />
+          </div>
+          {userPiece.media_bundle.additionalMedia.length > 0 ? (
+            <div className="mt-3 text-center text-xs text-muted-foreground">
+              {userPiece.media_bundle.additionalMedia.length} additional source
+              {userPiece.media_bundle.additionalMedia.length === 1 ? "" : "s"} on
+              Tune Detail
+            </div>
+          ) : null}
         </div>
       ) : null}
 

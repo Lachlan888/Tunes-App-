@@ -1,4 +1,5 @@
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
+import type { TuneMediaBundle } from "@/lib/tune-media"
 import type { UserPieceMediaLoop } from "@/lib/types"
 import type {
   Piece,
@@ -21,6 +22,9 @@ export type ReviewPieceMediaLink = {
   piece_id: number
   url: string
   label: string | null
+  media_type: string | null
+  notes: string | null
+  created_by: string | null
 }
 
 export type PracticeNoteCategoryRelation =
@@ -105,6 +109,7 @@ export type ReviewQueueItem = UserPiece & {
   effective_reference_url: string | null
   effective_reference_label: string | null
   is_using_preferred_reference: boolean
+  media_bundle: TuneMediaBundle
 }
 
 export type ReviewPageData = {

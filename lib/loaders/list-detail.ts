@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { loadTuneMediaBundles } from "@/lib/tune-media"
 import type {
   LearningListDetail,
   LearningListItemWithPiece,
@@ -10,10 +11,9 @@ type PieceIdRow = {
   piece_id: number
 }
 
-export type ListDetailUserPieceMetadata = {
-  piece_id: number
-  preferred_reference_url: string | null
-  preferred_reference_label: string | null
+export type ActiveListPieceState = {
+  pieceId: number
+  stage: number | null
 }
 
 export type ListDetailAccessMode = "owner" | "shared_viewer" | "public_viewer"
@@ -156,20 +156,23 @@ export async function loadLearningListDetailData(rawListId: string) {
     .filter((piece): piece is Piece => Boolean(piece))
 
   const pieceIds = tunes.map((piece) => piece.id)
+  const mediaBundles = await loadTuneMediaBundles({
+    supabase,
+    pieces: tunes,
+    userId: user.id,
+  })
 
-  let activePieceIds = new Set<number>()
+  let activePieceStates = new Map<number, ActiveListPieceState>()
   let knownPieceIds = new Set<number>()
-  let userPieceMetadata: ListDetailUserPieceMetadata[] = []
 
   if (pieceIds.length > 0) {
     const [
       { data: userPieces, error: userPiecesError },
       { data: userKnownPieces, error: userKnownPiecesError },
-      { data: userPieceMetadataRows, error: userPieceMetadataError },
     ] = await Promise.all([
       supabase
         .from("user_pieces")
-        .select("piece_id")
+        .select("piece_id, stage")
         .eq("user_id", user.id)
         .in("piece_id", pieceIds),
 
@@ -178,35 +181,31 @@ export async function loadLearningListDetailData(rawListId: string) {
         .select("piece_id")
         .eq("user_id", user.id)
         .in("piece_id", pieceIds),
-
-      supabase
-        .from("user_piece_metadata")
-        .select("piece_id, preferred_reference_url, preferred_reference_label")
-        .eq("user_id", user.id)
-        .in("piece_id", pieceIds),
     ])
 
     if (userPiecesError) {
       throw new Error(userPiecesError.message)
     }
 
-    activePieceIds = new Set(
-      ((userPieces ?? []) as PieceIdRow[]).map((row) => row.piece_id)
+    activePieceStates = new Map(
+      ((userPieces ?? []) as Array<PieceIdRow & { stage: number | null }>).map(
+        (row) => [
+          row.piece_id,
+          {
+            pieceId: row.piece_id,
+            stage: row.stage,
+          },
+        ]
+      )
     )
 
     if (userKnownPiecesError) {
       throw new Error(userKnownPiecesError.message)
     }
 
-    if (userPieceMetadataError) {
-      throw new Error(userPieceMetadataError.message)
-    }
-
     knownPieceIds = new Set(
       ((userKnownPieces ?? []) as PieceIdRow[]).map((row) => row.piece_id)
     )
-    userPieceMetadata =
-      (userPieceMetadataRows ?? []) as ListDetailUserPieceMetadata[]
   }
 
   const [{ data: ownerProfileRows, error: ownerProfileError }, shareResult] =
@@ -276,9 +275,9 @@ export async function loadLearningListDetailData(rawListId: string) {
     typedList,
     typedItems,
     tunes,
-    activePieceIds,
+    activePieceStates,
     knownPieceIds,
-    userPieceMetadata,
+    mediaBundles,
     ownerProfile,
     shareRecipients,
     accessMode,

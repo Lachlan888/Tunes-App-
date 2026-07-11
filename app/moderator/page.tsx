@@ -1,5 +1,4 @@
 import Link from "next/link"
-import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import SubmitButton from "@/components/SubmitButton"
 import {
   actionLoreReport,
@@ -10,13 +9,10 @@ import {
   rejectPieceEditRequest,
 } from "@/lib/actions/moderation"
 import { loadModerationData } from "@/lib/loaders/moderation"
-import { loadPagePreferences } from "@/lib/loaders/page-preferences"
-import { MODERATOR_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 
 type ModeratorPageProps = {
   searchParams?: Promise<{
     moderation?: string | string[]
-    page_options?: string | string[]
   }>
 }
 
@@ -42,17 +38,6 @@ function getStatusMessage(status: string) {
   if (status === "invalid_url") return "One of the proposed URLs was invalid."
   if (status === "error") return "Something went wrong. Please try again."
 
-  if (status === "saved") return "Moderator display options saved."
-  if (status === "reset") return "Moderator display options reset."
-
-  return null
-}
-
-function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Moderator display options saved."
-  if (status === "reset") return "Moderator display options reset."
-  if (status === "error") return "Couldn’t save display options."
-
   return null
 }
 
@@ -73,20 +58,15 @@ export default async function ModeratorPage({
   searchParams,
 }: ModeratorPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined
-  const pagePreferences = await loadPagePreferences(
-    MODERATOR_PAGE_OPTIONS_CONFIG.pageKey
-  )
-
-  const showSection = (sectionId: string) =>
-    pagePreferences.visibleSections[sectionId] ?? true
+  const showSection = (sectionId: string) => {
+    void sectionId
+    return true
+  }
 
   const moderationMessage = getStatusMessage(
     getSingleValue(resolvedSearchParams?.moderation)
   )
-  const pageOptionsMessage = getPageOptionsMessage(
-    getSingleValue(resolvedSearchParams?.page_options)
-  )
-  const statusMessage = pageOptionsMessage ?? moderationMessage
+  const statusMessage = moderationMessage
 
   const {
     pendingEditRequests,
@@ -117,11 +97,6 @@ export default async function ModeratorPage({
             </p>
           </div>
 
-          <PageOptionsModal
-            config={MODERATOR_PAGE_OPTIONS_CONFIG}
-            preferences={pagePreferences}
-            redirectTo="/moderator"
-          />
         </div>
 
         {showSection("summary_counts") ? (

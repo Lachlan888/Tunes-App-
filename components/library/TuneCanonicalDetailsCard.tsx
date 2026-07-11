@@ -420,7 +420,7 @@ export default function TuneCanonicalDetailsCard({
               onClick={() => setModalMode("delete")}
               className={destructiveButtonClass}
             >
-              Delete shared tune
+              Delete shared tune for everyone
             </button>
           </>
         ) : (
@@ -637,7 +637,7 @@ export default function TuneCanonicalDetailsCard({
 
       {modalMode === "delete" ? (
         <ModalShell
-          title="Delete shared tune"
+          title="Delete shared tune for everyone"
           description="This permanently removes this tune from the shared catalogue for everyone. It may also remove connected practice status, Known status, list entries, comments, lore, media links, moderation requests, and notifications."
           destructive
           onClose={() => setModalMode(null)}
@@ -665,7 +665,7 @@ export default function TuneCanonicalDetailsCard({
 
             <div className="grid gap-2 pt-2">
               <SubmitButton
-                label="Delete shared tune"
+                label="Delete shared tune for everyone"
                 pendingLabel="Deleting..."
                 className={destructivePrimaryButtonClass}
               />

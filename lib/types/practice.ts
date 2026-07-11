@@ -68,13 +68,6 @@ export type UserKnownPieceWithPiece = {
     | null
 }
 
-export type MyTuneRow = {
-  piece_id: number
-  title: string
-  inPractice: boolean
-  known: boolean
-}
-
 export type PracticeOutcome = "rough" | "shaky" | "solid"
 
 export type PracticeEventType =

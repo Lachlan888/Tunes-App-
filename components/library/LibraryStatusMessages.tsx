@@ -82,6 +82,24 @@ export default function LibraryStatusMessages({
         </StatusBanner>
       )}
 
+      {createTuneStatus === "invalid_style" && (
+        <StatusBanner tone="error">
+          Choose a valid style or leave Style blank.
+        </StatusBanner>
+      )}
+
+      {createTuneStatus === "invalid_time_signature" && (
+        <StatusBanner tone="error">
+          Time signature should use a format like 4/4 or 6/8.
+        </StatusBanner>
+      )}
+
+      {createTuneStatus === "invalid_url" && (
+        <StatusBanner tone="error">
+          Initial reference should be a valid URL.
+        </StatusBanner>
+      )}
+
       {createTuneStatus === "error" && (
         <StatusBanner tone="error">Couldn’t create tune.</StatusBanner>
       )}

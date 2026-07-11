@@ -236,10 +236,11 @@ export default function PracticeMetronome() {
   )
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentBeat, setCurrentBeat] = useState(0)
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isControlsOpen, setIsControlsOpen] = useState(false)
 
   const audioContextRef = useRef<AudioContext | null>(null)
   const schedulerTimerRef = useRef<number | null>(null)
+  const runSchedulerRef = useRef<() => void>(() => {})
   const nextNoteTimeRef = useRef(0)
   const nextBeatRef = useRef(0)
   const hydratedRef = useRef(false)
@@ -316,8 +317,15 @@ export default function PracticeMetronome() {
       nextBeatRef.current = (beatIndex + 1) % numeratorRef.current
     }
 
-    schedulerTimerRef.current = window.setTimeout(runScheduler, LOOKAHEAD_MS)
+    schedulerTimerRef.current = window.setTimeout(
+      () => runSchedulerRef.current(),
+      LOOKAHEAD_MS
+    )
   }, [scheduleClick])
+
+  useEffect(() => {
+    runSchedulerRef.current = runScheduler
+  }, [runScheduler])
 
   const stop = useCallback(() => {
     isPlayingRef.current = false
@@ -363,6 +371,8 @@ export default function PracticeMetronome() {
       window.localStorage.getItem(STORAGE_KEY)
     )
 
+    // Hydrate persisted browser-only metronome preferences after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBpm(storedSettings.bpm)
     setBpmDraft(String(storedSettings.bpm))
     setNumerator(storedSettings.numerator)
@@ -473,6 +483,9 @@ export default function PracticeMetronome() {
   const isInvalidNumerator =
     numerator < MIN_NUMERATOR || numerator > MAX_NUMERATOR
   const settingsSummary = `${bpm} BPM · ${numerator}/${denominator}`
+  const launcherLabel = isPlaying
+    ? `Open metronome, playing at ${bpm} BPM`
+    : "Open metronome, stopped"
 
   function renderControls() {
     return (
@@ -593,73 +606,29 @@ export default function PracticeMetronome() {
 
   return (
     <>
-      <section className="mt-4 border-y border-border/70 py-3 md:hidden">
-        <div className="flex min-w-0 items-center gap-3">
-          <div
-            className={joinClasses(
-              "grid h-10 w-10 shrink-0 place-items-center rounded-full border shadow-sm",
-              isPlaying
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-card-strong text-muted-foreground"
-            )}
-          >
-            <MetronomeIcon />
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-foreground">
-              Metronome
-            </p>
-            <p className="mt-0.5 truncate text-xs font-medium text-muted-foreground">
-              {settingsSummary}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            className={joinClasses(
-              "inline-flex min-h-10 shrink-0 items-center justify-center rounded-full border px-3 py-2 text-sm font-medium shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60",
-              isPlaying
-                ? "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                : "border-primary bg-primary text-primary-foreground hover:bg-primary-hover"
-            )}
-            onClick={isPlaying ? stop : start}
-            disabled={isInvalidBpm || isInvalidNumerator}
-            aria-pressed={isPlaying}
-            aria-label={isPlaying ? "Stop metronome" : "Start metronome"}
-          >
-            {isPlaying ? "Stop" : "Start"}
-          </button>
-
-          <button
-            type="button"
-            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full border border-border bg-background/70 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-            onClick={() => setIsSettingsOpen(true)}
-            aria-label="Open metronome settings"
-          >
-            Settings
-          </button>
-        </div>
-      </section>
-
-      <section className="mt-6 hidden border-y border-border/70 py-4 md:block md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Practice metronome
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {settingsSummary}
-            </p>
-          </div>
-        </div>
-
-        {renderControls()}
-      </section>
+      <button
+        type="button"
+        onClick={() => setIsControlsOpen(true)}
+        className={joinClasses(
+          "fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 z-[240] inline-flex min-h-12 min-w-12 items-center justify-center gap-2 rounded-full border px-3 py-3 text-sm font-semibold shadow-xl transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:bottom-6 md:left-6",
+          isPlaying
+            ? "border-primary bg-primary text-primary-foreground hover:bg-primary-hover"
+            : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
+        )}
+        aria-label={launcherLabel}
+        aria-pressed={isControlsOpen}
+      >
+        <MetronomeIcon />
+        {isPlaying ? (
+          <span className="rounded-full bg-background/20 px-2 py-0.5 text-xs">
+            {bpm} BPM
+          </span>
+        ) : null}
+      </button>
 
       <ResponsiveModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
+        isOpen={isControlsOpen}
+        onClose={() => setIsControlsOpen(false)}
         eyebrow="Practice tool"
         title="Metronome"
         description={settingsSummary}

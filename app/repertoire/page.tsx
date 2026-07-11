@@ -73,11 +73,6 @@ export default async function RepertoirePage() {
   const typedLearningLists = (learningLists ?? []) as LearningListOption[]
   const typedPieces = (pieces ?? []) as PieceOption[]
 
-  const learningListOptions = typedLearningLists.map((list) => ({
-    id: list.id,
-    name: list.name,
-  }))
-
   return (
     <main className="p-8">
       <h1 className="mb-2 text-3xl font-bold">Manage Library</h1>
@@ -105,7 +100,6 @@ export default async function RepertoirePage() {
       <CreateTuneForm
         createTune={createTune}
         styleOptions={styleOptions}
-        learningLists={learningListOptions}
         redirectTo="/repertoire"
       />
 

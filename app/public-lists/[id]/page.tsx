@@ -1,6 +1,6 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
-import ReferenceMediaLink from "@/components/ReferenceMediaLink"
+import TuneMediaLauncher from "@/components/reference-media/TuneMediaLauncher"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
 import {
@@ -9,12 +9,11 @@ import {
   importSelectedPublicListItems,
   unbookmarkPublicList,
 } from "@/lib/actions/lists"
-import { markAsKnown } from "@/lib/actions/known-pieces"
-import { startLearning } from "@/lib/actions/user-pieces"
 import {
   loadPublicListDetailData,
   type PublicListOwnerProfile,
 } from "@/lib/loaders/public-list-detail"
+import type { TuneMediaBundle } from "@/lib/tune-media"
 import type { Piece } from "@/lib/types"
 
 type PublicListDetailPageProps = {
@@ -111,6 +110,7 @@ function PublicListMobileTuneRow({
   isKnown,
   canSelectForCopy,
   redirectTo,
+  mediaBundle,
 }: {
   piece: Piece
   userIsSignedIn: boolean
@@ -118,6 +118,7 @@ function PublicListMobileTuneRow({
   isKnown: boolean
   canSelectForCopy: boolean
   redirectTo: string
+  mediaBundle: TuneMediaBundle | null
 }) {
   const metadataParts = getTuneMetadata(piece)
   const checkboxId = `mobile-select-piece-${piece.id}`
@@ -140,14 +141,15 @@ function PublicListMobileTuneRow({
           </p>
         ) : null}
 
-        {piece.reference_url || canSelectForCopy ? (
+        {mediaBundle?.effectiveReference || canSelectForCopy ? (
           <div className="mt-2 flex min-h-10 items-center justify-between gap-3">
-            {piece.reference_url ? (
-              <ReferenceMediaLink
-                referenceUrl={piece.reference_url}
-                title={piece.title}
+            {mediaBundle?.effectiveReference ? (
+              <TuneMediaLauncher
                 pieceId={piece.id}
+                title={piece.title}
+                mediaBundle={mediaBundle}
                 redirectTo={redirectTo}
+                label="Open Reference Media"
                 className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
               />
             ) : (
@@ -172,7 +174,7 @@ function PublicListMobileTuneRow({
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {!userIsSignedIn ? (
           <span className="text-sm text-muted-foreground">
-            Log in to start practice or mark known.
+            Log in to copy tunes into your own lists.
           </span>
         ) : (
           <>
@@ -180,34 +182,15 @@ function PublicListMobileTuneRow({
               <span className="rounded-full border border-success bg-success px-3 py-1.5 text-xs font-semibold text-success-foreground">
                 Already in practice
               </span>
+            ) : isKnown ? (
+              <span className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+                Known
+              </span>
             ) : (
-              <form action={startLearning}>
-                <input type="hidden" name="piece_id" value={piece.id} />
-                <input type="hidden" name="redirect_to" value={redirectTo} />
-                <SubmitButton
-                  label="Start Practice"
-                  pendingLabel="Starting..."
-                  className="rounded-full border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                />
-              </form>
+              <span className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+                New to me
+              </span>
             )}
-
-            {!isAlreadyInPractice &&
-              (isKnown ? (
-                <span className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                  Known
-                </span>
-              ) : (
-                <form action={markAsKnown}>
-                  <input type="hidden" name="piece_id" value={piece.id} />
-                  <input type="hidden" name="redirect_to" value={redirectTo} />
-                  <SubmitButton
-                    label="Mark as known"
-                    pendingLabel="Saving..."
-                    className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                  />
-                </form>
-              ))}
           </>
         )}
       </div>
@@ -234,6 +217,7 @@ export default async function PublicListDetailPage({
     typedList,
     owner,
     typedItems,
+    mediaBundles,
     ownedLists,
     activePieceIds,
     knownPieceIds,
@@ -530,6 +514,7 @@ export default async function PublicListDetailPage({
                       isKnown={isKnown}
                       canSelectForCopy={canSelectForCopy}
                       redirectTo={redirectTo}
+                      mediaBundle={mediaBundles.get(piece.id) ?? null}
                     />
                   </div>
 
@@ -553,11 +538,12 @@ export default async function PublicListDetailPage({
                       style={piece.style}
                       timeSignature={piece.time_signature}
                       referenceUrl={piece.reference_url}
+                      mediaBundle={mediaBundles.get(piece.id) ?? null}
                       listNames={[]}
                     >
                       {!user ? (
                         <p className="text-sm text-muted-foreground">
-                          Log in to start practice or mark known.
+                          Log in to copy tunes into your own lists.
                         </p>
                       ) : (
                         <>
@@ -565,50 +551,15 @@ export default async function PublicListDetailPage({
                             <span className="rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm">
                               Already in practice
                             </span>
+                          ) : isKnown ? (
+                            <span className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm">
+                              Known
+                            </span>
                           ) : (
-                            <form action={startLearning}>
-                              <input
-                                type="hidden"
-                                name="piece_id"
-                                value={piece.id}
-                              />
-                              <input
-                                type="hidden"
-                                name="redirect_to"
-                                value={redirectTo}
-                              />
-                              <SubmitButton
-                                label="Start Practice"
-                                pendingLabel="Starting..."
-                                className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                              />
-                            </form>
+                            <span className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm">
+                              New to me
+                            </span>
                           )}
-
-                          {!isAlreadyInPractice &&
-                            (isKnown ? (
-                              <span className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm">
-                                Known
-                              </span>
-                            ) : (
-                              <form action={markAsKnown}>
-                                <input
-                                  type="hidden"
-                                  name="piece_id"
-                                  value={piece.id}
-                                />
-                                <input
-                                  type="hidden"
-                                  name="redirect_to"
-                                  value={redirectTo}
-                                />
-                                <SubmitButton
-                                  label="Mark as known"
-                                  pendingLabel="Saving..."
-                                  className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                                />
-                              </form>
-                            ))}
                         </>
                       )}
                     </TuneCard>

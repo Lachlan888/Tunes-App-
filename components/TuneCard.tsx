@@ -2,11 +2,12 @@
 
 import Link from "next/link"
 import type { ReactNode } from "react"
-import PreferredReferenceControl from "@/components/reference-media/PreferredReferenceControl"
+import TuneMediaLauncher from "@/components/reference-media/TuneMediaLauncher"
+import TuneIdentity from "@/components/tunes/TuneIdentity"
+import TuneMetadataSummary from "@/components/tunes/TuneMetadataSummary"
 import ClickableCard from "@/components/ui/ClickableCard"
-import type { PreferredReferenceMetadata } from "@/lib/effective-reference"
-import { getStyleLabelsFromPiece } from "@/lib/search-filters"
-import type { Piece, UserPieceMediaLoop } from "@/lib/types"
+import type { TuneMediaBundle } from "@/lib/tune-media"
+import type { Piece } from "@/lib/types"
 
 export type TuneCardListLink = {
   id: number | string
@@ -21,13 +22,11 @@ type TuneCardProps = {
   style: Piece["style"]
   timeSignature: Piece["time_signature"]
   referenceUrl?: Piece["reference_url"]
-  referenceMetadata?: PreferredReferenceMetadata
+  mediaBundle?: TuneMediaBundle | null
   pieceStyles?: Piece["piece_styles"]
   listNames?: string[]
   listLinks?: TuneCardListLink[]
   redirectTo?: string
-  savedLoops?: UserPieceMediaLoop[]
-  upsertPreferredReferenceUrl?: (formData: FormData) => Promise<void>
   topRightAction?: ReactNode
   children?: ReactNode
 }
@@ -39,13 +38,11 @@ export default function TuneCard({
   style,
   timeSignature,
   referenceUrl,
-  referenceMetadata,
+  mediaBundle,
   pieceStyles,
   listNames = [],
   listLinks = [],
   redirectTo,
-  savedLoops,
-  upsertPreferredReferenceUrl,
   topRightAction,
   children,
 }: TuneCardProps) {
@@ -62,22 +59,6 @@ export default function TuneCard({
     0
   )
 
-  const styleLabels = getStyleLabelsFromPiece({
-    id,
-    title,
-    key: keyValue,
-    style,
-    time_signature: timeSignature,
-    reference_url: referenceUrl,
-    piece_styles: pieceStyles ?? null,
-  })
-
-  const metadataParts = [
-    keyValue ? `Key: ${keyValue}` : null,
-    styleLabels.length > 0 ? `Style: ${styleLabels.join(", ")}` : null,
-    timeSignature ? `Time: ${timeSignature}` : null,
-  ].filter(Boolean)
-
   return (
     <ClickableCard
       href={`/library/${id}`}
@@ -86,20 +67,19 @@ export default function TuneCard({
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="break-words font-serif text-2xl font-bold leading-tight tracking-tight text-foreground">
-            <Link
-              href={`/library/${id}`}
-              className="decoration-primary decoration-2 underline-offset-4 hover:underline"
-            >
-              {title}
-            </Link>
-          </h3>
+          <TuneIdentity id={id} title={title} />
 
-          {metadataParts.length > 0 && (
-            <p className="mt-2 break-words text-sm font-medium leading-6 text-muted-foreground">
-              {metadataParts.join(" | ")}
-            </p>
-          )}
+          <TuneMetadataSummary
+            piece={{
+              id,
+              title,
+              key: keyValue,
+              style,
+              time_signature: timeSignature,
+              reference_url: referenceUrl ?? null,
+              piece_styles: pieceStyles ?? null,
+            }}
+          />
         </div>
 
         {topRightAction ? (
@@ -109,20 +89,15 @@ export default function TuneCard({
         ) : null}
       </div>
 
-      {referenceUrl ? (
+      {mediaBundle?.effectiveReference ? (
         <div data-card-action className="mt-4">
-          <PreferredReferenceControl
+          <TuneMediaLauncher
             pieceId={id}
             title={title}
-            defaultReferenceUrl={referenceUrl}
-            metadata={referenceMetadata}
+            mediaBundle={mediaBundle}
             redirectTo={redirectTo ?? `/library/${id}`}
-            upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
-            savedLoops={savedLoops}
-            compact
-            openLabel="Open reference video"
-            showPickerTrigger={false}
-            triggerClassName="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+            label="Open Reference Media"
+            className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
           />
         </div>
       ) : null}

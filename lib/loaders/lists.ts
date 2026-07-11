@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server"
 import type {
   FilterableLearningList,
   LearningList,
-  MyTuneRow,
   Piece,
   UserKnownPieceWithPiece,
   UserPieceWithPiece,
@@ -114,25 +113,6 @@ export type DirectSharedListSummary = {
   ownerLabel: string
   tuneCount: number
   sharedAt: string | null
-}
-
-function extractPieceTitle(
-  piece:
-    | {
-        id: number
-        title: string
-      }
-    | {
-        id: number
-        title: string
-      }[]
-    | null
-) {
-  if (!piece) return null
-  if (Array.isArray(piece)) {
-    return piece[0]?.title ?? null
-  }
-  return piece.title
 }
 
 function extractPiece(piece: Piece | Piece[] | null): Piece | null {
@@ -388,39 +368,11 @@ export async function loadListsData() {
     (userKnownPiece) => !listedPieceIds.has(userKnownPiece.piece_id)
   )
 
-  const myTunesMap = new Map<number, MyTuneRow>()
-
-  for (const userPiece of typedUserPieces) {
-    const title = extractPieceTitle(userPiece.pieces)
-    if (!title) continue
-
-    const existing = myTunesMap.get(userPiece.piece_id)
-
-    myTunesMap.set(userPiece.piece_id, {
-      piece_id: userPiece.piece_id,
-      title,
-      inPractice: true,
-      known: existing?.known ?? false,
-    })
+  const personalTuneCounts = {
+    inPractice: practicePieceIds.size,
+    known: knownPieceIds.size,
+    total: new Set([...practicePieceIds, ...knownPieceIds]).size,
   }
-
-  for (const userKnownPiece of typedUserKnownPieces) {
-    const title = extractPieceTitle(userKnownPiece.pieces)
-    if (!title) continue
-
-    const existing = myTunesMap.get(userKnownPiece.piece_id)
-
-    myTunesMap.set(userKnownPiece.piece_id, {
-      piece_id: userKnownPiece.piece_id,
-      title,
-      inPractice: existing?.inPractice ?? false,
-      known: true,
-    })
-  }
-
-  const myTunes = Array.from(myTunesMap.values()).sort((a, b) =>
-    a.title.localeCompare(b.title)
-  )
 
   const tunesByListId = new Map<number, Piece[]>()
   const learningQueueMap = new Map<number, LearningQueueTune>()
@@ -659,7 +611,7 @@ export async function loadListsData() {
     user,
     learningLists: typedLearningLists,
     listOverviews,
-    myTunes,
+    personalTuneCounts,
     learningQueueTunes,
     unlistedPracticeTunes,
     unlistedKnownTunes,

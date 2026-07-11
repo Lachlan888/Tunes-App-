@@ -1,7 +1,5 @@
 import { redirect } from "next/navigation"
 import { getCurrentUserRole } from "@/lib/auth/roles"
-import { loadPagePreferences } from "@/lib/loaders/page-preferences"
-import { TUNE_DETAIL_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 import { createClient } from "@/lib/supabase/server"
 import {
   loadComposerProfile,
@@ -14,6 +12,7 @@ import { loadProfileMapForCommunityRows } from "./tune-detail/helpers"
 import { loadTuneLinks } from "./tune-detail/links"
 import { loadTunePracticeHistory } from "./tune-detail/practice-history"
 import { loadTuneUserState } from "./tune-detail/user-state"
+import { buildTuneMediaBundle } from "@/lib/tune-media"
 
 export type {
   CommentAuthor,
@@ -81,7 +80,6 @@ export async function loadTuneDetailData(
     styleOptions,
     composerProfile,
     composerProfileOptions,
-    typedTunePagePreferences,
   ] = await Promise.all([
     loadTuneUserState(supabase, user.id, pieceId),
     loadTuneLinks(supabase, user.id, pieceId),
@@ -90,7 +88,6 @@ export async function loadTuneDetailData(
     loadStyleOptions(supabase),
     loadComposerProfile(supabase, piece.composer_user_id),
     loadComposerProfileOptions(supabase),
-    loadPagePreferences(TUNE_DETAIL_PAGE_OPTIONS_CONFIG.pageKey),
   ])
 
   const profileMap = await loadProfileMapForCommunityRows(
@@ -100,6 +97,24 @@ export async function loadTuneDetailData(
   )
 
   const redirectTo = `/library/${pieceId}`
+  const tuneMediaBundle = buildTuneMediaBundle({
+    piece,
+    mediaLinks: tuneLinks.typedMediaLinks,
+    sheetMusicLinks: tuneLinks.typedSheetMusicLinks.map((link) => ({
+      ...link,
+      piece_id: pieceId,
+    })),
+    metadata: userState.typedUserPieceMetadata
+      ? {
+          piece_id: pieceId,
+          preferred_reference_url:
+            userState.typedUserPieceMetadata.preferred_reference_url,
+          preferred_reference_label:
+            userState.typedUserPieceMetadata.preferred_reference_label,
+        }
+      : null,
+    mediaLoops: tuneLinks.typedMediaLoops,
+  })
 
   return {
     status: "loaded",
@@ -112,6 +127,7 @@ export async function loadTuneDetailData(
     typedMediaLinks: tuneLinks.typedMediaLinks,
     typedSheetMusicLinks: tuneLinks.typedSheetMusicLinks,
     typedMediaLoops: tuneLinks.typedMediaLoops,
+    tuneMediaBundle,
     typedPieceComments: tuneCommunity.typedPieceComments,
     typedPieceLoreEntries: tuneCommunity.typedPieceLoreEntries,
     typedUserPiece: userState.typedUserPiece,
@@ -120,7 +136,6 @@ export async function loadTuneDetailData(
     typedLearningListItems: userState.typedLearningListItems,
     typedPublicTuneLists: userState.typedPublicTuneLists,
     typedPracticeNotes: tunePracticeHistory.typedPracticeNotes,
-    typedTunePagePreferences,
     practiceDiaryEnabled: userState.practiceDiaryEnabled,
     practiceNoteCategories: tunePracticeHistory.practiceNoteCategories,
     styleOptions,

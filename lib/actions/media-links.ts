@@ -9,7 +9,6 @@ const MEDIA_LINK_TYPES = new Set([
   "Recording",
   "Video",
   "Lesson",
-  "Sheet music",
   "Source",
   "Performance",
   "Other",

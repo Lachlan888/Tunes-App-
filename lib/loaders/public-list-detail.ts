@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { loadTuneMediaBundles } from "@/lib/tune-media"
 import type { Piece } from "@/lib/types"
 
 export type PublicListRow = {
@@ -107,6 +108,14 @@ export async function loadPublicListDetailData(rawListId: string) {
   const pieceIds = typedItems
     .map((item) => extractPiece(item.pieces)?.id ?? null)
     .filter((pieceId): pieceId is number => pieceId !== null)
+  const publicPieces = typedItems
+    .map((item) => extractPiece(item.pieces))
+    .filter((piece): piece is Piece => Boolean(piece))
+  const mediaBundles = await loadTuneMediaBundles({
+    supabase,
+    pieces: publicPieces,
+    userId: null,
+  })
 
   let activePieceIds = new Set<number>()
   let knownPieceIds = new Set<number>()
@@ -184,6 +193,7 @@ export async function loadPublicListDetailData(rawListId: string) {
     typedList,
     owner,
     typedItems,
+    mediaBundles,
     ownedLists,
     activePieceIds,
     knownPieceIds,

@@ -184,7 +184,7 @@ function MyStatusDropdown({
                 if (!isAlreadyInPractice) return
 
                 const confirmed = window.confirm(
-                  `Mark "${title}" as known? This removes it from active practice.`
+                  `Move "${title}" to Known? Active Practice and review scheduling will stop.`
                 )
 
                 if (!confirmed) {
@@ -195,7 +195,7 @@ function MyStatusDropdown({
               <input type="hidden" name="piece_id" value={item.piece_id} />
               <input type="hidden" name="redirect_to" value={redirectTo} />
               <SubmitButton
-                label={isAlreadyInPractice ? "Set as known" : "Mark as known"}
+                label={isAlreadyInPractice ? "Move to Known" : "Mark Known"}
                 pendingLabel="Saving..."
                 className={buttonStyles.menuItem}
               />
@@ -207,7 +207,7 @@ function MyStatusDropdown({
               action={removeFromPractice}
               onSubmit={(event) => {
                 const confirmed = window.confirm(
-                  `Remove "${title}" from active practice? This stops review scheduling for this tune, but does not remove it from the setlist.`
+                  `Stop Practice for "${title}"? Review scheduling will stop. The tune will remain in this setlist, the shared tune will not be deleted, and stopping Practice does not automatically mark it Known.`
                 )
 
                 if (!confirmed) {
@@ -222,8 +222,8 @@ function MyStatusDropdown({
               />
               <input type="hidden" name="redirect_to" value={redirectTo} />
               <SubmitButton
-                label="Remove from practice"
-                pendingLabel="Removing..."
+                label="Stop Practice"
+                pendingLabel="Stopping..."
                 className={buttonStyles.menuItem}
               />
             </form>
@@ -470,7 +470,7 @@ export default function SetlistTuneMatrix({
                     />
                     <input type="hidden" name="redirect_to" value={redirectTo} />
                     <SubmitButton
-                      label="Remove"
+                      label="Remove from setlist"
                       pendingLabel="Removing..."
                       className={buttonStyles.destructiveSecondary}
                     />

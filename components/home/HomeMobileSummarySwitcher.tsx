@@ -10,15 +10,15 @@ import {
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import type { FriendActivityItem } from "@/lib/friend-activity"
 import type { HomeSummaryData, StreakSummary } from "@/lib/types"
-import type { PageOptionsPreferences } from "@/lib/page-options/types"
 
 type MobileHomeTab = "today" | "repertoire" | "social"
+type HomeDensity = "compact" | "standard" | "spacious"
 
 type HomeMobileSummarySwitcherProps = {
   summary: HomeSummaryData
   recentFriendActivity: FriendActivityItem[]
   streakSummary: StreakSummary
-  homePreferences: PageOptionsPreferences
+  density: HomeDensity
 }
 
 type MobileRowProps = {
@@ -35,13 +35,6 @@ const tabs: { id: MobileHomeTab; label: string }[] = [
   { id: "social", label: "Social" },
 ]
 
-function isSectionVisible(
-  homePreferences: PageOptionsPreferences,
-  sectionId: string
-) {
-  return homePreferences.visibleSections[sectionId] ?? true
-}
-
 function badgeCategoryLabel(value: string) {
   return value
     .split("_")
@@ -49,7 +42,7 @@ function badgeCategoryLabel(value: string) {
     .join(" ")
 }
 
-function getPreviewLimit(density: PageOptionsPreferences["density"]) {
+function getPreviewLimit(density: HomeDensity) {
   if (density === "spacious") return 4
   if (density === "compact") return 3
 
@@ -203,85 +196,78 @@ function MobileSwitcher({
 function TodayPanel({
   summary,
   streakSummary,
-  homePreferences,
+  density,
 }: {
   summary: HomeSummaryData
   streakSummary: StreakSummary
-  homePreferences: PageOptionsPreferences
+  density: HomeDensity
 }) {
-  const previewLimit = getPreviewLimit(homePreferences.density)
+  const previewLimit = getPreviewLimit(density)
 
   return (
     <div className="space-y-5">
-      {isSectionVisible(homePreferences, "due_next") ||
-      isSectionVisible(homePreferences, "repertoire_state") ? (
-        <MobilePanel>
-          <MobileSectionHeading
-            title="Today"
-            action={
-              <Link href="/review" className={buttonStyles.primary}>
-                Practice
-              </Link>
-            }
+      <MobilePanel>
+        <MobileSectionHeading
+          title="Today"
+          action={
+            <Link href="/review" className={buttonStyles.primary}>
+              Practice
+            </Link>
+          }
+        />
+
+        <div className="mt-4">
+          <MobileStatGrid
+            items={[
+              {
+                label: "Due",
+                value: summary.dueTodayCount,
+                href: "/review#due-today",
+              },
+              {
+                label: "Attention",
+                value: summary.needsAttentionCount,
+                href: "/review?mode=catch-up#catch-up",
+              },
+            ]}
           />
+        </div>
+      </MobilePanel>
 
-          <div className="mt-4">
-            <MobileStatGrid
-              items={[
-                {
-                  label: "Due",
-                  value: summary.dueTodayCount,
-                  href: "/review#due-today",
-                },
-                {
-                  label: "Attention",
-                  value: summary.needsAttentionCount,
-                  href: "/review?mode=catch-up#catch-up",
-                },
-              ]}
-            />
+      <StreakSummarySection streakSummary={streakSummary} />
+
+      <section className="space-y-2">
+        <MobileSectionHeading title="Due next" />
+
+        {summary.dueTodayPreview.length === 0 ? (
+          <MobileEmptyBlock>Nothing due today.</MobileEmptyBlock>
+        ) : (
+          <div className="border-y border-border/70">
+            {summary.dueTodayPreview
+              .slice(0, previewLimit)
+              .map((userPiece) => (
+                <MobileRow
+                  key={userPiece.user_piece_id}
+                  href={`/library/${userPiece.piece_id}`}
+                  title={userPiece.title}
+                  meta={`Stage ${userPiece.stage}`}
+                />
+              ))}
           </div>
-        </MobilePanel>
-      ) : null}
-
-      {isSectionVisible(homePreferences, "streaks") ? (
-        <StreakSummarySection streakSummary={streakSummary} />
-      ) : null}
-
-      {isSectionVisible(homePreferences, "due_next") ? (
-        <section className="space-y-2">
-          <MobileSectionHeading title="Due next" />
-
-          {summary.dueTodayPreview.length === 0 ? (
-            <MobileEmptyBlock>Nothing due today.</MobileEmptyBlock>
-          ) : (
-            <div className="border-y border-border/70">
-              {summary.dueTodayPreview
-                .slice(0, previewLimit)
-                .map((userPiece) => (
-                  <MobileRow
-                    key={userPiece.user_piece_id}
-                    href={`/library/${userPiece.piece_id}`}
-                    title={userPiece.title}
-                    meta={`Stage ${userPiece.stage}`}
-                  />
-                ))}
-            </div>
-          )}
-        </section>
-      ) : null}
+        )}
+      </section>
     </div>
   )
 }
 
 function RepertoirePanel({
   summary,
-  homePreferences,
+  density,
 }: {
   summary: HomeSummaryData
-  homePreferences: PageOptionsPreferences
+  density: HomeDensity
 }) {
-  const previewLimit = getPreviewLimit(homePreferences.density)
+  const previewLimit = getPreviewLimit(density)
 
   const recentBadges = useMemo(
     () =>
@@ -304,154 +290,142 @@ function RepertoirePanel({
 
   return (
     <div className="space-y-5">
-      {isSectionVisible(homePreferences, "repertoire_state") ? (
-        <MobilePanel>
-          <MobileSectionHeading title="Repertoire" />
+      <MobilePanel>
+        <MobileSectionHeading title="Repertoire" />
 
-          <div className="mt-4">
-            <MobileStatGrid
-              items={[
-                {
-                  label: "Known",
-                  value: summary.knownCount,
-                  href: "/library/known",
-                },
-                {
-                  label: "Practice",
-                  value: summary.practiceCount,
-                  href: "/library/practice",
-                },
-                {
-                  label: "Lists",
-                  value: summary.listCount,
-                  href: "/learning-lists",
-                },
-                {
-                  label: "Badges",
-                  value: summary.badgeSummary.receivedCount,
-                  href: "/badges",
-                },
-              ]}
-            />
+        <div className="mt-4">
+          <MobileStatGrid
+            items={[
+              {
+                label: "Known",
+                value: summary.knownCount,
+                href: "/library/known",
+              },
+              {
+                label: "Practice",
+                value: summary.practiceCount,
+                href: "/library/practice",
+              },
+              {
+                label: "Lists",
+                value: summary.listCount,
+                href: "/learning-lists",
+              },
+              {
+                label: "Badges",
+                value: summary.badgeSummary.receivedCount,
+                href: "/badges",
+              },
+            ]}
+          />
+        </div>
+      </MobilePanel>
+
+      <section className="space-y-2">
+        <MobileSectionHeading title="Currently in practice" />
+
+        {summary.inPracticePreview.length === 0 ? (
+          <MobileEmptyBlock>No tunes in practice yet.</MobileEmptyBlock>
+        ) : (
+          <div className="border-y border-border/70">
+            {summary.inPracticePreview
+              .slice(0, previewLimit)
+              .map((userPiece) => (
+                <MobileRow
+                  key={userPiece.user_piece_id}
+                  href={`/library/${userPiece.piece_id}`}
+                  title={userPiece.title}
+                  meta={`Stage ${userPiece.stage}`}
+                />
+              ))}
           </div>
-        </MobilePanel>
-      ) : null}
+        )}
+      </section>
 
-      {isSectionVisible(homePreferences, "currently_in_practice") ? (
-        <section className="space-y-2">
-          <MobileSectionHeading title="Currently in practice" />
+      <section className="space-y-2">
+        <MobileSectionHeading title="Learning queue" />
 
-          {summary.inPracticePreview.length === 0 ? (
-            <MobileEmptyBlock>No tunes in practice yet.</MobileEmptyBlock>
-          ) : (
-            <div className="border-y border-border/70">
-              {summary.inPracticePreview
-                .slice(0, previewLimit)
-                .map((userPiece) => (
-                  <MobileRow
-                    key={userPiece.user_piece_id}
-                    href={`/library/${userPiece.piece_id}`}
-                    title={userPiece.title}
-                    meta={`Stage ${userPiece.stage}`}
-                  />
-                ))}
-            </div>
-          )}
-        </section>
-      ) : null}
-
-      {isSectionVisible(homePreferences, "learning_queue") ? (
-        <section className="space-y-2">
-          <MobileSectionHeading title="Learning queue" />
-
-          {summary.learningQueuePreview.length === 0 ? (
-            <MobileEmptyBlock>
-              Add tunes to lists before starting Practice to build this queue.
-            </MobileEmptyBlock>
-          ) : (
-            <div className="border-y border-border/70">
-              {summary.learningQueuePreview
-                .slice(0, previewLimit)
-                .map((queueTune) => (
-                  <MobileRow
-                    key={queueTune.piece_id}
-                    href={`/library/${queueTune.piece_id}`}
-                    title={queueTune.title}
-                    meta={getLearningQueueMeta({
-                      firstListName: queueTune.firstListName,
-                      listNames: queueTune.listNames,
-                    })}
-                  />
-                ))}
-            </div>
-          )}
-        </section>
-      ) : null}
-
-      {isSectionVisible(homePreferences, "lists") ? (
-        <section className="space-y-2">
-          <MobileSectionHeading
-            title="Your lists"
-            action={
-              <Link href="/learning-lists" className={buttonStyles.secondary}>
-                View
-              </Link>
-            }
-          />
-
-          {summary.listPreview.length === 0 ? (
-            <MobileEmptyBlock>No lists yet.</MobileEmptyBlock>
-          ) : (
-            <div className="border-y border-border/70">
-              {summary.listPreview.slice(0, previewLimit).map((learningList) => (
+        {summary.learningQueuePreview.length === 0 ? (
+          <MobileEmptyBlock>
+            Add tunes to lists before starting Practice to build this queue.
+          </MobileEmptyBlock>
+        ) : (
+          <div className="border-y border-border/70">
+            {summary.learningQueuePreview
+              .slice(0, previewLimit)
+              .map((queueTune) => (
                 <MobileRow
-                  key={learningList.id}
-                  href={`/learning-lists/${learningList.id}`}
-                  title={learningList.name}
+                  key={queueTune.piece_id}
+                  href={`/library/${queueTune.piece_id}`}
+                  title={queueTune.title}
+                  meta={getLearningQueueMeta({
+                    firstListName: queueTune.firstListName,
+                    listNames: queueTune.listNames,
+                  })}
                 />
               ))}
-            </div>
-          )}
-        </section>
-      ) : null}
+          </div>
+        )}
+      </section>
 
-      {isSectionVisible(homePreferences, "badges") ? (
-        <section className="space-y-2">
-          <MobileSectionHeading
-            title="Badges"
-            action={
-              <Link href="/badges" className={buttonStyles.secondary}>
-                View
-              </Link>
-            }
-          />
+      <section className="space-y-2">
+        <MobileSectionHeading
+          title="Your lists"
+          action={
+            <Link href="/learning-lists" className={buttonStyles.secondary}>
+              View
+            </Link>
+          }
+        />
 
-          {recentBadges.length === 0 ? (
-            <MobileEmptyBlock>No badges yet.</MobileEmptyBlock>
-          ) : (
-            <div className="border-y border-border/70">
-              {recentBadges.map((badge) => (
-                <MobileRow
-                  key={`${badge.kind}-${badge.id}`}
-                  href={`/badges/${badge.slug}`}
-                  title={badge.name}
-                  meta={`${badge.kind} · ${badgeCategoryLabel(badge.category)}`}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-      ) : null}
+        {summary.listPreview.length === 0 ? (
+          <MobileEmptyBlock>No lists yet.</MobileEmptyBlock>
+        ) : (
+          <div className="border-y border-border/70">
+            {summary.listPreview.slice(0, previewLimit).map((learningList) => (
+              <MobileRow
+                key={learningList.id}
+                href={`/learning-lists/${learningList.id}`}
+                title={learningList.name}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="space-y-2">
+        <MobileSectionHeading
+          title="Badges"
+          action={
+            <Link href="/badges" className={buttonStyles.secondary}>
+              View
+            </Link>
+          }
+        />
+
+        {recentBadges.length === 0 ? (
+          <MobileEmptyBlock>No badges yet.</MobileEmptyBlock>
+        ) : (
+          <div className="border-y border-border/70">
+            {recentBadges.map((badge) => (
+              <MobileRow
+                key={`${badge.kind}-${badge.id}`}
+                href={`/badges/${badge.slug}`}
+                title={badge.name}
+                meta={`${badge.kind} · ${badgeCategoryLabel(badge.category)}`}
+              />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   )
 }
 
 function SocialPanel({
   recentFriendActivity,
-  homePreferences,
 }: {
   recentFriendActivity: FriendActivityItem[]
-  homePreferences: PageOptionsPreferences
 }) {
   return (
     <div className="space-y-5">
@@ -471,32 +445,30 @@ function SocialPanel({
         </div>
       </MobilePanel>
 
-      {isSectionVisible(homePreferences, "friend_activity") ? (
-        <section className="space-y-2">
-          <MobileSectionHeading title="Friend activity" />
+      <section className="space-y-2">
+        <MobileSectionHeading title="Friend activity" />
 
-          {recentFriendActivity.length === 0 ? (
-            <MobileEmptyBlock>No recent friend activity yet.</MobileEmptyBlock>
-          ) : (
-            <div className="border-y border-border/70">
-              {recentFriendActivity.slice(0, 5).map((item) => (
-                <div
-                  key={item.id}
-                  className="border-b border-border/70 py-3 text-sm last:border-b-0"
-                >
-                  <p className="leading-6 text-foreground">
-                    {renderFriendActivityText(item)}
-                  </p>
+        {recentFriendActivity.length === 0 ? (
+          <MobileEmptyBlock>No recent friend activity yet.</MobileEmptyBlock>
+        ) : (
+          <div className="border-y border-border/70">
+            {recentFriendActivity.slice(0, 5).map((item) => (
+              <div
+                key={item.id}
+                className="border-b border-border/70 py-3 text-sm last:border-b-0"
+              >
+                <p className="leading-6 text-foreground">
+                  {renderFriendActivityText(item)}
+                </p>
 
-                  <p className="mt-1 text-xs font-medium text-muted-foreground">
-                    {formatFriendActivityRelativeTime(item.created_at)}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      ) : null}
+                <p className="mt-1 text-xs font-medium text-muted-foreground">
+                  {formatFriendActivityRelativeTime(item.created_at)}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   )
 }
@@ -505,7 +477,7 @@ export default function HomeMobileSummarySwitcher({
   summary,
   recentFriendActivity,
   streakSummary,
-  homePreferences,
+  density,
 }: HomeMobileSummarySwitcherProps) {
   const [activeTab, setActiveTab] = useState<MobileHomeTab>("today")
 
@@ -517,19 +489,16 @@ export default function HomeMobileSummarySwitcher({
         <TodayPanel
           summary={summary}
           streakSummary={streakSummary}
-          homePreferences={homePreferences}
+          density={density}
         />
       ) : null}
 
       {activeTab === "repertoire" ? (
-        <RepertoirePanel summary={summary} homePreferences={homePreferences} />
+        <RepertoirePanel summary={summary} density={density} />
       ) : null}
 
       {activeTab === "social" ? (
-        <SocialPanel
-          recentFriendActivity={recentFriendActivity}
-          homePreferences={homePreferences}
-        />
+        <SocialPanel recentFriendActivity={recentFriendActivity} />
       ) : null}
     </section>
   )

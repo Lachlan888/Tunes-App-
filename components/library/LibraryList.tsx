@@ -1,27 +1,21 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
 import EmptyState from "@/components/EmptyState"
 import TuneCard, { type TuneCardListLink } from "@/components/TuneCard"
-import DeleteCanonicalTuneModal from "@/components/library/DeleteCanonicalTuneModal"
 import LibraryTuneCardActions from "@/components/library/LibraryTuneCardActions"
-import FindReferenceModal from "@/components/reference-media/FindReferenceModal"
 import CardPager from "@/components/ui/CardPager"
-import { buttonStyles } from "@/components/ui/buttonStyles"
 import useScrollToPiece from "@/hooks/useScrollToPiece"
+import type { TuneMediaBundle } from "@/lib/tune-media"
 import type {
   LearningList,
   LearningListItemMembership,
   Piece,
-  UserPieceMediaLoop,
   UserKnownPiece,
   UserPiece,
   UserRole,
 } from "@/lib/types"
-import type {
-  LibraryUserPieceMetadata,
-} from "@/lib/loaders/library"
 
 type LibraryListProps = {
   pieces: Piece[] | null
@@ -30,22 +24,15 @@ type LibraryListProps = {
   userKnownPieces: UserKnownPiece[] | null
   learningLists: LearningList[] | null
   learningListItems: LearningListItemMembership[] | null
-  userPieceMetadata: LibraryUserPieceMetadata[] | null
-  mediaLoops: UserPieceMediaLoop[] | null
+  mediaBundles: Map<number, TuneMediaBundle>
   currentUserRole: UserRole
   startLearning: (formData: FormData) => Promise<void>
   addToLearningList: (formData: FormData) => Promise<void>
   removeTuneFromMyApp: (formData: FormData) => Promise<void>
   deleteCanonicalTuneAsModerator: (formData: FormData) => Promise<void>
-  addReferenceUrlToPiece: (formData: FormData) => Promise<void>
-  upsertPreferredReferenceUrl: (formData: FormData) => Promise<void>
   redirectTo: string
   scrollPieceId: string
   hasActiveFilters: boolean
-}
-
-function canUseModeratorTools(role: UserRole) {
-  return role === "moderator" || role === "admin"
 }
 
 function buildPieceRedirectTo(redirectTo: string, pieceId: number) {
@@ -116,48 +103,20 @@ export default function LibraryList({
   userKnownPieces,
   learningLists,
   learningListItems,
-  userPieceMetadata,
-  mediaLoops,
-  currentUserRole,
+  mediaBundles,
   startLearning,
   addToLearningList,
-  removeTuneFromMyApp,
-  deleteCanonicalTuneAsModerator,
-  addReferenceUrlToPiece,
-  upsertPreferredReferenceUrl,
   redirectTo,
   scrollPieceId,
   hasActiveFilters,
 }: LibraryListProps) {
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
   const [selectedListId, setSelectedListId] = useState("")
-  const [openStatusPieceId, setOpenStatusPieceId] = useState<number | null>(
-    null
-  )
-  const [deletePiece, setDeletePiece] = useState<Piece | null>(null)
-  const [referencePiece, setReferencePiece] = useState<Piece | null>(null)
 
   const desktopPieces = pieces ?? []
   const mobilePagerPieces = mobilePieces ?? desktopPieces
-  const isModerator = canUseModeratorTools(currentUserRole)
 
   useScrollToPiece(scrollPieceId)
-
-  useEffect(() => {
-    if (openStatusPieceId === null) return
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setOpenStatusPieceId(null)
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown)
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [openStatusPieceId])
 
   function renderTuneCard(piece: Piece) {
     const pieceRedirectTo = buildPieceRedirectTo(redirectTo, piece.id)
@@ -165,14 +124,7 @@ export default function LibraryList({
     const isAlreadyInPractice = Boolean(activeUserPiece)
     const isKnown = getIsKnown(piece.id, userKnownPieces)
     const listLinks = getListLinksForPiece(piece.id, learningListItems)
-    const referenceMetadata =
-      (userPieceMetadata ?? []).find((metadata) => metadata.piece_id === piece.id) ??
-      null
-    const pieceMediaLoops = (mediaLoops ?? []).filter(
-      (loop) => loop.piece_id === piece.id
-    )
-    const isInAList = listLinks.length > 0
-    const isStatusOpen = openStatusPieceId === piece.id
+    const mediaBundle = mediaBundles.get(piece.id) ?? null
 
     return (
       <TuneCard
@@ -182,49 +134,22 @@ export default function LibraryList({
         style={piece.style}
         timeSignature={piece.time_signature}
         referenceUrl={piece.reference_url}
-        referenceMetadata={referenceMetadata}
+        mediaBundle={mediaBundle}
         pieceStyles={piece.piece_styles}
         listLinks={listLinks}
         redirectTo={pieceRedirectTo}
-        savedLoops={pieceMediaLoops}
-        upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
-        topRightAction={
-          isModerator ? (
-            <button
-              type="button"
-              className={buttonStyles.iconDestructive}
-              title="Moderator only. Review the warning before deleting this shared tune for everyone."
-              aria-label={`Delete shared tune ${piece.title}`}
-              onClick={() => setDeletePiece(piece)}
-            >
-              ×
-            </button>
-          ) : null
-        }
       >
         <LibraryTuneCardActions
           piece={piece}
           activeUserPiece={activeUserPiece}
           isAlreadyInPractice={isAlreadyInPractice}
           isKnown={isKnown}
-          isInAList={isInAList}
-          isStatusOpen={isStatusOpen}
           redirectTo={pieceRedirectTo}
-          onToggleStatus={() =>
-            setOpenStatusPieceId(isStatusOpen ? null : piece.id)
-          }
-          onCloseStatus={() => setOpenStatusPieceId(null)}
           onOpenAddToList={() => {
             setSelectedPiece(piece)
             setSelectedListId("")
-            setOpenStatusPieceId(null)
-          }}
-          onOpenFindReference={() => {
-            setReferencePiece(piece)
-            setOpenStatusPieceId(null)
           }}
           startLearning={startLearning}
-          removeTuneFromMyApp={removeTuneFromMyApp}
         />
       </TuneCard>
     )
@@ -248,16 +173,6 @@ export default function LibraryList({
 
   return (
     <>
-      {openStatusPieceId !== null ? (
-        <button
-          type="button"
-          aria-label="Close status menu"
-          className="fixed inset-0 z-40 hidden cursor-default bg-transparent md:block"
-          onClick={() => setOpenStatusPieceId(null)}
-          tabIndex={-1}
-        />
-      ) : null}
-
       <div className="md:hidden">
         <p className="mb-3 px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Catalogue
@@ -281,11 +196,7 @@ export default function LibraryList({
           renderItem={(piece) => (
             <div
               id={`piece-${piece.id}`}
-              className={
-                openStatusPieceId === piece.id
-                  ? "relative z-50 scroll-mt-28"
-                  : "relative z-0 scroll-mt-28"
-              }
+              className="relative z-0 scroll-mt-28"
             >
               {renderTuneCard(piece)}
             </div>
@@ -295,17 +206,11 @@ export default function LibraryList({
 
       <ul className="hidden grid-cols-1 gap-4 md:grid md:grid-cols-2">
         {desktopPieces.map((piece) => {
-          const isStatusOpen = openStatusPieceId === piece.id
-
           return (
             <li
               key={piece.id}
               id={`piece-${piece.id}`}
-              className={
-                isStatusOpen
-                  ? "relative z-50 scroll-mt-28"
-                  : "relative z-0 scroll-mt-28"
-              }
+              className="relative z-0 scroll-mt-28"
             >
               {renderTuneCard(piece)}
             </li>
@@ -332,23 +237,6 @@ export default function LibraryList({
         />
       ) : null}
 
-      {referencePiece ? (
-        <FindReferenceModal
-          piece={referencePiece}
-          redirectTo={buildPieceRedirectTo(redirectTo, referencePiece.id)}
-          addReferenceUrlToPiece={addReferenceUrlToPiece}
-          onClose={() => setReferencePiece(null)}
-        />
-      ) : null}
-
-      {deletePiece ? (
-        <DeleteCanonicalTuneModal
-          piece={deletePiece}
-          redirectTo={redirectTo}
-          deleteCanonicalTuneAsModerator={deleteCanonicalTuneAsModerator}
-          onClose={() => setDeletePiece(null)}
-        />
-      ) : null}
     </>
   )
 }

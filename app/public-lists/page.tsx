@@ -1,24 +1,21 @@
+import Link from "next/link"
 import EmptyState from "@/components/EmptyState"
-import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import PublicListSearchFilters from "@/components/shared/PublicListSearchFilters"
 import SharedListCard from "@/components/shared/SharedListCard"
 import SharedListsEmptyState from "@/components/shared/SharedListsEmptyState"
 import SharedListsErrorState from "@/components/shared/SharedListsErrorState"
 import SharedListsHeader from "@/components/shared/SharedListsHeader"
 import SharedListsMobileList from "@/components/shared/SharedListsMobileList"
-import { loadPagePreferences } from "@/lib/loaders/page-preferences"
 import {
   loadPublicListsData,
   type SharedList,
 } from "@/lib/loaders/public-lists"
-import { SHARED_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 import { normaliseForSearch } from "@/lib/search-filters"
 
 type PublicListSortValue = "recent" | "alpha" | "tune-count"
 
 type PublicListsPageProps = {
   searchParams?: Promise<{
-    page_options?: string | string[]
     q?: string | string[]
     sort?: string | string[]
     style?: string | string[]
@@ -34,41 +31,11 @@ function getSingleValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? "" : value ?? ""
 }
 
-function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Public lists display options saved."
-  if (status === "reset") return "Public lists display options reset."
-  if (status === "error") return "Couldn’t save display options."
-
-  return null
-}
-
 function getSortValue(value: string): PublicListSortValue {
   if (value === "alpha") return "alpha"
   if (value === "tune-count") return "tune-count"
 
   return "recent"
-}
-
-function buildPublicListsHref(options: {
-  q: string
-  styles: string[]
-  sort: PublicListSortValue
-}) {
-  const params = new URLSearchParams()
-
-  if (options.q) {
-    params.set("q", options.q)
-  }
-
-  for (const style of options.styles) {
-    params.append("style", style)
-  }
-
-  if (options.sort !== "recent") {
-    params.set("sort", options.sort)
-  }
-
-  return params.toString() ? `/public-lists?${params.toString()}` : "/public-lists"
 }
 
 function listMatchesPublicFilters(
@@ -131,16 +98,10 @@ export default async function PublicListsPage({
   searchParams,
 }: PublicListsPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined
-  const pagePreferences = await loadPagePreferences(
-    SHARED_PAGE_OPTIONS_CONFIG.pageKey
-  )
-
-  const showSection = (sectionId: string) =>
-    pagePreferences.visibleSections[sectionId] ?? true
-
-  const pageOptionsMessage = getPageOptionsMessage(
-    getSingleValue(resolvedSearchParams?.page_options)
-  )
+  const showSection = (sectionId: string) => {
+    void sectionId
+    return true
+  }
 
   const searchQuery = getSingleValue(resolvedSearchParams?.q)
   const selectedStyles = toArray(resolvedSearchParams?.style)
@@ -167,28 +128,8 @@ export default async function PublicListsPage({
   const hasActiveFilters =
     searchQuery !== "" || selectedStyles.length > 0 || selectedSort !== "recent"
 
-  const redirectTo = buildPublicListsHref({
-    q: searchQuery,
-    styles: selectedStyles,
-    sort: selectedSort,
-  })
-
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      {pageOptionsMessage ? (
-        <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
-          {pageOptionsMessage}
-        </div>
-      ) : null}
-
-      <section className="mb-8 hidden flex-wrap items-center justify-end gap-3 md:flex">
-        <PageOptionsModal
-          config={SHARED_PAGE_OPTIONS_CONFIG}
-          preferences={pagePreferences}
-          redirectTo={redirectTo}
-        />
-      </section>
-
       {showSection("shared_header") ? <SharedListsHeader /> : null}
 
       {publicListsData.sharedLists.length === 0 ? (
@@ -218,12 +159,12 @@ export default async function PublicListsPage({
             </div>
 
             {hasActiveFilters ? (
-              <a
+              <Link
                 href="/public-lists"
                 className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               >
                 Reset view
-              </a>
+              </Link>
             ) : null}
           </section>
 

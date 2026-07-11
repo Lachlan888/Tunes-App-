@@ -33,6 +33,7 @@ export default function PendingNavLink({
   const [isPending, startTransition] = useTransition()
 
   const isActive = navItemIsActive(pathname, href)
+  const isExactCurrentPage = pathname === href
 
   const sizeClasses =
     size === "compact" ? "px-2.5 py-1.5 text-sm" : "px-3 py-1.5 text-sm"
@@ -40,11 +41,12 @@ export default function PendingNavLink({
   return (
     <button
       type="button"
-      disabled={isPending || isActive}
-      aria-disabled={isPending || isActive}
+      disabled={isPending}
+      aria-disabled={isPending}
       aria-current={isActive ? "page" : undefined}
       onClick={() => {
-        if (isPending || isActive) return
+        if (isPending) return
+        if (isExactCurrentPage) return
 
         startTransition(() => {
           router.push(href)

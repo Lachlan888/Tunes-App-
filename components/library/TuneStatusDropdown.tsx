@@ -95,7 +95,7 @@ export function TuneStatusActionForms({
             if (!isAlreadyInPractice) return
 
             const confirmed = window.confirm(
-              `Mark "${piece.title}" as known? This removes it from active practice.`
+              `Move "${piece.title}" to Known? Active Practice and review scheduling will stop.`
             )
 
             if (!confirmed) {
@@ -107,7 +107,7 @@ export function TuneStatusActionForms({
           <input type="hidden" name="redirect_to" value={redirectTo} />
 
           <SubmitButton
-            label={isAlreadyInPractice ? "Set as known" : "Mark as known"}
+            label={isAlreadyInPractice ? "Move to Known" : "Mark Known"}
             pendingLabel="Saving..."
             className={itemClassName}
           />
@@ -119,7 +119,7 @@ export function TuneStatusActionForms({
           action={removeFromPractice}
           onSubmit={(event) => {
             const confirmed = window.confirm(
-              `Remove "${piece.title}" from active practice? This stops review scheduling for this tune, but does not delete the shared tune or remove it from your lists.`
+              `Stop Practice for "${piece.title}"? Review scheduling will stop. The tune will remain in any lists, the shared tune will not be deleted, and stopping Practice does not automatically mark it Known.`
             )
 
             if (!confirmed) {
@@ -135,8 +135,8 @@ export function TuneStatusActionForms({
           <input type="hidden" name="redirect_to" value={redirectTo} />
 
           <SubmitButton
-            label="Remove from practice"
-            pendingLabel="Removing..."
+            label="Stop Practice"
+            pendingLabel="Stopping..."
             className={itemClassName}
           />
         </form>
@@ -150,7 +150,7 @@ export function TuneStatusActionForms({
             action={removeTuneFromMyApp}
             onSubmit={(event) => {
               const confirmed = window.confirm(
-                `Remove "${piece.title}" from your library? This removes it from your practice, known tunes, and your lists, but does not delete the shared tune.`
+                `Remove "${piece.title}" from my app? This removes it from all of your lists, removes Known state, and stops Practice scheduling. The shared tune remains available to other users.`
               )
 
               if (!confirmed) {
@@ -162,7 +162,7 @@ export function TuneStatusActionForms({
             <input type="hidden" name="redirect_to" value={redirectTo} />
 
             <SubmitButton
-              label="Remove from my library"
+              label="Remove tune from my app"
               pendingLabel="Removing..."
               className={destructiveClassName}
             />

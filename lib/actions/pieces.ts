@@ -3,30 +3,13 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { canModerate, getCurrentUserRole } from "@/lib/auth/roles"
-import { addPieceToLearningListForUser } from "@/lib/actions/lists"
-import { markPieceKnownForUser } from "@/lib/actions/known-pieces"
-import { startPracticeForUser } from "@/lib/actions/user-pieces"
 import { normaliseKey } from "@/lib/music/keys"
 import { normaliseTuneTitle } from "@/lib/normalise"
 import {
   recordPieceCreatedEvent,
   recordPieceDetailsAddedEvent,
-  recordPieceLoreAddedEvent,
-  recordPieceMediaLinkAddedEvent,
-  recordPieceSheetMusicLinkAddedEvent,
 } from "@/lib/services/activity-events"
 import { createClient } from "@/lib/supabase/server"
-
-const VALID_LORE_CATEGORIES = [
-  "region",
-  "informant",
-  "collector",
-  "alternate_title",
-  "tune_family",
-  "story_folklore_note",
-] as const
-
-type LoreCategory = (typeof VALID_LORE_CATEGORIES)[number]
 
 function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")
@@ -51,10 +34,6 @@ function normaliseForDuplicateMatch(value: string | null) {
   return normaliseTuneTitle(value)
 }
 
-function isValidLoreCategory(category: string): category is LoreCategory {
-  return VALID_LORE_CATEGORIES.includes(category as LoreCategory)
-}
-
 function isValidOptionalUrl(value: string) {
   if (!value) return true
 
@@ -66,57 +45,9 @@ function isValidOptionalUrl(value: string) {
   }
 }
 
-type OptionalLinkInput = {
-  label: string
-  url: string
+function isValidOptionalTimeSignature(value: string) {
+  return value === "" || /^\d+\/\d+$/.test(value)
 }
-
-function getOptionalLinkInput(
-  formData: FormData,
-  labelKey: string,
-  urlKey: string
-): OptionalLinkInput | null {
-  const label = String(formData.get(labelKey) ?? "").trim()
-  const url = String(formData.get(urlKey) ?? "").trim()
-
-  if (!label && !url) {
-    return null
-  }
-
-  return {
-    label,
-    url,
-  }
-}
-
-type OptionalLoreInput = {
-  category: LoreCategory
-  entryText: string
-}
-
-function getOptionalLoreInput(formData: FormData): OptionalLoreInput | null {
-  const category = String(formData.get("advanced_lore_category") ?? "").trim()
-  const entryText = String(formData.get("advanced_lore_text") ?? "").trim()
-
-  if (!category && !entryText) {
-    return null
-  }
-
-  if (!isValidLoreCategory(category)) {
-    return null
-  }
-
-  if (!entryText) {
-    return null
-  }
-
-  return {
-    category,
-    entryText,
-  }
-}
-
-type PostCreateAction = "none" | "known" | "practice"
 
 export async function createTune(formData: FormData) {
   const supabase = await createClient()
@@ -136,34 +67,8 @@ export async function createTune(formData: FormData) {
   const composer = String(formData.get("composer") ?? "").trim()
   const referenceUrl = String(formData.get("reference_url") ?? "").trim()
   const redirectTo = cleanRedirectTo(formData.get("redirect_to"), "/library")
-
-  const advancedMediaLink = getOptionalLinkInput(
-    formData,
-    "advanced_media_label",
-    "advanced_media_url"
-  )
-  const advancedSheetMusicLink = getOptionalLinkInput(
-    formData,
-    "advanced_sheet_music_label",
-    "advanced_sheet_music_url"
-  )
-  const advancedLoreCategory = String(
-    formData.get("advanced_lore_category") ?? ""
-  ).trim()
-  const advancedLoreText = String(formData.get("advanced_lore_text") ?? "").trim()
-  const advancedLoreInput = getOptionalLoreInput(formData)
-
-  const rawStyleIds = formData.getAll("style_ids")
-  const styleIds = rawStyleIds
-    .map((value) => Number(value))
-    .filter((value) => Number.isInteger(value) && value > 0)
-
-  const postCreateAction = String(
-    formData.get("post_create_action") ?? "none"
-  ).trim() as PostCreateAction
-
-  const addToList = String(formData.get("add_to_list") ?? "") === "true"
-  const learningListId = Number(formData.get("learning_list_id"))
+  const rawStyleId = String(formData.get("style_id") ?? "").trim()
+  const styleId = rawStyleId ? Number(rawStyleId) : null
 
   if (!title) {
     redirect(appendQueryParam(redirectTo, "create_tune", "missing_title"))
@@ -173,58 +78,14 @@ export async function createTune(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "create_tune", "invalid_key"))
   }
 
-  if (!isValidOptionalUrl(referenceUrl)) {
-    redirect(appendQueryParam(redirectTo, "create_tune", "invalid_url"))
-  }
-
-  if (
-    postCreateAction !== "none" &&
-    postCreateAction !== "known" &&
-    postCreateAction !== "practice"
-  ) {
+  if (!isValidOptionalTimeSignature(timeSignature)) {
     redirect(
-      appendQueryParam(redirectTo, "create_tune", "invalid_post_create_action")
+      appendQueryParam(redirectTo, "create_tune", "invalid_time_signature")
     )
   }
 
-  if (addToList && (!learningListId || Number.isNaN(learningListId))) {
-    redirect(appendQueryParam(redirectTo, "create_tune", "missing_list"))
-  }
-
-  if (advancedMediaLink) {
-    if (!advancedMediaLink.label || !advancedMediaLink.url) {
-      redirect(appendQueryParam(redirectTo, "create_tune", "incomplete_media"))
-    }
-
-    if (!isValidOptionalUrl(advancedMediaLink.url)) {
-      redirect(appendQueryParam(redirectTo, "create_tune", "invalid_media_url"))
-    }
-  }
-
-  if (advancedSheetMusicLink) {
-    if (!advancedSheetMusicLink.label || !advancedSheetMusicLink.url) {
-      redirect(
-        appendQueryParam(redirectTo, "create_tune", "incomplete_sheet_music")
-      )
-    }
-
-    if (!isValidOptionalUrl(advancedSheetMusicLink.url)) {
-      redirect(
-        appendQueryParam(redirectTo, "create_tune", "invalid_sheet_music_url")
-      )
-    }
-  }
-
-  if (advancedLoreCategory || advancedLoreText) {
-    if (!isValidLoreCategory(advancedLoreCategory)) {
-      redirect(
-        appendQueryParam(redirectTo, "create_tune", "invalid_lore_category")
-      )
-    }
-
-    if (!advancedLoreText) {
-      redirect(appendQueryParam(redirectTo, "create_tune", "missing_lore_text"))
-    }
+  if (!isValidOptionalUrl(referenceUrl)) {
+    redirect(appendQueryParam(redirectTo, "create_tune", "invalid_url"))
   }
 
   const normalisedTitle = normaliseForDuplicateMatch(title)
@@ -247,33 +108,33 @@ export async function createTune(formData: FormData) {
   }
 
   let styleLabelString: string | null = null
+  let selectedStyleId: number | null = null
 
-  if (styleIds.length > 0) {
-    const { data: validStyles, error: stylesError } = await supabase
+  if (
+    rawStyleId &&
+    (styleId === null || !Number.isInteger(styleId) || styleId <= 0)
+  ) {
+    redirect(appendQueryParam(redirectTo, "create_tune", "invalid_style"))
+  }
+
+  if (styleId) {
+    const { data: validStyle, error: styleError } = await supabase
       .from("styles")
       .select("id, label")
-      .in("id", styleIds)
+      .eq("id", styleId)
       .eq("is_active", true)
+      .maybeSingle()
 
-    if (stylesError) {
+    if (styleError) {
       redirect(appendQueryParam(redirectTo, "create_tune", "error"))
     }
 
-    const validStyleIds = new Set((validStyles ?? []).map((style) => style.id))
-    const hasInvalidStyleId = styleIds.some((id) => !validStyleIds.has(id))
-
-    if (hasInvalidStyleId) {
+    if (!validStyle) {
       redirect(appendQueryParam(redirectTo, "create_tune", "error"))
     }
 
-    const styleLabelsInSelectedOrder = styleIds
-      .map((id) => validStyles?.find((style) => style.id === id)?.label ?? null)
-      .filter((label): label is string => Boolean(label))
-
-    styleLabelString =
-      styleLabelsInSelectedOrder.length > 0
-        ? styleLabelsInSelectedOrder.join(", ")
-        : null
+    styleLabelString = validStyle.label
+    selectedStyleId = validStyle.id
   }
 
   const { data: insertedPiece, error: insertPieceError } = await supabase
@@ -293,15 +154,13 @@ export async function createTune(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "create_tune", "error"))
   }
 
-  if (styleIds.length > 0) {
-    const pieceStyleRows = styleIds.map((styleId) => ({
-      piece_id: insertedPiece.id,
-      style_id: styleId,
-    }))
-
+  if (selectedStyleId) {
     const { error: pieceStylesError } = await supabase
       .from("piece_styles")
-      .insert(pieceStyleRows)
+      .insert({
+        piece_id: insertedPiece.id,
+        style_id: selectedStyleId,
+      })
 
     if (pieceStylesError) {
       redirect(appendQueryParam(redirectTo, "create_tune", "error"))
@@ -320,84 +179,11 @@ export async function createTune(formData: FormData) {
     addedDetailFields.push("reference_url")
   }
 
-  if (advancedMediaLink) {
-    const { error: mediaLinkError } = await supabase
-      .from("piece_media_links")
-      .insert({
-        piece_id: insertedPiece.id,
-        url: advancedMediaLink.url,
-        label: advancedMediaLink.label,
-        created_by: user.id,
-      })
-
-    if (mediaLinkError) {
-      redirect(appendQueryParam(redirectTo, "create_tune", "error"))
-    }
-
-    addedDetailFields.push("media_link")
-    await recordPieceMediaLinkAddedEvent(user.id, insertedPiece.id)
-  }
-
-  if (advancedSheetMusicLink) {
-    const { error: sheetMusicLinkError } = await supabase
-      .from("piece_sheet_music_links")
-      .insert({
-        piece_id: insertedPiece.id,
-        url: advancedSheetMusicLink.url,
-        label: advancedSheetMusicLink.label,
-        created_by: user.id,
-      })
-
-    if (sheetMusicLinkError) {
-      redirect(appendQueryParam(redirectTo, "create_tune", "error"))
-    }
-
-    addedDetailFields.push("sheet_music_link")
-    await recordPieceSheetMusicLinkAddedEvent(user.id, insertedPiece.id)
-  }
-
-  if (advancedLoreInput) {
-    const { data: insertedLoreEntry, error: loreEntryError } = await supabase
-      .from("piece_lore_entries")
-      .insert({
-        piece_id: insertedPiece.id,
-        user_id: user.id,
-        category: advancedLoreInput.category,
-        entry_text: advancedLoreInput.entryText,
-      })
-      .select("id")
-      .single()
-
-    if (loreEntryError || !insertedLoreEntry) {
-      redirect(appendQueryParam(redirectTo, "create_tune", "error"))
-    }
-
-    addedDetailFields.push("lore_entry")
-    await recordPieceLoreAddedEvent(user.id, insertedPiece.id, insertedLoreEntry.id)
-  }
-
   if (addedDetailFields.length > 0) {
     await recordPieceDetailsAddedEvent(user.id, insertedPiece.id, addedDetailFields)
   }
 
-  if (postCreateAction === "known") {
-    await markPieceKnownForUser(supabase, user.id, insertedPiece.id)
-  }
-
-  if (postCreateAction === "practice") {
-    await startPracticeForUser(supabase, user.id, insertedPiece.id)
-  }
-
-  if (addToList) {
-    await addPieceToLearningListForUser(
-      supabase,
-      user.id,
-      insertedPiece.id,
-      learningListId
-    )
-  }
-
-  redirect(appendQueryParam(redirectTo, "create_tune", "success"))
+  redirect(`/library/${insertedPiece.id}?create_tune=success#reference-media`)
 }
 
 export async function removeTuneFromMyApp(formData: FormData) {

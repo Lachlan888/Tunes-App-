@@ -1,10 +1,14 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
 import EditListModal from "@/components/lists/EditListModal"
-import PreferredReferenceControl from "@/components/reference-media/PreferredReferenceControl"
-import RemoveTuneButton from "@/components/RemoveTuneButton"
+import MarkAsKnownButton from "@/components/MarkAsKnownButton"
+import TuneMediaLauncher from "@/components/reference-media/TuneMediaLauncher"
+import RemoveTuneFromListButton from "@/components/RemoveTuneFromListButton"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
+import TuneIdentity from "@/components/tunes/TuneIdentity"
+import TuneMetadataSummary from "@/components/tunes/TuneMetadataSummary"
+import TuneStateIndicator from "@/components/tunes/TuneStateIndicator"
 import {
   deleteList,
   removeTuneFromList,
@@ -13,14 +17,9 @@ import {
   shareLearningListPrivately,
   updateList,
 } from "@/lib/actions/lists"
-import { markAsKnown } from "@/lib/actions/known-pieces"
-import { upsertPreferredReferenceUrl } from "@/lib/actions/user-piece-metadata"
 import { startLearning } from "@/lib/actions/user-pieces"
-import {
-  loadLearningListDetailData,
-  type ListDetailUserPieceMetadata,
-} from "@/lib/loaders/list-detail"
-import { getStyleLabelsFromPiece } from "@/lib/search-filters"
+import { loadLearningListDetailData } from "@/lib/loaders/list-detail"
+import type { TuneMediaBundle } from "@/lib/tune-media"
 import type { Piece } from "@/lib/types"
 
 type LearningListDetailPageProps = {
@@ -67,16 +66,6 @@ function StatusMessage({
   )
 }
 
-function getPieceMetadataParts(piece: Piece) {
-  const styleLabels = getStyleLabelsFromPiece(piece)
-
-  return [
-    piece.key ? `Key: ${piece.key}` : null,
-    styleLabels.length > 0 ? `Style: ${styleLabels.join(", ")}` : null,
-    piece.time_signature ? `Time: ${piece.time_signature}` : null,
-  ].filter(Boolean)
-}
-
 const desktopActionPillBase =
   "inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2 text-sm font-semibold shadow-sm"
 
@@ -103,67 +92,47 @@ const mobileRemoveTuneClassName =
 
 function MobileTuneRow({
   piece,
+  listId,
   isAlreadyInPractice,
   isKnown,
+  stage,
   redirectTo,
-  referenceMetadata,
+  mediaBundle,
 }: {
   piece: Piece
+  listId: number
   isAlreadyInPractice: boolean
   isKnown: boolean
+  stage: number | null
   redirectTo: string
-  referenceMetadata: ListDetailUserPieceMetadata | null
+  mediaBundle: TuneMediaBundle | null
 }) {
-  const metadataParts = getPieceMetadataParts(piece)
-
   return (
     <article className="py-5">
       <div className="min-w-0">
-        <h3 className="font-serif text-2xl font-bold leading-tight tracking-tight text-foreground">
-          <Link
-            href={`/library/${piece.id}`}
-            className="decoration-primary decoration-2 underline-offset-4 hover:underline"
-          >
-            {piece.title}
-          </Link>
-        </h3>
+        <TuneIdentity id={piece.id} title={piece.title} />
 
-        {metadataParts.length > 0 && (
-          <p className="mt-2 text-sm font-medium leading-6 text-muted-foreground">
-            {metadataParts.join(" | ")}
-          </p>
-        )}
+        <TuneMetadataSummary piece={piece} />
 
-        {piece.reference_url ? (
+        {mediaBundle?.effectiveReference ? (
           <div className="mt-3">
-            <PreferredReferenceControl
+            <TuneMediaLauncher
               pieceId={piece.id}
               title={piece.title}
-              defaultReferenceUrl={piece.reference_url}
-              metadata={referenceMetadata}
+              mediaBundle={mediaBundle}
               redirectTo={redirectTo}
-              upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
-              compact
-              openLabel="Open reference video"
-              showPickerTrigger={false}
-              triggerClassName="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
+              label="Open Reference Media"
+              className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
             />
           </div>
         ) : null}
 
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-          {isAlreadyInPractice ? (
-            <span className="rounded-full border border-success bg-success px-3 py-1 text-success-foreground">
-              In practice
-            </span>
-          ) : null}
-
-          {isKnown ? (
-            <span className="rounded-full border border-border bg-background/70 px-3 py-1 text-muted-foreground">
-              Known
-            </span>
-          ) : null}
-        </div>
+        <TuneStateIndicator
+          isAlreadyInPractice={isAlreadyInPractice}
+          isKnown={isKnown}
+          stage={stage}
+          className="mt-3 flex flex-wrap items-center gap-2"
+        />
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -181,23 +150,24 @@ function MobileTuneRow({
         ) : null}
 
         {!isKnown ? (
-          <form action={markAsKnown}>
-            <input type="hidden" name="piece_id" value={piece.id} />
-            <input type="hidden" name="redirect_to" value={redirectTo} />
-
-            <SubmitButton
-              label={isAlreadyInPractice ? "Set as known" : "Mark known"}
-              pendingLabel="Saving..."
-              className={mobileSecondaryActionClassName}
-            />
-          </form>
+          <MarkAsKnownButton
+            pieceId={piece.id}
+            redirectTo={redirectTo}
+            label={isAlreadyInPractice ? "Move to Known" : "Mark Known"}
+            className={mobileSecondaryActionClassName}
+            confirmMessage={
+              isAlreadyInPractice
+                ? `Move "${piece.title}" to Known? Active Practice and review scheduling will stop.`
+                : undefined
+            }
+          />
         ) : null}
 
-        <RemoveTuneButton
+        <RemoveTuneFromListButton
+          listId={listId}
           pieceId={piece.id}
+          tuneTitle={piece.title}
           redirectTo={redirectTo}
-          label="Remove"
-          pendingLabel="Removing..."
           className={mobileRemoveTuneClassName}
         />
       </div>
@@ -207,20 +177,24 @@ function MobileTuneRow({
 
 function DesktopTuneActions({
   piece,
+  listId,
   isAlreadyInPractice,
   isKnown,
+  stage,
   redirectTo,
 }: {
   piece: Piece
+  listId: number
   isAlreadyInPractice: boolean
   isKnown: boolean
+  stage: number | null
   redirectTo: string
 }) {
   return (
     <div className="flex w-full flex-wrap items-center gap-3">
       {isAlreadyInPractice ? (
         <span className={desktopSuccessStatusClassName}>
-          Already in practice
+          {stage ? `Already in practice · Stage ${stage}` : "Already in practice"}
         </span>
       ) : (
         <form action={startLearning}>
@@ -238,20 +212,23 @@ function DesktopTuneActions({
       {isKnown ? (
         <span className={desktopPassiveStatusClassName}>Known</span>
       ) : (
-        <form action={markAsKnown}>
-          <input type="hidden" name="piece_id" value={piece.id} />
-          <input type="hidden" name="redirect_to" value={redirectTo} />
-
-          <SubmitButton
-            label={isAlreadyInPractice ? "Set as known" : "Mark as known"}
-            pendingLabel="Saving..."
-            className={desktopSecondaryActionClassName}
-          />
-        </form>
+        <MarkAsKnownButton
+          pieceId={piece.id}
+          redirectTo={redirectTo}
+          label={isAlreadyInPractice ? "Move to Known" : "Mark Known"}
+          className={desktopSecondaryActionClassName}
+          confirmMessage={
+            isAlreadyInPractice
+              ? `Move "${piece.title}" to Known? Active Practice and review scheduling will stop.`
+              : undefined
+          }
+        />
       )}
 
-      <RemoveTuneButton
+      <RemoveTuneFromListButton
+        listId={listId}
         pieceId={piece.id}
+        tuneTitle={piece.title}
         redirectTo={redirectTo}
         className={desktopRemoveTuneClassName}
       />
@@ -274,9 +251,9 @@ export default async function LearningListDetailPage({
     typedList,
     typedItems,
     tunes,
-    activePieceIds,
+    activePieceStates,
     knownPieceIds,
-    userPieceMetadata,
+    mediaBundles,
     ownerProfile,
     shareRecipients,
     accessMode,
@@ -489,20 +466,19 @@ export default async function LearningListDetailPage({
         ) : (
           <div className="mt-4 divide-y divide-border/70 border-y border-border/70">
             {visibleItems.map(({ item, piece }) => {
-              const isAlreadyInPractice = activePieceIds.has(piece.id)
+              const activePieceState = activePieceStates.get(piece.id) ?? null
+              const isAlreadyInPractice = Boolean(activePieceState)
               const isKnown = knownPieceIds.has(piece.id)
-              const referenceMetadata =
-                userPieceMetadata.find(
-                  (metadata) => metadata.piece_id === piece.id
-                ) ?? null
               return (
                 <MobileTuneRow
                   key={item.id}
                   piece={piece}
+                  listId={typedList.id}
                   isAlreadyInPractice={isAlreadyInPractice}
                   isKnown={isKnown}
+                  stage={activePieceState?.stage ?? null}
                   redirectTo={redirectTo}
-                  referenceMetadata={referenceMetadata}
+                  mediaBundle={mediaBundles.get(piece.id) ?? null}
                 />
               )
             })}
@@ -522,12 +498,9 @@ export default async function LearningListDetailPage({
         ) : (
           <div className="mt-5 space-y-4">
             {visibleItems.map(({ item, piece }) => {
-              const isAlreadyInPractice = activePieceIds.has(piece.id)
+              const activePieceState = activePieceStates.get(piece.id) ?? null
+              const isAlreadyInPractice = Boolean(activePieceState)
               const isKnown = knownPieceIds.has(piece.id)
-              const referenceMetadata =
-                userPieceMetadata.find(
-                  (metadata) => metadata.piece_id === piece.id
-                ) ?? null
               return (
                 <TuneCard
                   key={item.id}
@@ -537,16 +510,17 @@ export default async function LearningListDetailPage({
                   style={piece.style}
                   timeSignature={piece.time_signature}
                   referenceUrl={piece.reference_url}
-                  referenceMetadata={referenceMetadata}
+                  mediaBundle={mediaBundles.get(piece.id) ?? null}
                   pieceStyles={piece.piece_styles}
                   listLinks={[]}
                   redirectTo={redirectTo}
-                  upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
                 >
                   <DesktopTuneActions
                     piece={piece}
+                    listId={typedList.id}
                     isAlreadyInPractice={isAlreadyInPractice}
                     isKnown={isKnown}
+                    stage={activePieceState?.stage ?? null}
                     redirectTo={redirectTo}
                   />
                 </TuneCard>

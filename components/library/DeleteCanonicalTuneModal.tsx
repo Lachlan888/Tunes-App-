@@ -41,7 +41,7 @@ export default function DeleteCanonicalTuneModal({
       desktopMaxWidth="md:max-w-2xl"
       tone="destructive"
       eyebrow="Moderator destructive action"
-      title="Delete shared tune"
+      title="Delete shared tune for everyone"
       description="This permanently removes this tune from the shared catalogue for everyone. It may also remove connected practice status, Known status, list entries, comments, lore, media links, moderation requests, and notifications."
     >
       <div className="space-y-5">
@@ -75,7 +75,7 @@ export default function DeleteCanonicalTuneModal({
 
           <div className="grid gap-2 pt-2 sm:flex sm:flex-wrap">
             <SubmitButton
-              label="Delete shared tune"
+              label="Delete shared tune for everyone"
               pendingLabel="Deleting..."
               className={`${buttonStyles.destructive} w-full sm:w-auto`}
             />

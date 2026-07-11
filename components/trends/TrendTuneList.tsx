@@ -184,7 +184,7 @@ export default function TrendTuneList({
                           value={redirectTo}
                         />
                         <SubmitButton
-                          label="Mark as known"
+                          label="Mark Known"
                           pendingLabel="Saving..."
                           className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                         />

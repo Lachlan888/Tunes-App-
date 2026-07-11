@@ -1,6 +1,7 @@
 import type { createClient } from "@/lib/supabase/server"
+import type { TuneMediaBundle } from "@/lib/tune-media"
 import type { UserPieceMediaLoop } from "@/lib/types"
-import { getEffectiveReference } from "@/lib/effective-reference"
+import { buildTuneMediaBundle } from "@/lib/tune-media"
 import {
   getOverdueDays,
   isDueExactlyToday,
@@ -61,70 +62,6 @@ export function getReviewPieceIds(rows: ReviewPieceRow[]): number[] {
   )
 }
 
-export async function loadReviewMediaLoopsByPieceId(
-  supabase: SupabaseServerClient,
-  userId: string,
-  pieceIds: number[]
-): Promise<Map<number, UserPieceMediaLoop[]>> {
-  const loopsByPieceId = new Map<number, UserPieceMediaLoop[]>()
-
-  if (pieceIds.length === 0) {
-    return loopsByPieceId
-  }
-
-  const { data, error } = await supabase
-    .from("user_piece_media_loops")
-    .select(
-      "id, piece_id, youtube_video_id, label, start_seconds, end_seconds, playback_rate, notes, created_at, updated_at"
-    )
-    .eq("user_id", userId)
-    .in("piece_id", pieceIds)
-    .order("created_at", { ascending: true })
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  for (const loop of (data ?? []) as UserPieceMediaLoop[]) {
-    const loops = loopsByPieceId.get(loop.piece_id) ?? []
-    loops.push(loop)
-    loopsByPieceId.set(loop.piece_id, loops)
-  }
-
-  return loopsByPieceId
-}
-
-export async function loadPreferredReferencesByPieceId(
-  supabase: SupabaseServerClient,
-  userId: string,
-  pieceIds: number[]
-): Promise<Map<number, ReviewPreferredReferenceMetadata>> {
-  const referencesByPieceId = new Map<
-    number,
-    ReviewPreferredReferenceMetadata
-  >()
-
-  if (pieceIds.length === 0) {
-    return referencesByPieceId
-  }
-
-  const { data, error } = await supabase
-    .from("user_piece_metadata")
-    .select("piece_id, preferred_reference_url, preferred_reference_label")
-    .eq("user_id", userId)
-    .in("piece_id", pieceIds)
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  for (const metadata of (data ?? []) as ReviewPreferredReferenceMetadata[]) {
-    referencesByPieceId.set(metadata.piece_id, metadata)
-  }
-
-  return referencesByPieceId
-}
-
 export function buildReviewQueueItems({
   rows,
   today,
@@ -133,6 +70,7 @@ export function buildReviewQueueItems({
   activeFocusOptions,
   savedMediaLoopsByPieceId,
   mediaLinksByPieceId,
+  mediaBundlesByPieceId,
   preferredReferencesByPieceId,
 }: {
   rows: ReviewPieceRow[]
@@ -142,6 +80,7 @@ export function buildReviewQueueItems({
   activeFocusOptions: PracticeFocusForReview[]
   savedMediaLoopsByPieceId: Map<number, UserPieceMediaLoop[]>
   mediaLinksByPieceId: Map<number, ReviewPieceMediaLink[]>
+  mediaBundlesByPieceId?: Map<number, TuneMediaBundle>
   preferredReferencesByPieceId: Map<number, ReviewPreferredReferenceMetadata>
 }): ReviewQueueItem[] {
   return rows
@@ -149,16 +88,21 @@ export function buildReviewQueueItems({
       const piece = getPiece(userPiece.pieces)
       const dueDateOnly = normaliseStoredDate(userPiece.next_review_due)
       const overdueDays = getOverdueDays(userPiece.next_review_due, today)
-      const {
-        effectiveReferenceUrl,
-        effectiveReferenceLabel,
-        isUsingPreferredReference,
-      } = getEffectiveReference({
-        defaultReferenceUrl: piece?.reference_url,
-        metadata: preferredReferencesByPieceId.get(userPiece.piece_id) ?? null,
-      })
       const preferredReferenceMetadata =
         preferredReferencesByPieceId.get(userPiece.piece_id) ?? null
+      const mediaBundle =
+        mediaBundlesByPieceId?.get(userPiece.piece_id) ??
+        buildTuneMediaBundle({
+          piece: piece ?? {
+            id: userPiece.piece_id,
+            title: "Untitled piece",
+            reference_url: null,
+          },
+          mediaLinks: mediaLinksByPieceId.get(userPiece.piece_id) ?? [],
+          metadata: preferredReferenceMetadata,
+          mediaLoops: savedMediaLoopsByPieceId.get(userPiece.piece_id) ?? [],
+        })
+      const effectiveReference = mediaBundle.effectiveReference
 
       return {
         ...userPiece,
@@ -174,9 +118,15 @@ export function buildReviewQueueItems({
           savedMediaLoopsByPieceId.get(userPiece.piece_id) ?? [],
         media_links: mediaLinksByPieceId.get(userPiece.piece_id) ?? [],
         preferred_reference_metadata: preferredReferenceMetadata,
-        effective_reference_url: effectiveReferenceUrl,
-        effective_reference_label: effectiveReferenceLabel,
-        is_using_preferred_reference: isUsingPreferredReference,
+        effective_reference_url: effectiveReference?.url ?? null,
+        effective_reference_label:
+          mediaBundle.personalPreferredReference &&
+          effectiveReference?.url === mediaBundle.personalPreferredReference.url
+            ? effectiveReference.label
+            : null,
+        is_using_preferred_reference:
+          effectiveReference?.sourceType === "personal-preferred-reference",
+        media_bundle: mediaBundle,
       }
     })
     .sort(sortByDueDateAscending)

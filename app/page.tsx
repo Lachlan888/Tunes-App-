@@ -1,34 +1,8 @@
 import GettingStartedSection from "@/components/home/GettingStartedSection"
 import HomeSummarySection from "@/components/home/HomeSummarySection"
-import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import { loadHomepageData } from "@/lib/loaders/homepage"
-import { loadPagePreferences } from "@/lib/loaders/page-preferences"
-import { HOME_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 
-type HomePageProps = {
-  searchParams?: Promise<{
-    page_options?: string | string[]
-  }>
-}
-
-function getSingleValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] ?? "" : value ?? ""
-}
-
-function getStatusMessage(pageOptions: string) {
-  if (pageOptions === "saved") return "Home display options saved."
-  if (pageOptions === "reset") return "Home display options reset."
-  if (pageOptions === "error") return "Couldn’t save display options."
-
-  return null
-}
-
-export default async function HomePage({ searchParams }: HomePageProps) {
-  const resolvedSearchParams = searchParams ? await searchParams : undefined
-  const homePreferences = await loadPagePreferences(
-    HOME_PAGE_OPTIONS_CONFIG.pageKey
-  )
-
+export default async function HomePage() {
   const {
     user,
     summary,
@@ -37,24 +11,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     gettingStartedState,
   } = await loadHomepageData()
 
-  const statusMessage = getStatusMessage(
-    getSingleValue(resolvedSearchParams?.page_options)
-  )
-
-  const showGettingStarted =
-    homePreferences.visibleSections.getting_started ?? true
-
-  const showSignedInCard =
-    homePreferences.visibleSections.signed_in_card ?? true
-
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 md:px-6 md:py-8">
-      {statusMessage ? (
-        <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
-          {statusMessage}
-        </div>
-      ) : null}
-
       <section className="mb-6 hidden md:block">
         <div className="flex flex-wrap items-end justify-between gap-5">
           <div>
@@ -71,31 +29,20 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {showSignedInCard ? (
-              <div className="max-w-xs text-right text-sm">
-                <p className="font-semibold text-foreground">Signed in</p>
-                <p className="truncate text-muted-foreground">{user.email}</p>
-              </div>
-            ) : null}
-
-            <PageOptionsModal
-              config={HOME_PAGE_OPTIONS_CONFIG}
-              preferences={homePreferences}
-              redirectTo="/"
-            />
+            <div className="max-w-xs text-right text-sm">
+              <p className="font-semibold text-foreground">Signed in</p>
+              <p className="truncate text-muted-foreground">{user.email}</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {showGettingStarted ? (
-        <GettingStartedSection state={gettingStartedState} />
-      ) : null}
+      <GettingStartedSection state={gettingStartedState} />
 
       <HomeSummarySection
         summary={summary}
         recentFriendActivity={recentFriendActivity}
         streakSummary={streakSummary}
-        homePreferences={homePreferences}
       />
     </main>
   )

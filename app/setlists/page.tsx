@@ -1,5 +1,4 @@
 import Link from "next/link"
-import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import CreateSetlistModal from "@/components/setlists/CreateSetlistModal"
 import SetlistOverviewCard from "@/components/setlists/SetlistOverviewCard"
 import SetlistStatusMessages from "@/components/setlists/SetlistStatusMessages"
@@ -9,28 +8,17 @@ import {
   createSetlist,
   declineSetlistInvite,
 } from "@/lib/actions/setlists"
-import { loadPagePreferences } from "@/lib/loaders/page-preferences"
 import { loadSetlistsPageData } from "@/lib/loaders/setlists"
-import { SETLISTS_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 
 type SetlistsPageProps = {
   searchParams?: Promise<{
     setlist?: string | string[]
     setlist_invite?: string | string[]
-    page_options?: string | string[]
   }>
 }
 
 function getSingleValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? "" : value ?? ""
-}
-
-function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Setlists display options saved."
-  if (status === "reset") return "Setlists display options reset."
-  if (status === "error") return "Couldn’t save display options."
-
-  return null
 }
 
 function profileLabel(profile: {
@@ -42,29 +30,18 @@ function profileLabel(profile: {
 
 export default async function SetlistsPage({ searchParams }: SetlistsPageProps) {
   const resolvedSearchParams = await searchParams
-  const pagePreferences = await loadPagePreferences(
-    SETLISTS_PAGE_OPTIONS_CONFIG.pageKey
-  )
-
-  const showSection = (sectionId: string) =>
-    pagePreferences.visibleSections[sectionId] ?? true
+  const showSection = (sectionId: string) => {
+    void sectionId
+    return true
+  }
 
   const setlistStatus = getSingleValue(resolvedSearchParams?.setlist)
   const inviteStatus = getSingleValue(resolvedSearchParams?.setlist_invite)
-  const pageOptionsMessage = getPageOptionsMessage(
-    getSingleValue(resolvedSearchParams?.page_options)
-  )
 
   const { user, setlists, pendingInvites } = await loadSetlistsPageData()
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
-      {pageOptionsMessage ? (
-        <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
-          {pageOptionsMessage}
-        </div>
-      ) : null}
-
       <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
@@ -91,12 +68,6 @@ export default async function SetlistsPage({ searchParams }: SetlistsPageProps) 
             {showSection("create_setlist") ? (
               <CreateSetlistModal createSetlist={createSetlist} />
             ) : null}
-
-            <PageOptionsModal
-              config={SETLISTS_PAGE_OPTIONS_CONFIG}
-              preferences={pagePreferences}
-              redirectTo="/setlists"
-            />
           </div>
         </div>
       </section>

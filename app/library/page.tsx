@@ -3,18 +3,13 @@ import LibraryList from "@/components/library/LibraryList"
 import LibraryResultsHeader from "@/components/library/LibraryResultsHeader"
 import LibraryStatusMessages from "@/components/library/LibraryStatusMessages"
 import PieceSearchFilters from "@/components/library/PieceSearchFilters"
-import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import { addToLearningList } from "@/lib/actions/lists"
 import {
   deleteCanonicalTuneAsModerator,
   removeTuneFromMyApp,
 } from "@/lib/actions/pieces"
-import { addReferenceUrlToPiece } from "@/lib/actions/reference-media"
-import { upsertPreferredReferenceUrl } from "@/lib/actions/user-piece-metadata"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadLibraryData, type LibrarySort } from "@/lib/loaders/library"
-import { loadPagePreferences } from "@/lib/loaders/page-preferences"
-import { LIBRARY_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 import { getPieceFilterOptions } from "@/lib/search-filters"
 import type {
   LearningList,
@@ -54,7 +49,6 @@ type LibraryPageProps = {
     delete_tune?: SearchParamValue
     loop?: SearchParamValue
     scroll_piece?: SearchParamValue
-    page_options?: SearchParamValue
   }>
 }
 
@@ -101,22 +95,12 @@ function parseSort(value: SearchParamValue): LibrarySort {
   return "title_asc"
 }
 
-function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Tunes display options saved."
-  if (status === "reset") return "Tunes display options reset."
-  if (status === "error") return "Couldn’t save display options."
-
-  return null
-}
-
 export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   const resolvedSearchParams = await searchParams
-  const pagePreferences = await loadPagePreferences(
-    LIBRARY_PAGE_OPTIONS_CONFIG.pageKey
-  )
-
-  const showSection = (sectionId: string) =>
-    pagePreferences.visibleSections[sectionId] ?? true
+  const showSection = (sectionId: string) => {
+    void sectionId
+    return true
+  }
 
   const searchQuery = firstParam(resolvedSearchParams?.q)
   const selectedKeys = toArray(resolvedSearchParams?.key)
@@ -137,8 +121,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     currentPage,
     userPieces,
     userKnownPieces,
-    userPieceMetadata,
-    mediaLoops,
+    mediaBundles,
     learningLists,
     learningListItems,
     styleOptions,
@@ -151,10 +134,6 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     page: requestedPage,
     sort: selectedSort,
   })
-
-  const pageOptionsMessage = getPageOptionsMessage(
-    firstParam(resolvedSearchParams?.page_options)
-  )
 
   const listAddStatus = firstParam(resolvedSearchParams?.list_add)
   const referenceUrlStatus = firstParam(resolvedSearchParams?.reference_url)
@@ -248,12 +227,6 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      {pageOptionsMessage ? (
-        <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
-          {pageOptionsMessage}
-        </div>
-      ) : null}
-
       <section className="mb-8 hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
@@ -275,11 +248,6 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
             </p>
           </div>
 
-          <PageOptionsModal
-            config={LIBRARY_PAGE_OPTIONS_CONFIG}
-            preferences={pagePreferences}
-            redirectTo={redirectTo}
-          />
         </div>
       </section>
 
@@ -305,19 +273,13 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
         ) : null}
 
         {showSection("header_actions") ? (
-          <LibraryHeaderActions
-            styleOptions={styleOptions}
-            learningLists={(learningLists ?? []) as LearningList[]}
-          />
+          <LibraryHeaderActions styleOptions={styleOptions} />
         ) : null}
       </div>
 
       <div className="hidden md:block">
         {showSection("header_actions") ? (
-          <LibraryHeaderActions
-            styleOptions={styleOptions}
-            learningLists={(learningLists ?? []) as LearningList[]}
-          />
+          <LibraryHeaderActions styleOptions={styleOptions} />
         ) : null}
 
         {showSection("filters") ? (
@@ -382,10 +344,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
           addToLearningList={addToLearningList}
           removeTuneFromMyApp={removeTuneFromMyApp}
           deleteCanonicalTuneAsModerator={deleteCanonicalTuneAsModerator}
-          addReferenceUrlToPiece={addReferenceUrlToPiece}
-          upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
-          userPieceMetadata={userPieceMetadata}
-          mediaLoops={mediaLoops}
+          mediaBundles={mediaBundles}
           redirectTo={redirectTo}
           scrollPieceId={scrollPieceId}
           hasActiveFilters={hasActiveFilters}

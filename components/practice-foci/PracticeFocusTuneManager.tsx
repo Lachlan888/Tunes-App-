@@ -317,7 +317,7 @@ function RemoveTuneFromFocusModal({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-destructive">
-              Remove tune
+              Remove from focus
             </p>
 
             <h3
@@ -362,7 +362,7 @@ function RemoveTuneFromFocusModal({
             <input type="hidden" name="redirect_to" value={redirectTo} />
 
             <SubmitButton
-              label="Remove"
+              label="Remove from this focus"
               pendingLabel="Removing..."
               className={`${buttonStyles.destructiveSecondary} w-full`}
             />

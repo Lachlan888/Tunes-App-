@@ -1,8 +1,5 @@
-import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import ProfileEditor from "@/components/profile/ProfileEditor"
-import { loadPagePreferences } from "@/lib/loaders/page-preferences"
 import { loadOwnProfileData } from "@/lib/loaders/profile"
-import { PROFILE_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 
 type DashboardPageProps = {
   searchParams?: Promise<{
@@ -25,7 +22,6 @@ type DashboardPageProps = {
     compare_requires_friend?: string | string[]
     practice_diary_enabled?: string | string[]
     communication_settings?: string | string[]
-    page_options?: string | string[]
   }>
 }
 
@@ -90,14 +86,6 @@ function getInstrumentErrorMessage(error: string) {
   return null
 }
 
-function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Profile display options saved."
-  if (status === "reset") return "Profile display options reset."
-  if (status === "error") return "Couldn’t save display options."
-
-  return null
-}
-
 function getCommunicationSettingsMessage(status: string) {
   if (status === "saved") {
     return {
@@ -127,12 +115,10 @@ export default async function DashboardPage({
   searchParams,
 }: DashboardPageProps) {
   const resolvedSearchParams = await searchParams
-  const pagePreferences = await loadPagePreferences(
-    PROFILE_PAGE_OPTIONS_CONFIG.pageKey
-  )
-
-  const showSection = (sectionId: string) =>
-    pagePreferences.visibleSections[sectionId] ?? true
+  const showSection = (sectionId: string) => {
+    void sectionId
+    return true
+  }
 
   const { user, profile, notificationPreferences, instruments } =
     await loadOwnProfileData()
@@ -149,10 +135,6 @@ export default async function DashboardPage({
 
   const instrumentErrorMessage = getInstrumentErrorMessage(
     getSingleValue(resolvedSearchParams?.instrument_error)
-  )
-
-  const pageOptionsMessage = getPageOptionsMessage(
-    getSingleValue(resolvedSearchParams?.page_options)
   )
 
   const communicationSettingsMessage = getCommunicationSettingsMessage(
@@ -222,12 +204,6 @@ export default async function DashboardPage({
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
-      {pageOptionsMessage ? (
-        <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
-          {pageOptionsMessage}
-        </div>
-      ) : null}
-
       <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
@@ -249,11 +225,6 @@ export default async function DashboardPage({
             </p>
           </div>
 
-          <PageOptionsModal
-            config={PROFILE_PAGE_OPTIONS_CONFIG}
-            preferences={pagePreferences}
-            redirectTo="/dashboard"
-          />
         </div>
       </section>
 

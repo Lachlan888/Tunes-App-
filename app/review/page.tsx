@@ -1,18 +1,11 @@
 import { redirect } from "next/navigation"
-import Link from "next/link"
-import PageOptionsModal from "@/components/page-options/PageOptionsModal"
 import ActivePracticeSection from "@/components/practice/ActivePracticeSection"
-import CatchUpSection from "@/components/practice/CatchUpSection"
-import DueTodaySection from "@/components/practice/DueTodaySection"
 import PracticeMetronome from "@/components/practice/PracticeMetronome"
 import PracticeStatusMessages from "@/components/practice/PracticeStatusMessages"
+import ReviewQueueSection from "@/components/practice/ReviewQueueSection"
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import PracticeDiaryNav from "@/components/practice-diary/PracticeDiaryNav"
-import { joinClasses } from "@/components/ui/buttonStyles"
-import { upsertPreferredReferenceUrl } from "@/lib/actions/user-piece-metadata"
-import { loadPagePreferences } from "@/lib/loaders/page-preferences"
 import { loadReviewPageData } from "@/lib/loaders/review"
-import { PRACTICE_PAGE_OPTIONS_CONFIG } from "@/lib/page-options/configs"
 
 type ReviewPageProps = {
   searchParams?: Promise<{
@@ -20,7 +13,6 @@ type ReviewPageProps = {
     remove_from_practice?: string
     practice_update?: string
     preferred_reference?: string | string[]
-    page_options?: string | string[]
     loop?: string | string[]
   }>
 }
@@ -29,72 +21,21 @@ function getSingleValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? "" : value ?? ""
 }
 
-function getPageOptionsMessage(status: string) {
-  if (status === "saved") return "Practice display options saved."
-  if (status === "reset") return "Practice display options reset."
-  if (status === "error") return "Couldn’t save display options."
-
-  return null
-}
-
-function MobileReviewModeLink({
-  href,
-  label,
-  count,
-  isActive,
-}: {
-  href: string
-  label: string
-  count: number
-  isActive: boolean
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={isActive ? "page" : undefined}
-      className={joinClasses(
-        "rounded-2xl border p-4 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
-        isActive
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-background/70 text-foreground hover:bg-muted"
-      )}
-    >
-      <p
-        className={joinClasses(
-          "text-xs font-semibold uppercase tracking-[0.14em]",
-          isActive ? "text-primary-foreground/85" : "text-muted-foreground"
-        )}
-      >
-        {label}
-      </p>
-
-      <p className="mt-2 font-serif text-3xl font-bold leading-none">
-        {count}
-      </p>
-    </Link>
-  )
-}
-
 export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const resolvedSearchParams = await searchParams
-  const pagePreferences = await loadPagePreferences(
-    PRACTICE_PAGE_OPTIONS_CONFIG.pageKey
-  )
-
-  const showSection = (sectionId: string) =>
-    pagePreferences.visibleSections[sectionId] ?? true
+  const showSection = (sectionId: string) => {
+    void sectionId
+    return true
+  }
 
   const mode = resolvedSearchParams?.mode ?? ""
-  const mobileReviewMode = mode === "catch-up" ? "catch-up" : "due-today"
+  const reviewMode = mode === "catch-up" ? "catch-up" : "due-today"
   const removeFromPracticeStatus =
     resolvedSearchParams?.remove_from_practice ?? ""
   const practiceUpdate = resolvedSearchParams?.practice_update ?? ""
   const loopStatus = getSingleValue(resolvedSearchParams?.loop)
   const preferredReferenceStatus = getSingleValue(
     resolvedSearchParams?.preferred_reference
-  )
-  const pageOptionsMessage = getPageOptionsMessage(
-    getSingleValue(resolvedSearchParams?.page_options)
   )
 
   const {
@@ -109,8 +50,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const dueTodayRedirectTo = "/review#review-queue"
   const catchUpRedirectTo = "/review?mode=catch-up#review-queue"
   const redirectTo =
-    mobileReviewMode === "catch-up" ? catchUpRedirectTo : dueTodayRedirectTo
-  const shouldOpenCatchUp = mode === "catch-up"
+    reviewMode === "catch-up" ? catchUpRedirectTo : dueTodayRedirectTo
 
   if (!streakSummary) {
     redirect("/login")
@@ -118,75 +58,16 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      {pageOptionsMessage ? (
-        <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
-          {pageOptionsMessage}
-        </div>
-      ) : null}
-
-      <section className="mb-5 md:hidden">
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <header className="mb-5 flex flex-col gap-3 md:mb-6 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Practice
           </p>
-
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <MobileReviewModeLink
-              href="/review#review-queue"
-              label="Due today"
-              count={dueTodayPieces.length}
-              isActive={mobileReviewMode === "due-today"}
-            />
-
-            <MobileReviewModeLink
-              href="/review?mode=catch-up#review-queue"
-              label="Catch-up"
-              count={catchUpQueue.length}
-              isActive={mobileReviewMode === "catch-up"}
-            />
-          </div>
-
-          {showSection("practice_nav") ? (
-            <div className="mt-4">
-              <PracticeDiaryNav active="review" />
-            </div>
-          ) : null}
+          <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+            Review your tunes
+          </h1>
         </div>
-      </section>
-
-      <section className="hidden gap-6 md:grid xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Practice
-              </p>
-
-              <h1 className="mt-2 font-serif text-4xl font-bold">
-                Review your tunes
-              </h1>
-
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-                Review tunes and rate recall.
-              </p>
-            </div>
-
-            <PageOptionsModal
-              config={PRACTICE_PAGE_OPTIONS_CONFIG}
-              preferences={pagePreferences}
-              redirectTo="/review"
-            />
-          </div>
-
-          {showSection("practice_nav") ? (
-            <PracticeDiaryNav active="review" />
-          ) : null}
-        </section>
-
-        {showSection("streaks") ? (
-          <StreakSummarySection streakSummary={streakSummary} />
-        ) : null}
-      </section>
+      </header>
 
       {showSection("status_messages") ? (
         <PracticeStatusMessages
@@ -199,46 +80,17 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
       <PracticeMetronome />
 
-      <div id="review-queue" className="scroll-mt-4 md:scroll-mt-6">
-        {showSection("due_today") ? (
-          <div
-            className={
-              mobileReviewMode === "catch-up" ? "hidden md:block" : undefined
-            }
-          >
-            <DueTodaySection
-              dueTodayPieces={dueTodayPieces}
-              redirectTo={dueTodayRedirectTo}
-              practiceDiaryEnabled={practiceDiaryEnabled}
-              noteCategories={noteCategories}
-              upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
-            />
-          </div>
-        ) : null}
-
-        {showSection("catch_up") ? (
-          <div
-            className={
-              mobileReviewMode === "due-today" ? "hidden md:block" : undefined
-            }
-          >
-            <CatchUpSection
-              catchUpQueue={catchUpQueue}
-              redirectTo={catchUpRedirectTo}
-              defaultOpen={shouldOpenCatchUp}
-              practiceDiaryEnabled={practiceDiaryEnabled}
-              noteCategories={noteCategories}
-              upsertPreferredReferenceUrl={upsertPreferredReferenceUrl}
-            />
-          </div>
-        ) : null}
-      </div>
-
-      <div className="mt-6 md:hidden">
-        {showSection("streaks") ? (
-          <StreakSummarySection streakSummary={streakSummary} />
-        ) : null}
-      </div>
+      {(showSection("due_today") || showSection("catch_up")) ? (
+        <ReviewQueueSection
+          dueTodayPieces={showSection("due_today") ? dueTodayPieces : []}
+          catchUpQueue={showSection("catch_up") ? catchUpQueue : []}
+          activeMode={reviewMode}
+          dueTodayRedirectTo={dueTodayRedirectTo}
+          catchUpRedirectTo={catchUpRedirectTo}
+          practiceDiaryEnabled={practiceDiaryEnabled}
+          noteCategories={noteCategories}
+        />
+      ) : null}
 
       {showSection("active_practice") ? (
         <ActivePracticeSection
@@ -246,6 +98,28 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           redirectTo={redirectTo}
         />
       ) : null}
+
+      <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.45fr)]">
+        {showSection("practice_nav") ? (
+          <section className="rounded-3xl border border-border bg-card p-5 shadow-sm md:p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Supporting tools
+            </p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Diary, Foci, and indexed practice notes stay separate from formal
+              review records.
+            </p>
+            <PracticeDiaryNav active="review" />
+          </section>
+        ) : null}
+
+        {showSection("streaks") ? (
+          <StreakSummarySection
+            streakSummary={streakSummary}
+            className="lg:mt-0"
+          />
+        ) : null}
+      </section>
     </main>
   )
 }

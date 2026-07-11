@@ -1,43 +1,28 @@
-import AddToListAction from "@/components/AddToListAction"
 import MarkAsKnownButton from "@/components/MarkAsKnownButton"
 import PracticeProgress from "@/components/practice/PracticeProgress"
-import RemoveTuneButton from "@/components/RemoveTuneButton"
+import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeButton"
 import StartPracticeButton from "@/components/StartPracticeButton"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
-import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
-
-type LearningListItemRow = {
-  learning_list_id: number
-  piece_id: number
-}
+import type { Piece, UserKnownPiece, UserPiece } from "@/lib/types"
 
 type TuneDetailActionsProps = {
   piece: Piece
   userPiece: UserPiece | null
   userKnownPiece: UserKnownPiece | null
-  learningLists: LearningList[] | null
-  learningListItems: LearningListItemRow[] | null
   redirectTo: string
   startLearning: (formData: FormData) => Promise<void>
-  addToLearningList: (formData: FormData) => Promise<void>
 }
 
 export default function TuneDetailActions({
   piece,
   userPiece,
   userKnownPiece,
-  learningLists,
-  learningListItems,
   redirectTo,
   startLearning,
-  addToLearningList,
 }: TuneDetailActionsProps) {
   const isAlreadyInPractice = Boolean(userPiece)
   const isKnown = Boolean(userKnownPiece)
   const currentStage = userPiece?.stage ?? null
-  const existingListCount = Array.from(
-    new Set((learningListItems ?? []).map((item) => item.learning_list_id))
-  ).length
 
   const tuneStateButtonSize =
     "min-h-[3.25rem] sm:!h-[3.25rem] sm:!w-[15rem] sm:!min-w-[15rem]"
@@ -68,8 +53,13 @@ export default function TuneDetailActions({
   return (
     <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
       <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        Tune status
+        My Practice
       </h2>
+
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        Your personal state for this tune. Practice controls live here; broader
+        tune management sits lower on the page.
+      </p>
 
       <div className="mt-5 grid min-w-0 gap-3 sm:grid-cols-3">
         <div className="min-w-0 rounded-2xl border border-border bg-background/70 p-4">
@@ -92,10 +82,10 @@ export default function TuneDetailActions({
 
         <div className="min-w-0 rounded-2xl border border-border bg-background/70 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Lists
+            Stage
           </p>
-          <p className="mt-2 text-lg font-semibold text-foreground">
-            {existingListCount}
+          <p className="mt-2 min-w-0 break-words text-lg font-semibold text-foreground">
+            {currentStage ? `Stage ${currentStage}` : "No active stage"}
           </p>
         </div>
       </div>
@@ -124,7 +114,8 @@ export default function TuneDetailActions({
           <MarkAsKnownButton
             pieceId={piece.id}
             redirectTo={redirectTo}
-            label="Set as known"
+            label="Move to Known"
+            confirmMessage={`Move "${piece.title}" to Known? Active Practice and review scheduling will stop.`}
             className={tuneStateActionClass}
           />
         ) : isKnown ? (
@@ -144,20 +135,13 @@ export default function TuneDetailActions({
           />
         )}
 
-        <AddToListAction
-          piece={piece}
-          learningLists={learningLists}
-          learningListItems={learningListItems}
-          redirectTo={redirectTo}
-          addToLearningList={addToLearningList}
-          buttonClassName={tuneStateActionClass}
-        />
-
-        <RemoveTuneButton
-          pieceId={piece.id}
-          redirectTo={redirectTo}
-          className={tuneStateDestructiveActionClass}
-        />
+        {isAlreadyInPractice && userPiece ? (
+          <RemoveFromPracticeButton
+            userPieceId={userPiece.id}
+            redirectTo={redirectTo}
+            className={tuneStateDestructiveActionClass}
+          />
+        ) : null}
       </div>
     </section>
   )

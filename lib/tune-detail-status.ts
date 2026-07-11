@@ -9,8 +9,8 @@ export type TuneDetailStatusMessageInput = {
   mediaLink: string
   diary: string
   loop: string
-  pageOptions: string
   listAdd: string
+  createTune: string
 }
 
 export function getSingleSearchParamValue(
@@ -30,9 +30,12 @@ export function getTuneDetailStatusMessage({
   mediaLink,
   diary,
   loop,
-  pageOptions,
   listAdd,
+  createTune,
 }: TuneDetailStatusMessageInput) {
+  if (createTune === "success")
+    return "Tune created. You can now add Reference Media, sheet music, notes, lists or Practice state from Tune Detail."
+
   if (editRequest === "success") return "Edit request submitted."
   if (editRequest === "empty") return "Add at least one proposed change."
   if (editRequest === "invalid_key") return "That key is not valid."
@@ -116,10 +119,6 @@ export function getTuneDetailStatusMessage({
   if (loop === "missing_loop") return "Couldn’t find that saved loop."
   if (loop === "missing_piece") return "Couldn’t find that tune."
   if (loop === "error") return "Couldn’t update loop."
-
-  if (pageOptions === "saved") return "Tune display options saved."
-  if (pageOptions === "reset") return "Tune display options reset."
-  if (pageOptions === "error") return "Couldn’t save display options."
 
   if (listAdd === "success") return "Tune added to list."
   if (listAdd === "partial")

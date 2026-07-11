@@ -145,7 +145,7 @@ export default function RepertoireTuneList({
                   <RemoveTuneButton
                     pieceId={piece.id}
                     redirectTo={redirectTo}
-                    confirmMessage={`Remove "${piece.title}" from your known tunes, practice, and all your lists?`}
+                    confirmMessage={`Remove "${piece.title}" from my app? This removes it from all of your lists, removes Known state, and stops Practice scheduling. The shared tune remains available to other users.`}
                     className={destructiveButtonClass}
                   />
                 )}

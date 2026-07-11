@@ -12,19 +12,12 @@ type StyleOption = {
   label: string
 }
 
-type LearningListOption = {
-  id: number
-  name: string
-}
-
 type CreateTuneModalProps = {
   styleOptions: StyleOption[]
-  learningLists: LearningListOption[]
 }
 
 export default function CreateTuneModal({
   styleOptions,
-  learningLists,
 }: CreateTuneModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -47,7 +40,7 @@ export default function CreateTuneModal({
         onClick={handleOpen}
         className={joinClasses(buttonStyles.primary, "w-full md:w-auto")}
       >
-        Create Tune
+        Create tune
       </button>
 
       <ResponsiveModal
@@ -59,14 +52,13 @@ export default function CreateTuneModal({
         mobileMode="full-screen"
         desktopMaxWidth="md:max-w-5xl"
         eyebrow="Catalogue"
-        title="Create Tune"
-        description="Add a tune to the shared catalogue, then add it to your own repertoire if you want."
+        title="Create tune"
+        description="Create the basic shared tune record. You can add media, notes, lists and Practice details on the tune page."
         bodyClassName="flex min-h-0 flex-1 p-0"
       >
         <CreateTuneForm
           createTune={createTune}
           styleOptions={styleOptions}
-          learningLists={learningLists}
           redirectTo="/library"
           onSubmitStart={() => setIsSubmitting(true)}
         />

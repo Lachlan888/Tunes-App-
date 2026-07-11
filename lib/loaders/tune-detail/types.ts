@@ -1,5 +1,5 @@
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
-import type { PageOptionsPreferences } from "@/lib/page-options/types"
+import type { TuneMediaBundle } from "@/lib/tune-media"
 import type {
   LearningList,
   Piece,
@@ -157,6 +157,7 @@ export type TuneDetailLoadedData = {
   typedMediaLinks: PieceMediaLink[]
   typedSheetMusicLinks: PieceSheetMusicLink[]
   typedMediaLoops: UserPieceMediaLoop[]
+  tuneMediaBundle: TuneMediaBundle
   typedPieceComments: PieceCommentRow[]
   typedPieceLoreEntries: PieceLoreEntryRow[]
   typedUserPiece: UserPiece | null
@@ -165,7 +166,6 @@ export type TuneDetailLoadedData = {
   typedLearningListItems: LearningListItemRow[]
   typedPublicTuneLists: PublicTuneListSummary[]
   typedPracticeNotes: TunePracticeNote[]
-  typedTunePagePreferences: PageOptionsPreferences
   practiceDiaryEnabled: boolean
   practiceNoteCategories: PracticeNoteCategory[]
   styleOptions: StyleOption[]

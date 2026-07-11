@@ -1,13 +1,14 @@
 import { getCurrentUserRole } from "@/lib/auth/roles"
 import { getStyleLabelsFromPiece } from "@/lib/search-filters"
 import { createClient } from "@/lib/supabase/server"
+import { loadTuneMediaBundles } from "@/lib/tune-media"
 import { redirect } from "next/navigation"
 import type {
   LearningListItemMembership,
   LearningListOwner,
+  Piece,
   PieceFilterOption,
   StyleOption,
-  UserPieceMediaLoop,
   UserKnownPiece,
 } from "@/lib/types"
 
@@ -15,12 +16,6 @@ type LearningListItemRow = {
   piece_id: number
   learning_list_id: number
   learning_lists: LearningListOwner | LearningListOwner[] | null
-}
-
-export type LibraryUserPieceMetadata = {
-  piece_id: number
-  preferred_reference_url: string | null
-  preferred_reference_label: string | null
 }
 
 export type LibrarySort = "title_asc" | "newest" | "oldest"
@@ -33,6 +28,13 @@ type LoadLibraryDataParams = {
   visibleCount?: number | "all"
   page?: number
   sort?: LibrarySort
+}
+
+type PieceOrderQuery = {
+  order: (
+    column: string,
+    options?: { ascending?: boolean }
+  ) => PieceOrderQuery
 }
 
 function normaliseLearningListItem(
@@ -113,28 +115,26 @@ function sortPieceRows<
   )
 }
 
-function applyPieceSort<T extends any>(
+function applyPieceSort<T extends PieceOrderQuery>(
   query: T,
   sort: LibrarySort
 ): T {
-  const sortableQuery = query as any
-
   if (sort === "newest") {
-    return sortableQuery
+    return query
       .order("created_at", { ascending: false })
-      .order("id", { ascending: false })
+      .order("id", { ascending: false }) as T
   }
 
   if (sort === "oldest") {
-    return sortableQuery
+    return query
       .order("created_at", { ascending: true })
-      .order("id", { ascending: true })
+      .order("id", { ascending: true }) as T
   }
 
-  return sortableQuery.order("title")
+  return query.order("title") as T
 }
 
-function getUniquePieceIds(pieces: any[], mobilePieces: any[]) {
+function getUniquePieceIds(pieces: Piece[], mobilePieces: Piece[]) {
   return Array.from(
     new Set([
       ...(pieces ?? []).map((piece) => piece.id),
@@ -167,8 +167,8 @@ export async function loadLibraryData({
   const requestedPage = normalisePage(page)
   const selectedSort = normaliseSort(sort)
 
-  let pieces: any[] = []
-  let mobilePieces: any[] = []
+  let pieces: Piece[] = []
+  let mobilePieces: Piece[] = []
   let totalPieceCount = 0
   let currentPage = requestedPage
 
@@ -236,17 +236,17 @@ export async function loadLibraryData({
     )
 
     totalPieceCount = sortedStyleFilteredPieces.length
-    mobilePieces = sortedStyleFilteredPieces
+    mobilePieces = sortedStyleFilteredPieces as Piece[]
 
     const totalPages = getTotalPages(totalPieceCount, visibleCount)
     currentPage =
       visibleCount === "all" ? 1 : Math.min(requestedPage, totalPages)
 
     if (visibleCount === "all") {
-      pieces = sortedStyleFilteredPieces
+      pieces = sortedStyleFilteredPieces as Piece[]
     } else {
       const { from, to } = getRangeForPage(currentPage, visibleCount)
-      pieces = sortedStyleFilteredPieces.slice(from, to + 1)
+      pieces = sortedStyleFilteredPieces.slice(from, to + 1) as Piece[]
     }
   } else {
     let countQuery = supabase
@@ -323,7 +323,7 @@ export async function loadLibraryData({
       throw new Error(piecesError.message)
     }
 
-    pieces = pieceRows ?? []
+    pieces = (pieceRows ?? []) as Piece[]
 
     let mobilePiecesQuery = supabase
       .from("pieces")
@@ -373,7 +373,7 @@ export async function loadLibraryData({
       throw new Error(mobilePiecesError.message)
     }
 
-    mobilePieces = mobilePieceRows ?? []
+    mobilePieces = (mobilePieceRows ?? []) as Piece[]
   }
 
   let filterOptionPiecesQuery = supabase.from("pieces").select(`
@@ -426,6 +426,11 @@ export async function loadLibraryData({
   }
 
   const displayPieceIds = getUniquePieceIds(pieces, mobilePieces)
+  const mediaBundles = await loadTuneMediaBundles({
+    supabase,
+    pieces: [...pieces, ...mobilePieces],
+    userId: user.id,
+  })
 
   let userPieces: {
     id: number
@@ -437,16 +442,12 @@ export async function loadLibraryData({
 
   let userKnownPieces: UserKnownPiece[] = []
   let learningListItems: LearningListItemMembership[] = []
-  let userPieceMetadata: LibraryUserPieceMetadata[] = []
-  let mediaLoops: UserPieceMediaLoop[] = []
 
   if (displayPieceIds.length > 0) {
     const [
       { data: userPiecesRows, error: userPiecesError },
       { data: userKnownPiecesRows, error: userKnownPiecesError },
       { data: learningListItemsRows, error: learningListItemsError },
-      { data: userPieceMetadataRows, error: userPieceMetadataError },
-      { data: mediaLoopsRows, error: mediaLoopsError },
     ] = await Promise.all([
       supabase
         .from("user_pieces")
@@ -467,21 +468,6 @@ export async function loadLibraryData({
         )
         .eq("learning_lists.user_id", user.id)
         .in("piece_id", displayPieceIds),
-
-      supabase
-        .from("user_piece_metadata")
-        .select("piece_id, preferred_reference_url, preferred_reference_label")
-        .eq("user_id", user.id)
-        .in("piece_id", displayPieceIds),
-
-      supabase
-        .from("user_piece_media_loops")
-        .select(
-          "id, piece_id, youtube_video_id, label, start_seconds, end_seconds, playback_rate, notes, created_at, updated_at"
-        )
-        .eq("user_id", user.id)
-        .in("piece_id", displayPieceIds)
-        .order("created_at", { ascending: true }),
     ])
 
     if (userPiecesError) {
@@ -496,19 +482,8 @@ export async function loadLibraryData({
       throw new Error(learningListItemsError.message)
     }
 
-    if (userPieceMetadataError) {
-      throw new Error(userPieceMetadataError.message)
-    }
-
-    if (mediaLoopsError) {
-      throw new Error(mediaLoopsError.message)
-    }
-
     userPieces = userPiecesRows ?? []
     userKnownPieces = (userKnownPiecesRows ?? []) as UserKnownPiece[]
-    userPieceMetadata =
-      (userPieceMetadataRows ?? []) as LibraryUserPieceMetadata[]
-    mediaLoops = (mediaLoopsRows ?? []) as UserPieceMediaLoop[]
 
     learningListItems = ((learningListItemsRows ?? []) as LearningListItemRow[])
       .map(normaliseLearningListItem)
@@ -527,8 +502,7 @@ export async function loadLibraryData({
     currentPage,
     userPieces,
     userKnownPieces,
-    userPieceMetadata,
-    mediaLoops,
+    mediaBundles,
     learningLists,
     learningListItems,
     styleOptions,

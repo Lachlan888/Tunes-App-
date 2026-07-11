@@ -7,15 +7,14 @@ import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import { joinClasses } from "@/components/ui/buttonStyles"
 import type { FriendActivityItem } from "@/lib/friend-activity"
 import type { HomeSummaryData, StreakSummary } from "@/lib/types"
-import type { PageOptionsPreferences } from "@/lib/page-options/types"
 
 type HomeSummarySectionProps = {
   summary: HomeSummaryData
   recentFriendActivity: FriendActivityItem[]
   streakSummary: StreakSummary
-  homePreferences: PageOptionsPreferences
 }
 
+type HomeDensity = "compact" | "standard" | "spacious"
 type StatCardTone = "success" | "practice" | "due" | "warning" | "neutral"
 
 type OverviewCardProps = {
@@ -24,22 +23,15 @@ type OverviewCardProps = {
   value: number
   helper: string
   tone?: StatCardTone
-  density: PageOptionsPreferences["density"]
+  density: HomeDensity
 }
 
 type PreviewPanelProps = {
   title: string
   href: string
   linkLabel: string
-  density: PageOptionsPreferences["density"]
+  density: HomeDensity
   children: React.ReactNode
-}
-
-function isSectionVisible(
-  homePreferences: PageOptionsPreferences,
-  sectionId: string
-) {
-  return homePreferences.visibleSections[sectionId] ?? true
 }
 
 function getToneClasses(tone: StatCardTone = "neutral") {
@@ -58,47 +50,36 @@ function getToneClasses(tone: StatCardTone = "neutral") {
   }
 }
 
-function getCardPadding(density: PageOptionsPreferences["density"]) {
+function getCardPadding(density: HomeDensity) {
   if (density === "compact") return "p-4"
   if (density === "spacious") return "p-6"
 
   return "p-5"
 }
 
-function getPanelPadding(density: PageOptionsPreferences["density"]) {
+function getPanelPadding(density: HomeDensity) {
   if (density === "compact") return "p-4"
   if (density === "spacious") return "p-6"
 
   return "p-5"
 }
 
-function getPreviewRowPadding(density: PageOptionsPreferences["density"]) {
+function getPreviewRowPadding(density: HomeDensity) {
   if (density === "compact") return "p-3"
   if (density === "spacious") return "p-5"
 
   return "p-4"
 }
 
-function getPreviewLimit(density: PageOptionsPreferences["density"]) {
+function getPreviewLimit(density: HomeDensity) {
   if (density === "spacious") return 2
   if (density === "compact") return 5
 
   return 3
 }
 
-function getLowerGridClass(homePreferences: PageOptionsPreferences) {
-  switch (homePreferences.columnMode) {
-    case "compact":
-      return "grid gap-4"
-    case "comfortable":
-      return "grid gap-4 xl:grid-cols-2"
-    case "wide":
-      return "grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(22rem,1fr)]"
-    case "auto":
-    default:
-      return "grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(22rem,1fr)]"
-  }
-}
+const lowerGridClass =
+  "grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(22rem,1fr)]"
 
 function getLearningQueueMeta(options: {
   firstListName: string
@@ -203,7 +184,7 @@ function PreviewLink({
   href: string
   title: string
   meta?: string
-  density: PageOptionsPreferences["density"]
+  density: HomeDensity
 }) {
   return (
     <Link
@@ -240,7 +221,7 @@ function TodayActionPanel({
   previewLimit,
 }: {
   summary: HomeSummaryData
-  density: PageOptionsPreferences["density"]
+  density: HomeDensity
   previewLimit: number
 }) {
   return (
@@ -340,20 +321,13 @@ export default function HomeSummarySection({
   summary,
   recentFriendActivity,
   streakSummary,
-  homePreferences,
 }: HomeSummarySectionProps) {
-  const density = homePreferences.density
+  const density: HomeDensity = "standard"
   const previewLimit = getPreviewLimit(density)
-  const showRepertoireState = isSectionVisible(
-    homePreferences,
-    "repertoire_state"
-  )
-  const showLearningQueue = isSectionVisible(homePreferences, "learning_queue")
-  const showDueNext = isSectionVisible(homePreferences, "due_next")
-  const showCurrentlyInPractice = isSectionVisible(
-    homePreferences,
-    "currently_in_practice"
-  )
+  const showRepertoireState = true
+  const showLearningQueue = true
+  const showDueNext = true
+  const showCurrentlyInPractice = true
   const showCurrentlyInPracticePanel =
     showCurrentlyInPractice && !showRepertoireState
 
@@ -363,7 +337,7 @@ export default function HomeSummarySection({
         summary={summary}
         recentFriendActivity={recentFriendActivity}
         streakSummary={streakSummary}
-        homePreferences={homePreferences}
+        density={density}
       />
 
       {showDueNext ? (
@@ -416,7 +390,7 @@ export default function HomeSummarySection({
       <section
         className={joinClasses(
           "hidden md:grid",
-          getLowerGridClass(homePreferences)
+          lowerGridClass
         )}
       >
         {showLearningQueue || showCurrentlyInPracticePanel ? (
@@ -484,52 +458,40 @@ export default function HomeSummarySection({
           </div>
         ) : null}
 
-        {isSectionVisible(homePreferences, "streaks") ||
-        isSectionVisible(homePreferences, "badges") ||
-        isSectionVisible(homePreferences, "lists") ? (
-          <div className="space-y-4">
-            {isSectionVisible(homePreferences, "streaks") ? (
-              <StreakSummarySection streakSummary={streakSummary} />
-            ) : null}
+        <div className="space-y-4">
+          <StreakSummarySection streakSummary={streakSummary} />
 
-            {isSectionVisible(homePreferences, "badges") ? (
-              <HomeBadgesPanel badgeSummary={summary.badgeSummary} />
-            ) : null}
+          <HomeBadgesPanel badgeSummary={summary.badgeSummary} />
 
-            {isSectionVisible(homePreferences, "lists") ? (
-              <PreviewPanel
-                title="Your lists"
-                href="/learning-lists"
-                linkLabel="View all"
-                density={density}
-              >
-                {summary.listPreview.length === 0 ? (
-                  <EmptyPreview>No lists yet.</EmptyPreview>
-                ) : (
-                  <ul className="space-y-3">
-                    {summary.listPreview
-                      .slice(0, previewLimit)
-                      .map((learningList) => (
-                        <li key={learningList.id}>
-                          <PreviewLink
-                            href={`/learning-lists/${learningList.id}`}
-                            title={learningList.name}
-                            density={density}
-                          />
-                        </li>
-                      ))}
-                  </ul>
-                )}
-              </PreviewPanel>
-            ) : null}
-          </div>
-        ) : null}
+          <PreviewPanel
+            title="Your lists"
+            href="/learning-lists"
+            linkLabel="View all"
+            density={density}
+          >
+            {summary.listPreview.length === 0 ? (
+              <EmptyPreview>No lists yet.</EmptyPreview>
+            ) : (
+              <ul className="space-y-3">
+                {summary.listPreview
+                  .slice(0, previewLimit)
+                  .map((learningList) => (
+                    <li key={learningList.id}>
+                      <PreviewLink
+                        href={`/learning-lists/${learningList.id}`}
+                        title={learningList.name}
+                        density={density}
+                      />
+                    </li>
+                  ))}
+              </ul>
+            )}
+          </PreviewPanel>
+        </div>
 
-        {isSectionVisible(homePreferences, "friend_activity") ? (
-          <div className="space-y-4">
-            <HomeFriendsActivityBox items={recentFriendActivity} />
-          </div>
-        ) : null}
+        <div className="space-y-4">
+          <HomeFriendsActivityBox items={recentFriendActivity} />
+        </div>
       </section>
     </section>
   )
