@@ -72,11 +72,7 @@ export default function SetlistHeader({
             <p className="mt-5 max-w-3xl text-base leading-7 text-foreground">
               {setlist.description}
             </p>
-          ) : (
-            <p className="mt-5 text-base text-muted-foreground">
-              No description yet.
-            </p>
-          )}
+          ) : null}
 
           <div className="mt-6 flex flex-wrap gap-2">
             <span className="rounded-full border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground">

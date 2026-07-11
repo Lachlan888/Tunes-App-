@@ -159,14 +159,12 @@ export default function LibraryList({
     return hasActiveFilters ? (
       <EmptyState
         title="No tunes match this search"
-        description="Try removing a filter, changing the title search, or creating the tune if it is genuinely missing."
         primaryActionHref="/library"
         primaryActionLabel="Reset filters"
       />
     ) : (
       <EmptyState
         title="No tunes in the library yet"
-        description="Use Create Tune or Bulk Import Known Tunes above to start building the shared tune library."
       />
     )
   }
@@ -188,7 +186,6 @@ export default function LibraryList({
           emptyState={
             <EmptyState
               title="No tunes match this search"
-              description="Try removing a filter, changing the title search, or creating the tune if it is genuinely missing."
               primaryActionHref="/library"
               primaryActionLabel="Reset filters"
             />

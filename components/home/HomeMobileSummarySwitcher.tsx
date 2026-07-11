@@ -2,11 +2,14 @@
 
 import Link from "next/link"
 import { useMemo, useState } from "react"
+import SubmitButton from "@/components/SubmitButton"
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
+import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import {
   formatFriendActivityRelativeTime,
   renderFriendActivityText,
 } from "@/lib/friend-activity"
+import { addActivityReply } from "@/lib/actions/activity-interactions"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import type { FriendActivityItem } from "@/lib/friend-activity"
 import type { HomeSummaryData, StreakSummary } from "@/lib/types"
@@ -190,6 +193,101 @@ function MobileSwitcher({
         })}
       </div>
     </div>
+  )
+}
+
+function getActivityCommentLabel(item: FriendActivityItem) {
+  const commentCount = item.replies.length
+
+  if (commentCount === 0) {
+    return "Comment"
+  }
+
+  return `Comment · ${commentCount} comment${commentCount === 1 ? "" : "s"}`
+}
+
+function getActivityAuthorName(reply: FriendActivityItem["replies"][number]) {
+  return reply.author?.display_name || reply.author?.username || "Unknown player"
+}
+
+function ActivityCommentModal({
+  item,
+  onClose,
+}: {
+  item: FriendActivityItem
+  onClose: () => void
+}) {
+  return (
+    <ResponsiveModal
+      isOpen
+      onClose={onClose}
+      eyebrow="Friend activity"
+      title="Comments"
+      mobileMode="sheet"
+      desktopMaxWidth="md:max-w-lg"
+    >
+      <div className="space-y-5">
+        <div className="rounded-2xl border border-border bg-background/70 p-4">
+          <p className="text-sm leading-6 text-foreground">
+            {renderFriendActivityText(item)}
+          </p>
+          <p className="mt-2 text-xs font-medium text-muted-foreground">
+            {formatFriendActivityRelativeTime(item.created_at)}
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {item.replies.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+              No comments yet.
+            </p>
+          ) : (
+            item.replies.map((reply) => (
+              <article
+                key={reply.id}
+                className="rounded-2xl border border-border bg-muted/70 p-3 text-sm"
+              >
+                <p className="whitespace-pre-wrap leading-6 text-foreground">
+                  {reply.body}
+                </p>
+                <p className="mt-2 text-xs font-medium text-muted-foreground">
+                  {reply.author?.username ? (
+                    <Link
+                      href={`/users/${encodeURIComponent(reply.author.username)}`}
+                      className="underline underline-offset-4 hover:text-foreground"
+                    >
+                      {getActivityAuthorName(reply)}
+                    </Link>
+                  ) : (
+                    getActivityAuthorName(reply)
+                  )}{" "}
+                  · {formatFriendActivityRelativeTime(reply.created_at)}
+                </p>
+              </article>
+            ))
+          )}
+        </div>
+
+        <form action={addActivityReply} className="space-y-3">
+          <input type="hidden" name="activity_event_id" value={item.id} />
+          <input type="hidden" name="redirect_to" value="/" />
+
+          <textarea
+            name="body"
+            rows={3}
+            placeholder="Add a comment"
+            required
+            className="w-full rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+          />
+
+          <SubmitButton
+            label="Post"
+            pendingLabel="Posting..."
+            className={buttonStyles.primary}
+          />
+        </form>
+      </div>
+    </ResponsiveModal>
   )
 }
 
@@ -427,32 +525,28 @@ function SocialPanel({
 }: {
   recentFriendActivity: FriendActivityItem[]
 }) {
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null)
+  const visibleActivity = recentFriendActivity.slice(0, 5)
+  const selectedItem =
+    visibleActivity.find((item) => item.id === selectedItemId) ?? null
+
   return (
     <div className="space-y-5">
-      <MobilePanel>
-        <MobileSectionHeading title="Social" />
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Link href="/friends" className={buttonStyles.primary}>
-            Friends
-          </Link>
-          <Link href="/compare" className={buttonStyles.secondary}>
-            Compare
-          </Link>
-          <Link href="/public-lists" className={buttonStyles.secondary}>
-            Shared
-          </Link>
-        </div>
-      </MobilePanel>
-
       <section className="space-y-2">
-        <MobileSectionHeading title="Friend activity" />
+        <MobileSectionHeading
+          title="Friend activity"
+          action={
+            <Link href="/friends" className={buttonStyles.text}>
+              Manage friends
+            </Link>
+          }
+        />
 
-        {recentFriendActivity.length === 0 ? (
+        {visibleActivity.length === 0 ? (
           <MobileEmptyBlock>No recent friend activity yet.</MobileEmptyBlock>
         ) : (
           <div className="border-y border-border/70">
-            {recentFriendActivity.slice(0, 5).map((item) => (
+            {visibleActivity.map((item) => (
               <div
                 key={item.id}
                 className="border-b border-border/70 py-3 text-sm last:border-b-0"
@@ -464,11 +558,26 @@ function SocialPanel({
                 <p className="mt-1 text-xs font-medium text-muted-foreground">
                   {formatFriendActivityRelativeTime(item.created_at)}
                 </p>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedItemId(item.id)}
+                  className="mt-2 text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                >
+                  {getActivityCommentLabel(item)}
+                </button>
               </div>
             ))}
           </div>
         )}
       </section>
+
+      {selectedItem ? (
+        <ActivityCommentModal
+          item={selectedItem}
+          onClose={() => setSelectedItemId(null)}
+        />
+      ) : null}
     </div>
   )
 }

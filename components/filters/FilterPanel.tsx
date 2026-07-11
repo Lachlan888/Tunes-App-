@@ -34,7 +34,6 @@ export default function FilterPanel({
       closeOnEscape={!isPending}
       mobileMode="full-screen"
       desktopMaxWidth="md:max-w-4xl"
-      eyebrow="Filters"
       title={title}
       description={description}
       closeLabel="Close filters"

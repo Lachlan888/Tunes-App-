@@ -6,6 +6,7 @@ import FriendsMobileSwitcher from "@/components/friends/FriendsMobileSwitcher"
 import RecentFriendActivitySection from "@/components/friends/RecentFriendActivitySection"
 import SubmitButton from "@/components/SubmitButton"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
+import PageHeader from "@/components/ui/PageHeader"
 import { statusStyles, type StatusTone } from "@/components/ui/statusStyles"
 import {
   acceptFriendRequest,
@@ -91,10 +92,6 @@ function SearchResultsSection({
         <h2 className="text-xl font-semibold tracking-tight text-foreground md:mt-2 md:font-serif md:text-3xl md:font-bold">
           Find friends
         </h2>
-        <p className="mt-2 hidden max-w-3xl text-sm leading-6 text-muted-foreground md:block">
-          Search shows people you’re not already connected with. Friends and
-          pending requests appear below.
-        </p>
       </div>
 
       <FriendSearchForm initialQuery={searchQuery} />
@@ -102,7 +99,6 @@ function SearchResultsSection({
       {!searchQuery && (
         <EmptyState
           title="Find musicians to connect with"
-          description="Search by username or display name. Once connected, you can compare repertoire and see activity."
           className="mt-4 hidden md:block"
         />
       )}
@@ -110,7 +106,6 @@ function SearchResultsSection({
       {searchQuery && searchMatches.length === 0 && (
         <EmptyState
           title="No new people found"
-          description="No unconnected people matched that search. Friends and pending requests appear below."
           className="mt-4"
         />
       )}
@@ -176,16 +171,10 @@ function IncomingRequestsSection({
           <span className="md:hidden">Requests</span>
           <span className="hidden md:inline">Incoming requests</span>
         </h2>
-        <p className="mt-2 hidden text-sm leading-6 text-muted-foreground md:block">
-          Accept requests from musicians who want to connect with you.
-        </p>
       </div>
 
       {pendingIncomingRequests.length === 0 ? (
-        <EmptyState
-          title="No incoming requests"
-          description="Friend requests from other musicians will appear here."
-        />
+        <EmptyState title="No incoming requests" />
       ) : (
         <div className="divide-y divide-border/70 md:space-y-3 md:divide-y-0">
           {pendingIncomingRequests.map((request) => (
@@ -291,18 +280,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      <section className="mb-7 border-b border-border/70 pb-5 md:mb-8 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Friends
-        </p>
-        <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight md:text-4xl">
-          Find musicians
-        </h1>
-        <p className="mt-3 hidden max-w-3xl text-sm leading-6 text-muted-foreground md:block">
-          Find musicians, send friend requests, compare repertoire, and see
-          activity from people you know.
-        </p>
-      </section>
+      <PageHeader title="Friends" />
 
       {friendRequestStatus === "sent" && (
         <StatusBanner tone="success">Friend request sent.</StatusBanner>

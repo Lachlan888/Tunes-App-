@@ -258,7 +258,6 @@ export default function PublicListSearchFilters({
         <FilterPanel
           id="public-list-filter-panel"
           title="Filter public lists"
-          description="Narrow public lists by tune style or browsing order."
           hasActiveFilters={hasActiveFilters}
           isPending={isPending}
           onClearAll={handleClearAll}

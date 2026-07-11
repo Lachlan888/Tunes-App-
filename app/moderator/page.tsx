@@ -1,5 +1,6 @@
 import Link from "next/link"
 import SubmitButton from "@/components/SubmitButton"
+import PageHeader from "@/components/ui/PageHeader"
 import {
   actionLoreReport,
   approvePieceEditRequest,
@@ -82,25 +83,11 @@ export default async function ModeratorPage({
         </div>
       ) : null}
 
-      <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Moderator
-            </p>
-            <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight md:text-5xl">
-              Tune edits, comment reports, and lore reports
-            </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-              Review proposed corrections to shared tune details, handle
-              reported comments, and judge reported lore entries.
-            </p>
-          </div>
+      <PageHeader title="Moderator" />
 
-        </div>
-
+      <section className="mb-8">
         {showSection("summary_counts") ? (
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-border bg-background/70 p-4">
               <p className="font-serif text-4xl font-bold">
                 {pendingEditRequests.length}

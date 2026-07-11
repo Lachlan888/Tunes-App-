@@ -5,6 +5,7 @@ import PracticeStatusMessages from "@/components/practice/PracticeStatusMessages
 import ReviewQueueSection from "@/components/practice/ReviewQueueSection"
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import PracticeDiaryNav from "@/components/practice-diary/PracticeDiaryNav"
+import PageHeader from "@/components/ui/PageHeader"
 import { loadReviewPageData } from "@/lib/loaders/review"
 
 type ReviewPageProps = {
@@ -58,16 +59,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      <header className="mb-5 flex flex-col gap-3 md:mb-6 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Practice
-          </p>
-          <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            Review your tunes
-          </h1>
-        </div>
-      </header>
+      <PageHeader title="Practice" />
 
       {showSection("status_messages") ? (
         <PracticeStatusMessages
@@ -104,10 +96,6 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           <section className="rounded-3xl border border-border bg-card p-5 shadow-sm md:p-6">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Supporting tools
-            </p>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Diary, Foci, and indexed practice notes stay separate from formal
-              review records.
             </p>
             <PracticeDiaryNav active="review" />
           </section>

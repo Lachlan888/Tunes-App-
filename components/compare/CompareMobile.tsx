@@ -64,17 +64,9 @@ export default function CompareMobile(props: CompareViewProps) {
       ) : (
         <>
           <header className="mb-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground">
               Compare
-            </p>
-
-            <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight text-foreground">
-              Shared repertoire
             </h1>
-
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Add a player to see the tunes you have in common.
-            </p>
           </header>
 
           <ComparePageStatusMessages
@@ -89,15 +81,10 @@ export default function CompareMobile(props: CompareViewProps) {
             </h2>
 
             <div className="mt-3 border-y border-border py-4">
-              <p className="text-sm leading-6 text-muted-foreground">
-                You’re included automatically. Add another player to compare
-                tunes.
-              </p>
-
               <button
                 type="button"
                 onClick={() => setIsAddSheetOpen(true)}
-                className="mt-4 rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               >
                 Add person
               </button>

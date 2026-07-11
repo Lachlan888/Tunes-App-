@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation"
 import { normaliseKey } from "@/lib/music/keys"
+import { isValidOptionalTimeSignature } from "@/lib/music/time-signatures"
 import { createClient } from "@/lib/supabase/server"
 
 function appendQueryParam(url: string, key: string, value: string) {
@@ -63,6 +64,12 @@ export async function createPieceEditRequest(formData: FormData) {
   }
 
   if (timeSignature) {
+    if (!isValidOptionalTimeSignature(timeSignature)) {
+      redirect(
+        appendQueryParam(redirectTo, "edit_request", "invalid_time_signature")
+      )
+    }
+
     proposedChanges.time_signature = timeSignature
   }
 

@@ -58,7 +58,6 @@ export default function ReviewNoteModal({
       closeOnEscape={!isSubmitting}
       mobileMode="sheet"
       desktopMaxWidth="md:max-w-lg"
-      eyebrow="Practice diary"
       title={selectedOutcome.modalTitle}
       description={`Add an optional note for ${title}. Saving will also record the ${selectedOutcome.label.toLowerCase()} review result.`}
     >

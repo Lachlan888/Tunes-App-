@@ -152,79 +152,22 @@ export default function LoginPage() {
   const isBusy = isSubmitting || isRedirecting
 
   return (
-    <main className="mx-auto grid max-w-[1300px] grid-cols-1 gap-6 px-4 py-6 text-foreground sm:px-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(380px,520px)] lg:items-start lg:gap-8 lg:py-10">
-      <section className="hidden rounded-3xl border border-border bg-card p-6 shadow-sm lg:block lg:p-8">
-        <h1 className="max-w-3xl font-serif text-4xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
-          Remember what you play, and build repertoire as culture.
-        </h1>
-
-        <p className="mt-5 max-w-3xl text-base leading-7 text-muted-foreground md:text-lg">
-          Tunes App helps musicians organise tunes, practise them deliberately,
-          and connect repertoire with other players. Add tunes, place them in
-          lists, move them into practice, mark what you know, and compare common
-          ground with friends.
-        </p>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-border bg-background/70 p-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Organise
-            </p>
-            <p className="mt-2 text-sm leading-6 text-foreground">
-              Keep tune lists for sessions, styles, projects, and repertoire
-              clusters.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-background/70 p-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Practise
-            </p>
-            <p className="mt-2 text-sm leading-6 text-foreground">
-              Use staged review to keep active tunes alive instead of letting
-              them dissolve.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-background/70 p-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Connect
-            </p>
-            <p className="mt-2 text-sm leading-6 text-foreground">
-              Compare overlap, browse public lists, and find the tunes you share
-              with other musicians.
-            </p>
-          </div>
-        </div>
-      </section>
-
+    <main className="mx-auto max-w-xl px-4 py-6 text-foreground sm:px-6 lg:py-10">
       <section
         id="sign-in"
         className="rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-6 lg:p-8"
       >
-        <div className="lg:hidden">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Tunes App
-          </p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Sign in to manage your tunes, lists, practice, and repertoire.
-          </p>
-        </div>
-
-        <h1 className="mt-4 font-serif text-4xl font-bold tracking-tight text-foreground lg:mt-0">
+        <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground">
           {isLogin && "Sign in"}
           {isSignup && "Create account"}
           {isReset && "Reset password"}
         </h1>
 
-        <p className="mt-3 hidden text-sm leading-6 text-muted-foreground md:text-base lg:block">
-          {isLogin &&
-            "Sign in to manage your tunes, lists, practice, and repertoire."}
-          {isSignup &&
-            "Create an account to start tracking your tunes and practice."}
-          {isReset &&
-            "Enter your email and we’ll send you a link to set a new password."}
-        </p>
+        {isReset ? (
+          <p className="mt-3 text-sm leading-6 text-muted-foreground md:text-base">
+            Enter your email and we’ll send you a link to set a new password.
+          </p>
+        ) : null}
 
         {isRedirecting && (
           <LoadingSpinner

@@ -3,6 +3,7 @@ import PracticeDiaryViewSwitcher from "@/components/practice-diary/PracticeDiary
 import PracticeDayView from "@/components/practice-diary/PracticeDayView"
 import PracticeMonthView from "@/components/practice-diary/PracticeMonthView"
 import PracticeWeekView from "@/components/practice-diary/PracticeWeekView"
+import PageHeader from "@/components/ui/PageHeader"
 import {
   loadPracticeDiaryDayData,
   loadPracticeDiaryMonthData,
@@ -34,18 +35,6 @@ function getDiaryView(value: string | undefined): PracticeDiaryView {
   return "day"
 }
 
-function getViewDescription(activeView: PracticeDiaryView) {
-  if (activeView === "week") {
-    return "Weekly patterns, tunes touched, and category activity."
-  }
-
-  if (activeView === "month") {
-    return "Monthly habit and coverage summary."
-  }
-
-  return "Daily notebook, reflection, due tunes, and tune notes."
-}
-
 export default async function PracticeDiaryPage({
   searchParams,
 }: PracticeDiaryPageProps) {
@@ -74,19 +63,9 @@ export default async function PracticeDiaryPage({
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      <section className="mb-5 rounded-2xl border border-border bg-card p-4 shadow-sm md:mb-6 md:rounded-3xl md:p-6">
-        <p className="hidden text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground md:block">
-          Practice
-        </p>
+      <PageHeader title="Practice Diary" />
 
-        <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight md:mt-2 md:text-5xl">
-          Practice diary
-        </h1>
-
-        <p className="mt-3 hidden max-w-3xl text-base leading-7 text-muted-foreground md:block">
-          {getViewDescription(activeView)}
-        </p>
-
+      <section className="mb-5 md:mb-6">
         <PracticeDiaryNav active="diary" />
 
         <div className="mt-5">

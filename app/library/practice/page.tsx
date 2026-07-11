@@ -1,4 +1,5 @@
 import RepertoireTuneList from "@/components/repertoire/RepertoireTuneList"
+import PageHeader from "@/components/ui/PageHeader"
 import { addToLearningList } from "@/lib/actions/lists"
 import { loadPracticeTunesPageData } from "@/lib/loaders/repertoire"
 
@@ -82,20 +83,10 @@ export default async function PracticeTunesPage({
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
-      <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Practice library
-        </p>
+      <PageHeader title="Practice Tunes" backHref="/library" />
 
-        <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight text-foreground">
-          In practice
-        </h1>
-
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-          Tunes currently in your active review system.
-        </p>
-
-        <div className="mt-6 max-w-sm rounded-2xl border border-border border-l-8 border-l-primary bg-background/70 p-5 shadow-sm">
+      <section className="mb-8">
+        <div className="max-w-sm rounded-2xl border border-border border-l-8 border-l-primary bg-background/70 p-5 shadow-sm">
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             In practice
           </p>

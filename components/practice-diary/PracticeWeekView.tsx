@@ -455,7 +455,7 @@ function MobileCategoryPatterns({
           {visibleSummaries.map((summary) => (
             <Link
               key={summary.categoryId}
-              href={`/review/diary/categories/${summary.categoryId}`}
+              href={`/review/diary/index/categories/${summary.categoryId}`}
               className="block rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             >
               <div className="flex items-start justify-between gap-3">

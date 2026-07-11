@@ -35,9 +35,7 @@ export default function CreateListModal() {
         closeOnEscape={!isSubmitting}
         mobileMode="sheet"
         desktopMaxWidth="md:max-w-xl"
-        eyebrow="Lists"
         title="Create List"
-        description="Make a container for repertoire, practice plans, session sets, or copied tune groups."
       >
         <CreateListForm
           createList={createList}

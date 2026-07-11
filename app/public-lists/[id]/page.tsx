@@ -321,11 +321,7 @@ export default async function PublicListDetailPage({
               <p className="mt-4 max-w-3xl text-sm leading-6 text-foreground md:mt-5 md:text-base md:leading-7">
                 {typedList.description}
               </p>
-            ) : (
-              <p className="mt-4 text-sm text-muted-foreground md:mt-5 md:text-base">
-                No description yet.
-              </p>
-            )}
+            ) : null}
           </div>
 
           {isViewingOwnPublicList && (

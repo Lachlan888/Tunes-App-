@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { normaliseKey } from "@/lib/music/keys"
+import { isValidOptionalTimeSignature } from "@/lib/music/time-signatures"
 
 export async function upsertUserPieceNotes(formData: FormData) {
   const supabase = await createClient()
@@ -165,6 +166,10 @@ export async function updateMissingPieceDetails(formData: FormData) {
   }
 
   if (!existingPiece.time_signature && rawTimeSignature) {
+    if (!isValidOptionalTimeSignature(rawTimeSignature)) {
+      return
+    }
+
     updates.time_signature = rawTimeSignature
   }
 

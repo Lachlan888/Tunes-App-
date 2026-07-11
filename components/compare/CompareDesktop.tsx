@@ -6,6 +6,7 @@ import CompareResultsHeader from "@/components/compare/CompareResultsHeader"
 import CompareSearchForm from "@/components/compare/CompareSearchForm"
 import CompareSuggestionsSection from "@/components/compare/CompareSuggestionsSection"
 import CurrentCompareGroupSection from "@/components/compare/CurrentCompareGroupSection"
+import PageHeader from "@/components/ui/PageHeader"
 import type { CompareViewProps } from "@/components/compare/compare-view-types"
 
 export default function CompareDesktop({
@@ -37,15 +38,7 @@ export default function CompareDesktop({
 }: CompareViewProps) {
   return (
     <>
-      <section className="mb-6 rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-6">
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
-          Compare Tunes
-        </h1>
-
-        <p className="mt-3 max-w-3xl text-base text-muted-foreground sm:text-lg">
-          Add players to see the tunes everyone has in common.
-        </p>
-      </section>
+      <PageHeader title="Compare" />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,520px)] lg:items-stretch">
         <section className="min-w-0">
@@ -82,7 +75,6 @@ export default function CompareDesktop({
           {error === "multiple_matches" ? (
             <CompareCandidateListSection
               title="Choose a player"
-              description={`More than one player matched “${primarySearchValue}”.`}
               profiles={matchingProfiles}
               filterPreservedUsers={filterPreservedUsers}
               includePractice={includePractice}
@@ -93,7 +85,6 @@ export default function CompareDesktop({
           {error === null && searchMatches.length > 0 ? (
             <CompareCandidateListSection
               title="Choose a player"
-              description="Select the person you want to add to this compare group."
               profiles={searchMatches}
               filterPreservedUsers={filterPreservedUsers}
               includePractice={includePractice}

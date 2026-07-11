@@ -174,7 +174,6 @@ export default function AddToListModal({
       closeDisabled={isClosingDisabled}
       mobileMode="sheet"
       desktopMaxWidth="md:max-w-md"
-      eyebrow="Lists"
       title="Add to List"
       description={selectedPiece.title}
       bodyClassName="min-h-0 flex-1 overflow-y-auto p-5 md:p-6"

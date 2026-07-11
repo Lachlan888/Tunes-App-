@@ -11,6 +11,7 @@ import {
 import ListsResultsHeader from "@/components/lists/ListsResultsHeader"
 import ListsStatusMessages from "@/components/lists/ListsStatusMessages"
 import { joinClasses } from "@/components/ui/buttonStyles"
+import PageHeader from "@/components/ui/PageHeader"
 import {
   addToLearningList,
   deleteList,
@@ -44,40 +45,22 @@ type ListsView = "my-lists" | "learning-queue" | "unsorted" | "saved-shared"
 const LISTS_VIEWS: Array<{
   id: ListsView
   label: string
-  eyebrow: string
-  title: string
-  description: string
 }> = [
   {
     id: "my-lists",
     label: "My Lists",
-    eyebrow: "Owned lists",
-    title: "My Lists",
-    description: "User-created and copied lists you can edit, organise, share, or delete.",
   },
   {
     id: "learning-queue",
     label: "Learning Queue",
-    eyebrow: "Saved for later",
-    title: "Learning Queue",
-    description:
-      "Tunes intentionally collected in lists for possible future Practice. This is not active Practice.",
   },
   {
     id: "unsorted",
     label: "Unsorted",
-    eyebrow: "Needs organisation",
-    title: "Unsorted",
-    description:
-      "Known or in-practice tunes that are not in any list yet, grouped by why they need attention.",
   },
   {
     id: "saved-shared",
     label: "Saved and Shared",
-    eyebrow: "External lists",
-    title: "Saved and Shared",
-    description:
-      "Bookmarked public lists and private lists shared directly with you.",
   },
 ]
 
@@ -175,7 +158,6 @@ export default async function LearningListsPage({
     LISTS_VIEWS.find((view) => view.id === activeView) ?? LISTS_VIEWS[0]
 
   const {
-    user,
     learningLists,
     listOverviews,
     personalTuneCounts,
@@ -232,27 +214,9 @@ export default async function LearningListsPage({
         </div>
       ) : null}
 
+      <PageHeader title="Lists" />
+
       <section className="mb-6 rounded-3xl border border-border bg-card p-5 shadow-sm md:mb-8 md:p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Lists
-            </p>
-            <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
-              Organise your tunes
-            </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-              Lists now split owned collections, future Practice intentions,
-              unsorted personal tunes, and saved or shared lists into separate
-              views.
-            </p>
-            <p className="mt-4 text-sm text-muted-foreground">
-              Logged in as {user.email}
-            </p>
-          </div>
-
-        </div>
-
         <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
           {LISTS_VIEWS.map((view) => {
             const isActive = activeView === view.id
@@ -295,8 +259,7 @@ export default async function LearningListsPage({
             You have {personalTuneCounts.total} personal tune
             {personalTuneCounts.total === 1 ? "" : "s"}:{" "}
             {personalTuneCounts.inPractice} in Practice and{" "}
-            {personalTuneCounts.known} Known. Use the dedicated repertoire
-            views instead of another full Lists-page surface.
+            {personalTuneCounts.known} Known.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Link
@@ -323,17 +286,11 @@ export default async function LearningListsPage({
       ) : null}
 
       <section className="mb-5">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          {activeViewConfig.eyebrow}
-        </p>
-        <div className="mt-2 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 className="font-serif text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-              {activeViewConfig.title}
+              {activeViewConfig.label}
             </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-              {activeViewConfig.description}
-            </p>
           </div>
 
           {activeView === "my-lists" && showSection("create_list") ? (
@@ -377,7 +334,6 @@ export default async function LearningListsPage({
             {listOverviews.length === 0 ? (
               <EmptyState
                 title="No lists yet"
-                description="Lists are where you organise tunes for learning, repertoire, sessions, or publishing. Use Create List above to start one."
                 secondaryActionHref="/library"
                 secondaryActionLabel="Browse Tunes"
                 className="bg-card p-5"
@@ -386,7 +342,6 @@ export default async function LearningListsPage({
             ) : filteredListOverviews.length === 0 ? (
               <EmptyState
                 title="No lists match this view"
-                description="Try clearing the search or filters."
                 primaryActionHref="/learning-lists"
                 primaryActionLabel="Reset view"
               />
@@ -396,9 +351,6 @@ export default async function LearningListsPage({
                   <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Your lists
                   </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Editable lists you created or copied.
-                  </p>
                 </div>
 
                 <div className="space-y-4">

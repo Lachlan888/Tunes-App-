@@ -127,11 +127,7 @@ export default function PublicProfileOverview({
                           <p className="mt-3 break-words text-sm leading-6 text-muted-foreground">
                             {list.description}
                           </p>
-                        ) : (
-                          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                            No description yet.
-                          </p>
-                        )}
+                        ) : null}
                       </div>
 
                       <div className="flex items-center justify-between gap-3 border-t border-border pt-3 text-sm font-medium text-muted-foreground">
@@ -151,7 +147,6 @@ export default function PublicProfileOverview({
           ) : isOwnProfile ? (
             <EmptyState
               title="No public lists yet"
-              description="Make one of your lists public if you want other musicians to browse or import it."
               primaryActionHref="/learning-lists"
               primaryActionLabel="Manage Lists"
               className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
@@ -159,7 +154,6 @@ export default function PublicProfileOverview({
           ) : (
             <EmptyState
               title="No public lists yet"
-              description="Public lists this musician chooses to share will appear here."
               className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
             />
           )}

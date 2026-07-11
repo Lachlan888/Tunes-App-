@@ -26,8 +26,7 @@ export default function DirectMessageThreadList({
   if (threads.length === 0) {
     return (
       <p className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground shadow-sm">
-        No direct messages yet. Messages sent from public profile pages will
-        appear here.
+        No direct messages yet.
       </p>
     )
   }

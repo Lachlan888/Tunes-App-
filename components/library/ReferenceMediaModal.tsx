@@ -150,7 +150,6 @@ export default function ReferenceMediaModal({
         onClose={handleClose}
         mobileMode="full-screen"
         desktopMaxWidth="md:max-w-5xl"
-        eyebrow="Reference media"
         title={title}
         bodyClassName={joinClasses(
           "min-h-0 min-w-0 flex-1 overflow-y-auto p-3",

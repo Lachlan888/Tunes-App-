@@ -23,15 +23,15 @@ export default function ActivityReplyForm({
         rows={3}
         placeholder={
           isCommentActivity
-            ? "Reply to this tune comment"
-            : "Reply to this activity"
+            ? "Comment on this tune comment"
+            : "Comment on this activity"
         }
         className="w-full rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
         required
       />
 
       <SubmitButton
-        label={isCommentActivity ? "Reply to comment" : "Reply"}
+        label="Comment"
         pendingLabel="Posting..."
         className={buttonStyles.primary}
       />

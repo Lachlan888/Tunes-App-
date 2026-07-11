@@ -305,10 +305,7 @@ function TuneOverviewSection({
     <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
       <div className="flex min-w-0 flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Overview
-          </p>
-          <h1 className="mt-3 max-w-5xl break-words font-serif text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
+          <h1 className="max-w-5xl break-words font-serif text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
             {piece.title}
           </h1>
           {alternateTitle ? (

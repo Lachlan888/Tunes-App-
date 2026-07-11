@@ -44,9 +44,7 @@ export default function CreateSetlistModal({
         closeDisabled={isSubmitting}
         mobileMode="sheet"
         desktopMaxWidth="md:max-w-2xl"
-        eyebrow="New setlist"
-        title="Create a shared working list"
-        description="Use setlists for gigs, sessions, rehearsals, workshops, or any shared playing context."
+        title="Create setlist"
       >
         <form
           action={async (formData: FormData) => {

@@ -1,6 +1,7 @@
 import DirectMessageThreadList from "@/components/inbox/DirectMessageThreadList"
 import InboxItemList from "@/components/inbox/InboxItemList"
 import SubmitButton from "@/components/SubmitButton"
+import PageHeader from "@/components/ui/PageHeader"
 import {
   archiveAllInboxItems,
   markAllNotificationsRead,
@@ -123,24 +124,10 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
         </div>
       ) : null}
 
-      <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Inbox
-            </p>
+      <section className="mb-8">
+        <PageHeader title="Inbox" />
 
-            <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
-              Messages and notifications
-            </h1>
-
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-              Threaded direct messages, activity replies, tune-comment replies,
-              moderation outcomes, and Good craic! reactions from other
-              musicians.
-            </p>
-          </div>
-
+        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-3 md:items-end">
             <div className="grid gap-3 text-sm sm:grid-cols-3">
               <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">

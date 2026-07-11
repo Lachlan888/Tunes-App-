@@ -86,9 +86,7 @@ export default function FindReferenceModal({
       closeDisabled={isSearchPending}
       mobileMode="full-screen"
       desktopMaxWidth="md:max-w-4xl"
-      eyebrow="Reference media"
       title="Find reference recording"
-      description={piece.title}
       bodyClassName="min-h-0 flex-1 overflow-y-auto p-4 md:p-6"
     >
       <div className="space-y-5">

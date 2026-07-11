@@ -200,11 +200,7 @@ function SelectedFocusCard({ focus }: { focus: PracticeFocus }) {
           <p className="mt-4 max-w-3xl break-words text-base leading-7 text-foreground">
             {focus.description}
           </p>
-        ) : (
-          <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
-            No description yet.
-          </p>
-        )}
+        ) : null}
       </div>
 
       <div className="flex flex-wrap gap-3">
@@ -358,8 +354,7 @@ export default function PracticeFocusList({
       {
         status: "active",
         title: "Active focus areas",
-        emptyMessage:
-          "No active focus areas yet. Create one when a few tunes are connected by the same musical problem or preparation goal.",
+        emptyMessage: "No active focus areas.",
         foci: activeFoci,
       },
       {

@@ -6,6 +6,7 @@ import {
   notifySetlistMembers,
   notifySingleUser,
 } from "@/lib/services/setlist-notifications"
+import { normaliseKey } from "@/lib/music/keys"
 import { createClient } from "@/lib/supabase/server"
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
@@ -526,7 +527,10 @@ export async function updateSetlistItem(formData: FormData) {
 
   const setlistId = Number(formData.get("setlist_id"))
   const itemId = Number(formData.get("setlist_item_id"))
-  const performanceKey = String(formData.get("performance_key") ?? "").trim()
+  const rawPerformanceKey = String(formData.get("performance_key") ?? "").trim()
+  const performanceKey = rawPerformanceKey
+    ? normaliseKey(rawPerformanceKey)
+    : null
   const notes = String(formData.get("notes") ?? "").trim()
   const chartUrl = String(formData.get("chart_url") ?? "").trim()
   const chartLabel = String(formData.get("chart_label") ?? "").trim()
@@ -552,6 +556,10 @@ export async function updateSetlistItem(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "setlist_item", "forbidden"))
   }
 
+  if (rawPerformanceKey && !performanceKey) {
+    redirect(appendQueryParam(redirectTo, "setlist_item", "invalid_key"))
+  }
+
   const { data: existingItem, error: existingError } = await supabase
     .from("setlist_items")
     .select("id, piece_id")
@@ -570,7 +578,7 @@ export async function updateSetlistItem(formData: FormData) {
   const { error } = await supabase
     .from("setlist_items")
     .update({
-      performance_key: performanceKey || null,
+      performance_key: performanceKey,
       notes: notes || null,
       chart_url: chartUrl || null,
       chart_label: chartLabel || null,

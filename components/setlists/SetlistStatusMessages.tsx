@@ -191,6 +191,11 @@ function getItemMessage(status: string | undefined): Message | null {
       text: "Couldn’t move that tune.",
       tone: "warning",
     },
+    invalid_key: {
+      key: "item-invalid-key",
+      text: "Choose a supported performance key.",
+      tone: "warning",
+    },
     not_found: {
       key: "item-not-found",
       text: "That setlist item could not be found.",

@@ -111,15 +111,12 @@ export default async function BadgeDetailPage({
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_28rem]">
         <div className="space-y-8">
           <section className="rounded-3xl border border-border bg-card p-5 shadow-sm md:p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              {titleCase(data.badge.category)} badge
-            </p>
-
-            <h1 className="mt-3 font-serif text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
+            <h1 className="font-serif text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
               {data.badge.name}
             </h1>
 
             <p className="mt-4 text-sm text-muted-foreground">
+              {titleCase(data.badge.category)} badge ·{" "}
               Awarded by{" "}
               {ownerHref ? (
                 <Link

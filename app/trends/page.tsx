@@ -2,6 +2,7 @@ import TrendFriendPatternsSection from "@/components/trends/TrendFriendPatternsS
 import TrendSummaryCards from "@/components/trends/TrendSummaryCards"
 import TrendTuneList from "@/components/trends/TrendTuneList"
 import PendingLinkButton from "@/components/PendingLinkButton"
+import PageHeader from "@/components/ui/PageHeader"
 import { loadTrendLandingData } from "@/lib/loaders/trends"
 
 export default async function TrendsPage() {
@@ -18,15 +19,7 @@ export default async function TrendsPage() {
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
-      <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-          Trends &amp; Patterns
-        </h1>
-
-        <p className="mt-3 max-w-3xl text-lg text-muted-foreground">
-          Explore overall repertoire trends, then drill into a specific style.
-        </p>
-      </section>
+      <PageHeader title="Trends" />
 
       <section className="mb-10">
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">

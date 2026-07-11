@@ -1,5 +1,6 @@
 import PracticeDiaryIndex from "@/components/practice-diary/PracticeDiaryIndex"
 import PracticeDiaryNav from "@/components/practice-diary/PracticeDiaryNav"
+import PageHeader from "@/components/ui/PageHeader"
 import { loadPracticeIndexData } from "@/lib/loaders/practice-index"
 import { requirePracticeDiaryEnabled } from "@/lib/loaders/practice-diary"
 
@@ -10,19 +11,9 @@ export default async function PracticeDiaryIndexPage() {
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      <section className="mb-5 rounded-2xl border border-border bg-card p-4 shadow-sm md:mb-6 md:rounded-3xl md:p-6">
-        <p className="hidden text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground md:block">
-          Practice
-        </p>
+      <PageHeader title="Practice Index" />
 
-        <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight md:mt-2 md:text-5xl">
-          Practice index
-        </h1>
-
-        <p className="mt-3 hidden max-w-3xl text-base leading-7 text-muted-foreground md:block">
-          Search focus areas, note categories, and recent practice notes.
-        </p>
-
+      <section className="mb-5 md:mb-6">
         <PracticeDiaryNav active="index" />
       </section>
 

@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import RequestTuneEditForm from "@/components/library/RequestTuneEditForm"
+import KeyPickerField from "@/components/music/KeyPickerField"
 import SubmitButton from "@/components/SubmitButton"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import { directModeratorUpdatePiece } from "@/lib/actions/moderation"
@@ -10,8 +11,11 @@ import {
   deleteCanonicalTuneAsModerator,
   updateMissingPieceDetails,
 } from "@/lib/actions/pieces"
+import {
+  TIME_SIGNATURE_HELPER_TEXT,
+  TIME_SIGNATURE_PATTERN,
+} from "@/lib/music/time-signatures"
 import type { ProfileRow } from "@/lib/loaders/tune-detail"
-import { VALID_KEYS } from "@/lib/music/keys"
 import type { Piece, StyleOption, UserRole } from "@/lib/types"
 
 type TuneCanonicalDetailsCardProps = {
@@ -457,14 +461,11 @@ export default function TuneCanonicalDetailsCard({
             <input type="hidden" name="redirect_to" value={redirectTo} />
 
             {!piece.key ? (
-              <select name="key" defaultValue="" className={inputClassName}>
-                <option value="">Choose key</option>
-                {VALID_KEYS.map((key) => (
-                  <option key={key} value={key}>
-                    {key}
-                  </option>
-                ))}
-              </select>
+              <KeyPickerField
+                name="key"
+                label="Tune key"
+                placeholder="Select key"
+              />
             ) : null}
 
             {!piece.style ? (
@@ -483,6 +484,8 @@ export default function TuneCanonicalDetailsCard({
                 name="time_signature"
                 placeholder='Add time signature, eg "4/4"'
                 className={inputClassName}
+                pattern={TIME_SIGNATURE_PATTERN}
+                title={TIME_SIGNATURE_HELPER_TEXT}
               />
             ) : null}
 
@@ -554,18 +557,12 @@ export default function TuneCanonicalDetailsCard({
               required
             />
 
-            <select
+            <KeyPickerField
               name="key"
               defaultValue={piece.key || ""}
-              className={inputClassName}
-            >
-              <option value="">No key</option>
-              {VALID_KEYS.map((key) => (
-                <option key={key} value={key}>
-                  {key}
-                </option>
-              ))}
-            </select>
+              label="Tune key"
+              placeholder="No key selected"
+            />
 
             <select
               name="style"
@@ -585,6 +582,8 @@ export default function TuneCanonicalDetailsCard({
               defaultValue={piece.time_signature || ""}
               placeholder='Time signature, eg "4/4"'
               className={inputClassName}
+              pattern={TIME_SIGNATURE_PATTERN}
+              title={TIME_SIGNATURE_HELPER_TEXT}
             />
 
             <input

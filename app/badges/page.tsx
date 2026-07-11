@@ -1,5 +1,6 @@
 import Link from "next/link"
 import BadgeBrowser from "@/components/badges/BadgeBrowser"
+import PageHeader from "@/components/ui/PageHeader"
 import { loadBadgeIndexData } from "@/lib/loaders/badges"
 
 type BadgesPageProps = {
@@ -51,14 +52,9 @@ export default async function BadgesPage({ searchParams }: BadgesPageProps) {
         </div>
       ) : null}
 
-      <section className="rounded-3xl border border-border bg-card px-5 py-5 text-center shadow-sm md:p-6 md:text-left">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <h1 className="font-serif text-4xl font-bold leading-none tracking-tight text-foreground md:text-5xl">
-              Badges
-            </h1>
-          </div>
-
+      <PageHeader
+        title="Badges"
+        actions={
           <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-end">
             {showSection("create_badge") ? (
               viewerId ? (
@@ -79,8 +75,8 @@ export default async function BadgesPage({ searchParams }: BadgesPageProps) {
             ) : null}
 
           </div>
-        </div>
-      </section>
+        }
+      />
 
       {badges.length > 0 ? (
         showSection("badge_browser") ? (
@@ -91,10 +87,6 @@ export default async function BadgesPage({ searchParams }: BadgesPageProps) {
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             No badges yet
           </h2>
-          <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            Create the first badge. A good starting point is a repertoire badge
-            based on a public list, such as Monroe Mayhem.
-          </p>
         </section>
       ) : null}
     </main>

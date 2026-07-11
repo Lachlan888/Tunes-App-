@@ -56,11 +56,7 @@ export default async function PracticeFocusDetailPage({
           Back to focus areas
         </Link>
 
-        <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Practice focus
-        </p>
-
-        <h1 className="mt-2 break-words font-serif text-3xl font-bold leading-tight tracking-tight">
+        <h1 className="mt-4 break-words font-serif text-3xl font-bold leading-tight tracking-tight">
           {focus.title}
         </h1>
 
@@ -80,18 +76,15 @@ export default async function PracticeFocusDetailPage({
               Back to focus areas
             </Link>
 
-            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Practice focus
-            </p>
-
-            <h1 className="mt-2 break-words font-serif text-5xl font-bold leading-tight tracking-tight">
+            <h1 className="mt-4 break-words font-serif text-5xl font-bold leading-tight tracking-tight">
               {focus.title}
             </h1>
 
-            <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
-              {focus.description ??
-                "Use this focus to group related known and active-practice tunes."}
-            </p>
+            {focus.description ? (
+              <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
+                {focus.description}
+              </p>
+            ) : null}
           </div>
         </div>
 

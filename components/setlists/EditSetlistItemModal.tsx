@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import KeyPickerField from "@/components/music/KeyPickerField"
 import SubmitButton from "@/components/SubmitButton"
 import type { SetlistItemWithCoverage } from "@/lib/types"
 
@@ -67,19 +68,17 @@ export default function EditSetlistItemModal({
               />
               <input type="hidden" name="redirect_to" value={redirectTo} />
 
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  Performance key
-                </label>
-                <input
-                  name="performance_key"
-                  defaultValue={item.performance_key ?? ""}
-                  placeholder={
-                    item.piece?.key ? `Default: ${item.piece.key}` : "Optional"
-                  }
-                  className={`${inputClass} mt-2`}
-                />
-              </div>
+              <KeyPickerField
+                name="performance_key"
+                label="Performance key"
+                defaultValue={item.performance_key ?? ""}
+                placeholder="Select key"
+                helperText={
+                  item.piece?.key
+                    ? `Leave blank to use the tune key: ${item.piece.key}.`
+                    : "Optional. This belongs only to this setlist."
+                }
+              />
 
               <div>
                 <label className="text-sm font-medium text-foreground">

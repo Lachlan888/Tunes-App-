@@ -321,11 +321,7 @@ export default async function LearningListDetailPage({
               <p className="mt-5 max-w-3xl text-base leading-7 text-foreground">
                 {typedList.description}
               </p>
-            ) : (
-              <p className="mt-5 text-base text-muted-foreground">
-                No description yet.
-              </p>
-            )}
+            ) : null}
           </div>
 
           {isOwner ? (

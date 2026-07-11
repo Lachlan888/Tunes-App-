@@ -629,7 +629,6 @@ export default function PracticeMetronome() {
       <ResponsiveModal
         isOpen={isControlsOpen}
         onClose={() => setIsControlsOpen(false)}
-        eyebrow="Practice tool"
         title="Metronome"
         description={settingsSummary}
         mobileMode="sheet"

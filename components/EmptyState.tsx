@@ -4,7 +4,7 @@ import PendingLinkButton from "@/components/PendingLinkButton"
 
 type EmptyStateProps = {
   title: string
-  description: string
+  description?: string
   primaryActionHref?: string
   primaryActionLabel?: string
   secondaryActionHref?: string
@@ -34,9 +34,11 @@ export default function EmptyState({
     >
       <h3 className={titleClassName}>{title}</h3>
 
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-        {description}
-      </p>
+      {description ? (
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          {description}
+        </p>
+      ) : null}
 
       {(hasPrimaryAction || hasSecondaryAction || children) && (
         <div className="mt-4 flex flex-wrap items-center gap-3">

@@ -106,11 +106,7 @@ export default function SharedListCard({ list }: SharedListCardProps) {
             <p className="mt-4 text-sm leading-6 text-foreground">
               {list.description}
             </p>
-          ) : (
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              No description yet.
-            </p>
-          )}
+          ) : null}
         </div>
 
         <div data-card-action>

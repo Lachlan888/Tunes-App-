@@ -1,6 +1,10 @@
+import KeyPickerField from "@/components/music/KeyPickerField"
 import SubmitButton from "@/components/SubmitButton"
 import { createPieceEditRequest } from "@/lib/actions/piece-edit-requests"
-import { VALID_KEYS } from "@/lib/music/keys"
+import {
+  TIME_SIGNATURE_HELPER_TEXT,
+  TIME_SIGNATURE_PATTERN,
+} from "@/lib/music/time-signatures"
 import type { Piece, StyleOption } from "@/lib/types"
 
 type RequestTuneEditFormProps = {
@@ -39,14 +43,12 @@ export default function RequestTuneEditForm({
         className={inputClassName}
       />
 
-      <select name="key" defaultValue="" className={inputClassName}>
-        <option value="">Key, currently {piece.key || "missing"}</option>
-        {VALID_KEYS.map((key) => (
-          <option key={key} value={key}>
-            {key}
-          </option>
-        ))}
-      </select>
+      <KeyPickerField
+        name="key"
+        label="Tune key"
+        placeholder="No key selected"
+        helperText={`Currently ${piece.key || "missing"}. Leave blank to keep it unchanged.`}
+      />
 
       <select name="style" defaultValue="" className={inputClassName}>
         <option value="">Style, currently {piece.style || "missing"}</option>
@@ -63,6 +65,8 @@ export default function RequestTuneEditForm({
           piece.time_signature || "missing"
         }`}
         className={inputClassName}
+        pattern={TIME_SIGNATURE_PATTERN}
+        title={TIME_SIGNATURE_HELPER_TEXT}
       />
 
       <input

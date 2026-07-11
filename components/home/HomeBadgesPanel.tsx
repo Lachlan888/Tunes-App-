@@ -120,8 +120,7 @@ export default function HomeBadgesPanel({
         </div>
       ) : (
         <p className="mt-4 rounded-xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-          No badges yet. Browse badges or create one to start making community
-          recognition visible.
+          No badges yet.
         </p>
       )}
     </section>

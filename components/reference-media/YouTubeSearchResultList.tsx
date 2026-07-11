@@ -24,8 +24,7 @@ export default function YouTubeSearchResultList({
   if (results.length === 0) {
     return (
       <p className="rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-        No results yet. Search for the tune title, player, source, style, or
-        recording you want to use.
+        No results yet.
       </p>
     )
   }

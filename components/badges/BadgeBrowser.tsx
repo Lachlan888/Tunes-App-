@@ -742,9 +742,7 @@ export default function BadgeBrowser({
         onClose={() => setIsMobileFilterOpen(false)}
         mobileMode="full-screen"
         desktopMaxWidth="md:max-w-3xl"
-        eyebrow="Badge search"
         title="Search and filter"
-        description="Find badges by name, category, style, key, or progress."
       >
         <div className="space-y-5">
           <BadgeFilters {...filterProps} />

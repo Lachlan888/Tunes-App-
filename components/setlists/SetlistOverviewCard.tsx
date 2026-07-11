@@ -75,11 +75,7 @@ export default function SetlistOverviewCard({
             <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">
               {setlist.description}
             </p>
-          ) : (
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              No description yet.
-            </p>
-          )}
+          ) : null}
         </div>
 
         <div className="flex flex-wrap gap-2 text-sm">

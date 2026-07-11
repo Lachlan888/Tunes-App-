@@ -1,7 +1,11 @@
 "use client"
 
+import KeyPickerField from "@/components/music/KeyPickerField"
 import SubmitButton from "@/components/SubmitButton"
-import { KEY_OPTIONS } from "@/lib/music/keys"
+import {
+  TIME_SIGNATURE_HELPER_TEXT,
+  TIME_SIGNATURE_PATTERN,
+} from "@/lib/music/time-signatures"
 
 type StyleOption = {
   id: number
@@ -62,23 +66,7 @@ export default function CreateTuneForm({
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="key" className="mb-2 block text-sm font-medium">
-                Key
-              </label>
-              <select
-                id="key"
-                name="key"
-                defaultValue=""
-                className={inputClass}
-              >
-                {KEY_OPTIONS.map((key) => (
-                  <option key={key || "none"} value={key}>
-                    {key === "" ? "No key" : key}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <KeyPickerField name="key" label="Tune key" placeholder="Select key" />
 
             <div>
               <label htmlFor="style_id" className="mb-2 block text-sm font-medium">
@@ -112,8 +100,8 @@ export default function CreateTuneForm({
               name="time_signature"
               placeholder="e.g. 4/4 or 6/8"
               className={inputClass}
-              pattern="^\\d+/\\d+$"
-              title="Use format like 4/4 or 6/8"
+              pattern={TIME_SIGNATURE_PATTERN}
+              title={TIME_SIGNATURE_HELPER_TEXT}
             />
           </div>
 

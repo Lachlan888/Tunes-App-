@@ -3,6 +3,7 @@ import CreateSetlistModal from "@/components/setlists/CreateSetlistModal"
 import SetlistOverviewCard from "@/components/setlists/SetlistOverviewCard"
 import SetlistStatusMessages from "@/components/setlists/SetlistStatusMessages"
 import SubmitButton from "@/components/SubmitButton"
+import PageHeader from "@/components/ui/PageHeader"
 import {
   acceptSetlistInvite,
   createSetlist,
@@ -38,39 +39,18 @@ export default async function SetlistsPage({ searchParams }: SetlistsPageProps) 
   const setlistStatus = getSingleValue(resolvedSearchParams?.setlist)
   const inviteStatus = getSingleValue(resolvedSearchParams?.setlist_invite)
 
-  const { user, setlists, pendingInvites } = await loadSetlistsPageData()
+  const { setlists, pendingInvites } = await loadSetlistsPageData()
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
-      <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Setlists
-            </p>
-
-            <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
-              Prepare music together
-            </h1>
-
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-              Build shared working setlists for gigs, sessions, jams, and
-              rehearsals. Collaborators can add tunes, attach charts, set
-              performance keys, and see who knows what.
-            </p>
-
-            <p className="mt-4 text-sm text-muted-foreground">
-              Logged in as {user.email}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            {showSection("create_setlist") ? (
-              <CreateSetlistModal createSetlist={createSetlist} />
-            ) : null}
-          </div>
-        </div>
-      </section>
+      <PageHeader
+        title="Setlists"
+        actions={
+          showSection("create_setlist") ? (
+            <CreateSetlistModal createSetlist={createSetlist} />
+          ) : null
+        }
+      />
 
       {showSection("status_messages") ? (
         <SetlistStatusMessages

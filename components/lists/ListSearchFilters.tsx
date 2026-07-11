@@ -323,7 +323,6 @@ export default function ListSearchFilters({
         <FilterPanel
           id="list-filter-panel"
           title="Filter lists"
-          description="Narrow your list overview by size, style, source, or visibility."
           hasActiveFilters={hasActiveFilters}
           isPending={isPending}
           onClearAll={handleClearAll}

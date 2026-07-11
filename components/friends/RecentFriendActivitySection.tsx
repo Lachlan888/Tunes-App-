@@ -23,15 +23,12 @@ export default function RecentFriendActivitySection({
           Recent activity
         </h2>
         <p className="mt-2 hidden text-sm leading-6 text-muted-foreground md:block">
-          Activity from your friends. React, reply, or open the tune.
+          Activity from your friends. React, comment, or open the tune.
         </p>
       </div>
 
       {items.length === 0 ? (
-        <EmptyState
-          title="No recent friend activity"
-          description="Once you have friends, recent public practice and list activity can appear here."
-        />
+        <EmptyState title="No recent friend activity" />
       ) : (
         <div className="divide-y divide-border/70 md:space-y-3 md:divide-y-0">
           {items.map((item) => (

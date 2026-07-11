@@ -191,9 +191,7 @@ export default function CommunicationSettingsModal({
         closeOnEscape={!isSubmitting}
         mobileMode="full-screen"
         desktopMaxWidth="md:max-w-3xl"
-        eyebrow="Profile"
         title="Communication settings"
-        description="Friend requests and setlist invites can send immediate emails. Comment replies, activity replies, and badge awards can be bundled into a digest. Important activity can still appear inside Tunes App when email is off."
         footer={
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <button

@@ -588,18 +588,12 @@ export default function PracticeDiaryIndex({ data }: PracticeDiaryIndexProps) {
             getKey={(note) => note.id}
             renderItem={(note) => <PracticeNoteCard note={note} />}
             emptyState={
-              <EmptyState>
-                No diary notes have been indexed yet. Review tunes, add tune
-                notes, or write daily reflections to build this view.
-              </EmptyState>
+              <EmptyState>No diary notes indexed yet.</EmptyState>
             }
             label="Practice notes"
           />
         ) : allNotes.length === 0 ? (
-          <EmptyState>
-            No diary notes have been indexed yet. Review tunes, add tune notes,
-            or write daily reflections to build this view.
-          </EmptyState>
+          <EmptyState>No diary notes indexed yet.</EmptyState>
         ) : (
           <div className="grid gap-4">
             <EmptyState>No notes match “{query}”.</EmptyState>

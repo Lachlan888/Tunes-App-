@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { canModerate, getCurrentUserRole } from "@/lib/auth/roles"
 import { normaliseKey } from "@/lib/music/keys"
+import { isValidOptionalTimeSignature } from "@/lib/music/time-signatures"
 import { normaliseTuneTitle } from "@/lib/normalise"
 import {
   recordPieceCreatedEvent,
@@ -43,10 +44,6 @@ function isValidOptionalUrl(value: string) {
   } catch {
     return false
   }
-}
-
-function isValidOptionalTimeSignature(value: string) {
-  return value === "" || /^\d+\/\d+$/.test(value)
 }
 
 export async function createTune(formData: FormData) {
@@ -385,6 +382,10 @@ export async function updateMissingPieceDetails(formData: FormData) {
   }
 
   if (!existingPiece.time_signature && rawTimeSignature) {
+    if (!isValidOptionalTimeSignature(rawTimeSignature)) {
+      return
+    }
+
     updates.time_signature = rawTimeSignature
   }
 

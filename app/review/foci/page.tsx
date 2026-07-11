@@ -1,6 +1,7 @@
 import PracticeDiaryNav from "@/components/practice-diary/PracticeDiaryNav"
 import PracticeFocusCreateForm from "@/components/practice-foci/PracticeFocusCreateForm"
 import PracticeFocusList from "@/components/practice-foci/PracticeFocusList"
+import PageHeader from "@/components/ui/PageHeader"
 import { loadPracticeFociPageData } from "@/lib/loaders/practice-foci"
 
 type PracticeFociPageProps = {
@@ -44,36 +45,9 @@ export default async function PracticeFociPage({
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      <section className="mb-5 md:hidden">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Practice
-        </p>
+      <PageHeader title="Foci" />
 
-        <h1 className="mt-2 font-serif text-3xl font-bold leading-tight tracking-tight">
-          Practice focus areas
-        </h1>
-
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Broader musical projects for the tunes you are actively practising.
-        </p>
-
-        <PracticeDiaryNav active="foci" />
-      </section>
-
-      <section className="mb-6 hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Practice
-        </p>
-
-        <h1 className="mt-2 font-serif text-5xl font-bold leading-tight tracking-tight">
-          Practice focus areas
-        </h1>
-
-        <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
-          Group practice tunes around a musical goal. This won’t change due
-          dates, streaks, or diary history.
-        </p>
-
+      <section className="mb-6">
         <PracticeDiaryNav active="foci" />
       </section>
 

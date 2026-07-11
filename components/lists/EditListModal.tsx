@@ -86,9 +86,7 @@ export default function EditListModal({
         closeOnEscape={!isBusy}
         mobileMode="full-screen"
         desktopMaxWidth="md:max-w-2xl"
-        eyebrow="Lists"
         title="Manage List"
-        description="Edit this list container, remove tunes from this list only, or delete the list."
         bodyClassName="min-h-0 flex-1 overflow-y-auto p-5 md:p-6"
       >
         <div className="space-y-8">

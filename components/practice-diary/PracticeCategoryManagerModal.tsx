@@ -47,7 +47,6 @@ export default function PracticeCategoryManagerModal({
         onClose={() => setIsOpen(false)}
         mobileMode="full-screen"
         desktopMaxWidth="md:max-w-3xl"
-        eyebrow="Practice diary"
         title="Manage categories"
         bodyClassName="min-h-0 flex-1 overflow-y-auto p-4 md:p-6"
       >

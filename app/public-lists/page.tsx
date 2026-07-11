@@ -171,7 +171,6 @@ export default async function PublicListsPage({
           {filteredLists.length === 0 ? (
             <EmptyState
               title="No public lists match this view"
-              description="Try clearing the search or filters."
               primaryActionHref="/public-lists"
               primaryActionLabel="Reset view"
               className="bg-card p-5"

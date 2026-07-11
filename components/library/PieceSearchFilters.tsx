@@ -387,7 +387,6 @@ export default function PieceSearchFilters({
         <FilterPanel
           id="piece-filter-panel"
           title="Filter tunes"
-          description="Select as many filters as you like."
           hasActiveFilters={optimisticHasActiveFilters || hasActiveFilters}
           isPending={isPending}
           onClearAll={handleClearAll}

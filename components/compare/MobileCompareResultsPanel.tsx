@@ -149,11 +149,7 @@ export default function MobileCompareResultsPanel({
   return (
     <div className="pb-8">
       <header className="mb-6">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Common tunes
-        </p>
-
-        <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight text-foreground">
+        <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground">
           {mutualPieces.length} tune{mutualPieces.length === 1 ? "" : "s"}
         </h1>
 

@@ -3,6 +3,7 @@ import LibraryList from "@/components/library/LibraryList"
 import LibraryResultsHeader from "@/components/library/LibraryResultsHeader"
 import LibraryStatusMessages from "@/components/library/LibraryStatusMessages"
 import PieceSearchFilters from "@/components/library/PieceSearchFilters"
+import PageHeader from "@/components/ui/PageHeader"
 import { addToLearningList } from "@/lib/actions/lists"
 import {
   deleteCanonicalTuneAsModerator,
@@ -112,7 +113,6 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   const scrollPieceId = firstParam(resolvedSearchParams?.scroll_piece)
 
   const {
-    user,
     currentUserRole,
     pieces,
     mobilePieces,
@@ -227,29 +227,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      <section className="mb-8 hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
-        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Tunes
-            </p>
-
-            <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
-              Browse the tune catalogue
-            </h1>
-
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-              Search the shared tune library, add tunes to lists, mark known
-              repertoire, or deliberately move tunes into practice.
-            </p>
-
-            <p className="mt-4 text-sm text-muted-foreground">
-              Logged in as {user.email}
-            </p>
-          </div>
-
-        </div>
-      </section>
+      <PageHeader title="Tunes" className="hidden md:flex" />
 
       <div className="md:hidden">
         {showSection("filters") ? (

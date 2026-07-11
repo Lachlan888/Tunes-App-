@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { requireModerator } from "@/lib/auth/roles"
 import { normaliseKey } from "@/lib/music/keys"
+import { isValidOptionalTimeSignature } from "@/lib/music/time-signatures"
 import { notifyComposerAttributionAdded } from "@/lib/services/composer-notifications"
 
 function appendQueryParam(url: string, key: string, value: string) {
@@ -145,6 +146,12 @@ export async function approvePieceEditRequest(formData: FormData) {
   }
 
   if (timeSignature) {
+    if (!isValidOptionalTimeSignature(timeSignature)) {
+      redirect(
+        appendQueryParam(redirectTo, "moderation", "invalid_time_signature")
+      )
+    }
+
     updates.time_signature = timeSignature
   }
 
@@ -488,6 +495,12 @@ export async function directModeratorUpdatePiece(formData: FormData) {
     }
 
     updates.key = normalisedKey
+  }
+
+  if (!isValidOptionalTimeSignature(timeSignature)) {
+    redirect(
+      appendQueryParam(redirectTo, "moderator_edit", "invalid_time_signature")
+    )
   }
 
   if (referenceUrl) {

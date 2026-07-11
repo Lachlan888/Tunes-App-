@@ -15,7 +15,7 @@ type CompareCandidateProfile = ProfileSearchRow | RankedProfileMatch
 
 type CompareCandidateListSectionProps = {
   title: string
-  description: string
+  description?: string
   profiles: CompareCandidateProfile[]
   filterPreservedUsers: string[]
   includePractice: boolean
@@ -156,9 +156,11 @@ export default function CompareCandidateListSection({
         {title}
       </h2>
 
-      <p className="mt-3 text-sm text-muted-foreground md:text-base">
-        {description}
-      </p>
+      {description ? (
+        <p className="mt-3 text-sm text-muted-foreground md:text-base">
+          {description}
+        </p>
+      ) : null}
 
       <div className="mt-5 space-y-3">
         {profiles.map((profile) => (
