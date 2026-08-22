@@ -3,14 +3,9 @@
 import { requireAppAdmin } from "@/lib/auth/roles"
 import { sendTestNotificationDigest } from "@/lib/services/notification-digests"
 
-export type DevTestDigestState = {
+type DevTestDigestState = {
   status: "idle" | "success" | "error"
   message: string | null
-}
-
-export const initialDevTestDigestState: DevTestDigestState = {
-  status: "idle",
-  message: null,
 }
 
 export async function sendCurrentUserTestDigest(
