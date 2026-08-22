@@ -1,15 +1,11 @@
 import { type EmailOtpType } from "@supabase/supabase-js"
 import { NextRequest, NextResponse } from "next/server"
+import { getSafeInternalPath } from "@/lib/auth/redirects"
+import { getSiteUrl } from "@/lib/site-url"
 import { createClient } from "@/lib/supabase/server"
 
 function getRedirectBaseUrl(request: NextRequest) {
-  const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim()
-
-  if (configuredSiteUrl) {
-    return configuredSiteUrl.replace(/\/$/, "")
-  }
-
-  return request.nextUrl.origin
+  return getSiteUrl(request.nextUrl.origin)
 }
 
 export async function GET(request: NextRequest) {
@@ -19,7 +15,7 @@ export async function GET(request: NextRequest) {
   const next = requestUrl.searchParams.get("next") ?? "/"
   const redirectBaseUrl = getRedirectBaseUrl(request)
 
-  const safeNextPath = next.startsWith("/") && !next.startsWith("//") ? next : "/"
+  const safeNextPath = getSafeInternalPath(next, "/")
 
   if (!tokenHash || !type) {
     return NextResponse.redirect(

@@ -1,7 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { useEffect, useId, useState } from "react"
+import { useEffect, useId, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock"
@@ -56,6 +56,7 @@ export default function ResponsiveModal({
   const titleId = `${modalId}-title`
   const descriptionId = description ? `${modalId}-description` : undefined
   const [isMounted, setIsMounted] = useState(false)
+  const dialogRef = useRef<HTMLElement>(null)
 
   function requestClose() {
     if (closeDisabled) return
@@ -84,6 +85,51 @@ export default function ResponsiveModal({
     }
   }, [isOpen, closeDisabled, closeOnEscape, onClose])
 
+  useEffect(() => {
+    if (!isMounted || !isOpen) return
+
+    const previouslyFocused = document.activeElement as HTMLElement | null
+    const dialog = dialogRef.current
+    if (!dialog) return
+
+    const focusableSelector =
+      'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    const firstFocusable = dialog.querySelector<HTMLElement>(focusableSelector)
+    ;(firstFocusable ?? dialog).focus()
+
+    function keepFocusInside(event: KeyboardEvent) {
+      if (event.key !== "Tab") return
+
+      const focusable = Array.from(
+        dialog!.querySelectorAll<HTMLElement>(focusableSelector)
+      ).filter((element) => element.offsetParent !== null)
+
+      if (focusable.length === 0) {
+        event.preventDefault()
+        dialog!.focus()
+        return
+      }
+
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener("keydown", keepFocusInside)
+
+    return () => {
+      document.removeEventListener("keydown", keepFocusInside)
+      previouslyFocused?.focus()
+    }
+  }, [isMounted, isOpen])
+
   if (!isMounted || !isOpen) return null
 
   const mobilePanelClass =
@@ -109,7 +155,9 @@ export default function ResponsiveModal({
       }}
     >
       <section
+        ref={dialogRef}
         role="dialog"
+        tabIndex={-1}
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}

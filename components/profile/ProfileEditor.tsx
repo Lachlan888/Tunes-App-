@@ -7,6 +7,7 @@ import UserInstrumentsSection from "@/components/profile/UserInstrumentsSection"
 import type { NotificationPreferences, Profile, UserInstrument } from "@/lib/types"
 
 type ProfileEditorProps = {
+  nextPath: string
   email: string | null
   profile: Profile | null
   notificationPreferences: NotificationPreferences
@@ -36,6 +37,7 @@ type ProfileEditorProps = {
 }
 
 export default function ProfileEditor({
+  nextPath,
   email,
   profile,
   notificationPreferences,
@@ -111,6 +113,7 @@ export default function ProfileEditor({
   return (
     <div className="space-y-6">
       <ProfileDetailsSection
+        nextPath={nextPath}
         email={email}
         profile={profile}
         errorMessage={errorMessage}

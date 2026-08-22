@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { getSafeInternalPath } from "@/lib/auth/redirects"
 import { createClient } from "@/lib/supabase/server"
 
 function asNullableString(value: FormDataEntryValue | null) {
@@ -19,10 +20,15 @@ function getProfileDraftParams(formData: FormData) {
   const username = String(formData.get("username") ?? "").trim().toLowerCase()
   const displayName = String(formData.get("display_name") ?? "").trim()
   const bio = String(formData.get("bio") ?? "").trim()
+  const nextPath = getSafeInternalPath(
+    String(formData.get("next") ?? ""),
+    "/dashboard"
+  )
 
   params.set("username", username)
   params.set("display_name", displayName)
   params.set("bio", bio)
+  params.set("next", nextPath)
   params.set("show_identity", String(asBoolean(formData.get("show_identity"))))
   params.set(
     "show_instruments",
@@ -72,6 +78,10 @@ function redirectWithProfileError(error: string, formData: FormData): never {
 }
 
 export async function updateProfile(formData: FormData) {
+  const nextPath = getSafeInternalPath(
+    String(formData.get("next") ?? ""),
+    "/dashboard?saved=1"
+  )
   const username = String(formData.get("username") ?? "").trim().toLowerCase()
   const displayNameRaw = String(formData.get("display_name") ?? "").trim()
   const display_name = displayNameRaw === "" ? null : displayNameRaw
@@ -175,5 +185,5 @@ export async function updateProfile(formData: FormData) {
 
   revalidatePath(`/users/${username}`)
 
-  redirect("/dashboard?saved=1")
+  redirect(nextPath)
 }

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import UserIdentityLink from "@/components/UserIdentityLink"
+import { QrIcon } from "@/components/compare/CompareInPersonSheet"
 import MobileCompareTuneRow from "@/components/compare/MobileCompareTuneRow"
 import FilterPanel from "@/components/filters/FilterPanel"
 import FilterSection from "@/components/filters/FilterSection"
@@ -22,6 +23,7 @@ type MobileCompareResultsPanelProps = {
   availableStyles: string[]
   availableTimeSignatures: string[]
   onAddPerson: () => void
+  onCompareInPerson: () => void
 }
 
 function toggleValue(values: string[], value: string) {
@@ -64,6 +66,7 @@ export default function MobileCompareResultsPanel({
   availableStyles,
   availableTimeSignatures,
   onAddPerson,
+  onCompareInPerson,
 }: MobileCompareResultsPanelProps) {
   const router = useRouter()
 
@@ -208,6 +211,15 @@ export default function MobileCompareResultsPanel({
             className="rounded-full border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           >
             Add person
+          </button>
+
+          <button
+            type="button"
+            onClick={onCompareInPerson}
+            className="inline-flex items-center gap-1.5 rounded-full border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          >
+            <QrIcon />
+            <span>Compare in person</span>
           </button>
         </div>
       </section>
@@ -430,11 +442,17 @@ export default function MobileCompareResultsPanel({
         ) : (
           <div className="border-y border-border py-6">
             <p className="text-sm font-medium text-foreground">
-              No tunes match this view.
+              {mutualPieces.length === 0
+                ? "No common tunes yet."
+                : "No tunes match this view."}
             </p>
 
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Clear the search or filters to return to all common tunes.
+              {mutualPieces.length === 0
+                ? includePractice
+                  ? "You and this player do not currently have overlapping known or practice tunes."
+                  : "You and this player do not currently have overlapping known tunes."
+                : "Clear the search or filters to return to all common tunes."}
             </p>
           </div>
         )}

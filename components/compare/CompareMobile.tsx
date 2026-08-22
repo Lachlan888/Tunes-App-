@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react"
 import ComparePageStatusMessages from "@/components/compare/ComparePageStatusMessages"
+import CompareInPersonSheet, {
+  QrIcon,
+} from "@/components/compare/CompareInPersonSheet"
 import MobileCompareAddPersonSheet from "@/components/compare/MobileCompareAddPersonSheet"
 import MobileCompareResultsPanel from "@/components/compare/MobileCompareResultsPanel"
 import type { CompareViewProps } from "@/components/compare/compare-view-types"
@@ -29,6 +32,7 @@ export default function CompareMobile(props: CompareViewProps) {
   } = props
 
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false)
+  const [isInviteSheetOpen, setIsInviteSheetOpen] = useState(false)
 
   const hasSearchResolution =
     error === "multiple_matches" ||
@@ -60,6 +64,7 @@ export default function CompareMobile(props: CompareViewProps) {
           availableStyles={availableStyles}
           availableTimeSignatures={availableTimeSignatures}
           onAddPerson={() => setIsAddSheetOpen(true)}
+          onCompareInPerson={() => setIsInviteSheetOpen(true)}
         />
       ) : (
         <>
@@ -80,11 +85,20 @@ export default function CompareMobile(props: CompareViewProps) {
               Start compare
             </h2>
 
-            <div className="mt-3 border-y border-border py-4">
+            <div className="mt-3 flex flex-col gap-3 border-y border-border py-4 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => setIsInviteSheetOpen(true)}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              >
+                <QrIcon />
+                <span>Compare in person</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setIsAddSheetOpen(true)}
-                className="rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="min-h-12 rounded-full border border-border bg-background/70 px-5 py-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               >
                 Add person
               </button>
@@ -154,6 +168,11 @@ export default function CompareMobile(props: CompareViewProps) {
         primarySearchValue={primarySearchValue}
         redirectTo={redirectTo}
         error={error}
+      />
+
+      <CompareInPersonSheet
+        isOpen={isInviteSheetOpen}
+        onClose={() => setIsInviteSheetOpen(false)}
       />
     </>
   )

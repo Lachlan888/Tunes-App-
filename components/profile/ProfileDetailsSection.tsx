@@ -7,6 +7,7 @@ import { updateProfile } from "@/lib/actions/profile"
 import type { Profile } from "@/lib/types"
 
 type ProfileDetailsSectionProps = {
+  nextPath: string
   email: string | null
   profile: Profile | null
   errorMessage: string | null
@@ -52,6 +53,7 @@ const secondaryButtonClassName =
   "inline-flex rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function ProfileDetailsSection({
+  nextPath,
   email,
   profile,
   errorMessage,
@@ -133,6 +135,7 @@ export default function ProfileDetailsSection({
       )}
 
       <form action={updateProfile} className="mt-6 space-y-6">
+        <input type="hidden" name="next" value={nextPath} />
         <div className="grid gap-6 md:grid-cols-2">
           <div>
             <label htmlFor="username" className={labelClassName}>

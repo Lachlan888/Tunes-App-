@@ -1,0 +1,323 @@
+"use client"
+
+import { useState } from "react"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
+import { getSiteUrl } from "@/lib/site-url"
+import { createClient } from "@/lib/supabase/client"
+
+type AuthMode = "login" | "signup" | "reset"
+
+function isAlreadyRegisteredMessage(message: string) {
+  return message.toLowerCase().includes("already registered")
+}
+
+const inputClassName =
+  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+
+const primaryButtonClassName =
+  "w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60"
+
+const modeButtonClassName =
+  "text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+
+function PendingLabel({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center justify-center gap-2">
+      <LoadingSpinner label={label} size="sm" decorative />
+      <span>{label}</span>
+    </span>
+  )
+}
+
+type LoginFormProps = {
+  initialMode: "login" | "signup"
+  nextPath: string
+}
+
+export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
+  const [mode, setMode] = useState<AuthMode>(initialMode)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [message, setMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
+
+  const supabase = createClient()
+
+  function resetMessages() {
+    setMessage("")
+    setErrorMessage("")
+  }
+
+  async function handleLogin() {
+    resetMessages()
+    setIsSubmitting(true)
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    })
+
+    if (error) {
+      setIsSubmitting(false)
+      setErrorMessage(error.message)
+      return
+    }
+
+    setIsRedirecting(true)
+    window.location.href = nextPath
+  }
+
+  async function handleSignup() {
+    resetMessages()
+    setIsSubmitting(true)
+
+    const siteUrl = getSiteUrl()
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        emailRedirectTo: `${siteUrl}/auth/confirm?next=${encodeURIComponent(
+          nextPath
+        )}`,
+      },
+    })
+
+    if (error) {
+      setIsSubmitting(false)
+
+      if (isAlreadyRegisteredMessage(error.message)) {
+        setMessage("That email already has an account. Sign in instead.")
+        setMode("login")
+        return
+      }
+
+      setErrorMessage(error.message)
+      return
+    }
+
+    if (data.session) {
+      setIsRedirecting(true)
+      window.location.href = nextPath
+      return
+    }
+
+    setIsSubmitting(false)
+
+    if (data.user) {
+      setMessage(
+        "Account created. Check your email to confirm your account, then sign in."
+      )
+      setMode("login")
+      return
+    }
+
+    setMessage("Check your email to confirm your account, then sign in.")
+    setMode("login")
+  }
+
+  async function handlePasswordReset() {
+    resetMessages()
+    setIsSubmitting(true)
+
+    const siteUrl = getSiteUrl()
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${siteUrl}/update-password`,
+    })
+
+    setIsSubmitting(false)
+
+    if (error) {
+      setErrorMessage(error.message)
+      return
+    }
+
+    setMessage(
+      "If an account exists for that email, a password reset link has been sent."
+    )
+  }
+
+  const isLogin = mode === "login"
+  const isSignup = mode === "signup"
+  const isReset = mode === "reset"
+  const isBusy = isSubmitting || isRedirecting
+
+  return (
+    <main className="mx-auto max-w-xl px-4 py-6 text-foreground sm:px-6 lg:py-10">
+      <section
+        id="sign-in"
+        className="rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-6 lg:p-8"
+      >
+        <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground">
+          {isLogin && "Sign in"}
+          {isSignup && "Create account"}
+          {isReset && "Reset password"}
+        </h1>
+
+        {isReset ? (
+          <p className="mt-3 text-sm leading-6 text-muted-foreground md:text-base">
+            Enter your email and we’ll send you a link to set a new password.
+          </p>
+        ) : null}
+
+        {isRedirecting && (
+          <LoadingSpinner
+            label="Loading your tunes..."
+            showLabel
+            className="mt-5"
+          />
+        )}
+
+        {message && (
+          <div className="mt-5 rounded-2xl border border-success bg-background/70 p-4 text-sm text-success shadow-sm">
+            {message}
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className="mt-5 rounded-2xl border border-destructive bg-background/70 p-4 text-sm text-destructive shadow-sm">
+            {errorMessage}
+          </div>
+        )}
+
+        <div className="mt-6 space-y-4">
+          <div>
+            <label
+              htmlFor="email"
+              className="mb-2 block text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              className={inputClassName}
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              disabled={isBusy}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </div>
+
+          {!isReset && (
+            <div>
+              <label
+                htmlFor="password"
+                className="mb-2 block text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                className={inputClassName}
+                type="password"
+                autoComplete={isSignup ? "new-password" : "current-password"}
+                placeholder="Password"
+                value={password}
+                disabled={isBusy}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            </div>
+          )}
+
+          {isLogin && (
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={handleLogin}
+              className={primaryButtonClassName}
+            >
+              {isRedirecting ? (
+                <PendingLabel label="Loading your tunes..." />
+              ) : isSubmitting ? (
+                <PendingLabel label="Signing in..." />
+              ) : (
+                "Sign in"
+              )}
+            </button>
+          )}
+
+          {isSignup && (
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={handleSignup}
+              className={primaryButtonClassName}
+            >
+              {isRedirecting ? (
+                <PendingLabel label="Loading your tunes..." />
+              ) : isSubmitting ? (
+                <PendingLabel label="Creating account..." />
+              ) : (
+                "Create account"
+              )}
+            </button>
+          )}
+
+          {isReset && (
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={handlePasswordReset}
+              className={primaryButtonClassName}
+            >
+              {isSubmitting ? (
+                <PendingLabel label="Sending reset link..." />
+              ) : (
+                "Send reset link"
+              )}
+            </button>
+          )}
+        </div>
+
+        <div className="mt-6 flex flex-col items-start gap-3 border-t border-border pt-5">
+          {!isLogin && (
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={() => {
+                resetMessages()
+                setMode("login")
+              }}
+              className={modeButtonClassName}
+            >
+              Already have an account? Sign in
+            </button>
+          )}
+
+          {!isSignup && (
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={() => {
+                resetMessages()
+                setMode("signup")
+              }}
+              className={modeButtonClassName}
+            >
+              New here? Create a new account
+            </button>
+          )}
+
+          {!isReset && (
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={() => {
+                resetMessages()
+                setMode("reset")
+              }}
+              className={modeButtonClassName}
+            >
+              Forgot your password?
+            </button>
+          )}
+        </div>
+      </section>
+    </main>
+  )
+}

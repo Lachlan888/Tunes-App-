@@ -23,6 +23,7 @@ type DashboardPageProps = {
     compare_requires_friend?: string | string[]
     practice_diary_enabled?: string | string[]
     communication_settings?: string | string[]
+    next?: string | string[]
   }>
 }
 
@@ -142,6 +143,8 @@ export default async function DashboardPage({
     getSingleValue(resolvedSearchParams?.communication_settings)
   )
 
+  const nextPath = getSingleValue(resolvedSearchParams?.next)
+
   const initialUsername =
     getSingleValue(resolvedSearchParams?.username) || profile?.username || ""
 
@@ -209,6 +212,7 @@ export default async function DashboardPage({
 
       {showSection("profile_editor") ? (
         <ProfileEditor
+          nextPath={nextPath}
           email={user.email}
           profile={profile}
           notificationPreferences={notificationPreferences}
