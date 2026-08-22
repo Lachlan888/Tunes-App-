@@ -1,11 +1,18 @@
 "use client"
 
 import { useActionState } from "react"
-import {
-  initialDevTestDigestState,
-  sendCurrentUserTestDigest,
-} from "@/lib/actions/dev-test-digest"
+import { sendCurrentUserTestDigest } from "@/lib/actions/dev-test-digest"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
+
+type DevTestDigestState = {
+  status: "idle" | "success" | "error"
+  message: string | null
+}
+
+const initialDevTestDigestState: DevTestDigestState = {
+  status: "idle",
+  message: null,
+}
 
 export default function TestDigestPanel() {
   const [state, action, isPending] = useActionState(
