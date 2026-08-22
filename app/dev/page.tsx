@@ -1,11 +1,13 @@
 import DevSummaryCards from "@/components/dev/DevSummaryCards"
 import FeatureUsagePanel from "@/components/dev/FeatureUsagePanel"
 import FeedbackInbox from "@/components/dev/FeedbackInbox"
+import EmailUsersPanel from "@/components/dev/EmailUsersPanel"
 import MetricVisualiser from "@/components/dev/MetricVisualiser"
 import UserActivityTable from "@/components/dev/UserActivityTable"
 import TestDigestPanel from "@/components/dev/TestDigestPanel"
 import PageHeader from "@/components/ui/PageHeader"
 import { loadDevDashboardData } from "@/lib/loaders/dev"
+import { loadAdminEmailToolData } from "@/lib/services/admin-email-broadcasts"
 
 type DevPageProps = {
   searchParams?: Promise<{
@@ -46,6 +48,7 @@ export default async function DevPage({ searchParams }: DevPageProps) {
   )
 
   const data = await loadDevDashboardData()
+  const adminEmailData = await loadAdminEmailToolData()
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
@@ -63,6 +66,13 @@ export default async function DevPage({ searchParams }: DevPageProps) {
 
       <section className="mb-10">
         <TestDigestPanel />
+      </section>
+
+      <section className="mb-10">
+        <EmailUsersPanel
+          recipientCounts={adminEmailData.recipientCounts}
+          recentBroadcasts={adminEmailData.recentBroadcasts}
+        />
       </section>
 
       <section className="mb-10">

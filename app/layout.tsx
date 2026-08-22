@@ -1,6 +1,7 @@
 import "./globals.css"
 import FloatingFeedbackButton from "@/components/feedback/FloatingFeedbackButton"
 import AppHeader from "@/components/layout/AppHeader"
+import PracticeMetronome from "@/components/practice/PracticeMetronome"
 import { emptyNavContext, loadNavContext } from "@/lib/loaders/nav"
 import { createClient } from "@/lib/supabase/server"
 
@@ -37,6 +38,7 @@ export default async function RootLayout({
 
         {children}
 
+        {user ? <PracticeMetronome /> : null}
         {user ? <FloatingFeedbackButton /> : null}
       </body>
     </html>

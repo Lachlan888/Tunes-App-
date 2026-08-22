@@ -5,12 +5,13 @@ import { useMemo, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
+import MobileViewSwitcher from "@/components/ui/MobileViewSwitcher"
 import {
   formatFriendActivityRelativeTime,
   renderFriendActivityText,
 } from "@/lib/friend-activity"
 import { addActivityReply } from "@/lib/actions/activity-interactions"
-import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import type { FriendActivityItem } from "@/lib/friend-activity"
 import type { HomeSummaryData, StreakSummary } from "@/lib/types"
 
@@ -170,29 +171,11 @@ function MobileSwitcher({
   onChange: (tab: MobileHomeTab) => void
 }) {
   return (
-    <div className="sticky top-0 z-10 -mx-4 bg-background/95 px-4 py-3 backdrop-blur md:hidden">
-      <div className="grid grid-cols-3 rounded-full border border-border bg-card-strong/70 p-1 shadow-sm">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id
-
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => onChange(tab.id)}
-              className={joinClasses(
-                "rounded-full px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
-                isActive
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
-              )}
-            >
-              {tab.label}
-            </button>
-          )
-        })}
-      </div>
-    </div>
+    <MobileViewSwitcher
+      value={activeTab}
+      options={tabs}
+      onChange={onChange}
+    />
   )
 }
 

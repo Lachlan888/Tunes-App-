@@ -1,12 +1,15 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import SubmitButton from "@/components/SubmitButton"
-import ReferenceMediaEmbed from "@/components/library/ReferenceMediaEmbed"
 import FindReferenceModal from "@/components/reference-media/FindReferenceModal"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import type { TuneMediaBundle, TuneMediaSource } from "@/lib/tune-media"
-import { getLoopsForSource } from "@/lib/tune-media"
+import {
+  getLoopsForSource,
+  getReferencePracticeHref,
+} from "@/lib/tune-media"
 import type { Piece } from "@/lib/types"
 
 type ReferenceMediaSectionProps = {
@@ -57,32 +60,16 @@ function SourceOpenControl({
   label?: string
   className?: string
 }) {
-  const loops = getLoopsForSource(mediaBundle, source)
-
-  if (source.isYouTube) {
-    return (
-      <ReferenceMediaEmbed
-        referenceUrl={source.url}
-        title={source.label || piece.title}
-        showHeading={false}
-        triggerLabel={label}
-        triggerClassName={className ?? buttonStyles.secondary}
-        pieceId={piece.id}
-        redirectTo={redirectTo}
-        savedLoops={loops}
-      />
-    )
-  }
+  void redirectTo
+  void mediaBundle
 
   return (
-    <a
-      href={source.url}
-      target="_blank"
-      rel="noreferrer"
+    <Link
+      href={getReferencePracticeHref(piece.id, source.id)}
       className={className ?? buttonStyles.secondary}
     >
       {label}
-    </a>
+    </Link>
   )
 }
 

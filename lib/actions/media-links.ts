@@ -92,6 +92,7 @@ export async function addPieceMediaLink(formData: FormData) {
 
   revalidatePath("/library")
   revalidatePath(`/library/${pieceId}`)
+  revalidatePath(`/library/${pieceId}/reference-media`)
   revalidatePath(redirectTo)
 
   redirect(appendQueryParam(redirectTo, "media_link", "added"))
@@ -130,6 +131,7 @@ export async function removePieceMediaLink(formData: FormData) {
 
   revalidatePath("/library")
   revalidatePath(`/library/${pieceId}`)
+  revalidatePath(`/library/${pieceId}/reference-media`)
   revalidatePath(redirectTo)
 
   redirect(appendQueryParam(redirectTo, "media_link", "removed"))

@@ -1,6 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 import type { Piece, UserPieceMediaLoop } from "@/lib/types"
 import { getYouTubeVideoId } from "@/lib/youtube"
+import {
+  chooseReferenceMediaSource,
+  getReferencePracticeHref,
+  groupReferenceSectionsByMediaId,
+  listReferenceMediaSources,
+} from "@/lib/reference-media-routing"
+
+export { getReferencePracticeHref }
 
 export type TuneMediaSourceType =
   | "canonical-reference"
@@ -133,14 +141,7 @@ export function createTuneMediaSource({
 }
 
 export function groupLoopsByVideoId(loops: UserPieceMediaLoop[]) {
-  const grouped: Record<string, UserPieceMediaLoop[]> = {}
-
-  for (const loop of loops) {
-    grouped[loop.youtube_video_id] = grouped[loop.youtube_video_id] ?? []
-    grouped[loop.youtube_video_id].push(loop)
-  }
-
-  return grouped
+  return groupReferenceSectionsByMediaId(loops)
 }
 
 export function getLoopsForSource(
@@ -150,6 +151,27 @@ export function getLoopsForSource(
   if (!source?.youtubeVideoId) return []
 
   return bundle.savedLoopsByVideoId[source.youtubeVideoId] ?? []
+}
+
+export function getReferenceMediaSources(bundle: TuneMediaBundle) {
+  return listReferenceMediaSources({
+    canonical: bundle.canonicalReference,
+    additional: bundle.additionalMedia,
+    preferred: bundle.personalPreferredReference,
+  })
+}
+
+export function resolveReferenceMediaSource(
+  bundle: TuneMediaBundle,
+  requestedSourceId?: string | null
+) {
+  const sources = getReferenceMediaSources(bundle)
+
+  return chooseReferenceMediaSource({
+    sources,
+    requestedSourceId,
+    effectiveUrl: bundle.effectiveReference?.url,
+  })
 }
 
 export function buildTuneMediaBundle({

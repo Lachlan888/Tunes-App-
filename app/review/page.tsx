@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation"
 import ActivePracticeSection from "@/components/practice/ActivePracticeSection"
-import PracticeMetronome from "@/components/practice/PracticeMetronome"
 import PracticeStatusMessages from "@/components/practice/PracticeStatusMessages"
 import ReviewQueueSection from "@/components/practice/ReviewQueueSection"
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
@@ -69,8 +68,6 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           preferredReferenceStatus={preferredReferenceStatus}
         />
       ) : null}
-
-      <PracticeMetronome />
 
       {(showSection("due_today") || showSection("catch_up")) ? (
         <ReviewQueueSection

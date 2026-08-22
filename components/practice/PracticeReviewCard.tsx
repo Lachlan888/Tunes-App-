@@ -6,7 +6,7 @@ import PendingLinkButton from "@/components/PendingLinkButton"
 import PracticeProgress from "@/components/practice/PracticeProgress"
 import RecentPracticeNotes from "@/components/practice/RecentPracticeNotes"
 import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeButton"
-import ReferenceMediaEmbed from "@/components/library/ReferenceMediaEmbed"
+import TuneMediaLauncher from "@/components/reference-media/TuneMediaLauncher"
 import ReviewNoteModal from "@/components/practice/ReviewNoteModal"
 import {
   DiaryReviewButtons,
@@ -15,7 +15,6 @@ import {
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 import type { ReviewOutcomeConfig } from "@/components/practice/reviewOutcomeConfig"
-import { getLoopsForSource } from "@/lib/tune-media"
 
 type PracticeReviewCardProps = {
   userPiece: ReviewQueueItem
@@ -85,18 +84,13 @@ export default function PracticeReviewCard({
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Reference Media
           </p>
-          <ReferenceMediaEmbed
-            referenceUrl={userPiece.media_bundle.effectiveReference.url}
+          <TuneMediaLauncher
+            mediaBundle={userPiece.media_bundle}
             title={userPiece.media_bundle.effectiveReference.label || title}
-            showHeading={false}
             pieceId={userPiece.piece.id}
             redirectTo={redirectTo}
-            savedLoops={getLoopsForSource(
-              userPiece.media_bundle,
-              userPiece.media_bundle.effectiveReference
-            )}
-            triggerLabel="Open Reference Media"
-            triggerClassName="flex w-full items-center justify-center rounded-full border border-border bg-muted px-4 py-2 text-center text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            label="Open Reference Media"
+            className="flex w-full items-center justify-center rounded-full border border-border bg-muted px-4 py-2 text-center text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
           <div className="mt-2 text-center">
             <PendingLinkButton

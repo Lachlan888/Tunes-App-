@@ -15,6 +15,16 @@ type CreateMediaLoopResult =
       error: string
     }
 
+type MutateMediaLoopResult =
+  | {
+      ok: true
+      loop?: UserPieceMediaLoop
+    }
+  | {
+      ok: false
+      error: string
+    }
+
 function getRedirectTarget(formData: FormData, pieceId: number, status: string) {
   const rawRedirectTo =
     formData.get("redirect_to")?.toString() || `/library/${pieceId}`
@@ -132,7 +142,7 @@ export async function createMediaLoopInPlace(
   ) {
     return {
       ok: false,
-      error: "Set valid Tap in and Tap out points before saving.",
+      error: "Mark valid start and end points before saving.",
     }
   }
 
@@ -159,11 +169,123 @@ export async function createMediaLoopInPlace(
   }
 
   revalidatePath(`/library/${pieceId}`)
+  revalidatePath(`/library/${pieceId}/reference-media`)
 
   return {
     ok: true,
     loop: data as UserPieceMediaLoop,
   }
+}
+
+export async function updateMediaLoopInPlace(
+  formData: FormData
+): Promise<MutateMediaLoopResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) return { ok: false, error: "Please log in to edit sections." }
+
+  const loopId = Number(formData.get("loop_id"))
+  const pieceId = Number(formData.get("piece_id"))
+  const youtubeVideoId =
+    formData.get("youtube_video_id")?.toString().trim() || ""
+  const label = formData.get("label")?.toString().trim() || ""
+  const notes = formData.get("notes")?.toString().trim() || null
+  const startSeconds = readPositiveNumber(formData.get("start_seconds"))
+  const endSeconds = readPositiveNumber(formData.get("end_seconds"))
+  const playbackRate = readPositiveNumber(formData.get("playback_rate")) ?? 1
+
+  if (!Number.isInteger(loopId) || loopId <= 0 || !Number.isInteger(pieceId)) {
+    return { ok: false, error: "Couldn’t find this section." }
+  }
+
+  if (!youtubeVideoId || !label) {
+    return { ok: false, error: "Add a label before saving this section." }
+  }
+
+  if (
+    startSeconds === null ||
+    endSeconds === null ||
+    startSeconds < 0 ||
+    endSeconds <= startSeconds + 0.2 ||
+    playbackRate <= 0
+  ) {
+    return { ok: false, error: "Set valid section boundaries before saving." }
+  }
+
+  const { data, error } = await supabase
+    .from("user_piece_media_loops")
+    .update({
+      label,
+      notes,
+      start_seconds: startSeconds,
+      end_seconds: endSeconds,
+      playback_rate: playbackRate,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", loopId)
+    .eq("user_id", user.id)
+    .eq("piece_id", pieceId)
+    .eq("youtube_video_id", youtubeVideoId)
+    .select(
+      "id, piece_id, youtube_video_id, label, start_seconds, end_seconds, playback_rate, notes, created_at, updated_at"
+    )
+    .single()
+
+  if (error || !data) {
+    console.error("Error updating media loop:", error)
+    return { ok: false, error: "Couldn’t update this section. Try again." }
+  }
+
+  revalidatePath(`/library/${pieceId}`)
+  revalidatePath(`/library/${pieceId}/reference-media`)
+
+  return { ok: true, loop: data as UserPieceMediaLoop }
+}
+
+export async function deleteMediaLoopInPlace(
+  formData: FormData
+): Promise<MutateMediaLoopResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) return { ok: false, error: "Please log in to delete sections." }
+
+  const loopId = Number(formData.get("loop_id"))
+  const pieceId = Number(formData.get("piece_id"))
+  const youtubeVideoId =
+    formData.get("youtube_video_id")?.toString().trim() || ""
+
+  if (
+    !Number.isInteger(loopId) ||
+    loopId <= 0 ||
+    !Number.isInteger(pieceId) ||
+    !youtubeVideoId
+  ) {
+    return { ok: false, error: "Couldn’t find this section." }
+  }
+
+  const { error } = await supabase
+    .from("user_piece_media_loops")
+    .delete()
+    .eq("id", loopId)
+    .eq("user_id", user.id)
+    .eq("piece_id", pieceId)
+    .eq("youtube_video_id", youtubeVideoId)
+
+  if (error) {
+    console.error("Error deleting media loop:", error)
+    return { ok: false, error: "Couldn’t delete this section. Try again." }
+  }
+
+  revalidatePath(`/library/${pieceId}`)
+  revalidatePath(`/library/${pieceId}/reference-media`)
+
+  return { ok: true }
 }
 
 export async function deleteMediaLoop(formData: FormData) {

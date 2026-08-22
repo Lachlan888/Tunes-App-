@@ -1,9 +1,10 @@
-"use client"
-
-import ReferenceMediaEmbed from "@/components/library/ReferenceMediaEmbed"
+import Link from "next/link"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import type { TuneMediaBundle } from "@/lib/tune-media"
-import { getLoopsForSource } from "@/lib/tune-media"
+import {
+  getReferencePracticeHref,
+  resolveReferenceMediaSource,
+} from "@/lib/tune-media"
 
 type TuneMediaLauncherProps = {
   pieceId: number
@@ -12,7 +13,6 @@ type TuneMediaLauncherProps = {
   redirectTo: string
   className?: string
   label?: string
-  fallbackHref?: string
 }
 
 export default function TuneMediaLauncher({
@@ -22,45 +22,19 @@ export default function TuneMediaLauncher({
   redirectTo,
   className,
   label = "Open Reference Media",
-  fallbackHref = `/library/${pieceId}#reference-media`,
 }: TuneMediaLauncherProps) {
-  const bundle = mediaBundle ?? null
-  const source = bundle?.effectiveReference ?? null
-
-  if (!source || !bundle) {
-    return (
-      <a
-        href={fallbackHref}
-        className={className ?? buttonStyles.secondary}
-      >
-        Reference Media
-      </a>
-    )
-  }
-
-  if (source.isYouTube) {
-    return (
-      <ReferenceMediaEmbed
-        referenceUrl={source.url}
-        title={source.label || title}
-        showHeading={false}
-        triggerLabel={label}
-        triggerClassName={className ?? buttonStyles.secondary}
-        pieceId={pieceId}
-        redirectTo={redirectTo}
-        savedLoops={getLoopsForSource(bundle, source)}
-      />
-    )
-  }
+  void title
+  void redirectTo
+  const source = mediaBundle
+    ? resolveReferenceMediaSource(mediaBundle)
+    : null
 
   return (
-    <a
-      href={source.url}
-      target="_blank"
-      rel="noreferrer"
+    <Link
+      href={getReferencePracticeHref(pieceId, source?.id)}
       className={className ?? buttonStyles.secondary}
     >
       {label}
-    </a>
+    </Link>
   )
 }
