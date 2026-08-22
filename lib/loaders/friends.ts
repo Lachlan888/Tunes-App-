@@ -157,7 +157,7 @@ function isBadgeActivity(eventType: ActivityEventType) {
   return eventType === "badge_created" || eventType === "badge_awarded"
 }
 
-function canShowActivityForProfile(
+export function canShowActivityForProfile(
   row: ActivityEventRow,
   profile: ActivityProfileRow | null
 ) {

@@ -39,6 +39,7 @@ export async function GET(request: Request) {
         ok: false,
         error: "Notification digest processing failed.",
         usersChecked: 0,
+        eligible: 0,
         digestsSent: 0,
         skipped: 0,
         failed: 1,

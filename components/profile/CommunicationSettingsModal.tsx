@@ -22,14 +22,7 @@ type ToggleOption = {
     NotificationPreferences,
     | "email_friend_requests"
     | "email_direct_messages"
-    | "email_comment_replies"
-    | "email_activity_replies"
     | "email_setlist_invites"
-    | "email_badges"
-    | "email_practice_reminders"
-    | "email_weekly_summary"
-    | "email_public_list_activity"
-    | "email_product_updates"
   >
   label: string
   description: string
@@ -47,46 +40,18 @@ const toggleOptions: ToggleOption[] = [
     description: "Reserved for direct message email when that workflow is enabled.",
   },
   {
-    name: "email_comment_replies",
-    label: "Comment replies",
-    description: "Include replies to your tune comments in a daily or weekly digest.",
-  },
-  {
-    name: "email_activity_replies",
-    label: "Activity replies",
-    description: "Include replies to your activity in a daily or weekly digest.",
-  },
-  {
     name: "email_setlist_invites",
     label: "Setlist invites",
     description: "Immediate email when someone invites you to collaborate on a setlist.",
   },
-  {
-    name: "email_badges",
-    label: "Badge activity",
-    description: "Include badge awards in a daily or weekly digest.",
-  },
-  {
-    name: "email_practice_reminders",
-    label: "Practice reminders",
-    description: "Not active yet. Keep this on only if you want future reminders.",
-  },
-  {
-    name: "email_weekly_summary",
-    label: "Weekly practice summary",
-    description: "Not active yet. Keep this on only if you want future summaries.",
-  },
-  {
-    name: "email_public_list_activity",
-    label: "Public list activity summary",
-    description: "Not active yet. Keep this on only if you want future list summaries.",
-  },
-  {
-    name: "email_product_updates",
-    label: "Product updates",
-    description: "Not active yet. Keep this on only if you want future product updates.",
-  },
 ]
+
+const digestSections = [
+  { name: "digest_include_practice", label: "My practice", description: "Practice activity, Stage, and tunes needing attention." },
+  { name: "digest_include_friends", label: "Friends", description: "A compact summary of visible activity from accepted friends." },
+  { name: "digest_include_community", label: "Community", description: "New tunes and useful public reference media around Tunes." },
+  { name: "digest_include_updates", label: "Replies and badges", description: "Lower-urgency personal replies and badge awards." },
+] as const
 
 const digestOptions: Array<{
   value: NotificationDigestFrequency
@@ -94,7 +59,7 @@ const digestOptions: Array<{
 }> = [
   { value: "daily", label: "Daily" },
   { value: "weekly", label: "Weekly" },
-  { value: "never", label: "Never" },
+  { value: "never", label: "Off" },
 ]
 
 function PreferenceToggle({
@@ -245,7 +210,7 @@ export default function CommunicationSettingsModal({
 
           <section>
             <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Updates
+              Immediate emails
             </h3>
 
             <div className="mt-3 rounded-2xl border border-border bg-background/70 px-4 shadow-sm">
@@ -261,12 +226,12 @@ export default function CommunicationSettingsModal({
 
           <section>
             <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Digest frequency
+              Email digest
             </h3>
 
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Digests only include lower-urgency updates you have allowed:
-              comment replies, activity replies, and badge awards.
+              Receive one useful summary of your practice, friends, the Tunes
+              community, and personal updates. Weekly is the default.
             </p>
 
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -287,6 +252,26 @@ export default function CommunicationSettingsModal({
 
                   <span className="text-sm font-semibold text-foreground">
                     {option.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            <h4 className="mt-6 text-sm font-semibold text-foreground">
+              Include in my digest
+            </h4>
+            <div className="mt-3 rounded-2xl border border-border bg-background/70 px-4 shadow-sm">
+              {digestSections.map((option) => (
+                <label key={option.name} className="flex gap-3 border-b border-border/70 py-4 last:border-b-0">
+                  <input
+                    type="checkbox"
+                    name={option.name}
+                    defaultChecked={preferences[option.name]}
+                    className="mt-1 h-4 w-4 shrink-0 accent-primary"
+                  />
+                  <span>
+                    <span className="block text-sm font-semibold text-foreground">{option.label}</span>
+                    <span className="mt-1 block text-sm leading-6 text-muted-foreground">{option.description}</span>
                   </span>
                 </label>
               ))}

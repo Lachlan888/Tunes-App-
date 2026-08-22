@@ -3,6 +3,7 @@ import FeatureUsagePanel from "@/components/dev/FeatureUsagePanel"
 import FeedbackInbox from "@/components/dev/FeedbackInbox"
 import MetricVisualiser from "@/components/dev/MetricVisualiser"
 import UserActivityTable from "@/components/dev/UserActivityTable"
+import TestDigestPanel from "@/components/dev/TestDigestPanel"
 import PageHeader from "@/components/ui/PageHeader"
 import { loadDevDashboardData } from "@/lib/loaders/dev"
 
@@ -58,6 +59,10 @@ export default async function DevPage({ searchParams }: DevPageProps) {
 
       <section className="mb-8">
         <DevSummaryCards summary={data.summary} />
+      </section>
+
+      <section className="mb-10">
+        <TestDigestPanel />
       </section>
 
       <section className="mb-10">

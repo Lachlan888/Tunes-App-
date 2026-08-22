@@ -66,6 +66,11 @@ export async function loadOwnProfileData(): Promise<OwnProfileData> {
           email_public_list_activity,
           email_product_updates,
           digest_frequency,
+          digest_include_practice,
+          digest_include_friends,
+          digest_include_community,
+          digest_include_updates,
+          last_digest_sent_at,
           created_at,
           updated_at
         `

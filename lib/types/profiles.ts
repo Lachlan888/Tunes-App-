@@ -46,6 +46,11 @@ export type NotificationPreferences = {
   email_public_list_activity: boolean
   email_product_updates: boolean
   digest_frequency: NotificationDigestFrequency
+  digest_include_practice: boolean
+  digest_include_friends: boolean
+  digest_include_community: boolean
+  digest_include_updates: boolean
+  last_digest_sent_at?: string | null
   created_at?: string | null
   updated_at?: string | null
 }
@@ -57,15 +62,20 @@ export const DEFAULT_NOTIFICATION_PREFERENCES: Omit<
   email_enabled: true,
   email_friend_requests: true,
   email_direct_messages: true,
-  email_comment_replies: false,
+  email_comment_replies: true,
   email_setlist_invites: true,
-  email_badges: false,
-  email_activity_replies: false,
+  email_badges: true,
+  email_activity_replies: true,
   email_practice_reminders: false,
   email_weekly_summary: false,
   email_public_list_activity: false,
   email_product_updates: false,
   digest_frequency: "weekly",
+  digest_include_practice: true,
+  digest_include_friends: true,
+  digest_include_community: true,
+  digest_include_updates: true,
+  last_digest_sent_at: null,
 }
 
 export type PublicProfileList = {
