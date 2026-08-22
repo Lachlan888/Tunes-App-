@@ -7,8 +7,7 @@ import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { statusStyles } from "@/components/ui/statusStyles"
 import UserSearchPicker from "@/components/users/UserSearchPicker"
-import type { ListShareRecipientSearchResponse } from "@/lib/actions/lists"
-import type { Piece } from "@/lib/types"
+import type { ListShareRecipientSearchResponse, Piece } from "@/lib/types"
 import type { LearningListShareRecipient } from "@/lib/loaders/list-detail"
 
 type EditListModalProps = {

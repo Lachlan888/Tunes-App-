@@ -1,6 +1,10 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import {
+  initialAdminEmailActionState,
+  type AdminEmailActionState,
+} from "@/lib/admin-email-action-state"
 import { requireAppAdmin } from "@/lib/auth/roles"
 import {
   isValidBroadcastId,
@@ -9,24 +13,7 @@ import {
 import {
   sendAdminEmailBroadcast,
   sendAdminEmailTest,
-  type AdminEmailBroadcastResult,
 } from "@/lib/services/admin-email-broadcasts"
-
-export type AdminEmailActionState = {
-  status: "idle" | "success" | "error"
-  operation: "test" | "broadcast" | null
-  message: string | null
-  broadcastId: string | null
-  result: AdminEmailBroadcastResult | null
-}
-
-export const initialAdminEmailActionState: AdminEmailActionState = {
-  status: "idle",
-  operation: null,
-  message: null,
-  broadcastId: null,
-  result: null,
-}
 
 export async function sendAdminEmailAction(
   previousState: AdminEmailActionState,

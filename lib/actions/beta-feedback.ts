@@ -4,13 +4,9 @@ import { createClient } from "@/lib/supabase/server"
 import { recordAppEvent } from "@/lib/services/app-events"
 import type {
   BetaFeedbackCategory,
+  BetaFeedbackFormState,
   BetaFeedbackSeverity,
 } from "@/lib/types"
-
-export type BetaFeedbackFormState = {
-  status: "idle" | "success" | "error"
-  message: string | null
-}
 
 const VALID_CATEGORIES: BetaFeedbackCategory[] = [
   "broken",

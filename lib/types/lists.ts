@@ -3,6 +3,20 @@ import type { Piece } from "./pieces"
 export type LearningListVisibility = "private" | "public"
 export type LearningListSource = "mine" | "imported"
 
+export type ListShareRecipientSearchResult = {
+  id: string
+  username: string | null
+  displayName: string | null
+  isFriend: boolean
+}
+
+export type ListShareRecipientSearchResponse = {
+  status: "idle" | "success" | "error"
+  group: "friends" | "other" | null
+  results: ListShareRecipientSearchResult[]
+  message: string | null
+}
+
 export type LearningList = {
   id: number
   name: string

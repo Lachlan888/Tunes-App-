@@ -13,7 +13,7 @@ import { buttonStyles } from "@/components/ui/buttonStyles"
 import type {
   ListShareRecipientSearchResponse,
   ListShareRecipientSearchResult,
-} from "@/lib/actions/lists"
+} from "@/lib/types"
 
 type UserSearchPickerProps = {
   learningListId: number

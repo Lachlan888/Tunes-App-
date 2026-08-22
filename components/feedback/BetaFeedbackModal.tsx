@@ -2,10 +2,8 @@
 
 import { useActionState, useEffect, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
-import {
-  submitBetaFeedback,
-  type BetaFeedbackFormState,
-} from "@/lib/actions/beta-feedback"
+import { submitBetaFeedback } from "@/lib/actions/beta-feedback"
+import type { BetaFeedbackFormState } from "@/lib/types"
 
 type BetaFeedbackModalProps = {
   isOpen: boolean

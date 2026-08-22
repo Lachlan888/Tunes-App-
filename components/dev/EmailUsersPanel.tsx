@@ -4,10 +4,8 @@ import { useActionState, useRef, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
-import {
-  initialAdminEmailActionState,
-  sendAdminEmailAction,
-} from "@/lib/actions/admin-email-broadcasts"
+import { sendAdminEmailAction } from "@/lib/actions/admin-email-broadcasts"
+import { initialAdminEmailActionState } from "@/lib/admin-email-action-state"
 import type {
   AdminEmailBroadcastHistoryRow,
   AdminEmailRecipientCounts,

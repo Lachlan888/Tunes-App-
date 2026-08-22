@@ -7,6 +7,10 @@ import {
   recordPublicListCreatedEvent,
   recordPublicListUpdatedEvent,
 } from "@/lib/services/activity-events"
+import type {
+  ListShareRecipientSearchResponse,
+  ListShareRecipientSearchResult,
+} from "@/lib/types"
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 type ListVisibility = "private" | "public"
@@ -17,20 +21,6 @@ type ListAddStatus =
   | "missing_piece"
   | "missing_list"
   | "error"
-
-export type ListShareRecipientSearchResult = {
-  id: string
-  username: string | null
-  displayName: string | null
-  isFriend: boolean
-}
-
-export type ListShareRecipientSearchResponse = {
-  status: "idle" | "success" | "error"
-  group: "friends" | "other" | null
-  results: ListShareRecipientSearchResult[]
-  message: string | null
-}
 
 type ProfileIdentityRow = {
   id: string

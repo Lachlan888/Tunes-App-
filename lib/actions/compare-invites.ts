@@ -30,7 +30,7 @@ type InviteRow = {
   connection_id: number | null
 }
 
-export type CreateCompareInviteResult =
+type CreateCompareInviteResult =
   | {
       ok: true
       state: "pending"
@@ -50,7 +50,7 @@ export type CreateCompareInviteResult =
       reason: "signed_out" | "profile_required" | "unavailable"
     }
 
-export type PollCompareInviteResult =
+type PollCompareInviteResult =
   | { state: "signed_out" | "invalid" | "pending" | "expired" | "revoked" }
   | {
       state: "accepted"
@@ -58,7 +58,7 @@ export type PollCompareInviteResult =
       compareHref: string
     }
 
-export type AcceptCompareInviteResult =
+type AcceptCompareInviteResult =
   | {
       ok: true
       alreadyConnected: boolean

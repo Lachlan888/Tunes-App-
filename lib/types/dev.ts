@@ -9,6 +9,11 @@ export type BetaFeedbackCategory =
 
 export type BetaFeedbackSeverity = "low" | "medium" | "high"
 
+export type BetaFeedbackFormState = {
+  status: "idle" | "success" | "error"
+  message: string | null
+}
+
 export type BetaFeedbackOwnerPriority =
   | "low"
   | "medium"
