@@ -42,7 +42,9 @@ export default function TestDigestPanel() {
         <p
           className={joinClasses(
             "mt-4 text-sm font-medium",
-            state.status === "success" ? "text-emerald-700" : "text-red-700"
+            state.status === "success"
+              ? "text-state-known"
+              : "text-action-destructive"
           )}
           role="status"
         >

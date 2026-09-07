@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
-import { getCurrentUserRole } from "@/lib/auth/roles"
-import { createClient } from "@/lib/supabase/server"
+import { requireUserContext } from "@/lib/auth/session"
+import { withServerTiming } from "@/lib/server-timing"
+import type { TuneDetailView } from "@/lib/tune-detail-view"
 import {
   loadComposerProfile,
   loadComposerProfileOptions,
@@ -29,14 +30,18 @@ export type {
   TuneDetailLoadedData,
   TuneDetailLoadResult,
   TunePracticeNote,
+  TuneReviewSummary,
   UserPieceMediaLoop,
   UserPieceMetadata,
 } from "./tune-detail/types"
 
 import type { TuneDetailLoadResult } from "./tune-detail/types"
 
+export type TuneDetailLoadScope = TuneDetailView
+
 export async function loadTuneDetailData(
-  rawPieceId: string
+  rawPieceId: string,
+  scope: TuneDetailLoadScope = "practice"
 ): Promise<TuneDetailLoadResult> {
   const pieceId = Number(rawPieceId)
 
@@ -44,19 +49,44 @@ export async function loadTuneDetailData(
     redirect("/library")
   }
 
-  const supabase = await createClient()
+  const { supabase, user, role: currentUserRole } =
+    await requireUserContext()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const needsComments = scope === "about"
+  const needsPracticeHistory = scope === "practice"
 
-  if (!user) {
-    redirect("/login")
-  }
+  const [
+    coreResult,
+    userState,
+    tuneLinks,
+    tuneCommunity,
+    tunePracticeHistory,
+    styleOptions,
+    composerProfileOptions,
+  ] = await withServerTiming(`tune-detail.${scope}.primary-data`, () =>
+    Promise.all([
+      loadTuneCore(supabase, pieceId),
+      loadTuneUserState(supabase, user.id, pieceId, scope),
+      loadTuneLinks(supabase, user.id, pieceId),
+      loadTuneCommunity(
+        supabase,
+        pieceId,
+        currentUserRole,
+        needsComments
+      ),
+      needsPracticeHistory
+        ? loadTunePracticeHistory(supabase, user.id, pieceId)
+        : Promise.resolve({
+            typedPracticeNotes: [],
+            typedReviewHistory: [],
+            practiceNoteCategories: [],
+          }),
+      loadStyleOptions(supabase),
+      loadComposerProfileOptions(supabase),
+    ])
+  )
 
-  const currentUserRole = await getCurrentUserRole(supabase, user.id)
-
-  const { piece, loadError } = await loadTuneCore(supabase, pieceId)
+  const { piece, loadError } = coreResult
 
   if (loadError) {
     return {
@@ -72,28 +102,19 @@ export async function loadTuneDetailData(
     }
   }
 
-  const [
-    userState,
-    tuneLinks,
-    tuneCommunity,
-    tunePracticeHistory,
-    styleOptions,
-    composerProfile,
-    composerProfileOptions,
-  ] = await Promise.all([
-    loadTuneUserState(supabase, user.id, pieceId),
-    loadTuneLinks(supabase, user.id, pieceId),
-    loadTuneCommunity(supabase, pieceId, currentUserRole),
-    loadTunePracticeHistory(supabase, user.id, pieceId),
-    loadStyleOptions(supabase),
-    loadComposerProfile(supabase, piece.composer_user_id),
-    loadComposerProfileOptions(supabase),
-  ])
-
-  const profileMap = await loadProfileMapForCommunityRows(
-    supabase,
-    tuneCommunity.typedPieceComments,
-    tuneCommunity.typedPieceLoreEntries
+  const [composerProfile, profileMap] = await withServerTiming(
+    `tune-detail.${scope}.secondary-data`,
+    () =>
+      Promise.all([
+        loadComposerProfile(supabase, piece.composer_user_id),
+        needsComments
+          ? loadProfileMapForCommunityRows(
+              supabase,
+              tuneCommunity.typedPieceComments,
+              tuneCommunity.typedPieceLoreEntries
+            )
+          : Promise.resolve({}),
+      ])
   )
 
   const redirectTo = `/library/${pieceId}`
@@ -136,6 +157,7 @@ export async function loadTuneDetailData(
     typedLearningListItems: userState.typedLearningListItems,
     typedPublicTuneLists: userState.typedPublicTuneLists,
     typedPracticeNotes: tunePracticeHistory.typedPracticeNotes,
+    typedReviewHistory: tunePracticeHistory.typedReviewHistory,
     practiceDiaryEnabled: userState.practiceDiaryEnabled,
     practiceNoteCategories: tunePracticeHistory.practiceNoteCategories,
     styleOptions,

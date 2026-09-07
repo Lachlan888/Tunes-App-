@@ -1,8 +1,6 @@
 import LibraryHeaderActions from "@/components/library/LibraryHeaderActions"
-import LibraryList from "@/components/library/LibraryList"
-import LibraryResultsHeader from "@/components/library/LibraryResultsHeader"
+import CatalogueWorkspace from "@/components/library/CatalogueWorkspace"
 import LibraryStatusMessages from "@/components/library/LibraryStatusMessages"
-import PieceSearchFilters from "@/components/library/PieceSearchFilters"
 import PageHeader from "@/components/ui/PageHeader"
 import { addToLearningList } from "@/lib/actions/lists"
 import {
@@ -10,8 +8,16 @@ import {
   removeTuneFromMyApp,
 } from "@/lib/actions/pieces"
 import { startLearning } from "@/lib/actions/user-pieces"
-import { loadLibraryData, type LibrarySort } from "@/lib/loaders/library"
+import {
+  FILTER_FACET_SCAN_LIMIT,
+  loadLibraryData,
+} from "@/lib/loaders/library"
 import { getPieceFilterOptions } from "@/lib/search-filters"
+import { describeTuneFilterConstraints } from "@/lib/tune-collections/filter-drafts"
+import {
+  buildTuneCollectionHref,
+  parseTuneCollectionQueryState,
+} from "@/lib/tune-collections/pagination"
 import type {
   LearningList,
   LearningListItemMembership,
@@ -29,8 +35,8 @@ type LibraryPageProps = {
     style?: SearchParamValue
     time_signature?: SearchParamValue
     sort?: SearchParamValue
-    visible?: SearchParamValue
-    page?: SearchParamValue
+    after?: SearchParamValue
+    before?: SearchParamValue
     import?: SearchParamValue
     list_add?: SearchParamValue
     reference_url?: SearchParamValue
@@ -53,11 +59,6 @@ type LibraryPageProps = {
   }>
 }
 
-function toArray(value: SearchParamValue) {
-  if (!value) return []
-  return Array.isArray(value) ? value.filter(Boolean) : [value]
-}
-
 function firstParam(value: SearchParamValue) {
   if (!value) return ""
   return Array.isArray(value) ? value[0] ?? "" : value
@@ -67,58 +68,35 @@ function numberParam(value: SearchParamValue) {
   return Number(firstParam(value) || "0")
 }
 
-function parseVisibleCount(value: SearchParamValue): number | "all" {
-  const singleValue = firstParam(value) || "20"
-
-  if (singleValue === "all") return "all"
-  if (singleValue === "50") return 50
-  if (singleValue === "100") return 100
-
-  return 20
-}
-
-function parsePage(value: SearchParamValue) {
-  const page = Number(firstParam(value) || "1")
-
-  if (!Number.isInteger(page) || page < 1) {
-    return 1
-  }
-
-  return page
-}
-
-function parseSort(value: SearchParamValue): LibrarySort {
-  const sort = firstParam(value)
-
-  if (sort === "newest") return "newest"
-  if (sort === "oldest") return "oldest"
-
-  return "title_asc"
-}
-
 export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   const resolvedSearchParams = await searchParams
-  const showSection = (sectionId: string) => {
-    void sectionId
-    return true
-  }
 
-  const searchQuery = firstParam(resolvedSearchParams?.q)
-  const selectedKeys = toArray(resolvedSearchParams?.key)
-  const selectedStyles = toArray(resolvedSearchParams?.style)
-  const selectedTimeSignatures = toArray(resolvedSearchParams?.time_signature)
-  const selectedSort = parseSort(resolvedSearchParams?.sort)
-  const visibleCount = parseVisibleCount(resolvedSearchParams?.visible)
-  const requestedPage = parsePage(resolvedSearchParams?.page)
+  const collectionState = parseTuneCollectionQueryState({
+    q: resolvedSearchParams?.q,
+    key: resolvedSearchParams?.key,
+    style: resolvedSearchParams?.style,
+    time_signature: resolvedSearchParams?.time_signature,
+    sort: resolvedSearchParams?.sort,
+    after: resolvedSearchParams?.after,
+    before: resolvedSearchParams?.before,
+  })
+  const {
+    searchQuery,
+    selectedKeys,
+    selectedStyles,
+    selectedTimeSignatures,
+    sort: selectedSort,
+    after,
+    before,
+  } = collectionState
   const scrollPieceId = firstParam(resolvedSearchParams?.scroll_piece)
 
   const {
     currentUserRole,
     pieces,
-    mobilePieces,
     filterOptionPieces,
     totalPieceCount,
-    currentPage,
+    pageInfo,
     userPieces,
     userKnownPieces,
     mediaBundles,
@@ -130,9 +108,9 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     selectedKeys,
     selectedStyles,
     selectedTimeSignatures,
-    visibleCount,
-    page: requestedPage,
     sort: selectedSort,
+    after,
+    before,
   })
 
   const listAddStatus = firstParam(resolvedSearchParams?.list_add)
@@ -158,41 +136,35 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   const addedToListCount = numberParam(resolvedSearchParams?.added_to_list)
   const alreadyInListCount = numberParam(resolvedSearchParams?.already_in_list)
 
-  const redirectParams = new URLSearchParams()
-
-  if (searchQuery) {
-    redirectParams.set("q", searchQuery)
+  const stableCollectionState = {
+    searchQuery,
+    selectedKeys,
+    selectedStyles,
+    selectedTimeSignatures,
+    sort: selectedSort,
   }
-
-  for (const key of selectedKeys) {
-    redirectParams.append("key", key)
-  }
-
-  for (const style of selectedStyles) {
-    redirectParams.append("style", style)
-  }
-
-  for (const timeSignature of selectedTimeSignatures) {
-    redirectParams.append("time_signature", timeSignature)
-  }
-
-  if (selectedSort !== "title_asc") {
-    redirectParams.set("sort", selectedSort)
-  }
-
-  if (visibleCount === "all") {
-    redirectParams.set("visible", "all")
-  } else {
-    redirectParams.set("visible", String(visibleCount))
-    redirectParams.set("page", String(currentPage))
-  }
-
-  const redirectTo = redirectParams.toString()
-    ? `/library?${redirectParams.toString()}`
-    : "/library"
+  const redirectTo = buildTuneCollectionHref({
+    basePath: "/library",
+    state: stableCollectionState,
+    after,
+    before,
+  })
+  const previousHref = pageInfo.previousCursor
+    ? buildTuneCollectionHref({
+        basePath: "/library",
+        state: stableCollectionState,
+        before: pageInfo.previousCursor,
+      })
+    : null
+  const nextHref = pageInfo.nextCursor
+    ? buildTuneCollectionHref({
+        basePath: "/library",
+        state: stableCollectionState,
+        after: pageInfo.nextCursor,
+      })
+    : null
 
   const loaderPieces = (pieces ?? []) as Piece[]
-  const mobileLoaderPieces = (mobilePieces ?? loaderPieces) as Piece[]
   const optionPieces = (filterOptionPieces ?? []) as Piece[]
 
   const {
@@ -205,133 +177,72 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     searchQuery !== "" ||
     selectedKeys.length > 0 ||
     selectedStyles.length > 0 ||
-    selectedTimeSignatures.length > 0 ||
-    selectedSort !== "title_asc"
-
-  const totalPages =
-    visibleCount === "all"
-      ? 1
-      : Math.max(1, Math.ceil(totalPieceCount / visibleCount))
-
-  const resultsHeaderProps = {
-    displayedCount: loaderPieces.length,
-    totalCount: totalPieceCount,
-    visibleCount,
-    currentPage,
-    totalPages,
+    selectedTimeSignatures.length > 0
+  const activeConstraints = describeTuneFilterConstraints({
     searchQuery,
-    selectedKeys,
-    selectedStyles,
-    selectedTimeSignatures,
-  }
+    keys: selectedKeys,
+    styles: selectedStyles,
+    timeSignatures: selectedTimeSignatures,
+  })
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       <PageHeader title="Tunes" className="hidden md:flex" />
 
-      <div className="md:hidden">
-        {showSection("filters") ? (
-          <PieceSearchFilters
-            basePath="/library"
-            searchLabel="Search by title"
-            searchPlaceholder="Search tunes"
-            searchValue={searchQuery}
-            selectedKeys={selectedKeys}
-            selectedStyles={selectedStyles}
-            selectedTimeSignatures={selectedTimeSignatures}
-            selectedSort={selectedSort}
-            availableKeys={availableKeys}
-            availableStyles={availableStyles}
-            availableTimeSignatures={availableTimeSignatures}
-            hasActiveFilters={hasActiveFilters}
-            preservedParams={{
-              visible: visibleCount === "all" ? "all" : String(visibleCount),
-            }}
-          />
-        ) : null}
+      <LibraryHeaderActions styleOptions={styleOptions} />
 
-        {showSection("header_actions") ? (
-          <LibraryHeaderActions styleOptions={styleOptions} />
-        ) : null}
-      </div>
+      <LibraryStatusMessages
+        createTuneStatus={createTuneStatus}
+        listAddStatus={listAddStatus}
+        referenceUrlStatus={referenceUrlStatus}
+        preferredReferenceStatus={preferredReferenceStatus}
+        removeTuneStatus={removeTuneStatus}
+        removeFromPracticeStatus={removeFromPracticeStatus}
+        deleteTuneStatus={deleteTuneStatus}
+        loopStatus={loopStatus}
+        bulkUploadStatus={bulkUploadStatus}
+        bulkUploadRow={bulkUploadRow}
+        uploadedListId={uploadedListId}
+        createdPiecesCount={createdPiecesCount}
+        reusedPiecesCount={reusedPiecesCount}
+        addedKnownCount={addedKnownCount}
+        alreadyKnownCount={alreadyKnownCount}
+        addedToListCount={addedToListCount}
+        alreadyInListCount={alreadyInListCount}
+      />
 
-      <div className="hidden md:block">
-        {showSection("header_actions") ? (
-          <LibraryHeaderActions styleOptions={styleOptions} />
-        ) : null}
-
-        {showSection("filters") ? (
-          <PieceSearchFilters
-            basePath="/library"
-            searchLabel="Search by title"
-            searchPlaceholder="Search tunes"
-            searchValue={searchQuery}
-            selectedKeys={selectedKeys}
-            selectedStyles={selectedStyles}
-            selectedTimeSignatures={selectedTimeSignatures}
-            selectedSort={selectedSort}
-            availableKeys={availableKeys}
-            availableStyles={availableStyles}
-            availableTimeSignatures={availableTimeSignatures}
-            hasActiveFilters={hasActiveFilters}
-            preservedParams={{
-              visible: visibleCount === "all" ? "all" : String(visibleCount),
-            }}
-          />
-        ) : null}
-      </div>
-
-      {showSection("status_messages") ? (
-        <LibraryStatusMessages
-          createTuneStatus={createTuneStatus}
-          listAddStatus={listAddStatus}
-          referenceUrlStatus={referenceUrlStatus}
-          preferredReferenceStatus={preferredReferenceStatus}
-          removeTuneStatus={removeTuneStatus}
-          removeFromPracticeStatus={removeFromPracticeStatus}
-          deleteTuneStatus={deleteTuneStatus}
-          loopStatus={loopStatus}
-          bulkUploadStatus={bulkUploadStatus}
-          bulkUploadRow={bulkUploadRow}
-          uploadedListId={uploadedListId}
-          createdPiecesCount={createdPiecesCount}
-          reusedPiecesCount={reusedPiecesCount}
-          addedKnownCount={addedKnownCount}
-          alreadyKnownCount={alreadyKnownCount}
-          addedToListCount={addedToListCount}
-          alreadyInListCount={alreadyInListCount}
-        />
-      ) : null}
-
-      {showSection("results_header_top") ? (
-        <LibraryResultsHeader {...resultsHeaderProps} />
-      ) : null}
-
-      {showSection("tune_results") ? (
-        <LibraryList
-          pieces={loaderPieces}
-          mobilePieces={mobileLoaderPieces}
-          userPieces={userPieces as UserPiece[] | null}
-          userKnownPieces={userKnownPieces as UserKnownPiece[]}
-          learningLists={learningLists as LearningList[] | null}
-          learningListItems={
-            learningListItems as LearningListItemMembership[] | null
-          }
-          currentUserRole={currentUserRole}
-          startLearning={startLearning}
-          addToLearningList={addToLearningList}
-          removeTuneFromMyApp={removeTuneFromMyApp}
-          deleteCanonicalTuneAsModerator={deleteCanonicalTuneAsModerator}
-          mediaBundles={mediaBundles}
-          redirectTo={redirectTo}
-          scrollPieceId={scrollPieceId}
-          hasActiveFilters={hasActiveFilters}
-        />
-      ) : null}
-
-      {showSection("results_header_bottom") ? (
-        <LibraryResultsHeader {...resultsHeaderProps} position="bottom" />
-      ) : null}
+      <CatalogueWorkspace
+        searchQuery={searchQuery}
+        selectedKeys={selectedKeys}
+        selectedStyles={selectedStyles}
+        selectedTimeSignatures={selectedTimeSignatures}
+        selectedSort={selectedSort}
+        availableKeys={availableKeys}
+        availableStyles={availableStyles}
+        availableTimeSignatures={availableTimeSignatures}
+        filterOptionPieces={optionPieces}
+        filterFacetLimit={FILTER_FACET_SCAN_LIMIT}
+        pieces={loaderPieces}
+        totalCount={totalPieceCount}
+        previousHref={previousHref}
+        nextHref={nextHref}
+        userPieces={userPieces as UserPiece[] | null}
+        userKnownPieces={userKnownPieces as UserKnownPiece[]}
+        learningLists={learningLists as LearningList[] | null}
+        learningListItems={
+          learningListItems as LearningListItemMembership[] | null
+        }
+        currentUserRole={currentUserRole}
+        startLearning={startLearning}
+        addToLearningList={addToLearningList}
+        removeTuneFromMyApp={removeTuneFromMyApp}
+        deleteCanonicalTuneAsModerator={deleteCanonicalTuneAsModerator}
+        mediaBundles={mediaBundles}
+        redirectTo={redirectTo}
+        scrollPieceId={scrollPieceId}
+        hasActiveFilters={hasActiveFilters}
+        activeConstraints={activeConstraints}
+      />
     </main>
   )
 }

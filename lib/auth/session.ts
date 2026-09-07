@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation"
+import { cache } from "react"
 import { createClient } from "@/lib/supabase/server"
+import { withServerTiming } from "@/lib/server-timing"
 import type { UserRole } from "@/lib/types"
 
 export type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
@@ -29,22 +31,33 @@ function normaliseRole(role: string | null | undefined): UserRole {
   return "user"
 }
 
-export async function getOptionalUserContext(): Promise<CurrentUserContext | null> {
+export const getOptionalUserContext = cache(async (): Promise<CurrentUserContext | null> => {
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data, error: claimsError } = await withServerTiming(
+    "session.auth.getClaims",
+    () => supabase.auth.getClaims()
+  )
 
-  if (!user) {
+  if (claimsError) {
+    console.error("Error loading current auth claims:", claimsError)
+  }
+
+  const claims = data?.claims
+
+  if (!claims?.sub) {
     return null
   }
 
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("id, username, display_name, role")
-    .eq("id", user.id)
-    .maybeSingle()
+  const { data: profile, error } = await withServerTiming(
+    "session.profile",
+    async () =>
+      await supabase
+        .from("profiles")
+        .select("id, username, display_name, role")
+        .eq("id", claims.sub)
+        .maybeSingle()
+  )
 
   if (error) {
     console.error("Error loading current user profile context:", error)
@@ -55,8 +68,8 @@ export async function getOptionalUserContext(): Promise<CurrentUserContext | nul
   return {
     supabase,
     user: {
-      id: user.id,
-      email: user.email ?? null,
+      id: claims.sub,
+      email: typeof claims.email === "string" ? claims.email : null,
     },
     profile: profile
       ? {
@@ -68,7 +81,7 @@ export async function getOptionalUserContext(): Promise<CurrentUserContext | nul
       : null,
     role,
   }
-}
+})
 
 export async function requireUserContext(): Promise<CurrentUserContext> {
   const context = await getOptionalUserContext()

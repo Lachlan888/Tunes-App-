@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import Link from "next/link"
+import { useMemo, useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
-import EmptyState from "@/components/EmptyState"
-import TuneCard, { type TuneCardListLink } from "@/components/TuneCard"
 import LibraryTuneCardActions from "@/components/library/LibraryTuneCardActions"
-import CardPager from "@/components/ui/CardPager"
+import TuneMediaLauncher from "@/components/reference-media/TuneMediaLauncher"
+import PaginatedTuneCollection from "@/components/tunes/PaginatedTuneCollection"
+import TuneRow from "@/components/tunes/TuneRow"
+import TuneStateIndicator from "@/components/tunes/TuneStateIndicator"
 import useScrollToPiece from "@/hooks/useScrollToPiece"
 import type { TuneMediaBundle } from "@/lib/tune-media"
 import type {
@@ -19,7 +21,9 @@ import type {
 
 type LibraryListProps = {
   pieces: Piece[] | null
-  mobilePieces?: Piece[] | null
+  totalCount: number
+  previousHref: string | null
+  nextHref: string | null
   userPieces: UserPiece[] | null
   userKnownPieces: UserKnownPiece[] | null
   learningLists: LearningList[] | null
@@ -33,6 +37,10 @@ type LibraryListProps = {
   redirectTo: string
   scrollPieceId: string
   hasActiveFilters: boolean
+  activeConstraints?: string[]
+  selectionMode?: boolean
+  selectedPieceIds?: number[]
+  onToggleSelection?: (piece: Piece) => void
 }
 
 function buildPieceRedirectTo(redirectTo: string, pieceId: number) {
@@ -40,15 +48,21 @@ function buildPieceRedirectTo(redirectTo: string, pieceId: number) {
   return `${redirectTo}${separator}scroll_piece=${pieceId}`
 }
 
+type TuneListLink = {
+  id: number
+  name: string
+  href: string
+}
+
 function getListLinksForPiece(
   pieceId: number,
   learningListItems: LearningListItemMembership[] | null
-): TuneCardListLink[] {
+): TuneListLink[] {
   const listItemsForPiece = (learningListItems ?? []).filter(
     (item) => item.piece_id === pieceId
   )
 
-  const uniqueLists = new Map<number, TuneCardListLink>()
+  const uniqueLists = new Map<number, TuneListLink>()
 
   for (const item of listItemsForPiece) {
     const list = item.learning_lists
@@ -98,7 +112,9 @@ function getIsKnown(
 
 export default function LibraryList({
   pieces,
-  mobilePieces,
+  totalCount,
+  previousHref,
+  nextHref,
   userPieces,
   userKnownPieces,
   learningLists,
@@ -109,16 +125,23 @@ export default function LibraryList({
   redirectTo,
   scrollPieceId,
   hasActiveFilters,
+  activeConstraints = [],
+  selectionMode = false,
+  selectedPieceIds = [],
+  onToggleSelection,
 }: LibraryListProps) {
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
   const [selectedListId, setSelectedListId] = useState("")
 
-  const desktopPieces = pieces ?? []
-  const mobilePagerPieces = mobilePieces ?? desktopPieces
+  const pagePieces = pieces ?? []
+  const selectedIds = useMemo(
+    () => new Set(selectedPieceIds),
+    [selectedPieceIds]
+  )
 
   useScrollToPiece(scrollPieceId)
 
-  function renderTuneCard(piece: Piece) {
+  function renderTuneRow(piece: Piece) {
     const pieceRedirectTo = buildPieceRedirectTo(redirectTo, piece.id)
     const activeUserPiece = getActiveUserPiece(piece.id, userPieces)
     const isAlreadyInPractice = Boolean(activeUserPiece)
@@ -126,94 +149,125 @@ export default function LibraryList({
     const listLinks = getListLinksForPiece(piece.id, learningListItems)
     const mediaBundle = mediaBundles.get(piece.id) ?? null
 
-    return (
-      <TuneCard
-        id={piece.id}
-        title={piece.title}
-        keyValue={piece.key}
-        style={piece.style}
-        timeSignature={piece.time_signature}
-        referenceUrl={piece.reference_url}
-        mediaBundle={mediaBundle}
-        pieceStyles={piece.piece_styles}
-        listLinks={listLinks}
-        redirectTo={pieceRedirectTo}
-      >
-        <LibraryTuneCardActions
-          piece={piece}
-          activeUserPiece={activeUserPiece}
-          isAlreadyInPractice={isAlreadyInPractice}
-          isKnown={isKnown}
-          redirectTo={pieceRedirectTo}
-          onOpenAddToList={() => {
-            setSelectedPiece(piece)
-            setSelectedListId("")
-          }}
-          startLearning={startLearning}
-        />
-      </TuneCard>
-    )
-  }
+    const supportingContent =
+      listLinks.length > 0 || mediaBundle?.effectiveReference ? (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          {listLinks.length > 0 ? (
+            <span>
+              In:{" "}
+              {listLinks.slice(0, 3).map((list, index) => (
+                <span key={list.id}>
+                  {index > 0 ? ", " : null}
+                  <Link
+                    href={list.href}
+                    className="font-medium underline underline-offset-4 hover:text-text-primary"
+                  >
+                    {list.name}
+                  </Link>
+                </span>
+              ))}
+              {listLinks.length > 3 ? ` +${listLinks.length - 3} more` : ""}
+            </span>
+          ) : null}
 
-  if (desktopPieces.length === 0 && mobilePagerPieces.length === 0) {
-    return hasActiveFilters ? (
-      <EmptyState
-        title="No tunes match this search"
-        primaryActionHref="/library"
-        primaryActionLabel="Reset filters"
+          {mediaBundle?.effectiveReference ? (
+            <TuneMediaLauncher
+              pieceId={piece.id}
+              title={piece.title}
+              mediaBundle={mediaBundle}
+              redirectTo={pieceRedirectTo}
+              label="Reference"
+              className="font-medium underline underline-offset-4 hover:text-text-primary"
+            />
+          ) : null}
+        </div>
+      ) : null
+
+    const row = (
+      <TuneRow
+        piece={piece}
+        supportingContent={supportingContent}
+        personalState={
+          <TuneStateIndicator
+            isAlreadyInPractice={isAlreadyInPractice}
+            isKnown={isKnown}
+            stage={activeUserPiece?.stage ?? null}
+            showNewToMe
+          />
+        }
+        actions={selectionMode ? null : (
+          <LibraryTuneCardActions
+            piece={piece}
+            activeUserPiece={activeUserPiece}
+            isAlreadyInPractice={isAlreadyInPractice}
+            isKnown={isKnown}
+            redirectTo={pieceRedirectTo}
+            onOpenAddToList={() => {
+              setSelectedPiece(piece)
+              setSelectedListId("")
+            }}
+            startLearning={startLearning}
+            showState={false}
+          />
+        )}
       />
-    ) : (
-      <EmptyState
-        title="No tunes in the library yet"
-      />
+    )
+
+    if (!selectionMode) return row
+
+    const isSelected = selectedIds.has(piece.id)
+
+    return (
+      <div
+        className={`grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2 rounded-object px-2 transition-colors ${
+          isSelected ? "bg-state-due/12" : ""
+        }`}
+      >
+        <label className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center self-center rounded-control focus-within:ring-2 focus-within:ring-[var(--focus-ring)]">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggleSelection?.(piece)}
+            className="h-5 w-5 accent-[var(--action-primary)]"
+          />
+          <span className="sr-only">Select {piece.title}</span>
+        </label>
+        {row}
+      </div>
     )
   }
 
   return (
     <>
-      <div className="md:hidden">
-        <p className="mb-3 px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Catalogue
-        </p>
-
-        <CardPager
-          items={mobilePagerPieces}
-          getKey={(piece) => piece.id}
-          label="Tune catalogue results"
-          previousLabel="Previous"
-          nextLabel="Next"
-          unstyledCard
-          emptyState={
-            <EmptyState
-              title="No tunes match this search"
-              primaryActionHref="/library"
-              primaryActionLabel="Reset filters"
-            />
-          }
-          renderItem={(piece) => (
-            <div
-              id={`piece-${piece.id}`}
-              className="relative z-0 scroll-mt-28"
-            >
-              {renderTuneCard(piece)}
-            </div>
-          )}
-        />
-      </div>
-
-      <ul className="hidden grid-cols-1 gap-4 md:grid md:grid-cols-2">
-        {desktopPieces.map((piece) => {
-          return (
-            <li
-              key={piece.id}
-              id={`piece-${piece.id}`}
-              className="relative z-0 scroll-mt-28"
-            >
-              {renderTuneCard(piece)}
-            </li>
-          )
-        })}
-      </ul>
+      <PaginatedTuneCollection
+        label="Tune catalogue results"
+        itemCount={pagePieces.length}
+        totalCount={totalCount}
+        previousHref={previousHref}
+        nextHref={nextHref}
+        emptyTitle={
+          hasActiveFilters
+            ? "No tunes match this search"
+            : "No tunes in the library yet"
+        }
+        emptyDescription={
+          hasActiveFilters && activeConstraints.length > 0
+            ? `Active constraints: ${activeConstraints.join("; ")}. Clear filters to see the full catalogue.`
+            : undefined
+        }
+        resetHref={hasActiveFilters ? "/library" : undefined}
+        resetLabel={hasActiveFilters ? "Reset filters" : undefined}
+        className="rounded-object bg-surface-paper px-4 shadow-material-rest md:px-5"
+        items={pagePieces.map((piece) => (
+          <li
+            key={piece.id}
+            id={`piece-${piece.id}`}
+            className="relative z-0 scroll-mt-28"
+          >
+            {renderTuneRow(piece)}
+          </li>
+        ))}
+      />
 
       {selectedPiece ? (
         <AddToListModal
@@ -233,7 +287,6 @@ export default function LibraryList({
           }}
         />
       ) : null}
-
     </>
   )
 }

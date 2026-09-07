@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import BadgeProgressSummary from "@/components/badges/BadgeProgressSummary"
 import { cardStyles } from "@/components/ui/cardStyles"
+import StatusMark from "@/components/ui/StatusMark"
 import type { BadgeWithOwner } from "@/lib/types"
 
 type BadgeCardProps = {
@@ -72,7 +73,7 @@ export default function BadgeCard({ badge }: BadgeCardProps) {
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-state-social">
             {titleCase(badge.category)} badge
           </p>
 
@@ -97,10 +98,10 @@ export default function BadgeCard({ badge }: BadgeCardProps) {
           </p>
         </div>
 
-        <p className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+        <StatusMark tone="social">
           {badge.recipient_count} recipient
           {badge.recipient_count === 1 ? "" : "s"}
-        </p>
+        </StatusMark>
       </div>
 
       {badge.description ? (
@@ -109,7 +110,7 @@ export default function BadgeCard({ badge }: BadgeCardProps) {
         </p>
       ) : null}
 
-      <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
+      <div className="mt-5 rounded-object bg-surface-note p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Condition
         </p>

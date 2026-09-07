@@ -17,6 +17,7 @@ type SubmitButtonProps = {
   ariaDescribedBy?: string
   children?: ReactNode
   pendingChildren?: ReactNode
+  id?: string
 }
 
 export default function SubmitButton({
@@ -32,6 +33,7 @@ export default function SubmitButton({
   ariaDescribedBy,
   children,
   pendingChildren,
+  id,
 }: SubmitButtonProps) {
   const { pending } = useFormStatus()
   const isPending = pending || forcePending
@@ -39,6 +41,7 @@ export default function SubmitButton({
 
   return (
     <button
+      id={id}
       type="submit"
       name={name}
       value={value}

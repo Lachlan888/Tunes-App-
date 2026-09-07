@@ -345,178 +345,126 @@ export async function loadRecentFriendActivity(
     )
   )
 
-  let piecesById = new Map<number, PieceRow>()
-  let learningListsById = new Map<number, LearningListRow>()
-  let commentsById = new Map<number, PieceCommentRow>()
-  let badgesById = new Map<number, BadgeRow>()
-  let badgeAwarderProfilesById = new Map<string, FriendActivityProfile>()
-  let reactionsByActivityId = new Map<number, ActivityReactionSummary[]>()
-  let repliesByActivityId = new Map<number, ActivityReplyItem[]>()
+  const [
+    piecesById,
+    learningListsById,
+    commentsById,
+    badgesById,
+    badgeAwarderProfilesById,
+    reactionsResult,
+    repliesResult,
+  ] = await Promise.all([
+    pieceIds.length > 0
+      ? supabase
+          .from("pieces")
+          .select("id, title")
+          .in("id", pieceIds)
+          .then(({ data, error }) => {
+            if (error) throw new Error(error.message)
+            return new Map(
+              ((data ?? []) as PieceRow[]).map((piece) => [piece.id, piece])
+            )
+          })
+      : Promise.resolve(new Map<number, PieceRow>()),
+    learningListIds.length > 0
+      ? supabase
+          .from("learning_lists")
+          .select("id, name, visibility")
+          .in("id", learningListIds)
+          .eq("visibility", "public")
+          .then(({ data, error }) => {
+            if (error) throw new Error(error.message)
+            return new Map(
+              ((data ?? []) as LearningListRow[]).map((list) => [list.id, list])
+            )
+          })
+      : Promise.resolve(new Map<number, LearningListRow>()),
+    commentIds.length > 0
+      ? supabase
+          .from("piece_comments")
+          .select("id, body")
+          .in("id", commentIds)
+          .then(({ data, error }) => {
+            if (error) throw new Error(error.message)
+            return new Map(
+              ((data ?? []) as PieceCommentRow[]).map((comment) => [
+                comment.id,
+                comment,
+              ])
+            )
+          })
+      : Promise.resolve(new Map<number, PieceCommentRow>()),
+    badgeIds.length > 0
+      ? supabase
+          .from("badges")
+          .select("id, owner_user_id, name, slug, category, description")
+          .in("id", badgeIds)
+          .eq("visibility", "public")
+          .then(({ data, error }) => {
+            if (error) throw new Error(error.message)
+            return new Map(
+              ((data ?? []) as BadgeRow[]).map((badge) => [badge.id, badge])
+            )
+          })
+      : Promise.resolve(new Map<number, BadgeRow>()),
+    loadProfilesByUserId(supabase, badgeAwarderIds),
+    activityIds.length > 0
+      ? supabase
+          .from("activity_reactions")
+          .select("id, activity_event_id, user_id, reaction_type")
+          .in("activity_event_id", activityIds)
+      : Promise.resolve({ data: [], error: null }),
+    activityIds.length > 0
+      ? supabase
+          .from("activity_replies")
+          .select("id, activity_event_id, user_id, body, created_at")
+          .in("activity_event_id", activityIds)
+          .order("created_at", { ascending: true })
+      : Promise.resolve({ data: [], error: null }),
+  ])
 
-  if (pieceIds.length > 0) {
-    const { data: pieces, error: piecesError } = await supabase
-      .from("pieces")
-      .select("id, title")
-      .in("id", pieceIds)
+  if (reactionsResult.error) throw new Error(reactionsResult.error.message)
+  if (repliesResult.error) throw new Error(repliesResult.error.message)
 
-    if (piecesError) {
-      throw new Error(piecesError.message)
-    }
-
-    piecesById = new Map(
-      ((pieces ?? []) as PieceRow[]).map((piece) => [piece.id, piece])
+  const typedReactions = (reactionsResult.data ?? []) as ActivityReactionRow[]
+  const reactionsByRawActivityId = typedReactions.reduce<
+    Map<number, ActivityReactionRow[]>
+  >((map, reaction) => {
+    const existing = map.get(reaction.activity_event_id) ?? []
+    existing.push(reaction)
+    map.set(reaction.activity_event_id, existing)
+    return map
+  }, new Map())
+  const reactionsByActivityId = new Map(
+    Array.from(reactionsByRawActivityId.entries()).map(
+      ([activityEventId, rows]) => [
+        activityEventId,
+        buildReactionSummaries(rows, currentUserId),
+      ]
     )
-  }
+  )
 
-  if (learningListIds.length > 0) {
-    const { data: learningLists, error: learningListsError } = await supabase
-      .from("learning_lists")
-      .select("id, name, visibility")
-      .in("id", learningListIds)
-      .eq("visibility", "public")
+  const typedReplies = (repliesResult.data ?? []) as ActivityReplyRow[]
+  const replyProfilesById = await loadProfilesByUserId(
+    supabase,
+    typedReplies.map((row) => row.user_id)
+  )
+  const repliesByActivityId = typedReplies.reduce<
+    Map<number, ActivityReplyItem[]>
+  >((map, reply) => {
+    const existing = map.get(reply.activity_event_id) ?? []
+    const author = replyProfilesById.get(reply.user_id) ?? null
 
-    if (learningListsError) {
-      throw new Error(learningListsError.message)
-    }
+    existing.push({
+      id: reply.id,
+      body: reply.body,
+      created_at: reply.created_at,
+      author,
+    })
 
-    learningListsById = new Map(
-      ((learningLists ?? []) as LearningListRow[]).map((list) => [
-        list.id,
-        list,
-      ])
-    )
-  }
-
-  if (commentIds.length > 0) {
-    const { data: comments, error: commentsError } = await supabase
-      .from("piece_comments")
-      .select("id, body")
-      .in("id", commentIds)
-
-    if (commentsError) {
-      throw new Error(commentsError.message)
-    }
-
-    commentsById = new Map(
-      ((comments ?? []) as PieceCommentRow[]).map((comment) => [
-        comment.id,
-        comment,
-      ])
-    )
-  }
-
-  if (badgeIds.length > 0) {
-    const { data: badges, error: badgesError } = await supabase
-      .from("badges")
-      .select("id, owner_user_id, name, slug, category, description")
-      .in("id", badgeIds)
-      .eq("visibility", "public")
-
-    if (badgesError) {
-      throw new Error(badgesError.message)
-    }
-
-    badgesById = new Map(
-      ((badges ?? []) as BadgeRow[]).map((badge) => [badge.id, badge])
-    )
-  }
-
-  if (badgeAwarderIds.length > 0) {
-    badgeAwarderProfilesById = await loadProfilesByUserId(
-      supabase,
-      badgeAwarderIds
-    )
-  }
-
-  if (activityIds.length > 0) {
-    const { data: reactions, error: reactionsError } = await supabase
-      .from("activity_reactions")
-      .select("id, activity_event_id, user_id, reaction_type")
-      .in("activity_event_id", activityIds)
-
-    if (reactionsError) {
-      throw new Error(reactionsError.message)
-    }
-
-    const typedReactions = (reactions ?? []) as ActivityReactionRow[]
-
-    const reactionsByRawActivityId = typedReactions.reduce<
-      Map<number, ActivityReactionRow[]>
-    >((map, reaction) => {
-      const existing = map.get(reaction.activity_event_id) ?? []
-      existing.push(reaction)
-      map.set(reaction.activity_event_id, existing)
-      return map
-    }, new Map())
-
-    reactionsByActivityId = new Map(
-      Array.from(reactionsByRawActivityId.entries()).map(
-        ([activityEventId, rows]) => [
-          activityEventId,
-          buildReactionSummaries(rows, currentUserId),
-        ]
-      )
-    )
-
-    const { data: replies, error: repliesError } = await supabase
-      .from("activity_replies")
-      .select("id, activity_event_id, user_id, body, created_at")
-      .in("activity_event_id", activityIds)
-      .order("created_at", { ascending: true })
-
-    if (repliesError) {
-      throw new Error(repliesError.message)
-    }
-
-    const typedReplies = (replies ?? []) as ActivityReplyRow[]
-    const replyUserIds = Array.from(
-      new Set(typedReplies.map((row) => row.user_id))
-    )
-
-    let replyProfilesById = new Map<string, ProfileSearchRow>()
-
-    if (replyUserIds.length > 0) {
-      const { data: replyProfiles, error: replyProfilesError } = await supabase
-        .from("profiles")
-        .select("id, username, display_name")
-        .in("id", replyUserIds)
-
-      if (replyProfilesError) {
-        throw new Error(replyProfilesError.message)
-      }
-
-      replyProfilesById = new Map(
-        ((replyProfiles ?? []) as ProfileSearchRow[]).map((profile) => [
-          profile.id,
-          profile,
-        ])
-      )
-    }
-
-    repliesByActivityId = typedReplies.reduce<Map<number, ActivityReplyItem[]>>(
-      (map, reply) => {
-        const existing = map.get(reply.activity_event_id) ?? []
-        const author = replyProfilesById.get(reply.user_id) ?? null
-
-        existing.push({
-          id: reply.id,
-          body: reply.body,
-          created_at: reply.created_at,
-          author: author
-            ? {
-                id: author.id,
-                username: author.username,
-                display_name: author.display_name,
-              }
-            : null,
-        })
-
-        map.set(reply.activity_event_id, existing)
-        return map
-      },
-      new Map()
-    )
-  }
+    map.set(reply.activity_event_id, existing)
+    return map
+  }, new Map())
 
   const items: FriendActivityItem[] = []
 

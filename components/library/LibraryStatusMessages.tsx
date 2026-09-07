@@ -82,6 +82,12 @@ export default function LibraryStatusMessages({
         </StatusBanner>
       )}
 
+      {createTuneStatus === "invalid_type" && (
+        <StatusBanner tone="warning">
+          Choose a supported tune type.
+        </StatusBanner>
+      )}
+
       {createTuneStatus === "invalid_style" && (
         <StatusBanner tone="error">
           Choose a valid style or leave Style blank.

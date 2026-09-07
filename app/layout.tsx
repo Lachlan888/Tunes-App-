@@ -1,45 +1,49 @@
 import "./globals.css"
-import FloatingFeedbackButton from "@/components/feedback/FloatingFeedbackButton"
-import AppHeader from "@/components/layout/AppHeader"
-import PracticeMetronome from "@/components/practice/PracticeMetronome"
+import { Lora } from "next/font/google"
+import AppShell from "@/components/layout/AppShell"
+import { getOptionalUserContext } from "@/lib/auth/session"
 import { emptyNavContext, loadNavContext } from "@/lib/loaders/nav"
-import { createClient } from "@/lib/supabase/server"
 
 export const dynamic = "force-dynamic"
+
+const editorial = Lora({
+  subsets: ["latin"],
+  variable: "--font-editorial",
+  display: "swap",
+  fallback: ["Georgia", "Cambria", "Times New Roman", "serif"],
+})
 
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
+  const userContext = await getOptionalUserContext()
+  const user = userContext?.user ?? null
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  const navContext = user
-    ? await loadNavContext(supabase, user.id)
+  const navContext = userContext
+    ? await loadNavContext(
+        userContext.supabase,
+        userContext.user.id,
+        userContext.role
+      )
     : emptyNavContext
 
   return (
-    <html lang="en">
+    <html lang="en" className={editorial.variable}>
       <body>
-        <AppHeader
+        <AppShell
           isSignedIn={Boolean(user)}
+          accountLabel={user?.email}
           overduePracticeCount={navContext.overduePracticeCount}
           unreadTotalCount={navContext.unreadTotalCount}
-          pendingFriendRequestCount={navContext.pendingFriendRequestCount}
           socialAttentionCount={navContext.socialAttentionCount}
           pendingModerationCount={navContext.pendingModerationCount}
           canModerate={navContext.canModerate}
           canAccessDev={navContext.canAccessDev}
-        />
-
-        {children}
-
-        {user ? <PracticeMetronome /> : null}
-        {user ? <FloatingFeedbackButton /> : null}
+        >
+          {children}
+        </AppShell>
       </body>
     </html>
   )

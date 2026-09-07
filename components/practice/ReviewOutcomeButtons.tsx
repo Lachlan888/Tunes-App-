@@ -1,6 +1,7 @@
 "use client"
 
 import SubmitButton from "@/components/SubmitButton"
+import Icon from "@/components/ui/Icon"
 import {
   getReviewButtonClassName,
   REVIEW_OUTCOMES,
@@ -15,6 +16,7 @@ type DirectReviewFormsProps = {
 }
 
 type DiaryReviewButtonsProps = {
+  userPieceId: number
   onSelectOutcome: (outcome: ReviewOutcomeConfig) => void
 }
 
@@ -114,10 +116,14 @@ export function DirectReviewForms({
             />
 
             <SubmitButton
+              id={`practice-review-${userPieceId}-${reviewOutcome.outcome}`}
               label={reviewOutcome.label}
               pendingLabel="Saving..."
               className={getReviewButtonClassName(reviewOutcome.className)}
-            />
+            >
+              <Icon name={reviewOutcome.icon} size={16} />
+              <span>{reviewOutcome.label}</span>
+            </SubmitButton>
 
             <ReviewOutcomeTooltip
               tooltip={reviewOutcome.tooltip}
@@ -131,6 +137,7 @@ export function DirectReviewForms({
 }
 
 export function DiaryReviewButtons({
+  userPieceId,
   onSelectOutcome,
 }: DiaryReviewButtonsProps) {
   return (
@@ -144,11 +151,13 @@ export function DiaryReviewButtons({
             className="group relative min-w-0 flex-1 sm:flex-none"
           >
             <button
+              id={`practice-review-${userPieceId}-${reviewOutcome.outcome}`}
               type="button"
               className={getReviewButtonClassName(reviewOutcome.className)}
               onClick={() => onSelectOutcome(reviewOutcome)}
             >
-              {reviewOutcome.label}
+              <Icon name={reviewOutcome.icon} size={16} />
+              <span>{reviewOutcome.label}</span>
             </button>
 
             <ReviewOutcomeTooltip

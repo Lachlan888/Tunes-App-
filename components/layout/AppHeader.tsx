@@ -1,56 +1,55 @@
-import DesktopNav from "@/components/layout/DesktopNav"
-import MobileNav from "@/components/layout/MobileNav"
+"use client"
+
+import Link from "next/link"
+import AccountMenu from "@/components/layout/AccountMenu"
+import type { ShellKind } from "@/components/layout/navItems"
 
 type AppHeaderProps = {
-  isSignedIn: boolean
-  overduePracticeCount: number
+  pathname: string
+  pageTitle: string
+  shellKind: ShellKind
+  accountLabel?: string | null
   unreadTotalCount: number
-  pendingFriendRequestCount: number
-  socialAttentionCount: number
   pendingModerationCount: number
   canModerate: boolean
   canAccessDev: boolean
 }
 
 export default function AppHeader({
-  isSignedIn,
-  overduePracticeCount,
+  pathname,
+  pageTitle,
+  shellKind,
+  accountLabel,
   unreadTotalCount,
-  pendingFriendRequestCount,
-  socialAttentionCount,
   pendingModerationCount,
   canModerate,
   canAccessDev,
 }: AppHeaderProps) {
-  return (
-    <header className="relative z-[100] border-b border-border bg-card/90 backdrop-blur">
-      <div className="mx-auto flex max-w-[1500px] flex-col gap-3 px-4 py-4 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-4 md:px-6">
-        <div className="min-w-0">
-          <p className="font-serif text-xl font-bold tracking-tight text-foreground">
-            Tunes App
-          </p>
-          <p className="text-xs font-medium text-muted-foreground">
-            Remember, organise, and share tunes.
-          </p>
+  if (shellKind === "signed-out") {
+    return (
+      <header className="border-b border-hairline bg-surface-paper">
+        <div className="mx-auto flex min-h-16 max-w-[1500px] items-center justify-between gap-4 px-4 md:px-6">
+          <Link href="/" className="font-serif text-xl font-bold tracking-tight text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
+            Tunes
+          </Link>
+          {pathname === "/login" ? null : (
+            <Link href="/login" className="inline-flex min-h-11 items-center rounded-control px-3 text-sm font-semibold text-action-primary hover:bg-surface-note focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
+              Sign in
+            </Link>
+          )}
         </div>
+      </header>
+    )
+  }
 
-        <DesktopNav
-          isSignedIn={isSignedIn}
-          overduePracticeCount={overduePracticeCount}
+  return (
+    <header className="floating-material sticky top-0 z-[350] border-b border-hairline md:hidden">
+      <div className="flex min-h-14 items-center justify-between gap-3 px-4">
+        <h1 className="truncate font-serif text-lg font-semibold text-text-primary">{pageTitle}</h1>
+        <AccountMenu
+          compact
+          accountLabel={accountLabel}
           unreadTotalCount={unreadTotalCount}
-          pendingFriendRequestCount={pendingFriendRequestCount}
-          socialAttentionCount={socialAttentionCount}
-          pendingModerationCount={pendingModerationCount}
-          canModerate={canModerate}
-          canAccessDev={canAccessDev}
-        />
-
-        <MobileNav
-          isSignedIn={isSignedIn}
-          overduePracticeCount={overduePracticeCount}
-          unreadTotalCount={unreadTotalCount}
-          pendingFriendRequestCount={pendingFriendRequestCount}
-          socialAttentionCount={socialAttentionCount}
           pendingModerationCount={pendingModerationCount}
           canModerate={canModerate}
           canAccessDev={canAccessDev}

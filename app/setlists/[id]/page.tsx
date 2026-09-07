@@ -3,6 +3,7 @@ import SetlistCollaboratorsSection from "@/components/setlists/SetlistCollaborat
 import SetlistCoverageSection from "@/components/setlists/SetlistCoverageSection"
 import SetlistHeader from "@/components/setlists/SetlistHeader"
 import SetlistStatusMessages from "@/components/setlists/SetlistStatusMessages"
+import SetlistSessionDock from "@/components/session-dock/SetlistSessionDock"
 import { markAsKnown } from "@/lib/actions/known-pieces"
 import {
   addTuneToSetlist,
@@ -22,6 +23,7 @@ type SetlistDetailPageProps = {
     setlist?: string
     setlist_invite?: string
     setlist_item?: string
+    performance?: string
   }>
 }
 
@@ -35,6 +37,9 @@ export default async function SetlistDetailPage({
   const setlistStatus = resolvedSearchParams?.setlist ?? ""
   const inviteStatus = resolvedSearchParams?.setlist_invite ?? ""
   const itemStatus = resolvedSearchParams?.setlist_item ?? ""
+  const initialPerformanceItemId = Number(
+    resolvedSearchParams?.performance ?? ""
+  )
 
   const {
     user,
@@ -54,6 +59,22 @@ export default async function SetlistDetailPage({
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+      <SetlistSessionDock
+        setlistId={setlist.id}
+        setlistName={setlist.name}
+        initialItemId={
+          Number.isFinite(initialPerformanceItemId) &&
+          initialPerformanceItemId > 0
+            ? initialPerformanceItemId
+            : null
+        }
+        items={items.map((item) => ({
+          id: item.id,
+          pieceId: item.piece_id,
+          title: item.piece?.title ?? "Untitled tune",
+          key: item.performance_key ?? item.piece?.key ?? null,
+        }))}
+      />
       <div className="mb-5">
         <Link
           href="/setlists"

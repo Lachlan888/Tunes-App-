@@ -10,6 +10,7 @@ import {
 } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import { buttonStyles } from "@/components/ui/buttonStyles"
+import { formStyles } from "@/components/ui/formStyles"
 import type {
   ListShareRecipientSearchResponse,
   ListShareRecipientSearchResult,
@@ -24,9 +25,6 @@ type UserSearchPickerProps = {
     limit?: number
   }) => Promise<ListShareRecipientSearchResponse>
 }
-
-const inputClass =
-  "w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 function getUserLabel(user: ListShareRecipientSearchResult) {
   return user.displayName || user.username || "Unnamed player"
@@ -204,7 +202,7 @@ export default function UserSearchPicker({
       <div>
         <label
           htmlFor={inputId}
-          className="mb-2 block text-sm font-medium text-foreground"
+          className={formStyles.label}
         >
           Search friends or users
         </label>
@@ -217,7 +215,7 @@ export default function UserSearchPicker({
           }}
           onKeyDown={handleKeyDown}
           placeholder="Search by name or username"
-          className={inputClass}
+          className={formStyles.input}
           disabled={disabled}
           autoComplete="off"
           role="combobox"

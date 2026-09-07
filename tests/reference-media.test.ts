@@ -215,6 +215,10 @@ test("the route replaces modal wiring and keeps one persistent player and metron
     "utf8"
   )
   const layout = readFileSync(new URL("../app/layout.tsx", import.meta.url), "utf8")
+  const shell = readFileSync(
+    new URL("../components/layout/AppShell.tsx", import.meta.url),
+    "utf8"
+  )
 
   assert.match(launcher, /getReferencePracticeHref/)
   assert.doesNotMatch(launcher, /ReferenceMediaModal/)
@@ -226,7 +230,9 @@ test("the route replaces modal wiring and keeps one persistent player and metron
     /crossedLoopEnd\(previousTime, nextTime, loopEnd\)[\s\S]*player\.seekTo\(loopStart, true\)[\s\S]*player\.playVideo\(\)/
   )
   assert.match(workspace, /MobileViewSwitcher/)
-  assert.equal((layout.match(/<PracticeMetronome/g) ?? []).length, 1)
+  assert.equal((layout.match(/<PracticeMetronome/g) ?? []).length, 0)
+  assert.equal((shell.match(/<PracticeMetronome variant="hidden"/g) ?? []).length, 1)
+  assert.match(workspace, /context: "reference-media"/)
 })
 
 test("recording and section mutations retain owner-scoped permissions", () => {

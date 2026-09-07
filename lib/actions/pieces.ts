@@ -5,12 +5,17 @@ import { redirect } from "next/navigation"
 import { canModerate, getCurrentUserRole } from "@/lib/auth/roles"
 import { normaliseKey } from "@/lib/music/keys"
 import { isValidOptionalTimeSignature } from "@/lib/music/time-signatures"
-import { normaliseTuneTitle } from "@/lib/normalise"
 import {
   recordPieceCreatedEvent,
   recordPieceDetailsAddedEvent,
 } from "@/lib/services/activity-events"
 import { createClient } from "@/lib/supabase/server"
+import {
+  findExactTuneDuplicate,
+  type TuneDuplicateCandidate,
+} from "@/lib/tunes/duplicate-suggestions"
+
+const TUNE_CREATE_TYPES = ["tune", "song"] as const
 
 function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")
@@ -29,10 +34,6 @@ function cleanRedirectTo(
   }
 
   return raw
-}
-
-function normaliseForDuplicateMatch(value: string | null) {
-  return normaliseTuneTitle(value)
 }
 
 function isValidOptionalUrl(value: string) {
@@ -58,6 +59,7 @@ export async function createTune(formData: FormData) {
   }
 
   const title = String(formData.get("title") ?? "").trim()
+  const typeValue = String(formData.get("type") ?? "tune").trim().toLowerCase()
   const rawKey = String(formData.get("key") ?? "").trim()
   const key = rawKey ? normaliseKey(rawKey) : null
   const timeSignature = String(formData.get("time_signature") ?? "").trim()
@@ -69,6 +71,10 @@ export async function createTune(formData: FormData) {
 
   if (!title) {
     redirect(appendQueryParam(redirectTo, "create_tune", "missing_title"))
+  }
+
+  if (!(TUNE_CREATE_TYPES as readonly string[]).includes(typeValue)) {
+    redirect(appendQueryParam(redirectTo, "create_tune", "invalid_type"))
   }
 
   if (rawKey && !key) {
@@ -85,19 +91,20 @@ export async function createTune(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "create_tune", "invalid_url"))
   }
 
-  const normalisedTitle = normaliseForDuplicateMatch(title)
-
   const { data: existingPieces, error: existingPiecesError } = await supabase
     .from("pieces")
-    .select("id, title")
+    .select(
+      "id, title, alternate_titles, type, key, style, time_signature, composer"
+    )
     .order("id")
 
   if (existingPiecesError) {
     redirect(appendQueryParam(redirectTo, "create_tune", "error"))
   }
 
-  const duplicatePiece = (existingPieces ?? []).find(
-    (piece) => normaliseForDuplicateMatch(piece.title) === normalisedTitle
+  const duplicatePiece = findExactTuneDuplicate(
+    title,
+    (existingPieces ?? []) as TuneDuplicateCandidate[]
   )
 
   if (duplicatePiece) {
@@ -138,6 +145,7 @@ export async function createTune(formData: FormData) {
     .from("pieces")
     .insert({
       title,
+      type: typeValue,
       key,
       style: styleLabelString,
       time_signature: timeSignature || null,

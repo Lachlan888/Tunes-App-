@@ -2,9 +2,10 @@
 
 import { useState } from "react"
 import LoadingSpinner from "@/components/ui/LoadingSpinner"
+import { joinClasses } from "@/components/ui/buttonStyles"
 import { createClient } from "@/lib/supabase/client"
 
-export default function LogoutButton() {
+export default function LogoutButton({ className }: { className?: string }) {
   const [isPending, setIsPending] = useState(false)
   const supabase = createClient()
 
@@ -28,7 +29,10 @@ export default function LogoutButton() {
       type="button"
       disabled={isPending}
       onClick={handleLogout}
-      className="rounded-full border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+      className={joinClasses(
+        "rounded-control border border-hairline px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60",
+        className
+      )}
     >
       {isPending ? (
         <span className="inline-flex items-center justify-center gap-2">

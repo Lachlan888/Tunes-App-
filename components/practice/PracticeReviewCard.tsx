@@ -122,7 +122,10 @@ export default function PracticeReviewCard({
         </p>
 
         {practiceDiaryEnabled ? (
-          <DiaryReviewButtons onSelectOutcome={setSelectedOutcome} />
+          <DiaryReviewButtons
+            userPieceId={userPiece.id}
+            onSelectOutcome={setSelectedOutcome}
+          />
         ) : (
           <DirectReviewForms
             userPieceId={userPiece.id}

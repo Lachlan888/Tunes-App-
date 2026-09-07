@@ -57,8 +57,7 @@ export default function TuneDetailActions({
       </h2>
 
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
-        Your personal state for this tune. Practice controls live here; broader
-        tune management sits lower on the page.
+        Manage your practice state for this tune.
       </p>
 
       <div className="mt-5 grid min-w-0 gap-3 sm:grid-cols-3">

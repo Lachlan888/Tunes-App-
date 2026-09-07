@@ -5,12 +5,15 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   useTransition,
 } from "react"
 import MobileViewSwitcher from "@/components/ui/MobileViewSwitcher"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
+import { useSessionDock } from "@/components/session-dock/SessionDockProvider"
+import type { SessionDockModel } from "@/components/session-dock/sessionDockModel"
 import {
   createMediaLoopInPlace,
   deleteMediaLoopInPlace,
@@ -88,6 +91,8 @@ export type YouTubePlaybackSnapshot = {
   loopStart: number | null
   loopEnd: number | null
   loopEnabled: boolean
+  activeLoopId: number | null
+  mobileView: ReferencePracticeView
 }
 
 const DEFAULT_SPEEDS = [0.5, 0.75, 1]
@@ -191,6 +196,42 @@ function compactButton(className: string) {
   return joinClasses(className, "px-3 py-2 text-xs sm:px-4 sm:text-sm")
 }
 
+function readPlaybackSnapshot(storageKey: string) {
+  try {
+    const parsed = JSON.parse(
+      window.sessionStorage.getItem(storageKey) ?? "null"
+    ) as Partial<YouTubePlaybackSnapshot> | null
+    if (!parsed) return null
+
+    const mobileView = mobileViews.some((view) => view.id === parsed.mobileView)
+      ? parsed.mobileView!
+      : "media"
+
+    return {
+      currentTime: Math.max(0, safeNumber(Number(parsed.currentTime))),
+      playbackRate: Math.max(
+        0.25,
+        safeNumber(Number(parsed.playbackRate)) || 1
+      ),
+      isPlaying: false,
+      loopStart:
+        parsed.loopStart === null || parsed.loopStart === undefined
+          ? null
+          : Math.max(0, safeNumber(Number(parsed.loopStart))),
+      loopEnd:
+        parsed.loopEnd === null || parsed.loopEnd === undefined
+          ? null
+          : Math.max(0, safeNumber(Number(parsed.loopEnd))),
+      loopEnabled: Boolean(parsed.loopEnabled),
+      activeLoopId:
+        typeof parsed.activeLoopId === "number" ? parsed.activeLoopId : null,
+      mobileView,
+    } satisfies YouTubePlaybackSnapshot
+  } catch {
+    return null
+  }
+}
+
 export default function YouTubeLoopPlayer({
   videoId,
   title,
@@ -200,8 +241,10 @@ export default function YouTubeLoopPlayer({
   mediaPanel,
   className,
 }: YouTubeLoopPlayerProps) {
+  const playbackStorageKey = `tunes.session.v1.reference.${pieceId}.${videoId}`
   const containerRef = useRef<HTMLDivElement | null>(null)
   const playerRef = useRef<YouTubePlayer | null>(null)
+  const restoredSnapshotRef = useRef<YouTubePlaybackSnapshot | null>(null)
   const saveInFlightRef = useRef(false)
   const lastPlaybackTimeRef = useRef(0)
   const [mobileView, setMobileView] =
@@ -293,15 +336,24 @@ export default function YouTubeLoopPlayer({
 
     if (!container) return
 
+    const restoredSnapshot = readPlaybackSnapshot(playbackStorageKey)
+    restoredSnapshotRef.current = restoredSnapshot
     setIsReady(false)
     setPlayerError(null)
-    setCurrentTime(0)
-    lastPlaybackTimeRef.current = 0
+    setCurrentTime(restoredSnapshot?.currentTime ?? 0)
+    lastPlaybackTimeRef.current = restoredSnapshot?.currentTime ?? 0
     setDuration(0)
     setIsPlaying(false)
-    setPlaybackRateState(1)
+    setPlaybackRateState(restoredSnapshot?.playbackRate ?? 1)
     setAvailableRates(DEFAULT_SPEEDS)
     resetPassageState()
+    if (restoredSnapshot) {
+      setMobileView(restoredSnapshot.mobileView)
+      setActiveLoopId(restoredSnapshot.activeLoopId)
+      setLoopStart(restoredSnapshot.loopStart)
+      setLoopEnd(restoredSnapshot.loopEnd)
+      setLoopEnabled(restoredSnapshot.loopEnabled)
+    }
 
     loadYouTubeIframeApi().then(() => {
       if (cancelled || !container || !window.YT?.Player) return
@@ -318,9 +370,18 @@ export default function YouTubeLoopPlayer({
           onReady: (event) => {
             if (cancelled) return
 
+            const restored = restoredSnapshotRef.current
             playerRef.current = event.target
             setDuration(getPlayerDuration(event.target))
             setAvailableRates(getAvailableRates(event.target))
+            if (restored) {
+              event.target.seekTo(restored.currentTime, true)
+              try {
+                event.target.setPlaybackRate(restored.playbackRate)
+              } catch {
+                setPlaybackRateState(1)
+              }
+            }
             setIsReady(true)
           },
           onStateChange: (event) => {
@@ -353,7 +414,7 @@ export default function YouTubeLoopPlayer({
 
       playerRef.current = null
     }
-  }, [resetPassageState, videoId])
+  }, [playbackStorageKey, resetPassageState, videoId])
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -387,22 +448,52 @@ export default function YouTubeLoopPlayer({
     return () => window.clearInterval(intervalId)
   }, [hasValidLoop, loopEnabled, loopEnd, loopStart])
 
-  function setPlaybackRate(rate: number) {
+  useEffect(() => {
+    if (!isReady) return
+
+    const snapshot: YouTubePlaybackSnapshot = {
+      currentTime,
+      playbackRate,
+      isPlaying,
+      loopStart,
+      loopEnd,
+      loopEnabled,
+      activeLoopId,
+      mobileView,
+    }
+    window.sessionStorage.setItem(
+      playbackStorageKey,
+      JSON.stringify(snapshot)
+    )
+  }, [
+    activeLoopId,
+    currentTime,
+    isPlaying,
+    isReady,
+    loopEnabled,
+    loopEnd,
+    loopStart,
+    mobileView,
+    playbackRate,
+    playbackStorageKey,
+  ])
+
+  const setPlaybackRate = useCallback((rate: number) => {
     try {
       playerRef.current?.setPlaybackRate(rate)
       setPlaybackRateState(rate)
     } catch {
       // Keep the accepted YouTube rate when this recording rejects a value.
     }
-  }
+  }, [])
 
-  function playFrom(seconds?: number) {
+  const playFrom = useCallback((seconds?: number) => {
     const player = playerRef.current
     if (!player) return
 
     if (seconds !== undefined) player.seekTo(seconds, true)
     player.playVideo()
-  }
+  }, [])
 
   function selectWholeRecording() {
     resetPassageState()
@@ -616,6 +707,110 @@ export default function YouTubeLoopPlayer({
   const practicePanelClassName = joinClasses(
     mobileView === "practice" ? "block" : "hidden md:block"
   )
+
+  const dockModel = useMemo<SessionDockModel>(() => {
+    const availableIndex = availableRates.indexOf(playbackRate)
+    const nextRate =
+      availableRates[(availableIndex + 1) % availableRates.length] ?? 1
+    const sectionLabel = activeLoop?.label ?? "Whole recording"
+
+    return {
+      id: `reference-media:${pieceId}:${videoId}`,
+      context: "reference-media",
+      identity: {
+        eyebrow: "Reference",
+        title: recordingLabel,
+        detail: sectionLabel,
+      },
+      primaryAction: {
+        id: "playback",
+        label: isPlaying ? "Pause" : "Play",
+        ariaLabel: isPlaying
+          ? `Pause ${recordingLabel}`
+          : `Play ${recordingLabel}`,
+        disabled: !isReady,
+        onInvoke: () => {
+          if (isPlaying) playerRef.current?.pauseVideo?.()
+          else playFrom()
+        },
+        tone: "practice",
+        closeOnInvoke: false,
+      },
+      secondaryActions: [
+        {
+          id: "loop",
+          label: loopEnabled ? "Loop on" : "Loop off",
+          ariaLabel: loopEnabled ? "Turn loop off" : "Turn loop on",
+          disabled: !hasValidLoop,
+          pressed: loopEnabled,
+          onInvoke: () => setLoopEnabled((current) => !current),
+          tone: loopEnabled ? "practice" : "secondary",
+          closeOnInvoke: false,
+        },
+        {
+          id: "speed",
+          label: `${playbackRate}×`,
+          ariaLabel: `Playback speed ${playbackRate}. Change to ${nextRate}.`,
+          disabled: !isReady,
+          onInvoke: () => setPlaybackRate(nextRate),
+          tone: "secondary",
+          closeOnInvoke: false,
+        },
+        {
+          id: "section",
+          label: "Sections",
+          onInvoke: () => setMobileView("sections"),
+          tone: "secondary",
+        },
+      ],
+      progress: {
+        label: `${formatTime(currentTime)} of ${formatTime(duration)}`,
+        value: currentTime,
+        max: duration,
+      },
+      status: {
+        label: `${loopEnabled ? "Loop on" : "Loop off"} · ${playbackRate}×`,
+        tone: "practice",
+      },
+      collapsedContent: {
+        actionIds: ["playback", "loop"],
+        showProgress: true,
+      },
+      expandedContent: {
+        title: `${recordingLabel} controls`,
+        description:
+          "Playback, loop, speed, saved sections and the metronome stay attached to this recording.",
+        actionIds: ["playback", "loop", "speed", "section"],
+        tools: ["metronome"],
+      },
+      persistence: {
+        shareable: "url",
+        transient: "session",
+        key: playbackStorageKey,
+      },
+      announcement: `${isPlaying ? "Playing" : "Paused"}. ${
+        loopEnabled ? "Loop on" : "Loop off"
+      }. Speed ${playbackRate}.`,
+    }
+  }, [
+    activeLoop?.label,
+    availableRates,
+    currentTime,
+    duration,
+    hasValidLoop,
+    isPlaying,
+    isReady,
+    loopEnabled,
+    pieceId,
+    playbackRate,
+    playbackStorageKey,
+    playFrom,
+    recordingLabel,
+    setPlaybackRate,
+    videoId,
+  ])
+
+  useSessionDock(`reference-media:${pieceId}`, dockModel)
 
   return (
     <div
@@ -866,6 +1061,14 @@ export default function YouTubeLoopPlayer({
               aria-pressed={loopEnabled}
             >
               {loopEnabled ? "Loop on" : "Loop off"}
+            </button>
+            <button
+              type="button"
+              className={buttonStyles.secondary}
+              onClick={resetPassageState}
+              disabled={!hasValidLoop}
+            >
+              Clear Loop
             </button>
             <button
               type="button"

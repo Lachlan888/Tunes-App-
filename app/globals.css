@@ -1,70 +1,137 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f3f7ea;
-  --foreground: #20271c;
+  color-scheme: light;
 
-  --card: #e4ead8;
-  --card-strong: #d7e0c5;
-  --card-foreground: #20271c;
+  /* Surfaces and ink */
+  --surface-canvas: #f4efe4;
+  --surface-paper: #fffdf8;
+  --surface-note: #e9e1d3;
+  --text-primary: #25231f;
+  --text-muted: #675f55;
+  --hairline: #d3c7b5;
 
-  --muted: #edf2e4;
-  --muted-foreground: #596650;
+  /* Actions and product states */
+  --action-primary: #5b4325;
+  --action-primary-hover: #49351d;
+  --action-primary-foreground: #fffdf8;
+  --state-known: #68754a;
+  --state-known-foreground: #fffdf8;
+  --state-practice: #466a78;
+  --state-practice-foreground: #fffdf8;
+  --state-due: #c18b32;
+  --state-due-foreground: #25231f;
+  --state-overdue: #a9533e;
+  --state-overdue-foreground: #fffdf8;
+  --state-social: #755b72;
+  --state-social-foreground: #fffdf8;
+  --action-destructive: #8e3934;
+  --action-destructive-hover: #772d29;
+  --action-destructive-foreground: #fffdf8;
 
-  --border: #b0bc8c;
+  /* Materials */
+  --shape-radius-control: 0.75rem;
+  --shape-radius-object: 1.125rem;
+  --shape-radius-sheet: 1.5rem;
+  --shape-radius-pill: 999px;
+  --elevation-rest: 0 1px 2px rgb(37 35 31 / 0.07);
+  --elevation-raised: 0 8px 24px rgb(73 53 29 / 0.1);
+  --elevation-floating: 0 16px 48px rgb(37 35 31 / 0.2);
+  --floating-surface: rgb(255 253 248 / 0.92);
+  --floating-surface-opaque: #fffdf8;
+  --modal-scrim: rgb(37 35 31 / 0.48);
 
-  --primary: #7b8a50;
-  --primary-foreground: #fbfcf5;
-  --primary-hover: #6f7e48;
+  /* Motion */
+  --motion-quick: 180ms;
+  --motion-standard: 220ms;
+  --motion-deliberate: 260ms;
+  --ease-folk: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --focus-ring: rgb(91 67 37 / 0.36);
+  --focus-ring-strong: #5b4325;
 
-  --accent: #98a869;
-  --accent-foreground: #20271c;
+  /* Fixed shell layers share one reservation so later session controls can add
+     their own height without stacking route-level padding. */
+  --navigation-dock-space: calc(5.5rem + env(safe-area-inset-bottom));
+  --session-dock-space: 0px;
 
-  --success: #7b8a50;
-  --success-foreground: #fbfcf5;
-
-  --warning: #98a869;
-  --warning-foreground: #20271c;
-  --warning-strong: #87975d;
-
-  --destructive: #7a4b45;
-  --destructive-foreground: #fbfcf5;
-
-  --focus-ring: rgba(123, 138, 80, 0.28);
+  /* Compatibility aliases while routes migrate to semantic jobs. */
+  --background: var(--surface-canvas);
+  --foreground: var(--text-primary);
+  --card: var(--surface-paper);
+  --card-strong: var(--surface-note);
+  --card-foreground: var(--text-primary);
+  --muted: var(--surface-note);
+  --muted-foreground: var(--text-muted);
+  --border: var(--hairline);
+  --primary: var(--action-primary);
+  --primary-foreground: var(--action-primary-foreground);
+  --primary-hover: var(--action-primary-hover);
+  --accent: var(--state-practice);
+  --accent-foreground: var(--state-practice-foreground);
+  --success: var(--state-known);
+  --success-foreground: var(--state-known-foreground);
+  --warning: var(--state-due);
+  --warning-foreground: var(--state-due-foreground);
+  --warning-strong: var(--state-due);
+  --destructive: var(--action-destructive);
+  --destructive-foreground: var(--action-destructive-foreground);
 }
 
 @theme inline {
+  --color-surface-canvas: var(--surface-canvas);
+  --color-surface-paper: var(--surface-paper);
+  --color-surface-note: var(--surface-note);
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-hairline: var(--hairline);
+  --color-action-primary: var(--action-primary);
+  --color-action-primary-hover: var(--action-primary-hover);
+  --color-action-primary-foreground: var(--action-primary-foreground);
+  --color-state-known: var(--state-known);
+  --color-state-known-foreground: var(--state-known-foreground);
+  --color-state-practice: var(--state-practice);
+  --color-state-practice-foreground: var(--state-practice-foreground);
+  --color-state-due: var(--state-due);
+  --color-state-due-foreground: var(--state-due-foreground);
+  --color-state-overdue: var(--state-overdue);
+  --color-state-overdue-foreground: var(--state-overdue-foreground);
+  --color-state-social: var(--state-social);
+  --color-state-social-foreground: var(--state-social-foreground);
+  --color-action-destructive: var(--action-destructive);
+  --color-action-destructive-hover: var(--action-destructive-hover);
+  --color-action-destructive-foreground: var(--action-destructive-foreground);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
   --color-card: var(--card);
   --color-card-strong: var(--card-strong);
   --color-card-foreground: var(--card-foreground);
-
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-
   --color-border: var(--border);
-
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-hover: var(--primary-hover);
-
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
-
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-warning-strong: var(--warning-strong);
-
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
 
+  --radius-control: var(--shape-radius-control);
+  --radius-object: var(--shape-radius-object);
+  --radius-sheet: var(--shape-radius-sheet);
+  --radius-pill: var(--shape-radius-pill);
+  --shadow-material-rest: var(--elevation-rest);
+  --shadow-material-raised: var(--elevation-raised);
+  --shadow-material-floating: var(--elevation-floating);
+
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-serif: Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-serif: var(--font-editorial), Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
 
@@ -73,21 +140,60 @@
 }
 
 html {
-  background: var(--background);
+  background: var(--surface-canvas);
 }
 
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(176, 188, 140, 0.18), transparent 34rem),
-    var(--background);
-  color: var(--foreground);
+    radial-gradient(circle at top left, rgb(211 199 181 / 0.24), transparent 34rem),
+    var(--surface-canvas);
+  color: var(--text-primary);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+html {
+  scroll-padding-top: 4rem;
+  scroll-padding-bottom: calc(var(--navigation-dock-space) + var(--session-dock-space));
+}
+
+.app-shell-content {
+  padding-bottom: calc(var(--navigation-dock-space) + var(--session-dock-space));
+}
+
+.app-shell-content :is(a, button, input, select, textarea, [tabindex]):focus {
+  scroll-margin-block: 4rem calc(var(--navigation-dock-space) + var(--session-dock-space));
+}
+
+html[data-session-dock="active"] {
+  --session-dock-space: 5.25rem;
+}
+
+.session-dock {
+  bottom: calc(var(--navigation-dock-space) + 0.25rem);
+}
+
+@media (min-width: 48rem) {
+  html {
+    scroll-padding-bottom: 1rem;
+  }
+
+  .app-shell-content {
+    padding-bottom: 0;
+  }
+
+  html[data-session-dock="active"] .app-shell-content {
+    padding-bottom: 6rem;
+  }
+
+  html[data-session-dock="active"] .session-dock {
+    bottom: 1rem;
+  }
+}
+
 ::selection {
-  background: rgba(152, 168, 105, 0.35);
-  color: var(--foreground);
+  background: color-mix(in srgb, var(--state-due) 38%, transparent);
+  color: var(--text-primary);
 }
 
 a {
@@ -99,4 +205,81 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+input,
+select,
+textarea {
+  color: var(--text-primary);
+  accent-color: var(--action-primary);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.78;
+}
+
+.floating-material {
+  background-color: var(--floating-surface-opaque);
+  background-color: var(--floating-surface);
+  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+  backdrop-filter: blur(14px) saturate(1.08);
+}
+
+.modal-scrim {
+  background: var(--modal-scrim);
+}
+
+/* Legacy modal scrims may still carry this utility; reading layers never blur. */
+.backdrop-blur-sm {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.folk-transition {
+  transition-duration: var(--motion-standard);
+  transition-timing-function: var(--ease-folk);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-quick: 1ms;
+    --motion-standard: 1ms;
+    --motion-deliberate: 1ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  :root {
+    --floating-surface: var(--surface-paper);
+    --modal-scrim: rgb(37 35 31 / 0.72);
+  }
+
+  .floating-material {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .backdrop-blur {
+    background-color: var(--surface-paper);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --hairline: #7f7569;
+    --focus-ring: var(--focus-ring-strong);
+  }
 }

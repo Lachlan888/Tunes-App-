@@ -7,35 +7,51 @@ import {
   useState,
   useTransition,
   type FormEvent,
+  type ReactNode,
 } from "react"
 import FilterChip from "@/components/filters/FilterChip"
 import FilterPanel from "@/components/filters/FilterPanel"
 import FilterSection from "@/components/filters/FilterSection"
 import FilterShell from "@/components/filters/FilterShell"
+import { formStyles } from "@/components/ui/formStyles"
+import {
+  countPieceFilterDraftMatches,
+  formatTuneResultsStatement,
+} from "@/lib/tune-collections/filter-drafts"
+import type { PieceFilterOption } from "@/lib/types"
 
 type PreservedParamValue = string | string[]
 type PieceSort = "title_asc" | "newest" | "oldest"
+
+export type PieceGroupOption = {
+  value: string
+  label: string
+}
 
 type PieceSearchFiltersProps = {
   basePath: string
   searchLabel: string
   searchPlaceholder: string
   searchValue: string
-
   selectedKeys?: string[]
   selectedStyles?: string[]
   selectedTimeSignatures?: string[]
   selectedSort?: PieceSort
-
   selectedKey?: string
   selectedStyle?: string
   selectedTimeSignature?: string
-
   availableKeys: string[]
   availableStyles: string[]
   availableTimeSignatures: string[]
   hasActiveFilters: boolean
   preservedParams?: Record<string, PreservedParamValue>
+  totalCount?: number
+  countItems?: PieceFilterOption[]
+  prospectiveCountExact?: boolean
+  sticky?: boolean
+  toolbarActions?: ReactNode
+  selectedGroup?: string
+  groupOptions?: PieceGroupOption[]
 }
 
 type FilterGroup = "key" | "style" | "time_signature"
@@ -53,9 +69,7 @@ function appendPreservedParams(
     params.delete(key)
 
     if (Array.isArray(value)) {
-      value.filter(Boolean).forEach((item) => {
-        params.append(key, item)
-      })
+      value.filter(Boolean).forEach((item) => params.append(key, item))
     } else if (value) {
       params.set(key, value)
     }
@@ -73,19 +87,14 @@ function buildChipId(group: FilterGroup, value: string) {
 }
 
 function toggleValue(values: string[], value: string, checked: boolean) {
-  if (checked) {
-    return Array.from(new Set([...values, value]))
-  }
-
+  if (checked) return Array.from(new Set([...values, value]))
   return values.filter((existingValue) => existingValue !== value)
 }
 
 function arraysMatch(first: string[], second: string[]) {
   if (first.length !== second.length) return false
-
   const firstSorted = [...first].sort()
   const secondSorted = [...second].sort()
-
   return firstSorted.every((value, index) => value === secondSorted[index])
 }
 
@@ -94,27 +103,30 @@ export default function PieceSearchFilters({
   searchLabel,
   searchPlaceholder,
   searchValue,
-
   selectedKeys,
   selectedStyles,
   selectedTimeSignatures,
   selectedSort = "title_asc",
-
   selectedKey,
   selectedStyle,
   selectedTimeSignature,
-
   availableKeys,
   availableStyles,
   availableTimeSignatures,
   hasActiveFilters,
   preservedParams = {},
+  totalCount,
+  countItems = [],
+  prospectiveCountExact = true,
+  sticky = false,
+  toolbarActions,
+  selectedGroup = "none",
+  groupOptions = [],
 }: PieceSearchFiltersProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [isPanelOpen, setIsPanelOpen] = useState(false)
   const [query, setQuery] = useState(searchValue)
-
   const serverSelectedKeys = useMemo(
     () =>
       selectedKeys && selectedKeys.length > 0
@@ -122,7 +134,6 @@ export default function PieceSearchFilters({
         : toSafeArray(selectedKey),
     [selectedKeys, selectedKey]
   )
-
   const serverSelectedStyles = useMemo(
     () =>
       selectedStyles && selectedStyles.length > 0
@@ -130,7 +141,6 @@ export default function PieceSearchFilters({
         : toSafeArray(selectedStyle),
     [selectedStyles, selectedStyle]
   )
-
   const serverSelectedTimeSignatures = useMemo(
     () =>
       selectedTimeSignatures && selectedTimeSignatures.length > 0
@@ -138,7 +148,6 @@ export default function PieceSearchFilters({
         : toSafeArray(selectedTimeSignature),
     [selectedTimeSignatures, selectedTimeSignature]
   )
-
   const [draftKeys, setDraftKeys] = useState(serverSelectedKeys)
   const [draftStyles, setDraftStyles] = useState(serverSelectedStyles)
   const [draftTimeSignatures, setDraftTimeSignatures] = useState(
@@ -150,19 +159,14 @@ export default function PieceSearchFilters({
   }, [searchValue])
 
   useEffect(() => {
-    if (!arraysMatch(draftKeys, serverSelectedKeys)) {
-      setDraftKeys(serverSelectedKeys)
-    }
-
+    if (!arraysMatch(draftKeys, serverSelectedKeys)) setDraftKeys(serverSelectedKeys)
     if (!arraysMatch(draftStyles, serverSelectedStyles)) {
       setDraftStyles(serverSelectedStyles)
     }
-
     if (!arraysMatch(draftTimeSignatures, serverSelectedTimeSignatures)) {
       setDraftTimeSignatures(serverSelectedTimeSignatures)
     }
-    // The draft values are intentionally omitted here.
-    // This effect syncs local optimistic state when the server URL state changes.
+    // Drafts intentionally follow applied URL state after back/forward navigation.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverSelectedKeys, serverSelectedStyles, serverSelectedTimeSignatures])
 
@@ -180,65 +184,60 @@ export default function PieceSearchFilters({
     sort?: PieceSort
   }) {
     const params = new URLSearchParams()
-
     appendPreservedParams(params, preservedParams)
-
     const trimmedQuery = nextQuery.trim()
-    if (trimmedQuery) {
-      params.set("q", trimmedQuery)
-    }
-
-    for (const key of keys) {
-      if (key) params.append("key", key)
-    }
-
-    for (const style of styles) {
-      if (style) params.append("style", style)
-    }
-
-    for (const timeSignature of timeSignatures) {
-      if (timeSignature) params.append("time_signature", timeSignature)
-    }
-
+    if (trimmedQuery) params.set("q", trimmedQuery)
+    keys.filter(Boolean).forEach((value) => params.append("key", value))
+    styles.filter(Boolean).forEach((value) => params.append("style", value))
+    timeSignatures
+      .filter(Boolean)
+      .forEach((value) => params.append("time_signature", value))
     const nextSort = sort ?? selectedSort
-
-    if (nextSort !== "title_asc") {
-      params.set("sort", nextSort)
-    }
-
+    if (nextSort !== "title_asc") params.set("sort", nextSort)
     return params
   }
 
   function navigateWithParams(params: URLSearchParams) {
     const href = params.toString() ? `${basePath}?${params.toString()}` : basePath
-
-    startTransition(() => {
-      router.push(href)
-    })
+    startTransition(() => router.push(href))
   }
 
-  function navigateWithDraftSelections({
-    keys = draftKeys,
-    styles = draftStyles,
-    timeSignatures = draftTimeSignatures,
-    nextQuery = query,
+  function navigateApplied({
+    nextQuery = searchValue,
+    keys = serverSelectedKeys,
+    styles = serverSelectedStyles,
+    timeSignatures = serverSelectedTimeSignatures,
     sort = selectedSort,
   }: {
+    nextQuery?: string
     keys?: string[]
     styles?: string[]
     timeSignatures?: string[]
-    nextQuery?: string
     sort?: PieceSort
-  }) {
-    const params = buildParamsFromSelections({
-      nextQuery,
-      keys,
-      styles,
-      timeSignatures,
-      sort,
-    })
+  } = {}) {
+    navigateWithParams(
+      buildParamsFromSelections({
+        nextQuery,
+        keys,
+        styles,
+        timeSignatures,
+        sort,
+      })
+    )
+  }
 
-    navigateWithParams(params)
+  function openPanel() {
+    setDraftKeys(serverSelectedKeys)
+    setDraftStyles(serverSelectedStyles)
+    setDraftTimeSignatures(serverSelectedTimeSignatures)
+    setIsPanelOpen(true)
+  }
+
+  function cancelPanel() {
+    setDraftKeys(serverSelectedKeys)
+    setDraftStyles(serverSelectedStyles)
+    setDraftTimeSignatures(serverSelectedTimeSignatures)
+    setIsPanelOpen(false)
   }
 
   function handleMultiCheckboxChange(
@@ -247,115 +246,104 @@ export default function PieceSearchFilters({
     checked: boolean
   ) {
     if (groupName === "key") {
-      const nextKeys = toggleValue(draftKeys, value, checked)
-      setDraftKeys(nextKeys)
-      navigateWithDraftSelections({ keys: nextKeys })
-      return
+      setDraftKeys((current) => toggleValue(current, value, checked))
+    } else if (groupName === "style") {
+      setDraftStyles((current) => toggleValue(current, value, checked))
+    } else {
+      setDraftTimeSignatures((current) => toggleValue(current, value, checked))
     }
-
-    if (groupName === "style") {
-      const nextStyles = toggleValue(draftStyles, value, checked)
-      setDraftStyles(nextStyles)
-      navigateWithDraftSelections({ styles: nextStyles })
-      return
-    }
-
-    const nextTimeSignatures = toggleValue(
-      draftTimeSignatures,
-      value,
-      checked
-    )
-    setDraftTimeSignatures(nextTimeSignatures)
-    navigateWithDraftSelections({ timeSignatures: nextTimeSignatures })
-  }
-
-  function handleSortChange(nextSort: PieceSort) {
-    navigateWithDraftSelections({ sort: nextSort })
   }
 
   function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-
     const trimmedQuery = query.trim()
     setQuery(trimmedQuery)
+    navigateApplied({ nextQuery: trimmedQuery })
+  }
 
-    navigateWithDraftSelections({
-      nextQuery: trimmedQuery,
+  function handleApplyFilters() {
+    setIsPanelOpen(false)
+    navigateApplied({
+      keys: draftKeys,
+      styles: draftStyles,
+      timeSignatures: draftTimeSignatures,
     })
   }
 
-  function handleRemoveSingleFilter(groupName: FilterGroup, value: string) {
+  function handleRemoveAppliedFilter(groupName: FilterGroup, value: string) {
     if (groupName === "key") {
-      const nextKeys = draftKeys.filter(
-        (existingValue) => existingValue !== value
-      )
-      setDraftKeys(nextKeys)
-      navigateWithDraftSelections({ keys: nextKeys })
-      return
+      navigateApplied({
+        keys: serverSelectedKeys.filter((item) => item !== value),
+      })
+    } else if (groupName === "style") {
+      navigateApplied({
+        styles: serverSelectedStyles.filter((item) => item !== value),
+      })
+    } else {
+      navigateApplied({
+        timeSignatures: serverSelectedTimeSignatures.filter(
+          (item) => item !== value
+        ),
+      })
     }
-
-    if (groupName === "style") {
-      const nextStyles = draftStyles.filter(
-        (existingValue) => existingValue !== value
-      )
-      setDraftStyles(nextStyles)
-      navigateWithDraftSelections({ styles: nextStyles })
-      return
-    }
-
-    const nextTimeSignatures = draftTimeSignatures.filter(
-      (existingValue) => existingValue !== value
-    )
-    setDraftTimeSignatures(nextTimeSignatures)
-    navigateWithDraftSelections({ timeSignatures: nextTimeSignatures })
   }
 
-  function handleClearAll() {
+  function handleClearAppliedFilters() {
     setQuery("")
     setDraftKeys([])
     setDraftStyles([])
     setDraftTimeSignatures([])
-
-    const params = buildParamsFromSelections({
-      nextQuery: "",
-      keys: [],
-      styles: [],
-      timeSignatures: [],
-      sort: selectedSort,
-    })
-
-    navigateWithParams(params)
+    navigateApplied({ nextQuery: "", keys: [], styles: [], timeSignatures: [] })
     setIsPanelOpen(false)
   }
 
-  const activeFilterCount =
+  function handleGroupChange(group: string) {
+    const params = buildParamsFromSelections({
+      nextQuery: searchValue,
+      keys: serverSelectedKeys,
+      styles: serverSelectedStyles,
+      timeSignatures: serverSelectedTimeSignatures,
+      sort: selectedSort,
+    })
+    if (group === "none") params.delete("group")
+    else params.set("group", group)
+    navigateWithParams(params)
+  }
+
+  const appliedFilterCount =
+    serverSelectedKeys.length +
+    serverSelectedStyles.length +
+    serverSelectedTimeSignatures.length
+  const draftFilterCount =
     draftKeys.length + draftStyles.length + draftTimeSignatures.length
-
-  const optimisticHasActiveFilters = query.trim() !== "" || activeFilterCount > 0
-
-  const activeChips = useMemo(
-    () => [
-      ...draftKeys.map((value) => ({
-        id: buildChipId("key", value),
-        group: "key" as const,
-        groupLabel: formatFilterLabel("key"),
-        value,
-      })),
-      ...draftStyles.map((value) => ({
-        id: buildChipId("style", value),
-        group: "style" as const,
-        groupLabel: formatFilterLabel("style"),
-        value,
-      })),
-      ...draftTimeSignatures.map((value) => ({
-        id: buildChipId("time_signature", value),
-        group: "time_signature" as const,
-        groupLabel: formatFilterLabel("time_signature"),
-        value,
-      })),
-    ],
-    [draftKeys, draftStyles, draftTimeSignatures]
+  const prospectiveCount = useMemo(
+    () =>
+      countItems.length > 0
+        ? countPieceFilterDraftMatches(countItems, {
+            keys: draftKeys,
+            styles: draftStyles,
+            timeSignatures: draftTimeSignatures,
+          })
+        : totalCount ?? 0,
+    [countItems, draftKeys, draftStyles, draftTimeSignatures, totalCount]
   )
+  const appliedChips = [
+    ...serverSelectedKeys.map((value) => ({ group: "key" as const, value })),
+    ...serverSelectedStyles.map((value) => ({ group: "style" as const, value })),
+    ...serverSelectedTimeSignatures.map((value) => ({
+      group: "time_signature" as const,
+      value,
+    })),
+  ]
+  const draftChips = [
+    ...draftKeys.map((value) => ({ group: "key" as const, value })),
+    ...draftStyles.map((value) => ({ group: "style" as const, value })),
+    ...draftTimeSignatures.map((value) => ({
+      group: "time_signature" as const,
+      value,
+    })),
+  ]
+  const panelId = `${basePath.replaceAll("/", "-") || "library"}-filter-panel`
 
   return (
     <FilterShell
@@ -366,73 +354,91 @@ export default function PieceSearchFilters({
       onSearchSubmit={handleSearchSubmit}
       isPending={isPending}
       isPanelOpen={isPanelOpen}
-      onTogglePanel={() => setIsPanelOpen((current) => !current)}
-      panelId="piece-filter-panel"
-      activeFilterCount={activeFilterCount}
-      hasActiveFilters={optimisticHasActiveFilters || hasActiveFilters}
-      onClearFilters={handleClearAll}
+      onTogglePanel={() => (isPanelOpen ? cancelPanel() : openPanel())}
+      panelId={panelId}
+      activeFilterCount={appliedFilterCount}
+      hasActiveFilters={hasActiveFilters}
+      onClearFilters={handleClearAppliedFilters}
+      sticky={sticky}
+      resultsStatement={
+        totalCount === undefined
+          ? undefined
+          : formatTuneResultsStatement(totalCount, appliedFilterCount)
+      }
       activeChips={
-        activeChips.length > 0
-          ? activeChips.map((chip) => (
+        appliedChips.length > 0
+          ? appliedChips.map((chip) => (
               <FilterChip
-                key={chip.id}
-                label={`${chip.groupLabel}: ${chip.value}`}
-                onRemove={() => handleRemoveSingleFilter(chip.group, chip.value)}
-                disabled={false}
+                key={buildChipId(chip.group, chip.value)}
+                label={`${formatFilterLabel(chip.group)}: ${chip.value}`}
+                onRemove={() => handleRemoveAppliedFilter(chip.group, chip.value)}
+                disabled={isPending}
               />
             ))
           : null
       }
       panel={
         <FilterPanel
-          id="piece-filter-panel"
+          id={panelId}
           title="Filter tunes"
-          hasActiveFilters={optimisticHasActiveFilters || hasActiveFilters}
+          description="Changes stay here until you apply them. Cancel keeps the current catalogue."
+          hasActiveFilters={draftFilterCount > 0}
           isPending={isPending}
-          onClearAll={handleClearAll}
-          onClose={() => setIsPanelOpen(false)}
+          onClearAll={() => {
+            setDraftKeys([])
+            setDraftStyles([])
+            setDraftTimeSignatures([])
+          }}
+          onClose={cancelPanel}
+          cancelLabel="Cancel"
+          onApply={handleApplyFilters}
+          applyLabel={`Show ${prospectiveCountExact ? "" : "at least "}${prospectiveCount} tune${prospectiveCount === 1 ? "" : "s"}`}
         >
-          <div className="grid gap-4 md:grid-cols-4">
-            <FilterSection title="Sort" count={0} disabled={false}>
-              <label className="flex flex-col gap-2 text-sm">
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                  Order
-                </span>
-
-                <select
-                  value={selectedSort}
-                  onChange={(event) =>
-                    handleSortChange(event.target.value as PieceSort)
-                  }
-                  className="rounded-2xl border border-border bg-background px-3 py-2 text-sm text-foreground"
+          <div className="space-y-4">
+            <section aria-labelledby="selected-filter-heading">
+              <div className="flex items-center justify-between gap-3">
+                <h3
+                  id="selected-filter-heading"
+                  className="text-sm font-semibold uppercase tracking-[0.14em] text-text-muted"
                 >
-                  <option value="title_asc">Title A–Z</option>
-                  <option value="newest">Recently added first</option>
-                  <option value="oldest">Oldest added first</option>
-                </select>
-              </label>
-            </FilterSection>
+                  Selected filters
+                </h3>
+                <span className="text-sm text-text-muted">
+                  {prospectiveCountExact ? prospectiveCount : `${prospectiveCount}+`} matches
+                </span>
+              </div>
+              <div className="mt-3 flex min-h-11 flex-wrap items-center gap-2">
+                {draftChips.length > 0 ? (
+                  draftChips.map((chip) => (
+                    <FilterChip
+                      key={`draft-${buildChipId(chip.group, chip.value)}`}
+                      label={`${formatFilterLabel(chip.group)}: ${chip.value}`}
+                      onRemove={() =>
+                        handleMultiCheckboxChange(chip.group, chip.value, false)
+                      }
+                    />
+                  ))
+                ) : (
+                  <p className="text-sm text-text-muted">No filters selected.</p>
+                )}
+              </div>
+            </section>
 
-            <FilterSection title="Key" count={draftKeys.length} disabled={false}>
+            <FilterSection title="Key" count={draftKeys.length} collapsible defaultOpen>
               {availableKeys.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No keys available.
-                </p>
+                <p className="text-sm text-text-muted">No keys available.</p>
               ) : (
                 availableKeys.map((key) => (
-                  <label key={key} className="flex items-center gap-2 text-sm">
+                  <label key={key} className="flex min-h-11 items-center gap-3 rounded-control px-2 text-sm hover:bg-surface-note">
                     <input
                       type="checkbox"
                       name="key"
                       value={key}
                       checked={draftKeys.includes(key)}
                       onChange={(event) =>
-                        handleMultiCheckboxChange(
-                          "key",
-                          key,
-                          event.target.checked
-                        )
+                        handleMultiCheckboxChange("key", key, event.target.checked)
                       }
+                      className="h-5 w-5 accent-[var(--action-primary)]"
                     />
                     <span>{key}</span>
                   </label>
@@ -440,30 +446,21 @@ export default function PieceSearchFilters({
               )}
             </FilterSection>
 
-            <FilterSection
-              title="Style"
-              count={draftStyles.length}
-              disabled={false}
-            >
+            <FilterSection title="Style" count={draftStyles.length} collapsible>
               {availableStyles.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No styles available.
-                </p>
+                <p className="text-sm text-text-muted">No styles available.</p>
               ) : (
                 availableStyles.map((style) => (
-                  <label key={style} className="flex items-center gap-2 text-sm">
+                  <label key={style} className="flex min-h-11 items-center gap-3 rounded-control px-2 text-sm hover:bg-surface-note">
                     <input
                       type="checkbox"
                       name="style"
                       value={style}
                       checked={draftStyles.includes(style)}
                       onChange={(event) =>
-                        handleMultiCheckboxChange(
-                          "style",
-                          style,
-                          event.target.checked
-                        )
+                        handleMultiCheckboxChange("style", style, event.target.checked)
                       }
+                      className="h-5 w-5 accent-[var(--action-primary)]"
                     />
                     <span>{style}</span>
                   </label>
@@ -471,21 +468,12 @@ export default function PieceSearchFilters({
               )}
             </FilterSection>
 
-            <FilterSection
-              title="Time"
-              count={draftTimeSignatures.length}
-              disabled={false}
-            >
+            <FilterSection title="Time" count={draftTimeSignatures.length} collapsible>
               {availableTimeSignatures.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No time signatures available.
-                </p>
+                <p className="text-sm text-text-muted">No time signatures available.</p>
               ) : (
                 availableTimeSignatures.map((timeSignature) => (
-                  <label
-                    key={timeSignature}
-                    className="flex items-center gap-2 text-sm"
-                  >
+                  <label key={timeSignature} className="flex min-h-11 items-center gap-3 rounded-control px-2 text-sm hover:bg-surface-note">
                     <input
                       type="checkbox"
                       name="time_signature"
@@ -498,6 +486,7 @@ export default function PieceSearchFilters({
                           event.target.checked
                         )
                       }
+                      className="h-5 w-5 accent-[var(--action-primary)]"
                     />
                     <span>{timeSignature}</span>
                   </label>
@@ -507,6 +496,44 @@ export default function PieceSearchFilters({
           </div>
         </FilterPanel>
       }
-    />
+    >
+      <label className="min-w-0">
+        <span className="sr-only">Sort tunes</span>
+        <select
+          aria-label="Sort tunes"
+          value={selectedSort}
+          onChange={(event) =>
+            navigateApplied({ sort: event.target.value as PieceSort })
+          }
+          className={formStyles.select}
+          disabled={isPending}
+        >
+          <option value="title_asc">Title A–Z</option>
+          <option value="newest">Recently added</option>
+          <option value="oldest">Oldest added</option>
+        </select>
+      </label>
+
+      {groupOptions.length > 0 ? (
+        <label className="min-w-0">
+          <span className="sr-only">Group tunes</span>
+          <select
+            aria-label="Group tunes"
+            value={selectedGroup}
+            onChange={(event) => handleGroupChange(event.target.value)}
+            className={formStyles.select}
+            disabled={isPending}
+          >
+            {groupOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+
+      {toolbarActions}
+    </FilterShell>
   )
 }

@@ -6,6 +6,8 @@ type FilterSectionProps = {
   count?: number
   children: ReactNode
   disabled?: boolean
+  collapsible?: boolean
+  defaultOpen?: boolean
   className?: string
 }
 
@@ -14,10 +16,34 @@ export default function FilterSection({
   count,
   children,
   disabled = false,
+  collapsible = false,
+  defaultOpen = false,
   className,
 }: FilterSectionProps) {
   const titleWithCount =
     typeof count === "number" ? `${title} (${count})` : title
+
+  const content = <div className="mt-3 space-y-2">{children}</div>
+
+  if (collapsible) {
+    return (
+      <fieldset
+        aria-label={titleWithCount}
+        className={joinClasses(
+          "min-w-0 rounded-object border border-hairline bg-surface-paper p-4",
+          className
+        )}
+        disabled={disabled}
+      >
+        <details open={defaultOpen || Boolean(count)}>
+          <summary className="min-h-11 cursor-pointer rounded-control py-2 text-sm font-semibold uppercase tracking-[0.14em] text-text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
+            {titleWithCount}
+          </summary>
+          {content}
+        </details>
+      </fieldset>
+    )
+  }
 
   return (
     <fieldset
@@ -30,10 +56,7 @@ export default function FilterSection({
       <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         {titleWithCount}
       </legend>
-
-      <div className="mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
-        {children}
-      </div>
+      {content}
     </fieldset>
   )
 }

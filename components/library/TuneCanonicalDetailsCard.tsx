@@ -28,7 +28,13 @@ type TuneCanonicalDetailsCardProps = {
   variant?: "card" | "mobile"
 }
 
-type ModalMode = "missing" | "request" | "moderator" | "delete" | null
+type ModalMode =
+  | "missing"
+  | "request"
+  | "duplicate"
+  | "moderator"
+  | "delete"
+  | null
 
 function canUseModeratorTools(role: UserRole) {
   return role === "moderator" || role === "admin"
@@ -448,6 +454,14 @@ export default function TuneCanonicalDetailsCard({
             </button>
           </>
         )}
+
+        <button
+          type="button"
+          onClick={() => setModalMode("duplicate")}
+          className={secondaryButtonClass}
+        >
+          Report possible duplicate
+        </button>
       </div>
 
       {modalMode === "missing" ? (
@@ -535,6 +549,25 @@ export default function TuneCanonicalDetailsCard({
             piece={piece}
             redirectTo={redirectTo}
             styleOptions={styleOptions}
+          />
+        </ModalShell>
+      ) : null}
+
+      {modalMode === "duplicate" ? (
+        <ModalShell
+          title="Report a possible duplicate"
+          description="Send the shared tune record to moderators with the title or link of the tune it may duplicate. No tune is changed automatically."
+          onClose={() => setModalMode(null)}
+        >
+          <RequestTuneEditForm
+            piece={piece}
+            redirectTo={redirectTo}
+            styleOptions={styleOptions}
+            heading="Possible duplicate"
+            description="Identify the other tune and explain whether the title, alias, key or source shows that these records represent the same tune."
+            reasonPlaceholder="Possible duplicate of…"
+            defaultReason="Possible duplicate of: "
+            submitLabel="Submit duplicate report"
           />
         </ModalShell>
       ) : null}

@@ -1,0 +1,680 @@
+# Tunes App — Ordered Visual Studio Code Codex Implementation Prompts
+
+Use these prompts **in order**, one at a time, in Visual Studio Code Codex **Agent mode**. Agent mode is appropriate because every workstream requires Codex to inspect the repository, edit several connected files, run checks and verify the result. Do not paste all prompts into one task.
+
+Before Prompt 1, copy `TUNES_APP_UI_UX_AUDIT_2026.md` into the root of the actual Tunes code repository if it is not already there. The prompts are detailed enough to stand alone, but having the report beside the code gives Codex the product reasoning and route inventory behind each requirement. Also copy this prompt file into the repository if you want it versioned with the implementation work.
+
+After each prompt:
+
+1. Read Codex's changed-file summary and test results.
+2. Open the affected screens and check them yourself.
+3. Resolve any reported failures before starting the next prompt.
+4. Save a Git checkpoint/commit if that is part of your normal workflow.
+
+The prompts deliberately ask Codex to implement rather than merely propose. They also tell it to preserve current business logic and use the current component tree as the source of truth.
+
+---
+
+## Prompt 1 — Build the semantic folk design system
+
+```text
+Work in the current Tunes App repository. Read AGENTS.md and the full UI audit in TUNES_APP_UI_UX_AUDIT_2026.md before changing anything. Inspect the current working tree and preserve all existing user changes. Treat current component names and the current file tree as the implementation source of truth. Do not edit synced reference material under sources/. Do not stop after writing a plan: implement this workstream, run appropriate checks, and report changed files, verification completed, and remaining risks. Do not begin work from later prompts.
+
+Goal: replace the current green-dominated visual foundation with a semantic, accessible, folksy design system that can support every later redesign without rewriting business logic.
+
+Implement the following:
+
+1. Audit the existing global CSS variables, Tailwind theme, buttonStyles, cardStyles, form controls, badges, modals and layout primitives. Map existing tokens to semantic jobs rather than raw colour names.
+2. Introduce these foundation tokens:
+   - canvas parchment #F4EFE4
+   - raised paper #FFFDF8
+   - soft field note #E9E1D3
+   - ink #25231F
+   - muted ink #675F55
+   - hairline #D3C7B5
+   - primary umber #5B4325, hover/pressed #49351D
+   - Known/Solid/success moss #68754A
+   - active Practice/Reference river #466A78
+   - Due/Stage/Shaky ochre #C18B32, using dark ink on filled ochre
+   - Overdue/Rough/attention rust #A9533E
+   - Social/community/badges plum #755B72
+   - destructive oxblood #8E3934
+3. Create semantic token names such as surface-canvas, surface-paper, surface-note, text-primary, text-muted, action-primary, state-known, state-practice, state-due, state-overdue, state-social and action-destructive. Components should not need to know hex values.
+4. Preserve a system sans-serif stack for controls, lists and metadata. Add one warm editorial serif only for tune titles, selected section openings and badge names. Load it in a performant, privacy-conscious way and provide a robust fallback. Do not turn all body copy into serif text.
+5. Define a restrained radius system: compact controls, object cards and sheets. Full pills should be reserved for statuses and one-line segmented controls. Replace “a rounded bordered card around every group” with spacing, paper surfaces and hairline dividers where possible.
+6. Define elevation/material tokens. Reading surfaces must stay opaque. Translucency/backdrop blur may be used only for navigation and compact floating control layers, with an opaque fallback and support for reduced transparency/high contrast.
+7. Define motion tokens around 180–260ms with restrained easing/spring-like movement. Add reduced-motion fallbacks.
+8. Create or refine shared primitives: StatusMark, SectionHeader, EmptyState, RecoveryState, Skeleton/LoadingState and semantic button variants. StatusMark must combine colour, icon/shape and plain text; colour alone is never sufficient.
+9. Standardise one coherent outline icon approach using an existing dependency if suitable. Do not add a large library without checking current dependencies and bundle impact.
+10. Migrate the existing shared buttons, cards, form fields, tabs/segmented controls and ResponsiveModal to the new tokens so most routes inherit the design automatically. Preserve ResponsiveModal's focus trap, Escape handling, focus restoration, safe-area behaviour and body locking.
+11. Remove hard-coded olive/green values from shared components where a semantic token should be used. Do not mechanically replace legitimate content colours.
+
+Acceptance criteria:
+
+- The app builds and its existing tests pass.
+- Core text and semantic colours meet WCAG AA contrast in their intended pairings.
+- Rough, Shaky, Solid, Known, Stage, social and destructive states are visually distinguishable and understandable without colour.
+- Light surfaces feel like parchment/paper rather than pale green panels.
+- Existing functionality and route behaviour remain intact.
+- Reduced-motion and reduced-transparency preferences have usable fallbacks.
+- Provide before/after screenshots of representative Home, Tunes, Practice, Lists and Social screens at phone and desktop sizes, or add a small internal design-system preview route if that is the repository's established approach.
+```
+
+---
+
+## Prompt 2 — Rebuild the responsive app shell and navigation
+
+```text
+Work in the current Tunes App repository after Prompt 1 has been completed. Read AGENTS.md and TUNES_APP_UI_UX_AUDIT_2026.md, inspect the current working tree, and preserve existing changes. Treat the current file tree and names as authoritative. Do not edit sources/. Implement this workstream completely, test it, and report changed files and verification. Do not begin later workstreams.
+
+Goal: replace the crowded phone header navigation and underused desktop layout with an adaptive app shell that is reachable, stable and native to Tunes.
+
+Implement the following:
+
+1. Replace the signed-in phone navigation grid with a bottom NavigationDock containing exactly five primary destinations: Home, Practice, Tunes, Lists and Social. Use icon plus short label. Make the entire target at least 44x44 CSS pixels and clearly identify the selected destination.
+2. Add a compact phone top bar containing the current page title, at most one relevant page action/search affordance, and the signed-in person's avatar/account button. Do not repeat the large brand/tagline on every signed-in screen.
+3. Move Account, Settings, Help/Feedback and other secondary destinations behind the avatar/account menu. Moderator and Dev must only appear for authorised roles and must not appear in ordinary consumer navigation.
+4. Menus and navigation groups must overlay/anchor from the control that opened them; they must not push the current page down. Use the existing accessible modal/popover foundations where appropriate.
+5. Respect bottom safe areas and ensure page content cannot be obscured by the dock. Avoid double padding when later SessionDock controls are present.
+6. Allow the phone dock to become more compact while scrolling down, without removing the selected destination or making navigation hard to rediscover. Restore it on upward scroll, focus or route change. Respect reduced motion.
+7. Rebuild desktop navigation as a narrow persistent left rail that can collapse to icons at medium widths. Preserve room for a main workspace and optional contextual right panel. At tablet widths, let the bottom dock transition into a side rail when there is enough space.
+8. Route selection must work for nested pages such as tune detail, reference media, list detail, diary, profiles and comparison. Browser back/forward navigation must remain correct.
+9. Signed-out routes should have a separate simple shell. A signed-in person who reaches /login should not see a contradictory signed-in navigation/login combination; leave the final redirect/account-switch behaviour for Prompt 15 but ensure the shell does not duplicate itself.
+10. Make keyboard focus order logical, include visible focus states, add accessible names to icon controls and avoid focus being hidden behind fixed navigation.
+11. Preserve the strong phone Home switcher at `/` but refine its three views as part of the new shell:
+   - Today leads with one Continue object: resume an interrupted session or show the most useful due tune and a short queue preview.
+   - Repertoire shows compact counts and recent changes rather than another full catalogue.
+   - Social keeps compact events and collapsed comments; its deeper feed will be completed in Prompt 12.
+   Persist the selected Home view, reduce repeated introductory copy for returning users, and keep first-use guidance available through Help/empty states.
+
+Acceptance criteria:
+
+- All five destinations are reachable with one thumb from every ordinary signed-in phone page.
+- No primary navigation target is smaller than 44x44.
+- Opening navigation/account menus does not reflow the page.
+- Current route highlighting works on all nested routes.
+- Phone, tablet and desktop layouts do not overlap content at 390, 430, 768, 1024 and 1440px widths.
+- Signed-out and internal states do not inherit inappropriate consumer navigation.
+- Home Today/Repertoire/Social remain fast, persist selection and present the next useful action within the first phone viewport.
+- Existing auth and business behaviour is preserved.
+- Build, lint/type checks and relevant navigation tests pass; verify the shell on representative routes in a real browser.
+```
+
+---
+
+## Prompt 3 — Create the adaptive Session Dock and contextual tools
+
+```text
+Work in the current Tunes App repository after Prompts 1–2. Read AGENTS.md and the audit, inspect the working tree, preserve existing changes and do not edit sources/. Implement and verify this workstream rather than only describing it. Do not implement the full screen redesigns from later prompts.
+
+Goal: create Tunes' signature contextual control layer and remove unrelated floating controls from every page.
+
+Implement the following:
+
+1. Build a reusable SessionDock that sits above the NavigationDock on phone and becomes a suitable contextual toolbar/panel on wider screens.
+2. Give it a typed, explicit model for context, primary action, secondary actions, progress/status, collapsed content and expanded content. Avoid route-specific conditionals scattered through the global layout.
+3. Support at least these future contexts without fully implementing their screens yet:
+   - tune detail: tune identity, Start Practice/Already in practice, reference action, overflow
+   - focused practice: Stage/queue progress, Rough, Shaky, Solid, Next
+   - reference media: source, play/pause, loop, speed, section
+   - catalogue selection: count, Add to List, clear
+   - setlist performance: current tune, previous/next, key
+4. The collapsed dock should be compact and useful. Tapping/dragging an explicit expand control should open a medium or full sheet using the existing accessible modal foundation. The presenting control and sheet should feel connected.
+5. Only one floating interactive layer should be active at a time. When an expanded sheet is open, merge, hide or disable controls underneath rather than stacking translucent pills.
+6. Remove globally mounted Metronome and Feedback buttons from every signed-in route. Make the metronome available through SessionDock on Practice, Reference Media and Setlists, plus a discoverable secondary route if needed. Move Feedback into Help/account and optionally offer it contextually after meaningful flows without covering content.
+7. Preserve contextual state across normal route/tab transitions where safe: selected tune, practice queue position, media position/loop, setlist position and catalogue selection. Use the URL for shareable state and an appropriate client/session store for transient state. Do not expose private data in URLs.
+8. Correctly combine NavigationDock and SessionDock safe-area/padding. Long pages, sheets, keyboards and zoomed text must remain usable.
+9. Add accessible labels, keyboard shortcuts only where sensible, live announcements for important state changes, reduced-motion behaviour and an opaque high-contrast fallback.
+
+Acceptance criteria:
+
+- Metronome and Feedback no longer obscure unrelated pages.
+- SessionDock can render all specified contexts through one well-documented API.
+- Expanding it does not create stacked floating layers or trap focus.
+- Page actions remain reachable above the phone safe area and navigation dock.
+- Context survives appropriate navigation/reload boundaries and resets when it should.
+- Add component tests for context switching, expansion, focus restoration and safe-area classes; verify at phone and desktop sizes.
+```
+
+---
+
+## Prompt 4 — Fix tune collection data loading and build compact shared tune primitives
+
+```text
+Work in the current Tunes App repository after Prompts 1–3. Read AGENTS.md and the audit, preserve existing changes and treat current code/schema as authoritative. Do not edit sources/. Implement, migrate and verify this workstream. Do not redesign all consuming screens yet.
+
+Goal: eliminate unbounded phone datasets and create the shared tune-list architecture needed by Catalogue, Known, Practice, Lists, Profiles and Compare.
+
+Implement the following:
+
+1. Audit loadLibraryData and every query that currently fetches separate desktop/mobile tune collections. Remove the pattern where phone receives every matching tune while desktop receives a bounded page.
+2. Create a server-side cursor or otherwise stable pagination contract for tune collections. It must support search, filters, sort/group selection, result count where affordable, and a deterministic tie-breaker. Avoid offset pagination if it will become unstable at this data size.
+3. Keep filter/search/group state in validated URL parameters so results are shareable and browser back/forward works. Do not expose private identifiers unnecessarily.
+4. Build shared TuneIdentity and TuneRow primitives. A compact row should support title, useful alias, tune type/style, key, source/provenance summary, personal state and a small number of contextual actions without nested interactive semantics.
+5. Build a shared paginated collection controller for loading, empty, error, retry, next/previous or load-more behaviour. Avoid giant client-side arrays and huge accessibility trees.
+6. Provide adapters/query helpers for Catalogue, Known, Practice, Learning Queue, list membership, Profile repertoire and Compare. Each consumer may have different permissions and fields; do not force private data through a public shape.
+7. Retain CardPager only for genuinely small finite sets such as a short active practice queue or badge carousel. Add a clear size guard or documentation so it is not reused for a catalogue.
+8. Remove per-row forms where a single event/action handler can safely serve the collection. Preserve server-side permission checks.
+9. Add query/index review and tests. If a database index or migration is truly necessary, make the smallest reversible migration, document why, and retain existing data/constraints. Do not weaken row-level security.
+10. Measure representative result size, query count and rendered item count before and after. Include these numbers in the completion report.
+
+Acceptance criteria:
+
+- No phone route fetches every matching tune merely to render a list/pager.
+- Shared pagination is deterministic and covered by tests, including duplicate sort values and empty/final pages.
+- TuneRow has clean link/button semantics and works with keyboard and screen readers.
+- Search/filter URL state survives reload and back/forward.
+- Existing tune permissions and actions remain correct.
+- Build and data-layer tests pass, with no accidental N+1 media/list/status queries.
+```
+
+---
+
+## Prompt 5 — Rebuild the Tunes catalogue, filters and create-tune flow
+
+```text
+Work in the current Tunes App repository after Prompts 1–4. Read AGENTS.md and the audit, preserve the working tree and do not edit sources/. Implement the complete Catalogue workstream and verify it on real data. Do not move on to Tune Detail or Practice redesigns.
+
+Goal: make /library fast to scan on phone, powerful on desktop and clear when filtering, selecting or creating tunes.
+
+Implement the following:
+
+1. Replace the phone catalogue CardPager with TuneRow and the bounded pagination contract from Prompt 4. Default to a dense list; offer an optional card/browse view only if it is useful and persists as a preference.
+2. Add a sticky catalogue toolbar with search, Filters, sort/view controls and a clear results statement such as “124 tunes · 3 filters.” Keep it below the global top bar and ensure it does not collide with docks.
+3. Make row actions concise: Start Practice or Already in practice, Known state and Add to List. Use swipe/trailing actions only as enhancement; every action needs a visible accessible path.
+4. Add explicit Select mode entered by a Select action or long press where supported. When active, use SessionDock for selection count, Add to List and Clear. Do not show selection controls constantly.
+5. Rebuild Filters as one scrollable sheet. Remove nested scrolling Key/Style/Time containers. Use collapsible groups, selected-filter chips/summary at the top, Clear All, and a sticky “Show N tunes” action.
+6. Do not navigate/refetch the whole catalogue after every checkbox. Update the prospective result count efficiently and apply changes once. Preserve applied filters in the URL and draft filters in the sheet until Apply/Cancel.
+7. Add useful loading, no-results and error/retry states. No-results should show active constraints and offer Clear filters.
+8. Rebuild Create Tune as progressive disclosure: ask for minimum identity first, then key/style/provenance and advanced metadata. Search likely duplicates as the title/alias is entered, show why a match may be the same tune and provide a safe path to view/use the existing tune.
+9. Preserve current validation, duplicate-control rules, canonical-library behaviour and permissions. Do not make it easier to create near-duplicates.
+10. On desktop, use the additional width for a sortable compact list/table and optional detail preview rather than oversized cards and blank space.
+11. Rebuild `/library/known` and `/library/practice` with the same compact TuneRow and bounded pagination foundation. Add search plus useful grouping such as Recently practised, Due, Stage, Key and Style where the data supports it. Do not render every tune as a large card. Preserve exact language: Start Practice, Already in practice and Stage.
+
+Acceptance criteria:
+
+- A person can find a known tune, apply filters and add it to practice/list efficiently at 390px width.
+- The first catalogue response is bounded and subsequent pages do not duplicate/skip items.
+- Filter draft/apply/cancel and browser back/forward behave correctly.
+- Selection mode is clear, reversible and does not obscure the last row.
+- Create Tune surfaces plausible duplicates before final submission.
+- Known and Practice collections are searchable, bounded and use consistent tune rows/state language.
+- All controls are keyboard/screen-reader operable and at least 44px where they are primary phone targets.
+- Add automated coverage for query parameters, pagination, filter application, selection and duplicate suggestions; verify phone and desktop visually.
+```
+
+---
+
+## Prompt 6 — Re-architect Tune Detail around Practice, Reference and About
+
+```text
+Work in the current Tunes App repository after Prompts 1–5. Read AGENTS.md and the audit, preserve current changes and business logic, and do not edit sources/. Implement this Tune Detail workstream fully and verify it. Do not implement the complete Reference Media or Focused Practice experiences yet.
+
+Goal: turn tune detail from a long encyclopedia into a clear identity page with progressive disclosure and one obvious next action.
+
+Implement the following:
+
+1. Audit the current tune-detail route and remove duplicated titles, My Practice headings, metadata and action blocks.
+2. Create a compact TuneIdentity header containing title, useful alternate title, tune type/style, key, source/provenance confidence and personal state. Keep secondary metadata visually quiet.
+3. Introduce three stable tabs/sections: Practice, Reference and About. Preserve the selected tab in the URL when useful and make browser history behave naturally.
+4. Practice: show Stage, due/overdue state, last result, concise history, notes and Start Practice or Already in practice using exact product language.
+5. Reference: show the strongest available source/media preview, saved-passage/section summary and a clear Open Reference Mode action. Handle no-media state constructively.
+6. About: group provenance, aliases, related tunes, catalogue metadata and community information with clear source/confidence language.
+7. Use SessionDock for the current tune, Start Practice/Already in practice, Reference and overflow. Avoid duplicating the same primary actions in several panels.
+8. Move edit, duplicate reporting, delete and moderator actions into an explicit Manage/overflow surface. Show them only with correct permissions. Separate destructive actions and require appropriate confirmation.
+9. Add skeleton, unavailable/permission, not-found and recovery states. A missing tune should offer Back to Tunes and search, not a technical dead end.
+10. Ensure links and buttons are semantically clean; do not wrap the page or card in a clickable container containing other actions.
+
+Acceptance criteria:
+
+- The tune's identity and next action are visible within the first phone viewport.
+- No repeated My Practice or metadata blocks remain.
+- Practice/Reference/About are deep-linkable and keyboard/screen-reader usable.
+- Manage actions are permission-gated and do not dominate the consumer view.
+- SessionDock updates correctly as personal tune state changes.
+- Verify with tunes that have rich media, no media, aliases, different personal states and restricted management permissions.
+```
+
+---
+
+## Prompt 7 — Make Reference Media the exemplary musician workspace
+
+```text
+Work in the current Tunes App repository after Prompts 1–6. Read AGENTS.md and the audit, inspect and preserve the current implementation, and do not edit sources/. Implement and verify the Reference Media workstream. Respect third-party media limitations instead of faking unsupported behaviour.
+
+Goal: turn the existing strong reference-media route into a polished Reference Mode for recordings, passages, speed, loops, sections, notes and targeted practice.
+
+Implement the following:
+
+1. Preserve the useful Media, Sections and Practice concepts but simplify their hierarchy so the current source and current passage remain evident across tabs.
+2. Connect Reference Media to SessionDock: source identity, play/pause when technically supported, loop state, playback speed, selected passage/section and an expand action.
+3. Persist safe media state across tab changes and brief route changes: current source, position when available, speed, loop bounds and selected section. Use feature detection and document limitations for embedded providers such as YouTube.
+4. Present saved passages as named loop items/chips with start/end or duration. Make create, rename, update and delete flows clear, with undo where practical.
+5. Add a simple time rail/waveform only when the source/API provides reliable timing. Do not invent a misleading waveform for unavailable audio data.
+6. Make “Practise this passage” start a lightweight, clearly labelled practice context without silently changing unrelated tune state. Preserve the person's place when returning.
+7. Improve section management: clear ordering, time references, notes and current-section emphasis. Separate reading from editing/management.
+8. On phone, prioritise media and SessionDock without covering content. On desktop, use a two-column workspace with media on one side and sections/notes/practice on the other.
+9. Integrate the metronome contextually here. Its tempo, sound and active state must not interfere with media unexpectedly; provide an obvious stop action.
+10. Add loading, provider failure, unavailable/embed-blocked and no-reference recovery states. External links must be safe and clearly identified.
+11. Use the Media Session API or equivalent only where supported and appropriate; do not claim background or lock-screen capabilities that the browser/provider cannot deliver.
+
+Acceptance criteria:
+
+- A musician can open a reference, set speed, create/select a passage loop, practise it and return without losing context.
+- Controls remain reachable but do not cover sections or notes.
+- Provider limitations fail gracefully with a direct Open source action.
+- Desktop has a genuine two-column workbench and phone remains single-task focused.
+- Keyboard, screen-reader, reduced-motion and touch interactions are verified.
+- Add automated state tests and perform real-browser checks with at least two provider/source types and a no-media tune.
+```
+
+---
+
+## Prompt 8 — Build Focused Practice and simplify the Review entry experience
+
+```text
+Work in the current Tunes App repository after Prompts 1–7. Read AGENTS.md and the audit, preserve existing algorithms/data and do not edit sources/. Implement the complete Practice experience, including catch-up, without changing spaced-review rules unless a verified bug requires it.
+
+Goal: make opening Practice lead quickly to the next useful tune and make Rough/Shaky/Solid judgement effortless with one thumb.
+
+Implement the following:
+
+1. Audit /review, its lanes, catch-up and PracticeReviewCard. Preserve the real scheduling and Stage logic.
+2. Show the large educational hero only for first use, an empty state or through Help. Returning users should see Continue Practice or the next useful lane/tune in the first viewport.
+3. Make lane choices compact and outcome-based. Clearly distinguish due, catch-up and list/focus-derived practice without forcing users through explanatory cards every time.
+4. Starting/continuing a lane must enter Focused Practice using FocusModeShell. Reduce global chrome while retaining an obvious Exit/End Session path.
+5. Show tune identity, minimum useful context, optional reference reveal, Stage, due status and queue progress. Avoid unrelated catalogue/manage information.
+6. Put Rough, Shaky and Solid in persistent SessionDock controls reachable with one thumb. Use exact language everywhere: Start Practice, Already in practice and Stage. Combine semantic colour, text and icon/shape.
+7. After a rating, provide a brief reversible transition with Undo, then move to the next tune. Guard against double submission and preserve idempotency.
+8. Support resume after refresh or accidental navigation where safe. Store queue identity/position without exposing private data. Handle a queue that changes server-side.
+9. Add End Session summary: tunes practised, Rough/Shaky/Solid distribution, Stage changes and one useful next suggestion. Keep celebration proportionate.
+10. Integrate Reference Mode and metronome through SessionDock without forcing the user out of Focused Practice.
+11. Add keyboard shortcuts for desktop only if discoverable and non-conflicting. Announce rating result and next tune to assistive technology.
+
+Acceptance criteria:
+
+- A returning person reaches the next practice rating in no more than one tap from Home/Practice entry.
+- Rough/Shaky/Solid remain visible and reachable at phone size without covering content.
+- Ratings are submitted once, can be undone safely and advance correctly.
+- Catch-up, empty, completed and changed-queue states are intentional.
+- Existing scheduling tests still pass; add tests for resume, undo, double-click prevention and session summary.
+- Verify a full multi-tune session at phone and desktop sizes.
+```
+
+---
+
+## Prompt 9 — Redesign Lists, Learning Queue and Public Lists
+
+```text
+Work in the current Tunes App repository after Prompts 1–8. Read AGENTS.md and the audit, preserve existing list permissions/sharing semantics, and do not edit sources/. Implement this entire Lists workstream and verify all listed routes/states.
+
+Goal: make Lists feel like ordered musical plans rather than extremely long collections of management cards.
+
+Implement the following:
+
+1. Rebuild /learning-lists around a compact segmented count strip: Lists, Queue, Unsorted and Shared/Saved. Show the selected content immediately rather than stacking four large summary cards above it.
+2. Preserve the selected mode in the URL and verify /learning-lists?view=learning-queue, unsorted and saved/shared states.
+3. Replace the enormous Learning Queue render with the shared paginated collection architecture. Make order, Stage/readiness and next action explicit. Avoid hundreds of per-row forms.
+4. Add search/group/filter appropriate to Queue and Unsorted. Provide Select mode and bounded batch actions through SessionDock, with permission checks and reversible feedback.
+5. Rebuild owned list detail with a calm reader mode and a separate Manage mode. Reader mode emphasises purpose, tune order and Start Practice from this list. Manage mode exposes reorder, add/remove, metadata, collaboration and destructive controls.
+6. Implement accessible drag reorder in Manage mode plus non-drag keyboard alternatives. Persist optimistically with error recovery and do not lose order on refresh.
+7. Keep delete/remove in row overflow or a clearly separated manage surface, not as a repeated dominant action.
+8. Make sharing state, owner and collaborators a compact header. Preserve distinctions between personal learning lists, saved public lists, shared lists and setlists.
+9. Rebuild Create List and Manage List as focused sheets/forms with clear validation, save progress and unsaved-change protection.
+10. Make /public-lists editorial: curator, premise, cover treatment, tune count and save state. Public-list detail should explain why the list exists before compact tune rows.
+11. Add intentional missing/removed/private public-list recovery with Back to Public Lists and search. Do not expose private list existence through error wording.
+12. Paginate all tune collections and preserve list position after adding/removing a tune.
+
+Acceptance criteria:
+
+- Actual list/queue content appears in the first phone viewport.
+- Learning Queue never renders hundreds of forms/items simultaneously.
+- Read and Manage modes are unmistakable and permissions are enforced server-side.
+- Reordering works by drag and keyboard and survives refresh.
+- Start Practice from list creates the correct practice context.
+- Public, saved/shared, missing and private states are verified.
+- Test phone and desktop routes, list mutations, pagination, optimistic rollback and accessibility.
+```
+
+---
+
+## Prompt 10 — Simplify Diary and turn Foci into useful Focus areas
+
+```text
+Work in the current Tunes App repository after Prompts 1–9. Read AGENTS.md and the audit, preserve diary/practice data, and do not edit sources/. Implement and verify this reflection/focus workstream. Internal database names may remain stable, but consumer language must improve.
+
+Goal: make Day, Week, Month and Focus areas easy to navigate and turn practice history into useful next actions.
+
+Implement the following:
+
+1. Audit diary day/week/month, Week Focus/Notes, Month Tunes/Focus/Notes, diary index, /review/foci and focus detail.
+2. Replace stacked navigation pill rows with one date-period header containing previous, current period and next, plus one Day/Week/Month segmented control.
+3. Use a second local tab row for Tunes/Focus/Notes only on views where it is genuinely needed. Preserve selection in the URL and browser history.
+4. Day should show a readable chronology and concise result summary, not repeated large cards.
+5. Week should answer: What did I practise? What improved? What needs attention next? Include an action that can start an appropriate practice context.
+6. Month should use an accessible musical heat map or compact calendar summary for volume and Rough/Shaky/Solid mix. Provide a text/table equivalent for screen readers and do not rely on colour alone.
+7. Change visible product language from “Foci” to “Focus areas” everywhere appropriate. Do not rename database tables/types just for copy; map display language cleanly.
+8. Rebuild Focus areas index and detail around intent, linked tunes, recent evidence, next review and a prominent “Practise this focus” action.
+9. Make notes easy to read/edit on phone with autosave or explicit save status, conflict/error handling and unsaved-change protection.
+10. Add meaningful empty states for days/weeks/months with no activity and for focus areas without linked tunes.
+
+Acceptance criteria:
+
+- No diary view starts with two or three large stacked navigation rows.
+- Day/Week/Month and local tabs deep-link and support back/forward.
+- Heat-map information remains understandable without colour and by screen reader.
+- “Focus areas” is the visible UI term; existing data and URLs remain compatible unless a safe redirect is added.
+- Practise this focus launches the correct Practice context.
+- Verify day/week/month boundaries, timezone behaviour, empty periods, notes and mobile/desktop layouts.
+```
+
+---
+
+## Prompt 11 — Turn Trends into actionable musical insight
+
+```text
+Work in the current Tunes App repository after Prompts 1–10. Read AGENTS.md and the audit, preserve existing data semantics, and do not edit sources/. Implement this Trends workstream fully, using bounded queries and accessible visualisations.
+
+Goal: replace the very long stack of count cards with compact answers that help a musician decide what to practise or explore.
+
+Implement the following:
+
+1. Audit /trends and style detail routes, including every current zero-value section and query.
+2. Reorganise Trends around decisions rather than database categories:
+   - practice volume over time
+   - Stage distribution
+   - retention/review consistency by week
+   - Rough-to-Solid movement
+   - style and key coverage
+   - Needs attention
+   - Explore a gap
+3. Use small responsive charts/sparklines only where a chart improves understanding. Use an existing lightweight chart solution if appropriate; otherwise build accessible SVG/HTML without adding an excessive dependency.
+4. Every visualisation needs a clear title, short takeaway, accessible description and underlying text/table view. Colour cannot be the only encoding.
+5. Hide zero-value sections or collapse them into one quiet “Not enough data yet” explanation with a next action. Do not create tall empty cards.
+6. Make Needs attention and Explore a gap actionable, linking to filtered Tunes, a relevant public list, Focus area or Start Practice context.
+7. Rebuild style detail to compare personal repertoire/practice with catalogue or community data only when privacy and data definitions permit it. Explain denominators and time ranges.
+8. Add period controls that do not create nested navigation rows. Preserve period/filter state in the URL.
+9. Bound and aggregate server queries; do not ship raw complete practice histories merely to draw charts. Add caching only where it respects per-user privacy and freshness.
+
+Acceptance criteria:
+
+- Trends is materially shorter and its first viewport contains at least one interpretable takeaway and action.
+- Zero-data accounts receive useful onboarding rather than blank charts.
+- Every chart is keyboard/screen-reader understandable and usable in grayscale/high contrast.
+- Definitions, ranges and comparison populations are honest and clear.
+- Verify real, sparse and empty datasets plus style detail at phone and desktop sizes.
+```
+
+---
+
+## Prompt 12 — Repair Friends activity, Home Social and Inbox
+
+```text
+Work in the current Tunes App repository after Prompts 1–11. Read AGENTS.md and the audit, preserve privacy/notification rules, and do not edit sources/. Implement this Social workstream completely. Do not send real external messages during testing.
+
+Goal: make social activity concise, musically meaningful and consistent across Home, Friends and Inbox.
+
+Implement the following:
+
+1. Audit Home Social, /friends Add/Activity and /inbox. Identify duplicate event/comment renderers and consolidate them into shared social primitives.
+2. Use the compact, collapsed-comment pattern from Home Social as the default. An activity event should show actor, musical action, relevant tune/list/setlist, time, reaction summary and comment count.
+3. Do not render “Good craic,” a text field and Comment form for every event by default. Expand reactions/comments on demand and lazily load longer threads.
+4. Keep the Add Friend flow focused, with clear search, request state, privacy-safe no-result language and recovery from expired/duplicate requests.
+5. Prioritise musically meaningful events: starting/solidifying a tune, publishing a list, sharing a setlist or gaining repertoire overlap. Group or suppress repetitive system noise.
+6. Rebuild Inbox into clear New and History states, with Messages and Activity categories only if both truly exist. If direct messaging is not a real feature, rename the destination Notifications rather than implying it.
+7. Replace the ambiguous combination of “All caught up” plus visible history with a New section that can be empty and a clearly labelled History section below.
+8. Add unread markers, bulk mark-read only if supported safely, sender identity, concise event language and intentional empty/error states.
+9. Apply Social plum semantically to community moments while retaining accessible text/icon cues.
+10. Preserve privacy, blocking/relationship rules and server permission checks. Do not reveal whether private users/content exist through error responses.
+
+Acceptance criteria:
+
+- Friends activity no longer renders a comment input for every event.
+- Home and Friends use one consistent event/comment model.
+- Inbox clearly distinguishes no new items from historical items.
+- Long feeds/threads are paginated and do not create enormous DOMs.
+- Add/request/accept/reject states and privacy errors are tested.
+- Verify keyboard, screen reader, phone and desktop behaviour without creating real social side effects in production.
+```
+
+---
+
+## Prompt 13 — Make repertoire comparison and Compare in person a signature feature
+
+```text
+Work in the current Tunes App repository after Prompts 1–12. Read AGENTS.md and the audit, preserve privacy/security, and do not edit sources/. Implement the Compare workstream end to end, including invalid/expired states. Use test accounts/fixtures rather than exposing real private data.
+
+Goal: lead with what two musicians can play together, then make in-person comparison feel like a polished musical ritual.
+
+Implement the following:
+
+1. Rebuild a selected comparison result around outcomes before the full tune list:
+   - number playable together now
+   - shared Solid/Known tunes
+   - shared but shaky tunes
+   - tunes one person can teach the other, only where permissions allow
+   - a suggested short session set
+2. Define the logic for each group explicitly and test it. Do not present a score that could feel judgemental or expose private practice details without consent.
+3. Paginate the complete overlap below the summaries using TuneRow. Add useful filters/grouping and preserve them in the URL.
+4. Let the suggested session set be reviewed, adjusted and converted into a temporary or saved setlist with explicit confirmation and permissions.
+5. Redesign Compare in person as a time-limited session: clear explanation, readable join code and QR, expiry, privacy summary, waiting/connected/failed status and a visible cancel/leave path.
+6. Ensure codes are unguessable enough for their scope, rate-limited and short-lived. Do not expose account identity or repertoire until both sides have taken the required consent/join action.
+7. Handle invalid, expired, already-used and disconnected joins with human recovery actions such as Start a new comparison or Enter another code.
+8. Make the connected transition and result feel warm and specific to playing music without excessive animation. Respect reduced motion.
+9. Add copy/share actions only where safe; never place sensitive comparison details into a public URL.
+
+Acceptance criteria:
+
+- The first comparison viewport answers what the musicians can play together.
+- The full overlap is bounded and searchable rather than rendering every tune.
+- Suggested set conversion produces the correct tune order and permissions.
+- In-person sessions expire, revoke and recover correctly; no private data appears before consent.
+- Test two-user happy path, no overlap, large overlap, invalid/expired code, disconnect/reconnect and blocked/private relationships.
+- Verify the complete flow at phone size and the side-by-side desktop layout.
+```
+
+---
+
+## Prompt 14 — Turn Setlists into performance-ready musical objects
+
+```text
+Work in the current Tunes App repository after Prompts 1–13. Read AGENTS.md and the audit, preserve setlist/list permissions, and do not edit sources/. Implement the Setlists workstream completely, leaving broad PWA infrastructure for the final hardening prompt.
+
+Goal: make setlists visibly ordered, collaborative and useful during an actual performance or session.
+
+Implement the following:
+
+1. Rebuild /setlists and setlist detail around set identity, order, tune type/key and collaborators rather than treating it as a generic list.
+2. Add a compact readiness strip based on the signed-in person's private tune states. Explain that it is personal preparation, not a public score. Never expose private readiness to collaborators without an explicit product rule/consent.
+3. Separate Read and Manage modes. Manage supports add/remove, accessible reorder, metadata and collaboration; Read stays calm and performance oriented.
+4. Implement optimistic drag reorder plus keyboard alternatives and robust rollback/error handling. Prevent lost updates when collaborators edit concurrently.
+5. Improve Create Setlist and Add Tune flows with search, bounded results, duplicate-in-set handling and preserved position.
+6. Build Performance Mode using FocusModeShell and SessionDock: very large current tune, key/type, optional concise note, previous/next and next-tune preview. Hide unrelated consumer chrome but keep Exit and emergency navigation obvious.
+7. Prevent accidental destructive edits in Performance Mode. Consider a user-initiated screen wake lock only with feature detection, a visible active state and guaranteed release on exit/background.
+8. Preserve current set position if the device rotates, resizes or briefly navigates away. Handle a collaborator changing the set order while Performance Mode is active.
+9. Prepare a clean serialisable active-setlist payload for later offline caching, containing only authorised essential metadata.
+
+Acceptance criteria:
+
+- Tune order is the dominant setlist structure and survives accessible reorder.
+- Performance Mode is usable one-handed at 390px and readable at a distance.
+- Readiness remains private by default and understandable without colour.
+- Add Tune is paginated/searchable and prevents accidental duplicates.
+- Concurrent/rejected mutations recover without silently losing the set.
+- Test list/detail/create/add/manage/performance routes, permissions and phone/desktop layouts.
+```
+
+---
+
+## Prompt 15 — Rebuild profiles, account settings and login transitions
+
+```text
+Work in the current Tunes App repository after Prompts 1–14. Read AGENTS.md and the audit, preserve authentication and privacy rules, and do not edit sources/. Implement this identity/account workstream fully and test owner, visitor, signed-in and signed-out states.
+
+Goal: make profiles express musical identity without dumping an entire repertoire, and make account management feel like grouped native settings.
+
+Implement the following:
+
+1. Rebuild public/own profiles with four stable tabs: Overview, Repertoire, Lists and Badges. Preserve the selected tab in the URL.
+2. Overview should show only intentionally public identity: concise bio, tradition/location if shared, favourite styles, featured tunes/lists, recent meaningful activity and viewer overlap where permitted.
+3. Repertoire must use TuneRow, server pagination, search and useful grouping. Never render tens of thousands of pixels of tune cards. Respect repertoire publishing/privacy settings at query level.
+4. Lists and Badges should show featured/summary content first and paginate complete collections.
+5. Keep owner editing controls out of visitor views. Provide a clear Edit Profile action for the owner and preview-public-profile where useful.
+6. Rebuild /dashboard as grouped settings: Profile, Privacy and sharing, Practice preferences, Notifications, Account and security. Use drill-in pages/sheets rather than one very long form.
+7. Give settings clear dirty/saving/saved/error states, validation, unsaved-change protection and accessible descriptions. Put destructive account actions in a separated Danger Zone with correct confirmation.
+8. If a signed-in person reaches /login, redirect to Account or show an explicit safe Switch account flow. Do not display the ordinary signed-in shell and login form together.
+9. Keep signed-out login/onboarding warm and concise: explain the living-tunebook value, then present the minimum authentication choices. Do not expose internal/debug options.
+10. Verify redirects and deep links so login returns a person to the intended authorised route without open-redirect vulnerabilities.
+11. Audit legacy/canonical entry routes such as `/repertoire`. Preserve intentional redirects, avoid redirect loops and ensure the final destination selects the correct Tunes/Repertoire navigation state.
+
+Acceptance criteria:
+
+- Profile identity is visible in the first viewport and inventory is behind tabs.
+- Large repertoires/lists/badges are bounded and searchable.
+- Private fields and repertoire never leak into visitor payloads or HTML.
+- Dashboard no longer appears as one several-thousand-pixel form.
+- Login/account-switch/deep-link redirects are secure and unambiguous.
+- Test owner, friend, stranger/private, signed-out and restricted-data states at phone and desktop sizes.
+```
+
+---
+
+## Prompt 16 — Create the badge identity system and separate internal tools
+
+```text
+Work in the current Tunes App repository after Prompts 1–15. Read AGENTS.md and the audit, preserve badge-award rules and role permissions, and do not edit sources/. Implement the consumer badge system and internal workspace separation. Do not use copyrighted third-party artwork.
+
+Goal: turn badges into a distinctive piece of Tunes' folk identity while ensuring Moderator, Dev and badge administration feel like internal tools rather than consumer screens.
+
+Implement the following:
+
+1. Audit existing badge families, names, witty copy, detail/new/edit routes and award logic.
+2. Create a coherent visual grammar inspired by embroidered patches, lino-cut/woodcut, letterpress or carved tokens. Use reusable layered SVG/CSS primitives and a small set of silhouettes, borders, motifs and family colours rather than one-off random decorations.
+3. Keep artwork legible at small size, in grayscale/high contrast and with images disabled. Every badge needs a semantic name and description; artwork is supplementary.
+4. Assign semantic badge families and use Social plum plus restrained supporting palette colours. Do not reuse Rough/Shaky/Solid colours in ways that confuse state meaning.
+5. Rebuild Badges index/detail around earned state, progress where legitimately measurable, meaning and next action. Do not reveal hidden award criteria if product rules intend secrecy.
+6. Add a brief award moment with clear dismissal, no blocking, no confetti dependency and reduced-motion support. Prevent duplicate award announcements.
+7. Move badge New/Edit, Moderator and Dev routes into a separate InternalShell with denser navigation, environment/role indicators and no consumer NavigationDock.
+8. Enforce internal access at the server/route/data level, not merely by hiding links. Ordinary users should receive safe not-authorised/not-found handling.
+9. Ensure internal destructive actions have explicit scope, confirmation, auditability where the existing system supports it, and cannot be triggered accidentally from repeated rows.
+
+Acceptance criteria:
+
+- Badges are recognisable as a coherent family and retain strong accessible text equivalents.
+- Award moments are brief, dismissible and reduced-motion safe.
+- Consumer badge pages contain no admin controls without entitlement.
+- Moderator, Dev and badge administration use InternalShell and are protected server-side.
+- Verify earned/unearned/progress/hidden badges plus authorised/unauthorised internal routes at phone and desktop sizes.
+```
+
+---
+
+## Prompt 17 — Complete the tablet and desktop workbench redesign
+
+```text
+Work in the current Tunes App repository after Prompts 1–16. Read AGENTS.md and the audit, preserve all completed mobile behaviour, and do not edit sources/. Perform a dedicated responsive pass rather than merely stretching phone components. Implement and verify all major signed-in routes.
+
+Goal: make tablet and desktop use their extra space for overview, comparison and simultaneous work while keeping one coherent Tunes design system.
+
+Implement the following:
+
+1. Audit every major route at 768, 1024 and 1440px after the previous changes. Identify awkward max widths, blank regions, duplicated hidden DOM and components that render both mobile and desktop versions simultaneously.
+2. Finalise the responsive rail/workspace shell: narrow persistent left navigation, primary centre workspace and optional contextual right panel. Tablet should adapt between rail and bottom dock according to actual space, not user-agent detection.
+3. Home: use a balanced multi-column workbench for Continue Practice, current focus/repertoire summary and social activity. Do not leave half the window blank while one column becomes very long.
+4. Catalogue: use a sortable compact table/list and optional detail preview, retaining the same search/filter URL state and actions as phone.
+5. Tune Detail: allow tabs/content plus a contextual state/reference panel without duplicating actions.
+6. Reference Media: preserve the two-column media and sections/notes workspace with sticky contextual controls.
+7. Practice: keep Focused Practice centred and distraction-free; use width for reference/history only when explicitly opened.
+8. Lists/Setlists: use order/content in the main panel and list details/collaboration/manage context in a side panel where helpful.
+9. Compare: use side-by-side summaries and grouped overlap while keeping complete results paginated.
+10. Diary and Trends: use wider accessible calendars/charts and contextual insight panels; do not simply enlarge phone cards.
+11. Profiles/Social: constrain reading line length, use columns intentionally and keep actions aligned.
+12. Remove duplicated responsive trees that cause double data fetching or accessibility duplication. Prefer one semantic tree that adapts with CSS/layout unless genuinely different markup is required.
+
+Acceptance criteria:
+
+- Every major route has an intentional layout at 390, 430, 768, 1024 and 1440px.
+- No major desktop screen has a large accidental blank half while content becomes extremely tall.
+- No route exposes duplicate mobile/desktop content to assistive technology or doubles data requests.
+- Keyboard focus, sticky panels, drawers and resize/rotation transitions remain correct.
+- Add/update responsive browser tests and capture a route screenshot matrix for review.
+```
+
+---
+
+## Prompt 18 — Final accessibility, performance, offline-resilience and QA hardening
+
+```text
+Work in the current Tunes App repository after Prompts 1–17. Read AGENTS.md and the full audit, inspect all accumulated changes, preserve business logic and do not edit sources/. This is the final cross-cutting hardening pass. Fix verified issues rather than merely producing an audit. Run the broadest practical automated and real-browser verification and clearly report anything that remains.
+
+Goal: ensure the redesigned app is accessible, fast, resilient and consistent across every reachable route and important state.
+
+Accessibility and semantics:
+
+1. Audit all interactive cards. Eliminate role=link/card wrappers containing nested links or buttons. Use either one whole-object link with no nested actions or a non-interactive container with explicit title/action controls.
+2. Verify 44x44 primary phone targets, adequate spacing, visible focus, logical keyboard order, skip/landmark structure and headings.
+3. Give icon buttons, pager controls, charts, media/loop controls, rating controls and dock states meaningful accessible names and state announcements.
+4. Test zoom/text scaling, VoiceOver/screen-reader semantics where tooling permits, keyboard-only use, grayscale, increased contrast, reduced transparency and reduced motion.
+5. Recheck contrast for every semantic token and component state. Borders cannot be the only cue when their contrast is low.
+
+Performance and data:
+
+6. Confirm Catalogue, Known, Practice, Learning Queue, Profiles, Compare, Trends and social feeds use bounded queries and bounded DOMs. Remove N+1 lookups, duplicate mobile/desktop fetches and eager non-visible media.
+7. Add performance budgets/measurements for initial JS, route response, query count, rendered interactive nodes and key interaction latency. Record representative before/after numbers.
+8. Add skeleton/loading, empty, retry, offline, expired and permission-recovery states consistently across routes.
+
+Offline/resilience:
+
+9. If the current stack supports it safely, add an installable web-app manifest and a conservative service-worker/offline shell. Cache only versioned app assets and authorised essential data needed for the active practice queue, active setlist, tune identity, notes drafts and recent diary context.
+10. Never cache third-party protected media or private cross-user data indiscriminately. Provide clear pending-sync, synced, conflict and failed states. Make logout/account switch purge or isolate private caches correctly.
+11. Make the active setlist and current practice position resilient to poor reception while preserving server truth and avoiding silent data loss.
+
+Consistency and product language:
+
+12. Sweep all visible copy for current source-of-truth names and use exactly Start Practice, Already in practice and Stage. Display Focus areas rather than Foci. Map legacy component/doc names rather than rewriting historical documents.
+13. Confirm semantic colours have one stable job: moss Known/Solid, river Practice/Reference, ochre Due/Stage/Shaky, rust Overdue/Rough, plum Social/Badges and oxblood destructive.
+14. Verify every empty, missing, expired, private and invalid state offers a safe useful next action without leaking private existence.
+
+Testing and measurement:
+
+15. Run formatter, lint, type check, unit/integration tests and production build. Fix new warnings and console errors.
+16. Add or update end-to-end coverage for signed-out login, Home tabs, Catalogue/search/filter/create/add-to-list, Known, Practice and catch-up, Tune Detail, Reference Media, Lists variants/public lists, Diary Day/Week/Month, Focus areas, Friends, Inbox, Compare/in-person invalid states, Trends/style detail, Badges, Setlists/Performance, Profiles, Dashboard and authorised/unauthorised internal tools.
+17. Run the route matrix at small phone, large phone, tablet portrait/landscape and desktop. Check overlays, safe areas, scrolling, keyboard focus and browser back/forward. Capture failures and fix them.
+18. Where analytics already exists and consent/privacy permit it, instrument the audit's success measures: time to first practice rating, tunes per practice session, time to find a tune, filter abandonment, Tune Detail to Reference/Practice conversion, Compare-to-setlist conversion and interaction latency. Do not add invasive tracking merely to satisfy this item.
+
+Final acceptance criteria:
+
+- Production build and test suite pass with no new console errors.
+- Core phone tasks can be completed one-handed without controls covering content.
+- No ordinary list renders hundreds of interactive objects at once.
+- Core workflows work by keyboard and expose meaningful screen-reader structure.
+- Offline/private-cache behaviour is safe, explicit and account-isolated, or the completion report clearly explains why a smaller resilience implementation was chosen.
+- Provide a final route-by-route pass/fail matrix, changed-file summary, performance comparison, known limitations and recommended post-release monitoring. Do not claim completion for any unverified route.
+```
+
+---
+
+## Coverage map
+
+| Audit recommendation area | Prompt |
+|---|---:|
+| Semantic folk palette, typography, surfaces and motion | 1 |
+| Phone bottom navigation, tablet/desktop shell | 2, 17 |
+| Floating contextual controls, metronome and Feedback | 3 |
+| Pagination, TuneRow and oversized DOM/query repair | 4, 18 |
+| Catalogue, filters, selection and Create Tune | 5 |
+| Tune Detail information architecture | 6 |
+| Reference Media and saved passages | 7 |
+| Review, catch-up and Focused Practice | 8 |
+| Lists, Queue, Unsorted, shared and public lists | 9 |
+| Diary, Notes and Focus areas | 10 |
+| Trends and style detail | 11 |
+| Home Social, Friends and Inbox | 12 |
+| Compare and Compare in person | 13 |
+| Setlists and Performance Mode | 14 |
+| Profiles, Dashboard, Login and account transitions | 15 |
+| Badges, Moderator, Dev and internal shell | 16 |
+| Full tablet/desktop workbench | 17 |
+| Accessibility, offline resilience, performance, copy and final QA | 18 |
+
+This sequence covers the recommendations in the audit while keeping each Codex task bounded enough to review before the next one changes the same area.

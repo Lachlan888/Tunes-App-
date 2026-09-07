@@ -19,7 +19,7 @@ export default function FilterChip({
     return (
       <span
         className={joinClasses(
-          "rounded-full border border-border bg-background/70 px-3 py-1 text-sm text-muted-foreground",
+          "rounded-pill border border-hairline bg-surface-note px-3 py-1 text-sm font-medium text-text-muted",
           className
         )}
       >
@@ -33,7 +33,7 @@ export default function FilterChip({
       type="button"
       onClick={onRemove}
       className={joinClasses(
-        "rounded-full border border-border bg-background/70 px-3 py-1 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60",
+        "min-h-9 shrink-0 whitespace-nowrap rounded-pill border border-hairline bg-surface-note px-3 py-1 text-sm font-medium text-text-muted transition-colors [transition-duration:var(--motion-quick)] hover:border-action-primary/45 hover:bg-surface-paper hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60",
         className
       )}
       disabled={disabled}

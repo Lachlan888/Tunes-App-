@@ -5,8 +5,9 @@ import {
   isDueExactlyToday,
 } from "@/lib/review"
 import { reconcileStreaksForUser } from "@/lib/streaks"
+import { requireUserContext } from "@/lib/auth/session"
+import { withServerTiming } from "@/lib/server-timing"
 import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
 import type {
   BacklogGroupSummary,
   GettingStartedState,
@@ -508,49 +509,37 @@ async function loadHomeBadgeSummary({
 }
 
 export async function loadHomepageData() {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect("/login")
-  }
-
-  const streakSummary: StreakSummary = await reconcileStreaksForUser(
-    supabase,
-    user.id
-  )
+  const { supabase, user, profile } = await requireUserContext()
 
   const [
-    { data: profile, error: profileError },
+    streakSummary,
+    badgeSummary,
     { data: repertoireSummaryRows, error: repertoireSummaryError },
     { data: listPreviewRows, error: listPreviewError },
     { data: practiceSummaryRows, error: practiceSummaryError },
     { data: knownPieceRows, error: knownPieceRowsError },
     { data: learningQueueRows, error: learningQueueRowsError },
     { data: connectionRows, error: connectionError },
-  ] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("username, display_name")
-      .eq("id", user.id)
-      .maybeSingle(),
+  ] = await withServerTiming("homepage.primary-data", () =>
+    Promise.all([
+      reconcileStreaksForUser(supabase, user.id),
+      loadHomeBadgeSummary({
+        supabase,
+        userId: user.id,
+      }),
+      supabase.rpc("get_my_repertoire_summary"),
 
-    supabase.rpc("get_my_repertoire_summary"),
+      supabase
+        .from("learning_lists")
+        .select("id, name")
+        .eq("user_id", user.id)
+        .order("id", { ascending: false })
+        .limit(3),
 
-    supabase
-      .from("learning_lists")
-      .select("id, name")
-      .eq("user_id", user.id)
-      .order("id", { ascending: false })
-      .limit(3),
-
-    supabase
-      .from("user_pieces")
-      .select(
-        `
+      supabase
+        .from("user_pieces")
+        .select(
+          `
           id,
           piece_id,
           status,
@@ -560,20 +549,20 @@ export async function loadHomepageData() {
             id,
             title
           )
-        `
-      )
-      .eq("user_id", user.id)
-      .eq("status", "learning"),
+          `
+        )
+        .eq("user_id", user.id)
+        .eq("status", "learning"),
 
-    supabase
-      .from("user_known_pieces")
-      .select("piece_id")
-      .eq("user_id", user.id),
+      supabase
+        .from("user_known_pieces")
+        .select("piece_id")
+        .eq("user_id", user.id),
 
-    supabase
-      .from("learning_list_items")
-      .select(
-        `
+      supabase
+        .from("learning_list_items")
+        .select(
+          `
           id,
           learning_list_id,
           created_at,
@@ -587,20 +576,17 @@ export async function loadHomepageData() {
             name,
             user_id
           )
-        `
-      )
-      .eq("learning_lists.user_id", user.id)
-      .order("created_at", { ascending: true }),
+          `
+        )
+        .eq("learning_lists.user_id", user.id)
+        .order("created_at", { ascending: true }),
 
-    supabase
-      .from("connections")
-      .select("id, status, requester_id, addressee_id")
-      .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`),
-  ])
-
-  if (profileError) {
-    throw new Error(profileError.message)
-  }
+      supabase
+        .from("connections")
+        .select("id, status, requester_id, addressee_id")
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`),
+    ])
+  )
 
   if (repertoireSummaryError) {
     throw new Error(repertoireSummaryError.message)
@@ -740,8 +726,9 @@ export async function loadHomepageData() {
       row.requester_id === user.id ? row.addressee_id : row.requester_id
     )
 
-  const [recentFriendActivity, reviewEventResult, badgeSummary] =
-    await Promise.all([
+  const [recentFriendActivity, reviewEventResult] = await withServerTiming(
+    "homepage.activity-and-review",
+    () => Promise.all([
       loadRecentFriendActivity(supabase, acceptedFriendIds, user.id, 5),
 
       typedPracticeSummaryRows.length > 0
@@ -754,11 +741,8 @@ export async function loadHomepageData() {
             )
         : Promise.resolve({ count: 0, error: null }),
 
-      loadHomeBadgeSummary({
-        supabase,
-        userId: user.id,
-      }),
     ])
+  )
 
   if (reviewEventResult.error) {
     throw new Error(reviewEventResult.error.message)

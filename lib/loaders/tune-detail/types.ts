@@ -69,6 +69,13 @@ export type TunePracticeNote = {
   outcome: string | null
 }
 
+export type TuneReviewSummary = {
+  id: number
+  outcome: string
+  resulting_stage: number | null
+  created_at: string
+}
+
 export type CommentAuthor = {
   displayName: string
   username: string | null
@@ -166,6 +173,7 @@ export type TuneDetailLoadedData = {
   typedLearningListItems: LearningListItemRow[]
   typedPublicTuneLists: PublicTuneListSummary[]
   typedPracticeNotes: TunePracticeNote[]
+  typedReviewHistory: TuneReviewSummary[]
   practiceDiaryEnabled: boolean
   practiceNoteCategories: PracticeNoteCategory[]
   styleOptions: StyleOption[]

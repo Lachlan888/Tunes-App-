@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { joinClasses } from "@/components/ui/buttonStyles"
+import { segmentedControlStyles } from "@/components/ui/segmentedControlStyles"
 
 type PracticeDiaryNavProps = {
   active: "review" | "diary" | "index" | "foci"
@@ -31,7 +32,10 @@ const links = [
 export default function PracticeDiaryNav({ active }: PracticeDiaryNavProps) {
   return (
     <nav
-      className="mt-5 flex flex-wrap justify-center gap-2 md:justify-start"
+      className={joinClasses(
+        "mt-5 flex flex-wrap justify-center md:justify-start",
+        segmentedControlStyles.group
+      )}
       aria-label="Practice sections"
     >
       {links.map((link) => {
@@ -43,10 +47,11 @@ export default function PracticeDiaryNav({ active }: PracticeDiaryNavProps) {
             href={link.href}
             aria-current={isActive ? "page" : undefined}
             className={joinClasses(
-              "rounded-full border px-4 py-2 text-sm font-medium shadow-sm transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
+              segmentedControlStyles.item,
+              "px-4",
               isActive
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-background/70 text-muted-foreground hover:-translate-y-0.5 hover:bg-muted hover:text-foreground"
+                ? segmentedControlStyles.active
+                : segmentedControlStyles.inactive
             )}
           >
             {link.label}

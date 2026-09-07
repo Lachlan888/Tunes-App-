@@ -20,7 +20,7 @@ export default async function ReferenceMediaPage({
   const { id } = await params
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const requestedSourceId = singleValue(resolvedSearchParams?.media)
-  const tuneDetail = await loadTuneDetailData(id)
+  const tuneDetail = await loadTuneDetailData(id, "reference")
 
   if (tuneDetail.status !== "loaded") {
     return (

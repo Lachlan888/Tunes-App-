@@ -8,7 +8,9 @@ import {
   type KeyboardEvent,
 } from "react"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
+import Icon from "@/components/ui/Icon"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
+import { OPEN_METRONOME_EVENT } from "@/lib/ui-events"
 
 type BeatAccent = "primary" | "secondary" | "silent"
 
@@ -223,7 +225,13 @@ function NumericStepper({
   )
 }
 
-export default function PracticeMetronome() {
+export default function PracticeMetronome({
+  variant = "floating",
+  onOpen,
+}: {
+  variant?: "floating" | "menu" | "hidden"
+  onOpen?: () => void
+}) {
   const [bpm, setBpm] = useState(DEFAULT_SETTINGS.bpm)
   const [bpmDraft, setBpmDraft] = useState(String(DEFAULT_SETTINGS.bpm))
   const [numerator, setNumerator] = useState(DEFAULT_SETTINGS.numerator)
@@ -250,6 +258,17 @@ export default function PracticeMetronome() {
   const patternRef = useRef(pattern)
   const tapTimesRef = useRef<number[]>([])
   const visualTimersRef = useRef<number[]>([])
+
+  useEffect(() => {
+    if (variant !== "hidden") return
+
+    function openControls() {
+      setIsControlsOpen(true)
+    }
+
+    window.addEventListener(OPEN_METRONOME_EVENT, openControls)
+    return () => window.removeEventListener(OPEN_METRONOME_EVENT, openControls)
+  }, [variant])
 
   const clearSchedulerTimer = useCallback(() => {
     if (schedulerTimerRef.current) {
@@ -606,25 +625,32 @@ export default function PracticeMetronome() {
 
   return (
     <>
-      <button
+      {variant === "hidden" ? null : <button
         type="button"
-        onClick={() => setIsControlsOpen(true)}
+        onClick={() => {
+          setIsControlsOpen(true)
+          onOpen?.()
+        }}
         className={joinClasses(
-          "fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 z-[240] inline-flex min-h-12 min-w-12 items-center justify-center gap-2 rounded-full border px-3 py-3 text-sm font-semibold shadow-xl transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:bottom-6 md:left-6",
-          isPlaying
-            ? "border-primary bg-primary text-primary-foreground hover:bg-primary-hover"
-            : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
+          variant === "menu"
+            ? buttonStyles.menuItem
+            : "fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 z-[240] inline-flex min-h-12 min-w-12 items-center justify-center gap-2 rounded-pill border px-3 py-3 text-sm font-semibold shadow-material-floating transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] md:bottom-6 md:left-6",
+          variant !== "menu" &&
+            (isPlaying
+              ? "border-action-primary bg-action-primary text-action-primary-foreground hover:bg-action-primary-hover"
+              : "border-hairline bg-surface-paper text-text-muted hover:bg-surface-note hover:text-text-primary")
         )}
         aria-label={launcherLabel}
         aria-pressed={isControlsOpen}
       >
-        <MetronomeIcon />
+        {variant === "menu" ? <Icon name="metronome" /> : <MetronomeIcon />}
+        {variant === "menu" ? <span>Metronome</span> : null}
         {isPlaying ? (
           <span className="rounded-full bg-background/20 px-2 py-0.5 text-xs">
             {bpm} BPM
           </span>
         ) : null}
-      </button>
+      </button>}
 
       <ResponsiveModal
         isOpen={isControlsOpen}

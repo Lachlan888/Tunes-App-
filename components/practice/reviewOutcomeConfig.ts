@@ -1,4 +1,5 @@
 import { buttonStyles } from "@/components/ui/buttonStyles"
+import type { IconName } from "@/components/ui/Icon"
 import { markFailed, markShaky, markSolid } from "@/lib/actions/reviews"
 
 export type ReviewOutcome = "failed" | "shaky" | "solid"
@@ -6,6 +7,7 @@ export type ReviewOutcome = "failed" | "shaky" | "solid"
 export type ReviewOutcomeConfig = {
   outcome: ReviewOutcome
   label: string
+  icon: IconName
   modalTitle: string
   action: (formData: FormData) => Promise<void>
   className: string
@@ -16,6 +18,7 @@ export const REVIEW_OUTCOMES: ReviewOutcomeConfig[] = [
   {
     outcome: "failed",
     label: "Rough",
+    icon: "rough",
     modalTitle: "Rough review note",
     action: markFailed,
     className: buttonStyles.reviewRough,
@@ -25,6 +28,7 @@ export const REVIEW_OUTCOMES: ReviewOutcomeConfig[] = [
   {
     outcome: "shaky",
     label: "Shaky",
+    icon: "shaky",
     modalTitle: "Shaky review note",
     action: markShaky,
     className: buttonStyles.reviewShaky,
@@ -34,6 +38,7 @@ export const REVIEW_OUTCOMES: ReviewOutcomeConfig[] = [
   {
     outcome: "solid",
     label: "Solid",
+    icon: "check",
     modalTitle: "Solid review note",
     action: markSolid,
     className: buttonStyles.reviewSolid,

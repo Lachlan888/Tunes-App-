@@ -6,6 +6,7 @@ import MetricVisualiser from "@/components/dev/MetricVisualiser"
 import UserActivityTable from "@/components/dev/UserActivityTable"
 import TestDigestPanel from "@/components/dev/TestDigestPanel"
 import PageHeader from "@/components/ui/PageHeader"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import { loadDevDashboardData } from "@/lib/loaders/dev"
 import { loadAdminEmailToolData } from "@/lib/services/admin-email-broadcasts"
 
@@ -47,8 +48,10 @@ export default async function DevPage({ searchParams }: DevPageProps) {
     getSingleValue(resolvedSearchParams?.dev_feedback)
   )
 
-  const data = await loadDevDashboardData()
-  const adminEmailData = await loadAdminEmailToolData()
+  const [data, adminEmailData] = await Promise.all([
+    loadDevDashboardData(),
+    loadAdminEmailToolData(),
+  ])
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
@@ -58,7 +61,14 @@ export default async function DevPage({ searchParams }: DevPageProps) {
         </div>
       ) : null}
 
-      <PageHeader title="Dev" />
+      <PageHeader
+        title="Dev"
+        actions={
+          <Link href="/dev/design-system" className={buttonStyles.secondary}>
+            Design system
+          </Link>
+        }
+      />
 
       <section className="mb-8">
         <DevSummaryCards summary={data.summary} />
@@ -108,3 +118,4 @@ export default async function DevPage({ searchParams }: DevPageProps) {
     </main>
   )
 }
+import Link from "next/link"

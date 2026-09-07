@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import type { ReactNode, TouchEvent } from "react"
 import { joinClasses } from "@/components/ui/buttonStyles"
 
@@ -16,9 +16,14 @@ type CardPagerProps<T> = {
   previousLabel?: string
   nextLabel?: string
   unstyledCard?: boolean
+  index?: number
+  onIndexChange?: (index: number) => void
+  /** Small finite sets only. Use PaginatedTuneCollection for datasets. */
+  maxItems?: number
 }
 
 const minimumSwipeDistance = 48
+export const CARD_PAGER_DEFAULT_MAX_ITEMS = 50
 
 export default function CardPager<T>({
   items = [],
@@ -32,14 +37,20 @@ export default function CardPager<T>({
   previousLabel = "Previous",
   nextLabel = "Next",
   unstyledCard = false,
+  index,
+  onIndexChange,
+  maxItems = CARD_PAGER_DEFAULT_MAX_ITEMS,
 }: CardPagerProps<T>) {
-  const [currentIndex, setCurrentIndex] = useState(0)
+  if (items.length > maxItems) {
+    throw new Error(
+      `CardPager received ${items.length} items; its limit is ${maxItems}. Use server-side PaginatedTuneCollection for large or growing datasets.`
+    )
+  }
+
+  const [internalIndex, setInternalIndex] = useState(0)
   const touchStartX = useRef<number | null>(null)
   const touchStartY = useRef<number | null>(null)
-
-  useEffect(() => {
-    setCurrentIndex(0)
-  }, [items])
+  const currentIndex = index ?? internalIndex
 
   const safeIndex = useMemo(() => {
     if (items.length === 0) return 0
@@ -50,14 +61,19 @@ export default function CardPager<T>({
   const canGoPrevious = safeIndex > 0
   const canGoNext = safeIndex < items.length - 1
 
+  function setCurrentIndex(nextIndex: number) {
+    if (index === undefined) setInternalIndex(nextIndex)
+    onIndexChange?.(nextIndex)
+  }
+
   function goPrevious() {
     if (!canGoPrevious) return
-    setCurrentIndex((index) => Math.max(0, index - 1))
+    setCurrentIndex(Math.max(0, safeIndex - 1))
   }
 
   function goNext() {
     if (!canGoNext) return
-    setCurrentIndex((index) => Math.min(items.length - 1, index + 1))
+    setCurrentIndex(Math.min(items.length - 1, safeIndex + 1))
   }
 
   function handleTouchStart(event: TouchEvent<HTMLDivElement>) {
@@ -108,7 +124,7 @@ export default function CardPager<T>({
         className={joinClasses(
           unstyledCard
             ? ""
-            : "rounded-2xl border border-border bg-background/70 p-4 shadow-sm",
+            : "rounded-object bg-surface-paper p-4 shadow-material-rest",
           cardClassName
         )}
         onTouchStart={handleTouchStart}
@@ -127,12 +143,12 @@ export default function CardPager<T>({
           type="button"
           onClick={goPrevious}
           disabled={!canGoPrevious}
-          className="min-h-11 rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-45"
+          className="min-h-11 rounded-control border border-hairline bg-surface-paper px-4 py-2 text-sm font-semibold text-text-muted shadow-material-rest transition-colors [transition-duration:var(--motion-standard)] hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-45"
         >
           {previousLabel}
         </button>
 
-        <p className="text-sm font-semibold text-muted-foreground">
+        <p className="text-sm font-semibold text-text-muted">
           {safeIndex + 1} / {items.length}
         </p>
 
@@ -140,7 +156,7 @@ export default function CardPager<T>({
           type="button"
           onClick={goNext}
           disabled={!canGoNext}
-          className="min-h-11 rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-45"
+          className="min-h-11 rounded-control border border-hairline bg-surface-paper px-4 py-2 text-sm font-semibold text-text-muted shadow-material-rest transition-colors [transition-duration:var(--motion-standard)] hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-45"
         >
           {nextLabel}
         </button>
@@ -155,15 +171,15 @@ export default function CardPager<T>({
             className={joinClasses(
               "h-2 rounded-full transition",
               index === safeIndex
-                ? "w-5 bg-primary"
-                : "w-2 bg-border hover:bg-muted-foreground"
+                ? "w-5 bg-state-practice"
+                : "w-2 bg-hairline hover:bg-text-muted"
             )}
             tabIndex={-1}
           />
         ))}
 
         {items.length > 12 ? (
-          <span className="ml-1 text-xs font-semibold text-muted-foreground">
+          <span className="ml-1 text-xs font-semibold text-text-muted">
             +{items.length - 12}
           </span>
         ) : null}

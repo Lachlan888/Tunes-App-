@@ -1,13 +1,39 @@
+import PieceSearchFilters from "@/components/library/PieceSearchFilters"
 import RepertoireTuneList from "@/components/repertoire/RepertoireTuneList"
 import PageHeader from "@/components/ui/PageHeader"
 import { addToLearningList } from "@/lib/actions/lists"
-import { loadPracticeTunesPageData } from "@/lib/loaders/repertoire"
+import {
+  loadPracticeTunesPageData,
+  FILTER_FACET_SCAN_LIMIT as REPERTOIRE_FILTER_FACET_SCAN_LIMIT,
+} from "@/lib/loaders/repertoire"
+import { getPieceFilterOptions } from "@/lib/search-filters"
+import { describeTuneFilterConstraints } from "@/lib/tune-collections/filter-drafts"
+import type { PracticeTuneGrouping } from "@/lib/tune-collections/grouping"
+import {
+  buildTuneCollectionHref,
+  parseTuneCollectionQueryState,
+} from "@/lib/tune-collections/pagination"
+
+type SearchParamValue = string | string[] | undefined
 
 type PracticeTunesPageProps = {
   searchParams?: Promise<{
-    list_add?: string
-    remove_from_practice?: string
+    q?: SearchParamValue
+    key?: SearchParamValue
+    style?: SearchParamValue
+    time_signature?: SearchParamValue
+    sort?: SearchParamValue
+    after?: SearchParamValue
+    before?: SearchParamValue
+    group?: SearchParamValue
+    list_add?: SearchParamValue
+    remove_from_practice?: SearchParamValue
   }>
+}
+
+function firstParam(value: SearchParamValue) {
+  if (!value) return ""
+  return Array.isArray(value) ? value[0] ?? "" : value
 }
 
 function StatusMessage({
@@ -72,34 +98,116 @@ export default async function PracticeTunesPage({
   searchParams,
 }: PracticeTunesPageProps) {
   const resolvedSearchParams = await searchParams
-  const listAddStatus = resolvedSearchParams?.list_add ?? ""
+  const collectionState = parseTuneCollectionQueryState({
+    q: resolvedSearchParams?.q,
+    key: resolvedSearchParams?.key,
+    style: resolvedSearchParams?.style,
+    time_signature: resolvedSearchParams?.time_signature,
+    sort: resolvedSearchParams?.sort,
+    after: resolvedSearchParams?.after,
+    before: resolvedSearchParams?.before,
+  })
+  const listAddStatus = firstParam(resolvedSearchParams?.list_add)
   const removeFromPracticeStatus =
-    resolvedSearchParams?.remove_from_practice ?? ""
+    firstParam(resolvedSearchParams?.remove_from_practice)
+  const rawGroup = firstParam(resolvedSearchParams?.group)
+  const groupBy: PracticeTuneGrouping = ["due", "stage", "key", "style"].includes(
+    rawGroup
+  )
+    ? (rawGroup as PracticeTuneGrouping)
+    : "none"
 
-  const { practiceItems, learningLists, learningListItems } =
-    await loadPracticeTunesPageData()
+  const {
+    practiceItems,
+    totalCount,
+    pageInfo,
+    filterOptionPieces,
+    learningLists,
+    learningListItems,
+  } = await loadPracticeTunesPageData(collectionState)
 
-  const redirectTo = "/library/practice"
+  const stableCollectionState = {
+    searchQuery: collectionState.searchQuery,
+    selectedKeys: collectionState.selectedKeys,
+    selectedStyles: collectionState.selectedStyles,
+    selectedTimeSignatures: collectionState.selectedTimeSignatures,
+    sort: collectionState.sort,
+  }
+  const redirectTo = buildTuneCollectionHref({
+    basePath: "/library/practice",
+    state: stableCollectionState,
+    after: collectionState.after,
+    before: collectionState.before,
+    preservedParams: groupBy === "none" ? {} : { group: groupBy },
+  })
+  const previousHref = pageInfo.previousCursor
+    ? buildTuneCollectionHref({
+        basePath: "/library/practice",
+        state: stableCollectionState,
+        before: pageInfo.previousCursor,
+        preservedParams: groupBy === "none" ? {} : { group: groupBy },
+      })
+    : null
+  const nextHref = pageInfo.nextCursor
+    ? buildTuneCollectionHref({
+        basePath: "/library/practice",
+        state: stableCollectionState,
+        after: pageInfo.nextCursor,
+        preservedParams: groupBy === "none" ? {} : { group: groupBy },
+      })
+    : null
+  const { keys, styles, timeSignatures } =
+    getPieceFilterOptions(filterOptionPieces)
+  const hasActiveFilters =
+    collectionState.searchQuery !== "" ||
+    collectionState.selectedKeys.length > 0 ||
+    collectionState.selectedStyles.length > 0 ||
+    collectionState.selectedTimeSignatures.length > 0
+  const activeConstraints = describeTuneFilterConstraints({
+    searchQuery: collectionState.searchQuery,
+    keys: collectionState.selectedKeys,
+    styles: collectionState.selectedStyles,
+    timeSignatures: collectionState.selectedTimeSignatures,
+  })
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+    <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       <PageHeader title="Practice Tunes" backHref="/library" />
-
-      <section className="mb-8">
-        <div className="max-w-sm rounded-2xl border border-border border-l-8 border-l-primary bg-background/70 p-5 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            In practice
-          </p>
-          <p className="mt-2 font-serif text-5xl font-bold text-foreground">
-            {practiceItems.length}
-          </p>
-        </div>
-      </section>
 
       <StatusMessage status={listAddStatus} type="list_add" />
       <StatusMessage
         status={removeFromPracticeStatus}
         type="remove_from_practice"
+      />
+
+      <PieceSearchFilters
+        basePath="/library/practice"
+        searchLabel="Search practice tunes by title"
+        searchPlaceholder="Search practice tunes"
+        searchValue={collectionState.searchQuery}
+        selectedKeys={collectionState.selectedKeys}
+        selectedStyles={collectionState.selectedStyles}
+        selectedTimeSignatures={collectionState.selectedTimeSignatures}
+        selectedSort={collectionState.sort}
+        availableKeys={keys}
+        availableStyles={styles}
+        availableTimeSignatures={timeSignatures}
+        hasActiveFilters={hasActiveFilters}
+        totalCount={totalCount}
+        countItems={filterOptionPieces}
+        prospectiveCountExact={
+          filterOptionPieces.length < REPERTOIRE_FILTER_FACET_SCAN_LIMIT
+        }
+        sticky
+        selectedGroup={groupBy}
+        groupOptions={[
+          { value: "none", label: "No grouping" },
+          { value: "due", label: "Group by due" },
+          { value: "stage", label: "Group by Stage" },
+          { value: "key", label: "Group by key" },
+          { value: "style", label: "Group by style" },
+        ]}
+        preservedParams={groupBy === "none" ? {} : { group: groupBy }}
       />
 
       <RepertoireTuneList
@@ -109,6 +217,12 @@ export default async function PracticeTunesPage({
         learningListItems={learningListItems}
         addToLearningList={addToLearningList}
         redirectTo={redirectTo}
+        totalCount={totalCount}
+        previousHref={previousHref}
+        nextHref={nextHref}
+        hasActiveFilters={hasActiveFilters}
+        activeConstraints={activeConstraints}
+        groupBy={groupBy}
       />
     </main>
   )

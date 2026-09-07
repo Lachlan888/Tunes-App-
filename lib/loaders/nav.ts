@@ -1,6 +1,7 @@
 import { canModerate, isAppAdmin } from "@/lib/auth/roles"
 import { getToday } from "@/lib/review"
 import type { SupabaseServerClient } from "@/lib/auth/session"
+import { withServerTiming } from "@/lib/server-timing"
 import type { UserRole } from "@/lib/types"
 
 export type NavContext = {
@@ -27,32 +28,6 @@ export const emptyNavContext: NavContext = {
   socialAttentionCount: 0,
   overduePracticeCount: 0,
   pendingModerationCount: 0,
-}
-
-function normaliseRole(role: string | null | undefined): UserRole {
-  if (role === "moderator" || role === "admin") {
-    return role
-  }
-
-  return "user"
-}
-
-async function loadRole(
-  supabase: SupabaseServerClient,
-  userId: string
-): Promise<UserRole> {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", userId)
-    .maybeSingle()
-
-  if (error) {
-    console.error("Error loading nav role:", error)
-    return "user"
-  }
-
-  return normaliseRole(data?.role)
 }
 
 async function loadPendingModerationCount(supabase: SupabaseServerClient) {
@@ -116,22 +91,20 @@ async function loadPendingModerationCount(supabase: SupabaseServerClient) {
 
 export async function loadNavContext(
   supabase: SupabaseServerClient,
-  userId: string
+  userId: string,
+  role: UserRole
 ): Promise<NavContext> {
-  const [role, userCanAccessDev] = await Promise.all([
-    loadRole(supabase, userId),
-    isAppAdmin(supabase, userId),
-  ])
-
   const userCanModerate = canModerate(role)
 
   const [
+    userCanAccessDev,
     { count: unreadNotificationCount, error: notificationError },
     { count: unreadMessageCount, error: messageError },
     { count: pendingFriendRequestCount, error: friendRequestError },
     { count: overduePracticeRowCount, error: practiceError },
     pendingModerationCount,
-  ] = await Promise.all([
+  ] = await withServerTiming("layout.nav-context", () => Promise.all([
+    isAppAdmin(supabase, userId),
     supabase
       .from("user_notifications")
       .select("id", { count: "exact", head: true })
@@ -162,7 +135,7 @@ export async function loadNavContext(
       .lt("next_review_due", getToday()),
 
     userCanModerate ? loadPendingModerationCount(supabase) : Promise.resolve(0),
-  ])
+  ]))
 
   if (notificationError) {
     console.error("Error loading unread notification count:", notificationError)

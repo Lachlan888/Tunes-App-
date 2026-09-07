@@ -11,6 +11,9 @@ type FilterPanelProps = {
   isPending?: boolean
   onClearAll?: () => void
   onClose: () => void
+  onApply?: () => void
+  applyLabel?: string
+  cancelLabel?: string
   className?: string
 }
 
@@ -23,6 +26,9 @@ export default function FilterPanel({
   isPending = false,
   onClearAll,
   onClose,
+  onApply,
+  applyLabel = "Apply filters",
+  cancelLabel = "Close filters",
   className,
 }: FilterPanelProps) {
   return (
@@ -48,19 +54,32 @@ export default function FilterPanel({
             className={buttonStyles.secondary}
             disabled={isPending}
           >
-            Close filters
+            {cancelLabel}
           </button>
 
-          {hasActiveFilters && onClearAll ? (
-            <button
-              type="button"
-              onClick={onClearAll}
-              className={buttonStyles.secondaryStrong}
-              disabled={isPending}
-            >
-              Clear all
-            </button>
-          ) : null}
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
+            {hasActiveFilters && onClearAll ? (
+              <button
+                type="button"
+                onClick={onClearAll}
+                className={buttonStyles.secondaryStrong}
+                disabled={isPending}
+              >
+                Clear all
+              </button>
+            ) : null}
+
+            {onApply ? (
+              <button
+                type="button"
+                onClick={onApply}
+                className={buttonStyles.primary}
+                disabled={isPending}
+              >
+                {applyLabel}
+              </button>
+            ) : null}
+          </div>
         </div>
       }
     >

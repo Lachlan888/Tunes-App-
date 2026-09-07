@@ -3,6 +3,7 @@
 import type { ReactNode } from "react"
 import { useEffect, useId, useRef, useState } from "react"
 import { createPortal } from "react-dom"
+import Icon from "@/components/ui/Icon"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock"
 
@@ -135,17 +136,19 @@ export default function ResponsiveModal({
   const mobilePanelClass =
     mobileMode === "full-screen"
       ? "h-[100dvh] w-full max-w-full rounded-none"
-      : "max-h-[calc(100dvh-1rem)] w-full max-w-full rounded-t-3xl"
+      : "max-h-[calc(100dvh-1rem)] w-full max-w-full rounded-t-sheet"
 
   const toneClasses =
-    tone === "destructive" ? "border-destructive/50" : "border-border"
+    tone === "destructive"
+      ? "border-action-destructive/50"
+      : "border-hairline"
 
   const eyebrowClasses =
-    tone === "destructive" ? "text-destructive" : "text-muted-foreground"
+    tone === "destructive" ? "text-action-destructive" : "text-text-muted"
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[1000] flex min-w-0 items-end justify-center overflow-hidden bg-foreground/35 p-0 backdrop-blur-sm md:items-center md:p-4"
+      className="modal-scrim fixed inset-0 z-[1000] flex min-w-0 items-end justify-center overflow-hidden p-0 md:items-center md:p-4"
       onClick={(event) => {
         if (event.target !== event.currentTarget) return
 
@@ -162,7 +165,7 @@ export default function ResponsiveModal({
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
         className={joinClasses(
-          "flex min-h-0 min-w-0 flex-col overflow-hidden border bg-card shadow-xl md:max-h-[90vh] md:w-full md:rounded-3xl",
+          "flex min-h-0 min-w-0 flex-col overflow-hidden border bg-surface-paper shadow-material-floating transition-transform [transition-duration:var(--motion-deliberate)] [transition-timing-function:var(--ease-folk)] md:max-h-[90vh] md:w-full md:rounded-sheet",
           desktopMaxWidth,
           mobilePanelClass,
           toneClasses,
@@ -174,7 +177,7 @@ export default function ResponsiveModal({
       >
         <header
           className={joinClasses(
-            "shrink-0 border-b border-border bg-card px-4 py-4 md:px-6 md:py-5",
+            "shrink-0 border-b border-hairline bg-surface-paper px-4 py-4 md:px-6 md:py-5",
             headerClassName
           )}
         >
@@ -193,7 +196,7 @@ export default function ResponsiveModal({
 
               <h2
                 id={titleId}
-                className="mt-1 min-w-0 break-words font-serif text-2xl font-bold leading-tight tracking-tight text-foreground md:mt-2 md:text-3xl"
+                className="mt-1 min-w-0 break-words font-serif text-2xl font-semibold leading-tight tracking-tight text-text-primary md:mt-2 md:text-3xl"
               >
                 {title}
               </h2>
@@ -201,7 +204,7 @@ export default function ResponsiveModal({
               {description ? (
                 <p
                   id={descriptionId}
-                  className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground"
+                  className="mt-2 max-w-2xl text-sm leading-6 text-text-muted"
                 >
                   {description}
                 </p>
@@ -215,7 +218,8 @@ export default function ResponsiveModal({
                 disabled={closeDisabled}
                 className={buttonStyles.modalClose}
               >
-                {closeLabel}
+                <Icon name="x" size={16} />
+                <span>{closeLabel}</span>
               </button>
             ) : null}
           </div>
@@ -226,7 +230,7 @@ export default function ResponsiveModal({
         {footer ? (
           <footer
             className={joinClasses(
-              "shrink-0 border-t border-border bg-card px-4 py-4 md:px-6",
+              "shrink-0 border-t border-hairline bg-surface-paper px-4 py-4 md:px-6",
               footerClassName
             )}
           >

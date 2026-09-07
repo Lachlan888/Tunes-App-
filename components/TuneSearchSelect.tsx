@@ -1,6 +1,8 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { buttonStyles } from "@/components/ui/buttonStyles"
+import { formStyles } from "@/components/ui/formStyles"
 import type { Piece } from "@/lib/types"
 
 type SelectionMode = "single" | "multiple"
@@ -166,7 +168,7 @@ export default function TuneSearchSelect({
       ))}
 
       <div>
-        <label className="text-sm font-medium text-foreground">
+        <label className={formStyles.label}>
           Search tunes
         </label>
 
@@ -177,14 +179,14 @@ export default function TuneSearchSelect({
             onKeyDown={handleSearchKeyDown}
             placeholder="e.g. Angeline the Baker"
             autoComplete="off"
-            className="min-w-0 flex-1 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className={`${formStyles.input} min-w-0 flex-1`}
           />
 
           <button
             type="button"
             onClick={handleSearchSubmit}
             disabled={!query.trim()}
-            className="rounded-full border border-border bg-background/70 px-4 py-3 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+            className={buttonStyles.secondary}
           >
             Search
           </button>
@@ -194,7 +196,7 @@ export default function TuneSearchSelect({
       {query.trim() &&
       autocompleteMatches.length > 0 &&
       !hasSubmittedSearch ? (
-        <div className="mt-3 rounded-2xl border border-border bg-background/70 p-2 shadow-sm">
+        <div className="mt-3 rounded-object bg-surface-paper p-2 shadow-material-rest">
           <p className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Quick matches
           </p>
@@ -223,7 +225,7 @@ export default function TuneSearchSelect({
       ) : null}
 
       {hasSubmittedSearch ? (
-        <section className="mt-5 rounded-2xl border border-border bg-background/70 p-4 shadow-sm">
+        <section className="mt-5 rounded-object bg-surface-paper p-4 shadow-material-rest">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
             <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Search results
@@ -279,7 +281,7 @@ export default function TuneSearchSelect({
         </section>
       ) : null}
 
-      <div className="mt-6 rounded-2xl border border-border bg-background/70 p-4">
+      <div className="mt-6 rounded-object bg-surface-note p-4">
         <p className="text-sm font-medium text-foreground">{selectedLabel}</p>
 
         {selectedPieces.length > 0 ? (

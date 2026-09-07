@@ -1,8 +1,14 @@
 "use client"
 
 import Link from "next/link"
+import { useCallback, useMemo } from "react"
 import CardPager from "@/components/ui/CardPager"
 import PracticeReviewCard from "@/components/practice/PracticeReviewCard"
+import {
+  useSessionDock,
+  useSessionDockPosition,
+} from "@/components/session-dock/SessionDockProvider"
+import type { SessionDockModel } from "@/components/session-dock/sessionDockModel"
 import { joinClasses } from "@/components/ui/buttonStyles"
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
@@ -93,6 +99,147 @@ export default function ReviewQueueSection({
       ? "Nothing overdue right now."
       : "No tunes due today."
   const totalAttentionCount = dueTodayPieces.length + catchUpQueue.length
+  const positionKey = `tunes.session.v1.practice.${activeMode}.position`
+  const [currentIndex, setCurrentIndex] = useSessionDockPosition(
+    positionKey,
+    activeQueue.length
+  )
+  const currentItem = activeQueue[currentIndex] ?? null
+  const triggerOutcome = useCallback(
+    (outcome: "failed" | "shaky" | "solid") => {
+      if (!currentItem) return
+      document
+        .getElementById(`practice-review-${currentItem.id}-${outcome}`)
+        ?.click()
+    },
+    [currentItem]
+  )
+
+  const dockModel = useMemo<SessionDockModel>(() => {
+    if (!currentItem) {
+      return {
+        id: `focused-practice:${activeMode}:empty`,
+        context: "focused-practice",
+        identity: {
+          eyebrow: "Practice",
+          title: "Queue clear",
+          detail: "Open the metronome or choose another practice lane.",
+        },
+        primaryAction: null,
+        secondaryActions: [],
+        progress: { label: "No tunes in this lane", current: 0, total: 0 },
+        status: { label: "Nothing needs attention", tone: "known" },
+        collapsedContent: { showProgress: true },
+        expandedContent: {
+          title: "Practice tools",
+          description: "This lane is clear. The metronome remains available.",
+          tools: ["metronome"],
+        },
+        persistence: {
+          shareable: "url",
+          transient: "session",
+          key: positionKey,
+        },
+        announcement: "Practice queue clear",
+      }
+    }
+
+    const tuneTitle = currentItem.piece?.title ?? "Untitled tune"
+    const nextDisabled = currentIndex >= activeQueue.length - 1
+    const referenceHref = currentItem.piece?.id
+      ? `/library/${currentItem.piece.id}/reference-media`
+      : null
+    const secondaryActions: SessionDockModel["secondaryActions"] = [
+      {
+        id: "rough",
+        label: "Rough",
+        icon: "rough",
+        tone: "rough",
+        onInvoke: () => triggerOutcome("failed"),
+      },
+      {
+        id: "shaky",
+        label: "Shaky",
+        icon: "shaky",
+        tone: "shaky",
+        onInvoke: () => triggerOutcome("shaky"),
+      },
+      {
+        id: "solid",
+        label: "Solid",
+        icon: "check",
+        tone: "solid",
+        onInvoke: () => triggerOutcome("solid"),
+      },
+    ]
+
+    if (referenceHref) {
+      secondaryActions.push({
+        id: "reference",
+        label: "Reference",
+        href: referenceHref,
+        tone: "secondary",
+      })
+    }
+
+    return {
+      id: `focused-practice:${activeMode}:${currentItem.id}`,
+      context: "focused-practice",
+      identity: {
+        eyebrow: activeMode === "catch-up" ? "Catch-up" : "Due today",
+        title: tuneTitle,
+        detail: `Stage ${currentItem.stage}`,
+      },
+      primaryAction: {
+        id: "next",
+        label: "Next",
+        ariaLabel: nextDisabled
+          ? "This is the final tune in the lane"
+          : `Next tune after ${tuneTitle}`,
+        disabled: nextDisabled,
+        onInvoke: () => setCurrentIndex(currentIndex + 1),
+        tone: "practice",
+      },
+      secondaryActions,
+      progress: {
+        label: "Queue progress",
+        current: currentIndex + 1,
+        total: activeQueue.length,
+        value: currentIndex + 1,
+        max: activeQueue.length,
+      },
+      status: { label: `Stage ${currentItem.stage}`, tone: "practice" },
+      collapsedContent: {
+        actionIds: ["rough", "shaky", "solid"],
+        showProgress: true,
+      },
+      expandedContent: {
+        title: `${tuneTitle} practice tools`,
+        description:
+          "Record recall quality, move through the queue, open reference media or use the metronome.",
+        actionIds: ["rough", "shaky", "solid", "next", "reference"],
+        tools: ["metronome"],
+      },
+      persistence: {
+        shareable: "url",
+        transient: "session",
+        key: positionKey,
+      },
+      announcement: `${tuneTitle}. Stage ${currentItem.stage}. Tune ${
+        currentIndex + 1
+      } of ${activeQueue.length}.`,
+    }
+  }, [
+    activeMode,
+    activeQueue.length,
+    currentIndex,
+    currentItem,
+    positionKey,
+    setCurrentIndex,
+    triggerOutcome,
+  ])
+
+  useSessionDock(`focused-practice:${activeMode}`, dockModel)
 
   return (
     <section
@@ -146,6 +293,8 @@ export default function ReviewQueueSection({
       <div className="mt-5 md:mt-6">
         <CardPager
           items={activeQueue}
+          index={currentIndex}
+          onIndexChange={setCurrentIndex}
           getKey={(userPiece) => userPiece.id}
           label={
             activeMode === "catch-up"

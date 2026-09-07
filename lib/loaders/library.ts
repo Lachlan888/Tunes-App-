@@ -1,8 +1,15 @@
-import { getCurrentUserRole } from "@/lib/auth/roles"
-import { getStyleLabelsFromPiece } from "@/lib/search-filters"
-import { createClient } from "@/lib/supabase/server"
+import { requireUserContext } from "@/lib/auth/session"
+import { withServerTiming } from "@/lib/server-timing"
+import {
+  finaliseTuneCollectionPage,
+  normaliseTuneCollectionPageSize,
+  resolveTuneCollectionRequest,
+  TUNE_COLLECTION_PAGE_SIZE,
+  type TuneCollectionQueryState,
+  type TuneCollectionSort,
+} from "@/lib/tune-collections/pagination"
+import { applyPieceCollectionCursor } from "@/lib/tune-collections/query"
 import { loadTuneMediaBundles } from "@/lib/tune-media"
-import { redirect } from "next/navigation"
 import type {
   LearningListItemMembership,
   LearningListOwner,
@@ -12,30 +19,53 @@ import type {
   UserKnownPiece,
 } from "@/lib/types"
 
+export type LibrarySort = TuneCollectionSort
+
+type LoadLibraryDataParams = Omit<
+  TuneCollectionQueryState,
+  "after" | "before"
+> & {
+  after?: string | null
+  before?: string | null
+  pageSize?: number
+}
+
 type LearningListItemRow = {
   piece_id: number
   learning_list_id: number
   learning_lists: LearningListOwner | LearningListOwner[] | null
 }
 
-export type LibrarySort = "title_asc" | "newest" | "oldest"
-
-type LoadLibraryDataParams = {
-  searchQuery?: string
-  selectedKeys?: string[]
-  selectedStyles?: string[]
-  selectedTimeSignatures?: string[]
-  visibleCount?: number | "all"
-  page?: number
-  sort?: LibrarySort
+type PieceIdRow = {
+  id?: number
+  piece_id?: number
 }
 
-type PieceOrderQuery = {
-  order: (
-    column: string,
-    options?: { ascending?: boolean }
-  ) => PieceOrderQuery
-}
+const PIECE_COLLECTION_SELECT = `
+  id,
+  title,
+  alternate_titles,
+  type,
+  key,
+  style,
+  time_signature,
+  composer,
+  reference_url,
+  created_at,
+  piece_styles (
+    style_id,
+    styles (
+      id,
+      slug,
+      label
+    )
+  )
+`
+
+// Facets are lightweight metadata, not the rendered collection. Keep the scan
+// explicitly bounded until a distinct-facet RPC is justified by catalogue size.
+export const FILTER_FACET_SCAN_LIMIT = 2_000
+const STYLE_MATCH_SCAN_LIMIT = 5_000
 
 function normaliseLearningListItem(
   item: LearningListItemRow
@@ -44,9 +74,7 @@ function normaliseLearningListItem(
     ? item.learning_lists[0] ?? null
     : item.learning_lists
 
-  if (!learningList) {
-    return null
-  }
+  if (!learningList) return null
 
   return {
     piece_id: item.piece_id,
@@ -59,322 +87,64 @@ function normaliseLearningListItem(
   }
 }
 
-function normalisePage(value: number | undefined) {
-  if (!value || Number.isNaN(value) || value < 1) return 1
-  return Math.floor(value)
-}
+async function loadStylePieceIds({
+  supabase,
+  selectedStyles,
+  styleOptions,
+}: {
+  supabase: Awaited<ReturnType<typeof requireUserContext>>["supabase"]
+  selectedStyles: string[]
+  styleOptions: StyleOption[]
+}) {
+  if (selectedStyles.length === 0) return null
 
-function normaliseSort(value: LibrarySort | undefined): LibrarySort {
-  if (value === "newest") return "newest"
-  if (value === "oldest") return "oldest"
+  const selectedStyleIds = styleOptions
+    .filter((style) => selectedStyles.includes(style.label))
+    .map((style) => style.id)
 
-  return "title_asc"
-}
+  const [legacyResult, joinedResult] = await Promise.all([
+    supabase
+      .from("pieces")
+      .select("id")
+      .in("style", selectedStyles)
+      .limit(STYLE_MATCH_SCAN_LIMIT),
+    selectedStyleIds.length > 0
+      ? supabase
+          .from("piece_styles")
+          .select("piece_id")
+          .in("style_id", selectedStyleIds)
+          .limit(STYLE_MATCH_SCAN_LIMIT)
+      : Promise.resolve({ data: [], error: null }),
+  ])
 
-function getTotalPages(totalCount: number, visibleCount: number | "all") {
-  if (visibleCount === "all") return 1
-  return Math.max(1, Math.ceil(totalCount / visibleCount))
-}
+  if (legacyResult.error) throw new Error(legacyResult.error.message)
+  if (joinedResult.error) throw new Error(joinedResult.error.message)
 
-function getRangeForPage(page: number, visibleCount: number) {
-  const from = (page - 1) * visibleCount
-  const to = from + visibleCount - 1
-
-  return { from, to }
-}
-
-function sortPieceRows<
-  T extends { title: string; created_at?: string | null; id: number },
->(rows: T[], sort: LibrarySort) {
-  const sortedRows = [...rows]
-
-  if (sort === "newest") {
-    return sortedRows.sort((a, b) => {
-      const firstDate = a.created_at ? Date.parse(a.created_at) : 0
-      const secondDate = b.created_at ? Date.parse(b.created_at) : 0
-
-      if (secondDate !== firstDate) return secondDate - firstDate
-
-      return b.id - a.id
-    })
-  }
-
-  if (sort === "oldest") {
-    return sortedRows.sort((a, b) => {
-      const firstDate = a.created_at ? Date.parse(a.created_at) : 0
-      const secondDate = b.created_at ? Date.parse(b.created_at) : 0
-
-      if (firstDate !== secondDate) return firstDate - secondDate
-
-      return a.id - b.id
-    })
-  }
-
-  return sortedRows.sort((a, b) =>
-    a.title.localeCompare(b.title, undefined, { sensitivity: "base" })
-  )
-}
-
-function applyPieceSort<T extends PieceOrderQuery>(
-  query: T,
-  sort: LibrarySort
-): T {
-  if (sort === "newest") {
-    return query
-      .order("created_at", { ascending: false })
-      .order("id", { ascending: false }) as T
-  }
-
-  if (sort === "oldest") {
-    return query
-      .order("created_at", { ascending: true })
-      .order("id", { ascending: true }) as T
-  }
-
-  return query.order("title") as T
-}
-
-function getUniquePieceIds(pieces: Piece[], mobilePieces: Piece[]) {
   return Array.from(
     new Set([
-      ...(pieces ?? []).map((piece) => piece.id),
-      ...(mobilePieces ?? []).map((piece) => piece.id),
+      ...((legacyResult.data ?? []) as PieceIdRow[])
+        .map((row) => row.id)
+        .filter((id): id is number => typeof id === "number"),
+      ...((joinedResult.data ?? []) as PieceIdRow[])
+        .map((row) => row.piece_id)
+        .filter((id): id is number => typeof id === "number"),
     ])
   )
 }
 
 export async function loadLibraryData({
-  searchQuery,
+  searchQuery = "",
   selectedKeys = [],
   selectedStyles = [],
   selectedTimeSignatures = [],
-  visibleCount = 20,
-  page = 1,
   sort = "title_asc",
-}: LoadLibraryDataParams = {}) {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect("/login")
-  }
-
-  const currentUserRole = await getCurrentUserRole(supabase, user.id)
-  const trimmedSearchQuery = (searchQuery ?? "").trim()
-  const requestedPage = normalisePage(page)
-  const selectedSort = normaliseSort(sort)
-
-  let pieces: Piece[] = []
-  let mobilePieces: Piece[] = []
-  let totalPieceCount = 0
-  let currentPage = requestedPage
-
-  if (selectedStyles.length > 0) {
-    let allStyleCandidatePiecesQuery = supabase
-      .from("pieces")
-      .select(`
-        id,
-        title,
-        key,
-        style,
-        time_signature,
-        composer,
-        reference_url,
-        created_at,
-        piece_styles (
-          style_id,
-          styles (
-            id,
-            slug,
-            label
-          )
-        )
-      `)
-
-    if (trimmedSearchQuery) {
-      allStyleCandidatePiecesQuery = allStyleCandidatePiecesQuery.ilike(
-        "title",
-        `%${trimmedSearchQuery}%`
-      )
-    }
-
-    if (selectedKeys.length > 0) {
-      allStyleCandidatePiecesQuery = allStyleCandidatePiecesQuery.in(
-        "key",
-        selectedKeys
-      )
-    }
-
-    if (selectedTimeSignatures.length > 0) {
-      allStyleCandidatePiecesQuery = allStyleCandidatePiecesQuery.in(
-        "time_signature",
-        selectedTimeSignatures
-      )
-    }
-
-    const { data: styleCandidatePieces, error: styleCandidatePiecesError } =
-      await allStyleCandidatePiecesQuery
-
-    if (styleCandidatePiecesError) {
-      throw new Error(styleCandidatePiecesError.message)
-    }
-
-    const styleFilteredPieces = (styleCandidatePieces ?? []).filter((piece) => {
-      const styleLabels = getStyleLabelsFromPiece(piece as PieceFilterOption)
-
-      return selectedStyles.some((selectedStyle) =>
-        styleLabels.includes(selectedStyle)
-      )
-    })
-
-    const sortedStyleFilteredPieces = sortPieceRows(
-      styleFilteredPieces,
-      selectedSort
-    )
-
-    totalPieceCount = sortedStyleFilteredPieces.length
-    mobilePieces = sortedStyleFilteredPieces as Piece[]
-
-    const totalPages = getTotalPages(totalPieceCount, visibleCount)
-    currentPage =
-      visibleCount === "all" ? 1 : Math.min(requestedPage, totalPages)
-
-    if (visibleCount === "all") {
-      pieces = sortedStyleFilteredPieces as Piece[]
-    } else {
-      const { from, to } = getRangeForPage(currentPage, visibleCount)
-      pieces = sortedStyleFilteredPieces.slice(from, to + 1) as Piece[]
-    }
-  } else {
-    let countQuery = supabase
-      .from("pieces")
-      .select("id", { count: "exact", head: true })
-
-    if (trimmedSearchQuery) {
-      countQuery = countQuery.ilike("title", `%${trimmedSearchQuery}%`)
-    }
-
-    if (selectedKeys.length > 0) {
-      countQuery = countQuery.in("key", selectedKeys)
-    }
-
-    if (selectedTimeSignatures.length > 0) {
-      countQuery = countQuery.in("time_signature", selectedTimeSignatures)
-    }
-
-    const { count, error: countError } = await countQuery
-
-    if (countError) {
-      throw new Error(countError.message)
-    }
-
-    totalPieceCount = count ?? 0
-
-    const totalPages = getTotalPages(totalPieceCount, visibleCount)
-    currentPage =
-      visibleCount === "all" ? 1 : Math.min(requestedPage, totalPages)
-
-    let piecesQuery = supabase
-      .from("pieces")
-      .select(`
-        id,
-        title,
-        key,
-        style,
-        time_signature,
-        composer,
-        reference_url,
-        created_at,
-        piece_styles (
-          style_id,
-          styles (
-            id,
-            slug,
-            label
-          )
-        )
-      `)
-
-    piecesQuery = applyPieceSort(piecesQuery, selectedSort)
-
-    if (trimmedSearchQuery) {
-      piecesQuery = piecesQuery.ilike("title", `%${trimmedSearchQuery}%`)
-    }
-
-    if (selectedKeys.length > 0) {
-      piecesQuery = piecesQuery.in("key", selectedKeys)
-    }
-
-    if (selectedTimeSignatures.length > 0) {
-      piecesQuery = piecesQuery.in("time_signature", selectedTimeSignatures)
-    }
-
-    if (visibleCount !== "all") {
-      const { from, to } = getRangeForPage(currentPage, visibleCount)
-      piecesQuery = piecesQuery.range(from, to)
-    }
-
-    const { data: pieceRows, error: piecesError } = await piecesQuery
-
-    if (piecesError) {
-      throw new Error(piecesError.message)
-    }
-
-    pieces = (pieceRows ?? []) as Piece[]
-
-    let mobilePiecesQuery = supabase
-      .from("pieces")
-      .select(`
-        id,
-        title,
-        key,
-        style,
-        time_signature,
-        composer,
-        reference_url,
-        created_at,
-        piece_styles (
-          style_id,
-          styles (
-            id,
-            slug,
-            label
-          )
-        )
-      `)
-
-    mobilePiecesQuery = applyPieceSort(mobilePiecesQuery, selectedSort)
-
-    if (trimmedSearchQuery) {
-      mobilePiecesQuery = mobilePiecesQuery.ilike(
-        "title",
-        `%${trimmedSearchQuery}%`
-      )
-    }
-
-    if (selectedKeys.length > 0) {
-      mobilePiecesQuery = mobilePiecesQuery.in("key", selectedKeys)
-    }
-
-    if (selectedTimeSignatures.length > 0) {
-      mobilePiecesQuery = mobilePiecesQuery.in(
-        "time_signature",
-        selectedTimeSignatures
-      )
-    }
-
-    const { data: mobilePieceRows, error: mobilePiecesError } =
-      await mobilePiecesQuery
-
-    if (mobilePiecesError) {
-      throw new Error(mobilePiecesError.message)
-    }
-
-    mobilePieces = (mobilePieceRows ?? []) as Piece[]
-  }
+  after = null,
+  before = null,
+  pageSize = TUNE_COLLECTION_PAGE_SIZE,
+}: Partial<LoadLibraryDataParams> = {}) {
+  const { supabase, user, role: currentUserRole } = await requireUserContext()
+  const catalogueStartedAt = performance.now()
+  const safePageSize = normaliseTuneCollectionPageSize(pageSize)
 
   let filterOptionPiecesQuery = supabase.from("pieces").select(`
     key,
@@ -390,121 +160,204 @@ export async function loadLibraryData({
     )
   `)
 
-  if (trimmedSearchQuery) {
+  if (searchQuery) {
     filterOptionPiecesQuery = filterOptionPiecesQuery.ilike(
       "title",
-      `%${trimmedSearchQuery}%`
+      `%${searchQuery}%`
+    )
+  }
+  filterOptionPiecesQuery = filterOptionPiecesQuery.limit(
+    FILTER_FACET_SCAN_LIMIT
+  )
+
+  const [
+    { data: filterOptionRows, error: filterOptionError },
+    { data: learningLists, error: learningListsError },
+    { data: styleRows, error: stylesError },
+  ] = await withServerTiming("library.filters-and-lists", () =>
+    Promise.all([
+      filterOptionPiecesQuery,
+      supabase
+        .from("learning_lists")
+        .select("id, name, description")
+        .eq("user_id", user.id)
+        .order("name"),
+      supabase
+        .from("styles")
+        .select("id, slug, label")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true }),
+    ])
+  )
+
+  if (filterOptionError) throw new Error(filterOptionError.message)
+  if (learningListsError) throw new Error(learningListsError.message)
+
+  const styleOptions: StyleOption[] = stylesError ? [] : styleRows ?? []
+  const stylePieceIds = await loadStylePieceIds({
+    supabase,
+    selectedStyles,
+    styleOptions,
+  })
+  const request = resolveTuneCollectionRequest({ sort, after, before })
+
+  if (stylePieceIds?.length === 0) {
+    return {
+      user,
+      currentUserRole,
+      pieces: [] as Piece[],
+      filterOptionPieces: (filterOptionRows ?? []) as PieceFilterOption[],
+      totalPieceCount: 0,
+      pageInfo: {
+        pageSize: safePageSize,
+        hasPreviousPage: false,
+        hasNextPage: false,
+        previousCursor: null,
+        nextCursor: null,
+      },
+      userPieces: [],
+      userKnownPieces: [] as UserKnownPiece[],
+      mediaBundles: new Map(),
+      learningLists,
+      learningListItems: [] as LearningListItemMembership[],
+      styleOptions,
+      metrics: {
+        collectionQueryCount: 5,
+        fetchedTuneRows: 0,
+        renderedTuneRows: 0,
+      },
+    }
+  }
+
+  let countQuery = supabase
+    .from("pieces")
+    .select("id", { count: "exact", head: true })
+  let piecesQuery = supabase.from("pieces").select(PIECE_COLLECTION_SELECT)
+
+  if (searchQuery) {
+    countQuery = countQuery.ilike("title", `%${searchQuery}%`)
+    piecesQuery = piecesQuery.ilike("title", `%${searchQuery}%`)
+  }
+  if (selectedKeys.length > 0) {
+    countQuery = countQuery.in("key", selectedKeys)
+    piecesQuery = piecesQuery.in("key", selectedKeys)
+  }
+  if (selectedTimeSignatures.length > 0) {
+    countQuery = countQuery.in("time_signature", selectedTimeSignatures)
+    piecesQuery = piecesQuery.in("time_signature", selectedTimeSignatures)
+  }
+  if (stylePieceIds) {
+    countQuery = countQuery.in("id", stylePieceIds)
+    piecesQuery = piecesQuery.in("id", stylePieceIds)
+  }
+  piecesQuery = applyPieceCollectionCursor({
+    query: piecesQuery,
+    sort,
+    direction: request.direction,
+    cursor: request.cursor,
+    pageSize: safePageSize,
+  })
+
+  const [
+    { count: totalPieceCount, error: countError },
+    { data: pieceRows, error: piecesError },
+  ] = await withServerTiming("library.catalogue-page", () =>
+    Promise.all([countQuery, piecesQuery])
+  )
+
+  if (countError) throw new Error(countError.message)
+  if (piecesError) throw new Error(piecesError.message)
+
+  const { items: pieces, pageInfo } = finaliseTuneCollectionPage({
+    rows: (pieceRows ?? []) as Piece[],
+    pageSize: safePageSize,
+    sort,
+    direction: request.direction,
+    requestToken: request.requestToken,
+  })
+
+  if (process.env.NODE_ENV === "development") {
+    console.info(
+      `[server-timing] library.catalogue: ${(
+        performance.now() - catalogueStartedAt
+      ).toFixed(1)}ms; fetched=${pieceRows?.length ?? 0}; rendered=${pieces.length}`
     )
   }
 
-  const [
-    { data: filterOptionPiecesRows, error: filterOptionPiecesError },
-    { data: learningLists, error: learningListsError },
-    { data: styleRows, error: stylesError },
-  ] = await Promise.all([
-    filterOptionPiecesQuery,
+  const pieceIds = pieces.map((piece) => piece.id)
+  const [mediaBundles, userState] = await withServerTiming(
+    "library.media-and-user-state",
+    () =>
+      Promise.all([
+        loadTuneMediaBundles({ supabase, pieces, userId: user.id }),
+        (async () => {
+          if (pieceIds.length === 0) {
+            return {
+              userPieces: [],
+              userKnownPieces: [] as UserKnownPiece[],
+              learningListItems: [] as LearningListItemMembership[],
+            }
+          }
 
-    supabase
-      .from("learning_lists")
-      .select("id, name, description")
-      .eq("user_id", user.id)
-      .order("name"),
+          const [userPiecesResult, knownResult, listItemsResult] =
+            await Promise.all([
+              supabase
+                .from("user_pieces")
+                .select("id, piece_id, status, next_review_due, stage")
+                .eq("user_id", user.id)
+                .in("piece_id", pieceIds),
+              supabase
+                .from("user_known_pieces")
+                .select("id, piece_id")
+                .eq("user_id", user.id)
+                .in("piece_id", pieceIds),
+              supabase
+                .from("learning_list_items")
+                .select(
+                  "piece_id, learning_list_id, learning_lists!inner(id, name, user_id)"
+                )
+                .eq("learning_lists.user_id", user.id)
+                .in("piece_id", pieceIds),
+            ])
 
-    supabase
-      .from("styles")
-      .select("id, slug, label")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true }),
-  ])
+          if (userPiecesResult.error) {
+            throw new Error(userPiecesResult.error.message)
+          }
+          if (knownResult.error) throw new Error(knownResult.error.message)
+          if (listItemsResult.error) {
+            throw new Error(listItemsResult.error.message)
+          }
 
-  if (filterOptionPiecesError) {
-    throw new Error(filterOptionPiecesError.message)
-  }
-
-  if (learningListsError) {
-    throw new Error(learningListsError.message)
-  }
-
-  const displayPieceIds = getUniquePieceIds(pieces, mobilePieces)
-  const mediaBundles = await loadTuneMediaBundles({
-    supabase,
-    pieces: [...pieces, ...mobilePieces],
-    userId: user.id,
-  })
-
-  let userPieces: {
-    id: number
-    piece_id: number
-    status: string
-    next_review_due: string | null
-    stage: number
-  }[] = []
-
-  let userKnownPieces: UserKnownPiece[] = []
-  let learningListItems: LearningListItemMembership[] = []
-
-  if (displayPieceIds.length > 0) {
-    const [
-      { data: userPiecesRows, error: userPiecesError },
-      { data: userKnownPiecesRows, error: userKnownPiecesError },
-      { data: learningListItemsRows, error: learningListItemsError },
-    ] = await Promise.all([
-      supabase
-        .from("user_pieces")
-        .select("id, piece_id, status, next_review_due, stage")
-        .eq("user_id", user.id)
-        .in("piece_id", displayPieceIds),
-
-      supabase
-        .from("user_known_pieces")
-        .select("id, piece_id")
-        .eq("user_id", user.id)
-        .in("piece_id", displayPieceIds),
-
-      supabase
-        .from("learning_list_items")
-        .select(
-          "piece_id, learning_list_id, learning_lists!inner(id, name, user_id)"
-        )
-        .eq("learning_lists.user_id", user.id)
-        .in("piece_id", displayPieceIds),
-    ])
-
-    if (userPiecesError) {
-      throw new Error(userPiecesError.message)
-    }
-
-    if (userKnownPiecesError) {
-      throw new Error(userKnownPiecesError.message)
-    }
-
-    if (learningListItemsError) {
-      throw new Error(learningListItemsError.message)
-    }
-
-    userPieces = userPiecesRows ?? []
-    userKnownPieces = (userKnownPiecesRows ?? []) as UserKnownPiece[]
-
-    learningListItems = ((learningListItemsRows ?? []) as LearningListItemRow[])
-      .map(normaliseLearningListItem)
-      .filter((item): item is LearningListItemMembership => item !== null)
-  }
-
-  const styleOptions: StyleOption[] = stylesError ? [] : styleRows ?? []
+          return {
+            userPieces: userPiecesResult.data ?? [],
+            userKnownPieces: (knownResult.data ?? []) as UserKnownPiece[],
+            learningListItems: (
+              (listItemsResult.data ?? []) as LearningListItemRow[]
+            )
+              .map(normaliseLearningListItem)
+              .filter(
+                (item): item is LearningListItemMembership => item !== null
+              ),
+          }
+        })(),
+      ])
+  )
 
   return {
     user,
     currentUserRole,
     pieces,
-    mobilePieces,
-    filterOptionPieces: (filterOptionPiecesRows ?? []) as PieceFilterOption[],
-    totalPieceCount,
-    currentPage,
-    userPieces,
-    userKnownPieces,
+    filterOptionPieces: (filterOptionRows ?? []) as PieceFilterOption[],
+    totalPieceCount: totalPieceCount ?? 0,
+    pageInfo,
+    ...userState,
     mediaBundles,
     learningLists,
-    learningListItems,
     styleOptions,
+    metrics: {
+      collectionQueryCount: selectedStyles.length > 0 ? 14 : 12,
+      fetchedTuneRows: pieceRows?.length ?? 0,
+      renderedTuneRows: pieces.length,
+    },
   }
 }

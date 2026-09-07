@@ -1,6 +1,8 @@
 "use client"
 
 import PendingLinkButton from "@/components/PendingLinkButton"
+import Icon, { type IconName } from "@/components/ui/Icon"
+import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 
 type EmptyStateProps = {
   title: string
@@ -11,6 +13,7 @@ type EmptyStateProps = {
   secondaryActionLabel?: string
   className?: string
   titleClassName?: string
+  icon?: IconName
   children?: React.ReactNode
 }
 
@@ -22,7 +25,8 @@ export default function EmptyState({
   secondaryActionHref,
   secondaryActionLabel,
   className = "",
-  titleClassName = "text-base font-semibold text-foreground",
+  titleClassName = "font-serif text-xl font-semibold text-text-primary",
+  icon = "music",
   children,
 }: EmptyStateProps) {
   const hasPrimaryAction = Boolean(primaryActionHref && primaryActionLabel)
@@ -30,12 +34,19 @@ export default function EmptyState({
 
   return (
     <div
-      className={`rounded-2xl border border-border bg-background/70 p-4 shadow-sm ${className}`}
+      className={joinClasses(
+        "rounded-object bg-surface-note p-5",
+        className
+      )}
     >
+      <span className="mb-4 inline-grid h-10 w-10 place-items-center rounded-full bg-surface-paper text-action-primary shadow-material-rest">
+        <Icon name={icon} size={20} />
+      </span>
+
       <h3 className={titleClassName}>{title}</h3>
 
       {description ? (
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+        <p className="mt-2 text-sm leading-6 text-text-muted">
           {description}
         </p>
       ) : null}
@@ -47,7 +58,7 @@ export default function EmptyState({
               href={primaryActionHref!}
               label={primaryActionLabel!}
               pendingLabel="Loading..."
-              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className={buttonStyles.primary}
             />
           )}
 
@@ -56,7 +67,7 @@ export default function EmptyState({
               href={secondaryActionHref!}
               label={secondaryActionLabel!}
               pendingLabel="Loading..."
-              className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className={buttonStyles.secondary}
             />
           )}
 

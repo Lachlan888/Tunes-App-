@@ -202,8 +202,8 @@ export default function EmailUsersPanel({
           className={joinClasses(
             "mt-5 max-w-3xl rounded-2xl border p-4 text-sm",
             state.status === "success"
-              ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-              : "border-red-300 bg-red-50 text-red-800"
+              ? "border-state-known/55 bg-state-known/12 text-text-primary"
+              : "border-action-destructive/55 bg-action-destructive/10 text-action-destructive"
           )}
           role="status"
         >
@@ -314,8 +314,8 @@ export default function EmailUsersPanel({
             className={joinClasses(
               "mt-4 rounded-xl border p-3 text-sm font-medium",
               state.status === "success"
-                ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                : "border-red-300 bg-red-50 text-red-800"
+                ? "border-state-known/55 bg-state-known/12 text-text-primary"
+                : "border-action-destructive/55 bg-action-destructive/10 text-action-destructive"
             )}
           >
             {state.message}

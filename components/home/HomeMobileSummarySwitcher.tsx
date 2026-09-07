@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useMemo, useState } from "react"
+import { useState, useSyncExternalStore } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
@@ -39,11 +39,38 @@ const tabs: { id: MobileHomeTab; label: string }[] = [
   { id: "social", label: "Social" },
 ]
 
-function badgeCategoryLabel(value: string) {
-  return value
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ")
+const HOME_TAB_STORAGE_KEY = "tunes.home.mobile-view"
+const HOME_TAB_CHANGE_EVENT = "tunes:home-view-change"
+
+function isMobileHomeTab(value: string | null): value is MobileHomeTab {
+  return value === "today" || value === "repertoire" || value === "social"
+}
+
+function getStoredHomeTab(): MobileHomeTab {
+  const value = window.localStorage.getItem(HOME_TAB_STORAGE_KEY)
+  return isMobileHomeTab(value) ? value : "today"
+}
+
+function getServerHomeTab(): MobileHomeTab {
+  return "today"
+}
+
+function subscribeToHomeTab(onStoreChange: () => void) {
+  function handleStorage(event: StorageEvent) {
+    if (event.key === HOME_TAB_STORAGE_KEY) onStoreChange()
+  }
+
+  window.addEventListener("storage", handleStorage)
+  window.addEventListener(HOME_TAB_CHANGE_EVENT, onStoreChange)
+  return () => {
+    window.removeEventListener("storage", handleStorage)
+    window.removeEventListener(HOME_TAB_CHANGE_EVENT, onStoreChange)
+  }
+}
+
+function persistHomeTab(tab: MobileHomeTab) {
+  window.localStorage.setItem(HOME_TAB_STORAGE_KEY, tab)
+  window.dispatchEvent(new Event(HOME_TAB_CHANGE_EVENT))
 }
 
 function getPreviewLimit(density: HomeDensity) {
@@ -51,17 +78,6 @@ function getPreviewLimit(density: HomeDensity) {
   if (density === "compact") return 3
 
   return 3
-}
-
-function getLearningQueueMeta(options: {
-  firstListName: string
-  listNames: string[]
-}) {
-  if (options.listNames.length <= 1) {
-    return `In: ${options.firstListName}`
-  }
-
-  return `In: ${options.firstListName} + ${options.listNames.length - 1} more`
 }
 
 function MobileSectionHeading({
@@ -92,16 +108,16 @@ function MobileStatGrid({
   items: { label: string; value: number; href: string }[]
 }) {
   return (
-    <div className="divide-y divide-border/70 border-y border-border/70">
+    <div className="grid grid-cols-2 border-y border-hairline">
       {items.map((item) => (
         <Link
           key={item.label}
           href={item.href}
-          className="flex items-center justify-between gap-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          className="flex min-h-16 items-center justify-between gap-2 px-3 py-2 odd:border-r odd:border-hairline focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--focus-ring)]"
         >
           <p className="text-sm font-semibold text-foreground">{item.label}</p>
 
-          <p className="font-serif text-3xl font-bold leading-none text-foreground">
+          <p className="font-serif text-2xl font-bold leading-none text-foreground">
             {item.value}
           </p>
         </Link>
@@ -284,49 +300,45 @@ function TodayPanel({
   density: HomeDensity
 }) {
   const previewLimit = getPreviewLimit(density)
+  const continueTune = summary.dueTodayPreview[0] ?? summary.inPracticePreview[0]
+  const queuedTune = summary.learningQueuePreview[0]
+  const continueHref = continueTune
+    ? `/library/${continueTune.piece_id}`
+    : queuedTune
+      ? `/library/${queuedTune.piece_id}`
+      : "/review"
+  const continueTitle = continueTune?.title ?? queuedTune?.title ?? "Open today’s practice"
+  const continueMeta = continueTune
+    ? summary.dueTodayPreview[0]?.piece_id === continueTune.piece_id
+      ? `Due today · Stage ${continueTune.stage}`
+      : `In practice · Stage ${continueTune.stage}`
+    : queuedTune
+      ? `Next from ${queuedTune.firstListName}`
+      : "Your practice room is ready"
+  const dueQueuePreview = summary.dueTodayPreview.slice(1, Math.min(previewLimit, 3))
+  const learningQueuePreview = dueQueuePreview.length === 0
+    ? summary.learningQueuePreview.slice(continueTune || queuedTune ? 1 : 0, 2)
+    : []
 
   return (
-    <div className="space-y-5">
-      <MobilePanel>
-        <MobileSectionHeading
-          title="Today"
-          action={
-            <Link href="/review" className={buttonStyles.primary}>
-              Practice
-            </Link>
-          }
-        />
-
-        <div className="mt-4">
-          <MobileStatGrid
-            items={[
-              {
-                label: "Due",
-                value: summary.dueTodayCount,
-                href: "/review#due-today",
-              },
-              {
-                label: "Attention",
-                value: summary.needsAttentionCount,
-                href: "/review?mode=catch-up#catch-up",
-              },
-            ]}
-          />
-        </div>
-      </MobilePanel>
-
-      <StreakSummarySection streakSummary={streakSummary} />
+    <div className="space-y-4">
+      <section className="rounded-object border border-hairline bg-surface-paper p-4 shadow-material-rest">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">Continue</p>
+        <h2 className="mt-2 font-serif text-2xl font-bold leading-tight text-text-primary">{continueTitle}</h2>
+        <p className="mt-1 text-sm text-text-muted">{continueMeta}</p>
+        <Link href={continueHref} className={`${buttonStyles.primary} mt-4`}>
+          {continueTune || queuedTune ? "Open tune" : "Start practice"}
+        </Link>
+      </section>
 
       <section className="space-y-2">
-        <MobileSectionHeading title="Due next" />
+        <MobileSectionHeading title="Up next" action={<Link href="/review" className={buttonStyles.text}>View practice</Link>} />
 
-        {summary.dueTodayPreview.length === 0 ? (
-          <MobileEmptyBlock>Nothing due today.</MobileEmptyBlock>
+        {dueQueuePreview.length === 0 && learningQueuePreview.length === 0 ? (
+          <MobileEmptyBlock>No more tunes are due today.</MobileEmptyBlock>
         ) : (
           <div className="border-y border-border/70">
-            {summary.dueTodayPreview
-              .slice(0, previewLimit)
-              .map((userPiece) => (
+            {dueQueuePreview.map((userPiece) => (
                 <MobileRow
                   key={userPiece.user_piece_id}
                   href={`/library/${userPiece.piece_id}`}
@@ -334,9 +346,26 @@ function TodayPanel({
                   meta={`Stage ${userPiece.stage}`}
                 />
               ))}
+            {learningQueuePreview.map((queueTune) => (
+              <MobileRow
+                key={queueTune.piece_id}
+                href={`/library/${queueTune.piece_id}`}
+                title={queueTune.title}
+                meta={`From ${queueTune.firstListName}`}
+              />
+            ))}
           </div>
         )}
       </section>
+
+      <MobileStatGrid
+        items={[
+          { label: "Due today", value: summary.dueTodayCount, href: "/review#due-today" },
+          { label: "Needs attention", value: summary.needsAttentionCount, href: "/review?mode=catch-up#catch-up" },
+        ]}
+      />
+
+      <StreakSummarySection streakSummary={streakSummary} />
     </div>
   )
 }
@@ -349,25 +378,11 @@ function RepertoirePanel({
   density: HomeDensity
 }) {
   const previewLimit = getPreviewLimit(density)
-
-  const recentBadges = useMemo(
-    () =>
-      [
-        ...summary.badgeSummary.recentReceivedBadges.map((badge) => ({
-          ...badge,
-          kind: "Received" as const,
-        })),
-        ...summary.badgeSummary.recentCreatedBadges.map((badge) => ({
-          ...badge,
-          kind: "Created" as const,
-        })),
-      ].slice(0, previewLimit),
-    [
-      summary.badgeSummary.recentCreatedBadges,
-      summary.badgeSummary.recentReceivedBadges,
-      previewLimit,
-    ]
-  )
+  const recentTunes = summary.inPracticePreview.slice(0, previewLimit)
+  const recentBadges = [
+    ...summary.badgeSummary.recentReceivedBadges.map((badge) => ({ ...badge, kind: "Badge received" })),
+    ...summary.badgeSummary.recentCreatedBadges.map((badge) => ({ ...badge, kind: "Badge created" })),
+  ].slice(0, Math.max(0, previewLimit - recentTunes.length))
 
   return (
     <div className="space-y-5">
@@ -403,97 +418,26 @@ function RepertoirePanel({
       </MobilePanel>
 
       <section className="space-y-2">
-        <MobileSectionHeading title="Currently in practice" />
+        <MobileSectionHeading title="Recent changes" action={<Link href="/library" className={buttonStyles.text}>View tunes</Link>} />
 
-        {summary.inPracticePreview.length === 0 ? (
-          <MobileEmptyBlock>No tunes in practice yet.</MobileEmptyBlock>
+        {recentTunes.length === 0 && recentBadges.length === 0 ? (
+          <MobileEmptyBlock>Your recent repertoire changes will appear here.</MobileEmptyBlock>
         ) : (
           <div className="border-y border-border/70">
-            {summary.inPracticePreview
-              .slice(0, previewLimit)
-              .map((userPiece) => (
+            {recentTunes.map((userPiece) => (
                 <MobileRow
                   key={userPiece.user_piece_id}
                   href={`/library/${userPiece.piece_id}`}
                   title={userPiece.title}
-                  meta={`Stage ${userPiece.stage}`}
+                  meta={`In practice · Stage ${userPiece.stage}`}
                 />
               ))}
-          </div>
-        )}
-      </section>
-
-      <section className="space-y-2">
-        <MobileSectionHeading title="Learning queue" />
-
-        {summary.learningQueuePreview.length === 0 ? (
-          <MobileEmptyBlock>
-            Add tunes to lists before starting Practice to build this queue.
-          </MobileEmptyBlock>
-        ) : (
-          <div className="border-y border-border/70">
-            {summary.learningQueuePreview
-              .slice(0, previewLimit)
-              .map((queueTune) => (
-                <MobileRow
-                  key={queueTune.piece_id}
-                  href={`/library/${queueTune.piece_id}`}
-                  title={queueTune.title}
-                  meta={getLearningQueueMeta({
-                    firstListName: queueTune.firstListName,
-                    listNames: queueTune.listNames,
-                  })}
-                />
-              ))}
-          </div>
-        )}
-      </section>
-
-      <section className="space-y-2">
-        <MobileSectionHeading
-          title="Your lists"
-          action={
-            <Link href="/learning-lists" className={buttonStyles.secondary}>
-              View
-            </Link>
-          }
-        />
-
-        {summary.listPreview.length === 0 ? (
-          <MobileEmptyBlock>No lists yet.</MobileEmptyBlock>
-        ) : (
-          <div className="border-y border-border/70">
-            {summary.listPreview.slice(0, previewLimit).map((learningList) => (
-              <MobileRow
-                key={learningList.id}
-                href={`/learning-lists/${learningList.id}`}
-                title={learningList.name}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="space-y-2">
-        <MobileSectionHeading
-          title="Badges"
-          action={
-            <Link href="/badges" className={buttonStyles.secondary}>
-              View
-            </Link>
-          }
-        />
-
-        {recentBadges.length === 0 ? (
-          <MobileEmptyBlock>No badges yet.</MobileEmptyBlock>
-        ) : (
-          <div className="border-y border-border/70">
             {recentBadges.map((badge) => (
               <MobileRow
                 key={`${badge.kind}-${badge.id}`}
                 href={`/badges/${badge.slug}`}
                 title={badge.name}
-                meta={`${badge.kind} · ${badgeCategoryLabel(badge.category)}`}
+                meta={badge.kind}
               />
             ))}
           </div>
@@ -571,11 +515,15 @@ export default function HomeMobileSummarySwitcher({
   streakSummary,
   density,
 }: HomeMobileSummarySwitcherProps) {
-  const [activeTab, setActiveTab] = useState<MobileHomeTab>("today")
+  const activeTab = useSyncExternalStore(
+    subscribeToHomeTab,
+    getStoredHomeTab,
+    getServerHomeTab
+  )
 
   return (
     <section className="space-y-4 md:hidden">
-      <MobileSwitcher activeTab={activeTab} onChange={setActiveTab} />
+      <MobileSwitcher activeTab={activeTab} onChange={persistHomeTab} />
 
       {activeTab === "today" ? (
         <TodayPanel

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
+import { withServerTiming } from "@/lib/server-timing"
 
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -31,7 +32,7 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  await supabase.auth.getUser()
+  await withServerTiming("proxy.auth.getClaims", () => supabase.auth.getClaims())
 
   return supabaseResponse
 }

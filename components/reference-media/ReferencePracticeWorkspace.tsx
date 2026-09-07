@@ -7,6 +7,8 @@ import YouTubeLoopPlayer, {
 } from "@/components/library/YouTubeLoopPlayer"
 import MobileViewSwitcher from "@/components/ui/MobileViewSwitcher"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
+import { useSessionDock } from "@/components/session-dock/SessionDockProvider"
+import type { SessionDockModel } from "@/components/session-dock/sessionDockModel"
 import { addPieceMediaLink } from "@/lib/actions/media-links"
 import {
   getLoopsForSource,
@@ -186,14 +188,57 @@ function RecordingSelector({
 }
 
 function UnavailableWorkspace({
+  piece,
   selectedSource,
   mediaPanel,
 }: {
+  piece: Piece
   selectedSource: TuneMediaSource | null
   mediaPanel: React.ReactNode
 }) {
   const [mobileView, setMobileView] =
     useState<ReferencePracticeView>("media")
+  const dockModel = useMemo<SessionDockModel>(
+    () => ({
+      id: `reference-media:${piece.id}:unavailable`,
+      context: "reference-media",
+      identity: {
+        eyebrow: "Reference",
+        title: selectedSource?.label ?? piece.title,
+        detail: selectedSource
+          ? "External source"
+          : "No playable recording selected",
+      },
+      primaryAction: selectedSource
+        ? {
+            id: "open-source",
+            label: "Open source",
+            href: selectedSource.url,
+            tone: "practice",
+          }
+        : null,
+      secondaryActions: [],
+      status: {
+        label: selectedSource ? "In-app playback unavailable" : "Choose a source",
+        tone: "neutral",
+      },
+      collapsedContent: { actionIds: ["open-source"] },
+      expandedContent: {
+        title: `${piece.title} reference tools`,
+        description:
+          "This source opens externally. The metronome remains available for practice.",
+        actionIds: ["open-source"],
+        tools: ["metronome"],
+      },
+      persistence: {
+        shareable: "url",
+        transient: "none",
+      },
+    }),
+    [piece.id, piece.title, selectedSource]
+  )
+
+  useSessionDock(`reference-media:${piece.id}`, dockModel)
 
   return (
     <div className="md:grid md:grid-cols-[minmax(0,0.92fr)_minmax(22rem,1.08fr)] md:items-start md:gap-6">
@@ -317,6 +362,7 @@ export default function ReferencePracticeWorkspace({
   if (!selectedSource?.isYouTube || !selectedSource.youtubeVideoId) {
     return (
       <UnavailableWorkspace
+        piece={piece}
         selectedSource={selectedSource}
         mediaPanel={mediaPanel}
       />

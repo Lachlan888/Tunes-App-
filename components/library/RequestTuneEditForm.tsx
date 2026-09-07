@@ -11,6 +11,11 @@ type RequestTuneEditFormProps = {
   piece: Piece
   redirectTo: string
   styleOptions: StyleOption[]
+  heading?: string
+  description?: string
+  reasonPlaceholder?: string
+  defaultReason?: string
+  submitLabel?: string
 }
 
 const inputClassName =
@@ -20,6 +25,11 @@ export default function RequestTuneEditForm({
   piece,
   redirectTo,
   styleOptions,
+  heading = "Request a correction",
+  description = "Suggest corrections to the shared tune record. To add background, source notes, alternate titles, or folklore, use the Lore section instead.",
+  reasonPlaceholder = "Why should this be changed?",
+  defaultReason = "",
+  submitLabel = "Submit edit request",
 }: RequestTuneEditFormProps) {
   return (
     <form action={createPieceEditRequest} className="space-y-3">
@@ -28,12 +38,10 @@ export default function RequestTuneEditForm({
 
       <div className="rounded-2xl border border-border bg-background/70 p-4">
         <p className="text-sm font-medium text-foreground">
-          Request a correction
+          {heading}
         </p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Suggest corrections to the shared tune record. To add background,
-          source notes, alternate titles, or folklore, use the Lore section
-          instead.
+          {description}
         </p>
       </div>
 
@@ -85,12 +93,13 @@ export default function RequestTuneEditForm({
       <textarea
         name="reason"
         rows={5}
-        placeholder="Why should this be changed?"
+        placeholder={reasonPlaceholder}
+        defaultValue={defaultReason}
         className={inputClassName}
       />
 
       <SubmitButton
-        label="Submit edit request"
+        label={submitLabel}
         pendingLabel="Submitting..."
         className="w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
       />

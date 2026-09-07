@@ -1,4 +1,4 @@
-import { normaliseTuneTitle } from "@/lib/normalise"
+import { normaliseTuneTitle } from "./normalise.ts"
 import type {
   FilterableLearningList,
   Piece,

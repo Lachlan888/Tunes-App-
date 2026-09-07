@@ -5,7 +5,8 @@ import type { PieceCommentRow, PieceLoreEntryRow } from "./types"
 export async function loadTuneCommunity(
   supabase: SupabaseClient,
   pieceId: number,
-  currentUserRole: UserRole
+  currentUserRole: UserRole,
+  includeComments = true
 ): Promise<{
   typedPieceComments: PieceCommentRow[]
   typedPieceLoreEntries: PieceLoreEntryRow[]
@@ -13,20 +14,22 @@ export async function loadTuneCommunity(
   const canSeeHiddenComments =
     currentUserRole === "moderator" || currentUserRole === "admin"
 
-  let commentsQuery = supabase
-    .from("piece_comments")
-    .select(
-      "id, body, created_at, user_id, parent_comment_id, moderation_status"
-    )
-    .eq("piece_id", pieceId)
-    .order("created_at", { ascending: true })
+  let commentsQuery = includeComments
+    ? supabase
+        .from("piece_comments")
+        .select(
+          "id, body, created_at, user_id, parent_comment_id, moderation_status"
+        )
+        .eq("piece_id", pieceId)
+        .order("created_at", { ascending: true })
+    : null
 
-  if (!canSeeHiddenComments) {
+  if (commentsQuery && !canSeeHiddenComments) {
     commentsQuery = commentsQuery.eq("moderation_status", "visible")
   }
 
   const [pieceCommentsResult, pieceLoreEntriesResult] = await Promise.all([
-    commentsQuery,
+    commentsQuery ?? Promise.resolve({ data: [], error: null }),
 
     supabase
       .from("piece_lore_entries")

@@ -30,7 +30,7 @@ export default function LoadingSpinner({
       <span
         aria-hidden="true"
         className={joinClasses(
-          "shrink-0 rounded-full border-border border-t-primary motion-safe:animate-spin motion-reduce:border-primary",
+          "shrink-0 rounded-full border-hairline border-t-state-practice motion-safe:animate-spin motion-reduce:border-state-practice",
           sizeClasses[size]
         )}
       />
@@ -38,7 +38,7 @@ export default function LoadingSpinner({
       {showLabel ? (
         <span
           className={joinClasses(
-            "text-sm font-medium text-muted-foreground",
+            "text-sm font-medium text-text-muted",
             labelClassName
           )}
         >

@@ -1,5 +1,6 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
+import Icon from "@/components/ui/Icon"
 import { joinClasses } from "@/components/ui/buttonStyles"
 
 type PageHeaderProps = {
@@ -30,15 +31,16 @@ export default function PageHeader({
         {backHref ? (
           <Link
             href={backHref}
-            className="mb-2 inline-flex text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className="mb-2 inline-flex min-h-11 items-center gap-1.5 rounded-control text-sm font-semibold text-text-muted underline-offset-4 transition-colors [transition-duration:var(--motion-quick)] hover:text-text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
           >
-            {backLabel}
+            <Icon name="arrow-left" size={17} />
+            <span>{backLabel}</span>
           </Link>
         ) : null}
 
         <h1
           className={joinClasses(
-            "break-words font-serif text-3xl font-bold leading-tight tracking-tight text-foreground md:text-4xl",
+            "break-words font-serif text-3xl font-semibold leading-tight tracking-tight text-text-primary md:text-4xl",
             titleClassName
           )}
         >

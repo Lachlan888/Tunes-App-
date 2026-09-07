@@ -62,13 +62,13 @@ export default function UpdatePasswordPage() {
       </p>
 
       {message && (
-        <div className="mb-4 rounded border border-green-600 bg-green-50 p-3 text-sm text-green-800">
+        <div className="mb-4 rounded-control border border-state-known/55 bg-state-known/12 p-3 text-sm text-text-primary">
           {message}
         </div>
       )}
 
       {errorMessage && (
-        <div className="mb-4 rounded border border-red-600 bg-red-50 p-3 text-sm text-red-800">
+        <div className="mb-4 rounded-control border border-action-destructive/55 bg-action-destructive/10 p-3 text-sm text-action-destructive">
           {errorMessage}
         </div>
       )}

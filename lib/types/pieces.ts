@@ -17,6 +17,8 @@ export type PieceStyleTag = {
 export type Piece = {
   id: number
   title: string
+  alternate_titles?: string | null
+  type?: string | null
   key: string | null
   style: string | null
   time_signature: string | null

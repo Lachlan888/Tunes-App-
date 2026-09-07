@@ -1,7 +1,31 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import { mapPracticeNote } from "./helpers"
-import type { PracticeNoteRow, TunePracticeNote } from "./types"
+import type {
+  PracticeNoteRow,
+  TunePracticeNote,
+  TuneReviewSummary,
+} from "./types"
+
+type ReviewEventRow = {
+  id: number
+  outcome: string
+  resulting_stage: number | null
+  created_at: string | null
+}
+
+type PracticeReviewRow = {
+  id: number
+  created_at: string
+  review_events: ReviewEventRow | ReviewEventRow[] | null
+}
+
+function getJoinedReview(
+  value: PracticeReviewRow["review_events"]
+): ReviewEventRow | null {
+  if (!value) return null
+  return Array.isArray(value) ? value[0] ?? null : value
+}
 
 export async function loadTunePracticeHistory(
   supabase: SupabaseClient,
@@ -9,9 +33,11 @@ export async function loadTunePracticeHistory(
   pieceId: number
 ): Promise<{
   typedPracticeNotes: TunePracticeNote[]
+  typedReviewHistory: TuneReviewSummary[]
   practiceNoteCategories: PracticeNoteCategory[]
 }> {
-  const [practiceNotesResult, practiceCategoriesResult] = await Promise.all([
+  const [practiceNotesResult, practiceCategoriesResult, reviewHistoryResult] =
+    await Promise.all([
     supabase
       .from("practice_notes")
       .select(
@@ -58,11 +84,48 @@ export async function loadTunePracticeHistory(
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .order("name", { ascending: true }),
+
+    supabase
+      .from("practice_events")
+      .select(
+        `
+          id,
+          created_at,
+          review_events (
+            id,
+            outcome,
+            resulting_stage,
+            created_at
+          )
+        `
+      )
+      .eq("user_id", userId)
+      .eq("piece_id", pieceId)
+      .not("review_event_id", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(5),
   ])
+
+  const typedReviewHistory = (
+    (reviewHistoryResult.data ?? []) as PracticeReviewRow[]
+  ).flatMap((event): TuneReviewSummary[] => {
+    const review = getJoinedReview(event.review_events)
+    if (!review) return []
+
+    return [
+      {
+        id: review.id,
+        outcome: review.outcome,
+        resulting_stage: review.resulting_stage,
+        created_at: review.created_at ?? event.created_at,
+      },
+    ]
+  })
 
   return {
     typedPracticeNotes: ((practiceNotesResult.data ?? []) as PracticeNoteRow[])
       .map(mapPracticeNote),
+    typedReviewHistory,
     practiceNoteCategories:
       (practiceCategoriesResult.data as PracticeNoteCategory[] | null) ?? [],
   }

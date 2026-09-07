@@ -405,6 +405,127 @@ export async function addToLearningList(formData: FormData) {
   redirect(buildListAddRedirectUrl(redirectTo, "duplicate"))
 }
 
+export async function addSelectedTunesToLearningLists(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) redirect("/login")
+
+  const redirectTo = getSafeRedirectTo(formData, "/library")
+  const pieceIds = Array.from(
+    new Set(
+      formData
+        .getAll("piece_ids")
+        .map((value) => Number(value))
+        .filter((value) => Number.isInteger(value) && value > 0)
+    )
+  ).slice(0, 50)
+  const learningListIds = getSelectedLearningListIds(formData).slice(0, 20)
+
+  if (pieceIds.length === 0) {
+    redirect(buildListAddRedirectUrl(redirectTo, "missing_piece"))
+  }
+  if (learningListIds.length === 0) {
+    redirect(buildListAddRedirectUrl(redirectTo, "missing_list"))
+  }
+
+  const [ownedListsResult, piecesResult, existingItemsResult, positionsResult] =
+    await Promise.all([
+      supabase
+        .from("learning_lists")
+        .select("id")
+        .eq("user_id", user.id)
+        .in("id", learningListIds),
+      supabase.from("pieces").select("id").in("id", pieceIds),
+      supabase
+        .from("learning_list_items")
+        .select("learning_list_id, piece_id")
+        .in("learning_list_id", learningListIds)
+        .in("piece_id", pieceIds),
+      supabase
+        .from("learning_list_items")
+        .select("learning_list_id, position")
+        .in("learning_list_id", learningListIds)
+        .not("position", "is", null),
+    ])
+
+  if (
+    ownedListsResult.error ||
+    piecesResult.error ||
+    existingItemsResult.error ||
+    positionsResult.error
+  ) {
+    redirect(buildListAddRedirectUrl(redirectTo, "error"))
+  }
+
+  const ownedListIds = new Set(
+    (ownedListsResult.data ?? []).map((list) => list.id)
+  )
+  const validPieceIds = new Set((piecesResult.data ?? []).map((piece) => piece.id))
+  const existingPairs = new Set(
+    (existingItemsResult.data ?? []).map(
+      (item) => `${item.learning_list_id}:${item.piece_id}`
+    )
+  )
+  const nextPositions = new Map<number, number>()
+
+  for (const item of positionsResult.data ?? []) {
+    const current = nextPositions.get(item.learning_list_id) ?? 1
+    nextPositions.set(
+      item.learning_list_id,
+      Math.max(current, Number(item.position ?? 0) + 1)
+    )
+  }
+
+  const rowsToInsert: Array<{
+    learning_list_id: number
+    piece_id: number
+    position: number
+  }> = []
+  let duplicateCount = 0
+
+  for (const learningListId of learningListIds) {
+    if (!ownedListIds.has(learningListId)) continue
+    let nextPosition = nextPositions.get(learningListId) ?? 1
+
+    for (const pieceId of pieceIds) {
+      if (!validPieceIds.has(pieceId)) continue
+      const pair = `${learningListId}:${pieceId}`
+
+      if (existingPairs.has(pair)) {
+        duplicateCount += 1
+        continue
+      }
+
+      rowsToInsert.push({ learning_list_id: learningListId, piece_id: pieceId, position: nextPosition })
+      nextPosition += 1
+    }
+  }
+
+  if (rowsToInsert.length > 0) {
+    const { error } = await supabase.from("learning_list_items").insert(rowsToInsert)
+    if (error) redirect(buildListAddRedirectUrl(redirectTo, "error"))
+  }
+
+  const status: ListAddStatus =
+    rowsToInsert.length > 0 && duplicateCount > 0
+      ? "partial"
+      : rowsToInsert.length > 0
+        ? "success"
+        : "duplicate"
+
+  redirect(
+    appendQueryParams(redirectTo, {
+      list_add: status,
+      selection_count: pieceIds.length,
+      added_count: rowsToInsert.length,
+      duplicate_count: duplicateCount,
+    })
+  )
+}
+
 export async function importPublicList(formData: FormData) {
   const supabase = await createClient()
 
