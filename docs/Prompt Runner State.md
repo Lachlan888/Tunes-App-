@@ -5,6 +5,7 @@
 - Last update: 2026-09-09T06:44:56Z
 - Next prompt: 14; do not advance to 15 until acceptance and migration verification pass
 - Completed prompts: 1–13, as recorded by their implementation runs
+- Series finish point: 19; Prompt 19 is pending after successful completion of 18
 - Checkpoint branch: `codex/ui-review-checkpoint-2026-09-09`; continue from this local snapshot, not the older `main` milestone
 - Current tracked-file fingerprint: `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
 - Runner-owned repository-change fingerprint: `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
@@ -17,6 +18,14 @@
 2. Inspect current Git status and lock ownership. Resume Prompt 14 from the checkpoint and any newer coherent runner changes. Earlier conversations showing Prompt 7 are stale. Do not rerun completed prompts or discard partial work to recreate the old milestone.
 3. Read `Tunes-App-Current-Context.md`, only Prompt 14 in `Prompt Series`, and the audit's executive/experience-model and Setlists sections. Read applicable `AGENTS.md` files if present. Follow the existing automation's implementation, verification, privacy and migration rules.
 4. Use the concrete continuation notes below. Do not mark Prompt 14 complete based on the historical Prompt 13 checks.
+
+## Planned Prompt 19 — user feedback
+
+On 9 September 2026 the user authorised a final refinement prompt after Prompts 1–18. Prompt 19 is defined in `Prompt Series`, with original screenshot evidence in `ui-feedback/prompt-19/`. It covers rendered contrast, consistent Social/Friends naming, inline review reference playback, direct Tune Detail access to Reference Mode, DAW-style transport with a saved-loop playlist, and one Lists section preserving public-list styling and private/shared/public permissions.
+
+This is planning only: keep the current and next prompt at 14. Finish 14–18 in order, then run 19. After Prompt 18 acceptance, record Prompt 19 pending; stop the series only after Prompt 19 acceptance. The saved hourly automation now advances from completed Prompt 18 to pending Prompt 19 and stops after 19; its schedule, project, model and other settings were verified unchanged. The new requirements explicitly supersede the older intermediate Reference-preview design and separated public-list navigation when Prompt 19 runs. Do not apply that future design early or rewrite the current architecture as though it already exists.
+
+These documentation and screenshot additions are user-authorised planning work and must not be mistaken for unexplained application-code drift. They do not change any app code or complete a numbered implementation prompt.
 
 ## Checkpoint scope and authority
 
@@ -70,3 +79,5 @@ If fingerprints differ, inspect the actual changes, timestamps, prompt scope and
 ## Housekeeping history
 
 - 2026-09-09T06:44:56Z — Reconciled actual local progress (1–13 complete; 14 partial), preserved the full earlier ledger in an archive, documented the three current type errors and migration/permission follow-ups, and removed the abandoned Prompt 14 lock after checking task/process activity. Prepared the entire existing repository snapshot for the user's authorised push without changing application code.
+
+- 2026-09-09T07:14:54Z — Added the user-requested Prompt 19 and four original screenshot references; retained Prompt 14 as current and extended the planned sequence through 19.
