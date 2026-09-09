@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tunes App
 
-## Getting Started
+Tunes is a living tunebook for remembering, practising and sharing traditional music. The app uses Next.js, React, TypeScript and Supabase.
 
-First, run the development server:
+## Resume development
+
+Start with [Prompt Runner State](docs/Prompt%20Runner%20State.md). It is the single live progress ledger and records the current prompt, unfinished work, verification results and recovery notes. Read it before assuming progress from a conversation or an older Git milestone.
+
+- [Current architecture and product context](docs/Tunes-App-Current-Context.md)
+- [Numbered implementation prompts](docs/Prompt%20Series) — read only the current prompt unless more context is needed
+- [UI/UX audit and design direction](docs/Tunes%20App%20%E2%80%94%20Full%20UI%2FUX%20Audit%20and%202026%20Product%20Design%20Direction.md) — read the executive direction and relevant workstream
+- [Historical runner evidence](docs/archive/Prompt%20Runner%20History%20through%20Prompt%2013.md) — archived results, not a second live ledger
+
+The local repository is the intended implementation snapshot. A checkpoint can include incomplete work; consult the live ledger before treating it as release-ready. Preserve existing work and follow the runner's documented recovery and verification rules.
+
+## Local development
+
+Use the repository's existing local environment configuration. Keep credentials out of Git. If setting up a fresh machine, obtain the required environment values through the existing authorised setup process.
 
 ```bash
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test
+npx tsc --noEmit
+npm run lint
+npm run build
+```
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Use the live ledger to distinguish known failures from new regressions. A passing test suite alone does not establish that an interrupted prompt meets its acceptance criteria.

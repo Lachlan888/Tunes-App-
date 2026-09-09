@@ -105,7 +105,8 @@ function SearchResultsSection({
 
       {searchQuery && searchMatches.length === 0 && (
         <EmptyState
-          title="No new people found"
+          title="No available matches"
+          description="Try another name or username. Private profiles and existing connections are not shown."
           className="mt-4"
         />
       )}
@@ -299,7 +300,10 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
       )}
 
       {friendRequestStatus === "not_found" && (
-        <StatusBanner tone="error">That person could not be found.</StatusBanner>
+        <StatusBanner tone="neutral">
+          That request could not be completed. The person may be unavailable or
+          private.
+        </StatusBanner>
       )}
 
       {friendRequestStatus === "duplicate" && (
@@ -319,20 +323,20 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
       )}
 
       {friendAcceptStatus === "not_found" && (
-        <StatusBanner tone="error">
-          That friend request could not be found.
+        <StatusBanner tone="neutral">
+          That request is unavailable or has expired.
         </StatusBanner>
       )}
 
       {friendAcceptStatus === "forbidden" && (
-        <StatusBanner tone="error">
-          You are not allowed to accept that request.
+        <StatusBanner tone="neutral">
+          That request is unavailable or has expired.
         </StatusBanner>
       )}
 
       {friendAcceptStatus === "invalid_status" && (
-        <StatusBanner tone="warning">
-          That request is no longer pending.
+        <StatusBanner tone="neutral">
+          That request is unavailable or has expired.
         </StatusBanner>
       )}
 
@@ -347,20 +351,20 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
       )}
 
       {friendDeclineStatus === "not_found" && (
-        <StatusBanner tone="error">
-          That friend request could not be found.
+        <StatusBanner tone="neutral">
+          That request is unavailable or has expired.
         </StatusBanner>
       )}
 
       {friendDeclineStatus === "forbidden" && (
-        <StatusBanner tone="error">
-          You are not allowed to refuse that request.
+        <StatusBanner tone="neutral">
+          That request is unavailable or has expired.
         </StatusBanner>
       )}
 
       {friendDeclineStatus === "invalid_status" && (
-        <StatusBanner tone="warning">
-          That request is no longer pending.
+        <StatusBanner tone="neutral">
+          That request is unavailable or has expired.
         </StatusBanner>
       )}
 

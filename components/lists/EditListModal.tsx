@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import SubmitButton from "@/components/SubmitButton"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
@@ -54,9 +54,19 @@ export default function EditListModal({
 }: EditListModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isBusy, setIsBusy] = useState(false)
+  const [isDirty, setIsDirty] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen || !isDirty) return
+    const guard = (event: BeforeUnloadEvent) => event.preventDefault()
+    window.addEventListener("beforeunload", guard)
+    return () => window.removeEventListener("beforeunload", guard)
+  }, [isDirty, isOpen])
 
   function closeModal() {
     if (isBusy) return
+    if (isDirty && !window.confirm("Discard unsaved list changes?")) return
+    setIsDirty(false)
     setIsOpen(false)
   }
 
@@ -71,6 +81,7 @@ export default function EditListModal({
         className={triggerClassName}
         onClick={() => {
           setIsBusy(false)
+          setIsDirty(false)
           setIsOpen(true)
         }}
       >
@@ -135,6 +146,7 @@ export default function EditListModal({
                 await updateList(formData)
               }}
               className="mt-4 space-y-4"
+              onChange={() => setIsDirty(true)}
             >
               <input type="hidden" name="learning_list_id" value={listId} />
               <input type="hidden" name="redirect_to" value={redirectTo} />

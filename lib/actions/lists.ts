@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { startPracticeForUser } from "@/lib/actions/user-pieces"
 import {
   recordPublicListCreatedEvent,
   recordPublicListUpdatedEvent,
@@ -940,6 +941,216 @@ export async function removeTuneFromList(formData: FormData) {
   }
 
   redirect(appendQueryParam(redirectTo, "edit_list", "removed_tune"))
+}
+
+export async function moveTuneInList(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) redirect("/login")
+
+  const listId = Number(formData.get("learning_list_id"))
+  const itemId = Number(formData.get("item_id"))
+  const direction = String(formData.get("direction"))
+  const redirectTo = String(formData.get("redirect_to") ?? `/learning-lists/${listId}?mode=manage`)
+
+  if (!listId || !itemId || !["up", "down"].includes(direction)) {
+    redirect(appendQueryParam(redirectTo, "edit_list", "invalid_reorder"))
+  }
+
+  const { data: ownedList } = await supabase
+    .from("learning_lists")
+    .select("id")
+    .eq("id", listId)
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (!ownedList) {
+    redirect(appendQueryParam(redirectTo, "edit_list", "not_found"))
+  }
+
+  const { data, error } = await supabase
+    .from("learning_list_items")
+    .select("id, position")
+    .eq("learning_list_id", listId)
+    .order("position", { ascending: true })
+    .order("id", { ascending: true })
+
+  if (error) redirect(appendQueryParam(redirectTo, "edit_list", "reorder_error"))
+
+  const items = data ?? []
+  const index = items.findIndex((item) => item.id === itemId)
+  const targetIndex = direction === "up" ? index - 1 : index + 1
+
+  if (index < 0 || targetIndex < 0 || targetIndex >= items.length) {
+    redirect(appendQueryParam(redirectTo, "edit_list", "reorder_unchanged"))
+  }
+
+  const current = items[index]
+  const target = items[targetIndex]
+  const currentPosition = current.position ?? index
+  const targetPosition = target.position ?? targetIndex
+  const temporaryPosition = -1_000_000 - current.id
+
+  const { error: temporaryError } = await supabase
+    .from("learning_list_items")
+    .update({ position: temporaryPosition })
+    .eq("id", current.id)
+    .eq("learning_list_id", listId)
+
+  if (temporaryError) redirect(appendQueryParam(redirectTo, "edit_list", "reorder_error"))
+
+  const { error: targetError } = await supabase
+    .from("learning_list_items")
+    .update({ position: currentPosition })
+    .eq("id", target.id)
+    .eq("learning_list_id", listId)
+
+  if (targetError) {
+    await supabase
+      .from("learning_list_items")
+      .update({ position: currentPosition })
+      .eq("id", current.id)
+      .eq("learning_list_id", listId)
+    redirect(appendQueryParam(redirectTo, "edit_list", "reorder_error"))
+  }
+
+  const { error: currentError } = await supabase
+    .from("learning_list_items")
+    .update({ position: targetPosition })
+    .eq("id", current.id)
+    .eq("learning_list_id", listId)
+
+  if (currentError) {
+    await Promise.all([
+      supabase.from("learning_list_items").update({ position: targetPosition }).eq("id", target.id).eq("learning_list_id", listId),
+      supabase.from("learning_list_items").update({ position: currentPosition }).eq("id", current.id).eq("learning_list_id", listId),
+    ])
+    redirect(appendQueryParam(redirectTo, "edit_list", "reorder_error"))
+  }
+
+  revalidatePath(`/learning-lists/${listId}`)
+  redirect(appendQueryParam(redirectTo, "edit_list", "reordered"))
+}
+
+export async function startSelectedListTunes(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) redirect("/login")
+
+  const redirectTo = String(formData.get("redirect_to") ?? "/learning-lists?view=learning-queue")
+  const requestedPieceIds = Array.from(
+    new Set(
+      formData
+        .getAll("piece_ids")
+        .map(Number)
+        .filter((pieceId) => Number.isSafeInteger(pieceId) && pieceId > 0)
+    )
+  ).slice(0, 50)
+
+  if (requestedPieceIds.length === 0) {
+    redirect(appendQueryParam(redirectTo, "list_batch", "empty"))
+  }
+
+  const { data: allowedRows, error } = await supabase
+    .from("learning_list_items")
+    .select("piece_id, learning_lists!inner(user_id)")
+    .eq("learning_lists.user_id", user.id)
+    .in("piece_id", requestedPieceIds)
+
+  if (error) redirect(appendQueryParam(redirectTo, "list_batch", "error"))
+
+  const allowedIds = new Set((allowedRows ?? []).map((row) => row.piece_id))
+  const safeIds = requestedPieceIds.filter((pieceId) => allowedIds.has(pieceId))
+
+  try {
+    for (const pieceId of safeIds) {
+      await startPracticeForUser(supabase, user.id, pieceId)
+    }
+  } catch {
+    redirect(appendQueryParam(redirectTo, "list_batch", "error"))
+  }
+
+  revalidatePath("/learning-lists")
+  redirect(appendQueryParam(redirectTo, "list_batch", `started-${safeIds.length}`))
+}
+
+export async function reorderListItems(input: {
+  listId: number
+  orderedItemIds: number[]
+}): Promise<{ status: "success" | "error"; message: string }> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  const listId = Number(input.listId)
+  const orderedItemIds = Array.from(new Set(input.orderedItemIds.map(Number))).filter(
+    (id) => Number.isSafeInteger(id) && id > 0
+  )
+
+  if (!user || !listId || orderedItemIds.length < 2 || orderedItemIds.length > 50) {
+    return { status: "error", message: "That order could not be saved." }
+  }
+
+  const { data: ownedList } = await supabase
+    .from("learning_lists")
+    .select("id")
+    .eq("id", listId)
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (!ownedList) return { status: "error", message: "Only the list owner can reorder tunes." }
+
+  const { data, error } = await supabase
+    .from("learning_list_items")
+    .select("id, position")
+    .eq("learning_list_id", listId)
+    .in("id", orderedItemIds)
+    .order("position", { ascending: true })
+    .order("id", { ascending: true })
+
+  if (error || !data || data.length !== orderedItemIds.length) {
+    return { status: "error", message: "The list changed. Refresh and try again." }
+  }
+
+  const originalPositions = new Map(data.map((item, index) => [item.id, item.position ?? index]))
+  const targetPositions = data.map((item, index) => item.position ?? index)
+
+  try {
+    for (const item of data) {
+      const { error: temporaryError } = await supabase
+        .from("learning_list_items")
+        .update({ position: -2_000_000 - item.id })
+        .eq("id", item.id)
+        .eq("learning_list_id", listId)
+      if (temporaryError) throw temporaryError
+    }
+    for (const [index, itemId] of orderedItemIds.entries()) {
+      const { error: updateError } = await supabase
+        .from("learning_list_items")
+        .update({ position: targetPositions[index] })
+        .eq("id", itemId)
+        .eq("learning_list_id", listId)
+      if (updateError) throw updateError
+    }
+  } catch {
+    for (const [itemId, position] of originalPositions) {
+      await supabase
+        .from("learning_list_items")
+        .update({ position })
+        .eq("id", itemId)
+        .eq("learning_list_id", listId)
+    }
+    return { status: "error", message: "The order was restored because saving failed." }
+  }
+
+  revalidatePath(`/learning-lists/${listId}`)
+  return { status: "success", message: "List order saved." }
 }
 
 export async function deleteList(formData: FormData) {

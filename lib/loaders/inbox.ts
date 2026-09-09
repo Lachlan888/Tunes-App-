@@ -141,6 +141,7 @@ export type DirectMessageThread = {
   messages: DirectMessageThreadMessage[]
   latestMessageAt: string
   unreadCount: number
+  totalMessageCount: number
 }
 
 function profileLabel(profile: ProfileRow | null | undefined) {
@@ -521,6 +522,7 @@ export async function loadInboxData() {
         messages: [],
         latestMessageAt: message.created_at,
         unreadCount: 0,
+        totalMessageCount: 0,
       } satisfies DirectMessageThread)
 
     const isOutgoing = message.sender_user_id === user.id
@@ -535,6 +537,7 @@ export async function loadInboxData() {
       read_at: message.read_at,
       isOutgoing,
     })
+    existingThread.totalMessageCount += 1
 
     existingThread.latestMessageAt = message.created_at
 
@@ -545,11 +548,17 @@ export async function loadInboxData() {
     threadMap.set(otherUserId, existingThread)
   }
 
-  const messageThreads = Array.from(threadMap.values()).sort(
-    (a, b) =>
-      new Date(b.latestMessageAt).getTime() -
-      new Date(a.latestMessageAt).getTime()
-  )
+  const messageThreads = Array.from(threadMap.values())
+    .map((thread) => ({
+      ...thread,
+      messages: thread.messages.slice(-10),
+    }))
+    .sort(
+      (a, b) =>
+        new Date(b.latestMessageAt).getTime() -
+        new Date(a.latestMessageAt).getTime()
+    )
+    .slice(0, 20)
 
   const unreadNotificationCount = notificationItems.filter(
     (item) => item.read_at === null

@@ -14,6 +14,7 @@ import type {
   CompareLoaderResult,
   CompareSearchResolution,
 } from "@/lib/loaders/compare/types"
+import { deriveCompareOutcomeGroups } from "@/lib/compare-outcomes"
 
 export type {
   CompareError,
@@ -50,6 +51,8 @@ function buildEmptyCompareResult({
     canCompare: false,
     error: "missing_search",
     selectedProfiles: [],
+    outcomeGroups: deriveCompareOutcomeGroups([], []),
+    outcomePieces: [],
   }
 }
 
@@ -95,6 +98,8 @@ async function resolveProfilesForCompare({
           canCompare: false,
           error: resolution.error,
           selectedProfiles: resolvedProfiles,
+          outcomeGroups: deriveCompareOutcomeGroups([], []),
+          outcomePieces: [],
         },
       }
     }
@@ -148,6 +153,80 @@ async function getMutualPieceIds({
   }
 
   return mutualPieceIds
+}
+
+async function loadComparisonOutcomes({
+  supabase,
+  currentUserId,
+  resolvedProfiles,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  currentUserId: string
+  resolvedProfiles: ProfileSearchRow[]
+}) {
+  const participantIds = [
+    currentUserId,
+    ...resolvedProfiles.map((profile) => profile.id),
+  ]
+  const [knownResult, practiceResult] = await Promise.all([
+    supabase
+      .from("user_known_pieces")
+      .select("user_id, piece_id")
+      .in("user_id", participantIds)
+      .limit(2000),
+    supabase
+      .from("user_pieces")
+      .select("user_id, piece_id, stage")
+      .in("user_id", participantIds)
+      .eq("status", "learning")
+      .limit(2000),
+  ])
+
+  if (knownResult.error) throw new Error(knownResult.error.message)
+  if (practiceResult.error) throw new Error(practiceResult.error.message)
+
+  const byPieceId = new Map<number, Record<string, { known: boolean; practiceStage: number | null }>>()
+  function ensure(pieceId: number) {
+    const existing = byPieceId.get(pieceId)
+    if (existing) return existing
+    const created = Object.fromEntries(
+      participantIds.map((userId) => [userId, { known: false, practiceStage: null }])
+    )
+    byPieceId.set(pieceId, created)
+    return created
+  }
+
+  for (const row of knownResult.data ?? []) {
+    ensure(row.piece_id)[row.user_id].known = true
+  }
+  for (const row of practiceResult.data ?? []) {
+    ensure(row.piece_id)[row.user_id].practiceStage = row.stage ?? 1
+  }
+
+  const tuneStates = Array.from(byPieceId, ([pieceId, byUserId]) => ({
+    pieceId,
+    byUserId,
+  }))
+  const outcomeGroups = deriveCompareOutcomeGroups(participantIds, tuneStates)
+  const visibleIds = new Set([
+    ...outcomeGroups.playableTogetherIds,
+    ...Object.values(outcomeGroups.teachableByUserId).flat(),
+  ])
+  const outcomePieces = await loadMutualPieces(supabase, visibleIds)
+  const titleById = new Map(outcomePieces.map((piece) => [piece.id, piece.title]))
+  const byTitle = (a: number, b: number) =>
+    (titleById.get(a) ?? "").localeCompare(titleById.get(b) ?? "")
+
+  outcomeGroups.playableTogetherIds.sort(byTitle)
+  outcomeGroups.sharedStrongIds.sort(byTitle)
+  outcomeGroups.sharedShakyIds.sort(byTitle)
+  Object.values(outcomeGroups.teachableByUserId).forEach((ids) => ids.sort(byTitle))
+  outcomeGroups.suggestedSetIds = [
+    ...outcomeGroups.sharedStrongIds,
+    ...outcomeGroups.sharedShakyIds,
+  ].slice(0, 6)
+
+  return { outcomeGroups, outcomePieces }
 }
 
 export async function loadCompareData(
@@ -217,17 +296,22 @@ export async function loadCompareData(
       canCompare: false,
       error: null,
       selectedProfiles: resolvedProfiles,
+      outcomeGroups: deriveCompareOutcomeGroups([], []),
+      outcomePieces: [],
     }
   }
 
-  const mutualPieceIds = await getMutualPieceIds({
-    supabase,
-    currentUserId: user.id,
-    resolvedProfiles,
-    includePractice,
-  })
-
-  const mutualPieces = await loadMutualPieces(supabase, mutualPieceIds)
+  const [{ outcomeGroups, outcomePieces }, mutualPieceIds] = await Promise.all([
+    loadComparisonOutcomes({ supabase, currentUserId: user.id, resolvedProfiles }),
+    getMutualPieceIds({
+      supabase,
+      currentUserId: user.id,
+      resolvedProfiles,
+      includePractice,
+    }),
+  ])
+  const mutualIdSet = new Set(mutualPieceIds)
+  const mutualPieces = outcomePieces.filter((piece) => mutualIdSet.has(piece.id))
 
   return {
     currentUserId: user.id,
@@ -241,6 +325,8 @@ export async function loadCompareData(
     canCompare: true,
     error: null,
     selectedProfiles: resolvedProfiles,
+    outcomeGroups,
+    outcomePieces,
   }
 }
 

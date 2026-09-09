@@ -1,25 +1,21 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
 import EditListModal from "@/components/lists/EditListModal"
-import MarkAsKnownButton from "@/components/MarkAsKnownButton"
-import TuneMediaLauncher from "@/components/reference-media/TuneMediaLauncher"
-import RemoveTuneFromListButton from "@/components/RemoveTuneFromListButton"
-import SubmitButton from "@/components/SubmitButton"
-import TuneCard from "@/components/TuneCard"
-import TuneIdentity from "@/components/tunes/TuneIdentity"
-import TuneMetadataSummary from "@/components/tunes/TuneMetadataSummary"
 import TuneStateIndicator from "@/components/tunes/TuneStateIndicator"
+import TuneRow from "@/components/tunes/TuneRow"
+import ListPager from "@/components/lists/ListPager"
+import ListOrderManager from "@/components/lists/ListOrderManager"
 import {
   deleteList,
+  reorderListItems,
   removeTuneFromList,
   revokeLearningListPrivateShare,
   searchLearningListShareRecipients,
   shareLearningListPrivately,
   updateList,
 } from "@/lib/actions/lists"
-import { startLearning } from "@/lib/actions/user-pieces"
 import { loadLearningListDetailData } from "@/lib/loaders/list-detail"
-import type { TuneMediaBundle } from "@/lib/tune-media"
+import { LIST_PAGE_SIZE, paginateListItems, parseListPage } from "@/lib/list-view-state"
 import type { Piece } from "@/lib/types"
 
 type LearningListDetailPageProps = {
@@ -28,6 +24,8 @@ type LearningListDetailPageProps = {
     remove_tune?: string
     edit_list?: string
     share_list?: string
+    mode?: string
+    page?: string | string[]
   }>
 }
 
@@ -66,176 +64,6 @@ function StatusMessage({
   )
 }
 
-const desktopActionPillBase =
-  "inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2 text-sm font-semibold shadow-sm"
-
-const desktopPrimaryActionClassName = `${desktopActionPillBase} border border-primary bg-primary text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]`
-
-const desktopSecondaryActionClassName = `${desktopActionPillBase} border border-border bg-card text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]`
-
-const desktopSuccessStatusClassName = `${desktopActionPillBase} border border-success bg-success text-success-foreground`
-
-const desktopPassiveStatusClassName = `${desktopActionPillBase} border border-border bg-card text-muted-foreground`
-
-const desktopRemoveTuneClassName =
-  "inline-flex min-h-11 items-center justify-center rounded-full border border-destructive bg-background/70 px-5 py-2 text-sm font-semibold text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-
-const mobileButtonBase =
-  "inline-flex min-h-10 items-center justify-center rounded-full px-4 py-2 text-sm font-semibold shadow-sm"
-
-const mobilePrimaryActionClassName = `${mobileButtonBase} border border-primary bg-primary text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]`
-
-const mobileSecondaryActionClassName = `${mobileButtonBase} border border-border bg-background/70 text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]`
-
-const mobileRemoveTuneClassName =
-  "inline-flex min-h-10 items-center justify-center rounded-full border border-destructive bg-background/70 px-4 py-2 text-sm font-semibold text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-
-function MobileTuneRow({
-  piece,
-  listId,
-  isAlreadyInPractice,
-  isKnown,
-  stage,
-  redirectTo,
-  mediaBundle,
-}: {
-  piece: Piece
-  listId: number
-  isAlreadyInPractice: boolean
-  isKnown: boolean
-  stage: number | null
-  redirectTo: string
-  mediaBundle: TuneMediaBundle | null
-}) {
-  return (
-    <article className="py-5">
-      <div className="min-w-0">
-        <TuneIdentity id={piece.id} title={piece.title} />
-
-        <TuneMetadataSummary piece={piece} />
-
-        {mediaBundle?.effectiveReference ? (
-          <div className="mt-3">
-            <TuneMediaLauncher
-              pieceId={piece.id}
-              title={piece.title}
-              mediaBundle={mediaBundle}
-              redirectTo={redirectTo}
-              label="Open Reference Media"
-              className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
-            />
-          </div>
-        ) : null}
-
-        <TuneStateIndicator
-          isAlreadyInPractice={isAlreadyInPractice}
-          isKnown={isKnown}
-          stage={stage}
-          className="mt-3 flex flex-wrap items-center gap-2"
-        />
-      </div>
-
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        {!isAlreadyInPractice ? (
-          <form action={startLearning}>
-            <input type="hidden" name="piece_id" value={piece.id} />
-            <input type="hidden" name="redirect_to" value={redirectTo} />
-
-            <SubmitButton
-              label="Start Practice"
-              pendingLabel="Starting..."
-              className={mobilePrimaryActionClassName}
-            />
-          </form>
-        ) : null}
-
-        {!isKnown ? (
-          <MarkAsKnownButton
-            pieceId={piece.id}
-            redirectTo={redirectTo}
-            label={isAlreadyInPractice ? "Move to Known" : "Mark Known"}
-            className={mobileSecondaryActionClassName}
-            confirmMessage={
-              isAlreadyInPractice
-                ? `Move "${piece.title}" to Known? Active Practice and review scheduling will stop.`
-                : undefined
-            }
-          />
-        ) : null}
-
-        <RemoveTuneFromListButton
-          listId={listId}
-          pieceId={piece.id}
-          tuneTitle={piece.title}
-          redirectTo={redirectTo}
-          className={mobileRemoveTuneClassName}
-        />
-      </div>
-    </article>
-  )
-}
-
-function DesktopTuneActions({
-  piece,
-  listId,
-  isAlreadyInPractice,
-  isKnown,
-  stage,
-  redirectTo,
-}: {
-  piece: Piece
-  listId: number
-  isAlreadyInPractice: boolean
-  isKnown: boolean
-  stage: number | null
-  redirectTo: string
-}) {
-  return (
-    <div className="flex w-full flex-wrap items-center gap-3">
-      {isAlreadyInPractice ? (
-        <span className={desktopSuccessStatusClassName}>
-          {stage ? `Already in practice · Stage ${stage}` : "Already in practice"}
-        </span>
-      ) : (
-        <form action={startLearning}>
-          <input type="hidden" name="piece_id" value={piece.id} />
-          <input type="hidden" name="redirect_to" value={redirectTo} />
-
-          <SubmitButton
-            label="Start Practice"
-            pendingLabel="Starting..."
-            className={desktopPrimaryActionClassName}
-          />
-        </form>
-      )}
-
-      {isKnown ? (
-        <span className={desktopPassiveStatusClassName}>Known</span>
-      ) : (
-        <MarkAsKnownButton
-          pieceId={piece.id}
-          redirectTo={redirectTo}
-          label={isAlreadyInPractice ? "Move to Known" : "Mark Known"}
-          className={desktopSecondaryActionClassName}
-          confirmMessage={
-            isAlreadyInPractice
-              ? `Move "${piece.title}" to Known? Active Practice and review scheduling will stop.`
-              : undefined
-          }
-        />
-      )}
-
-      <RemoveTuneFromListButton
-        listId={listId}
-        pieceId={piece.id}
-        tuneTitle={piece.title}
-        redirectTo={redirectTo}
-        className={desktopRemoveTuneClassName}
-      />
-    </div>
-  )
-}
-
 export default async function LearningListDetailPage({
   params,
   searchParams,
@@ -246,6 +74,8 @@ export default async function LearningListDetailPage({
   const removeTuneStatus = resolvedSearchParams?.remove_tune ?? ""
   const editListStatus = resolvedSearchParams?.edit_list ?? ""
   const shareListStatus = resolvedSearchParams?.share_list ?? ""
+  const requestedMode = resolvedSearchParams?.mode === "manage" ? "manage" : "reader"
+  const requestedPage = parseListPage(resolvedSearchParams?.page)
 
   const {
     typedList,
@@ -253,13 +83,13 @@ export default async function LearningListDetailPage({
     tunes,
     activePieceStates,
     knownPieceIds,
-    mediaBundles,
     ownerProfile,
     shareRecipients,
     accessMode,
     redirectTo,
   } = await loadLearningListDetailData(id)
   const isOwner = accessMode === "owner"
+  const mode = isOwner ? requestedMode : "reader"
 
   const visibleItems = typedItems
     .map((item) => ({
@@ -270,6 +100,12 @@ export default async function LearningListDetailPage({
       (entry): entry is { item: typeof entry.item; piece: Piece } =>
         entry.piece !== null
     )
+  const pagination = paginateListItems(visibleItems, requestedPage)
+  const activeTuneCount = visibleItems.filter(({ piece }) =>
+    activePieceStates.has(piece.id)
+  ).length
+  const viewHref = `/learning-lists/${typedList.id}`
+  const pageHref = mode === "manage" ? `${viewHref}?mode=manage` : viewHref
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
@@ -324,7 +160,7 @@ export default async function LearningListDetailPage({
             ) : null}
           </div>
 
-          {isOwner ? (
+          {isOwner && mode === "manage" ? (
             <EditListModal
               listId={typedList.id}
               name={typedList.name}
@@ -344,6 +180,29 @@ export default async function LearningListDetailPage({
           ) : null}
         </div>
       </header>
+
+      <div className="mt-4 flex flex-col gap-3 border-b border-border/70 pb-4 sm:flex-row sm:items-center sm:justify-between">
+        {isOwner ? (
+          <nav aria-label="List detail mode" className="inline-flex rounded-full border border-border bg-card p-1">
+            <Link href={viewHref} aria-current={mode === "reader" ? "page" : undefined} className={`rounded-full px-4 py-2 text-sm font-semibold ${mode === "reader" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              Reader
+            </Link>
+            <Link href={`${viewHref}?mode=manage`} aria-current={mode === "manage" ? "page" : undefined} className={`rounded-full px-4 py-2 text-sm font-semibold ${mode === "manage" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              Manage
+            </Link>
+          </nav>
+        ) : (
+          <p className="text-sm text-muted-foreground">Read-only shared list</p>
+        )}
+
+        {activeTuneCount > 0 ? (
+          <Link href={`/review?session=list&list_id=${typedList.id}`} className="inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
+            Start Practice · {activeTuneCount}
+          </Link>
+        ) : (
+          <span className="text-sm text-muted-foreground">Start a tune in Practice to use this list as a session.</span>
+        )}
+      </div>
 
       {removeTuneStatus === "success" && (
         <StatusMessage tone="success">Tune removed from your app.</StatusMessage>
@@ -450,80 +309,52 @@ export default async function LearningListDetailPage({
         <StatusMessage tone="error">Couldn’t update private access.</StatusMessage>
       )}
 
-      <section className="mt-8 md:hidden">
-        <h2 className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Tunes
-        </h2>
-
-        {visibleItems.length === 0 ? (
-          <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-            This list has no tunes yet.
-          </p>
-        ) : (
-          <div className="mt-4 divide-y divide-border/70 border-y border-border/70">
-            {visibleItems.map(({ item, piece }) => {
-              const activePieceState = activePieceStates.get(piece.id) ?? null
-              const isAlreadyInPractice = Boolean(activePieceState)
-              const isKnown = knownPieceIds.has(piece.id)
-              return (
-                <MobileTuneRow
-                  key={item.id}
-                  piece={piece}
-                  listId={typedList.id}
-                  isAlreadyInPractice={isAlreadyInPractice}
-                  isKnown={isKnown}
-                  stage={activePieceState?.stage ?? null}
-                  redirectTo={redirectTo}
-                  mediaBundle={mediaBundles.get(piece.id) ?? null}
-                />
-              )
-            })}
-          </div>
-        )}
-      </section>
-
-      <section className="mt-8 hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
+      <section className="mt-8 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Tunes
+          {mode === "manage" ? "Manage order and membership" : "Tunes in playing order"}
         </h2>
 
-        {visibleItems.length === 0 ? (
-          <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+        {pagination.items.length === 0 ? (
+          <p className="mt-4 border-y border-border/70 py-4 text-sm text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-4">
             This list has no tunes yet.
           </p>
+        ) : mode === "manage" ? (
+          <ListOrderManager
+            listId={typedList.id}
+            initialItems={pagination.items.map(({ item, piece }) => {
+              const activePieceState = activePieceStates.get(piece.id) ?? null
+              return {
+                id: item.id,
+                piece,
+                isAlreadyInPractice: Boolean(activePieceState),
+                isKnown: knownPieceIds.has(piece.id),
+                stage: activePieceState?.stage ?? null,
+              }
+            })}
+            positionOffset={(pagination.page - 1) * LIST_PAGE_SIZE}
+            redirectTo={pageHref}
+            reorderListItems={reorderListItems}
+          />
         ) : (
-          <div className="mt-5 space-y-4">
-            {visibleItems.map(({ item, piece }) => {
+          <ul className="mt-3 divide-y divide-border/70 border-y border-border/70">
+            {pagination.items.map(({ item, piece }, itemIndex) => {
               const activePieceState = activePieceStates.get(piece.id) ?? null
               const isAlreadyInPractice = Boolean(activePieceState)
               const isKnown = knownPieceIds.has(piece.id)
+              const absoluteIndex = (pagination.page - 1) * LIST_PAGE_SIZE + itemIndex
               return (
-                <TuneCard
-                  key={item.id}
-                  id={piece.id}
-                  title={piece.title}
-                  keyValue={piece.key}
-                  style={piece.style}
-                  timeSignature={piece.time_signature}
-                  referenceUrl={piece.reference_url}
-                  mediaBundle={mediaBundles.get(piece.id) ?? null}
-                  pieceStyles={piece.piece_styles}
-                  listLinks={[]}
-                  redirectTo={redirectTo}
-                >
-                  <DesktopTuneActions
+                <li key={item.id}>
+                  <TuneRow
                     piece={piece}
-                    listId={typedList.id}
-                    isAlreadyInPractice={isAlreadyInPractice}
-                    isKnown={isKnown}
-                    stage={activePieceState?.stage ?? null}
-                    redirectTo={redirectTo}
+                    supportingContent={<span>Position {absoluteIndex + 1}</span>}
+                    personalState={<TuneStateIndicator isAlreadyInPractice={isAlreadyInPractice} isKnown={isKnown} stage={activePieceState?.stage ?? null} />}
                   />
-                </TuneCard>
+                </li>
               )
             })}
-          </div>
+          </ul>
         )}
+        <ListPager href={pageHref} page={pagination.page} totalPages={pagination.totalPages} label={`${typedList.name} tunes`} />
       </section>
     </main>
   )

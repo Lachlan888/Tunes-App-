@@ -111,11 +111,11 @@ function RecentFocusNotes({
     <section className="grid gap-3 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
       <div>
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Recent notes
+          Evidence
         </h2>
 
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Notes saved from review cards or diary entries against this focus.
+          Results and observations saved against this intention.
         </p>
       </div>
 
@@ -173,6 +173,12 @@ export default function PracticeFocusDetail({
 
   return (
     <section className="grid gap-7 md:gap-6">
+      <section className="grid gap-5 border-y border-border py-5 sm:grid-cols-3">
+        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Intent</p><p className="mt-2 text-sm leading-6 text-foreground">{focus.description || "Add a short intention so each practice session has a clear purpose."}</p></div>
+        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Evidence</p><p className="mt-2 text-sm leading-6 text-foreground">{recentNotes.length} linked {recentNotes.length === 1 ? "note" : "notes"} across {focus.tunes.length} {focus.tunes.length === 1 ? "tune" : "tunes"}.</p></div>
+        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Next review</p><p className="mt-2 text-sm leading-6 text-foreground">{focus.target_date ? formatDateOnly(focus.target_date) : "No review date set — add one when this focus needs a checkpoint."}</p></div>
+      </section>
+
       <FocusActionMenu
         focus={focus}
         allFoci={allFoci}
@@ -195,7 +201,7 @@ export default function PracticeFocusDetail({
 
       <section className="grid gap-4 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Tunes in this focus
+          Linked tunes
         </h2>
 
         <PracticeFocusTuneManager

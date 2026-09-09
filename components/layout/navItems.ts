@@ -1,6 +1,6 @@
 import type { IconName } from "@/components/ui/Icon"
 
-export type PrimaryDestination = "home" | "practice" | "tunes" | "lists" | "social"
+export type PrimaryDestination = "home" | "practice" | "tunes" | "lists" | "social" | "compare"
 
 export type NavItem = {
   href: string
@@ -22,6 +22,7 @@ export const primaryNavItems: PrimaryNavItem[] = [
   { destination: "tunes", href: "/library", label: "Tunes", icon: "book" },
   { destination: "lists", href: "/learning-lists", label: "Lists", icon: "list" },
   { destination: "social", href: "/friends", label: "Social", icon: "social" },
+  { destination: "compare", href: "/compare", label: "Compare", icon: "compare" },
 ]
 
 export const coreNavItems = primaryNavItems.slice(0, 3)
@@ -33,7 +34,6 @@ export const listNavItems: NavItem[] = [
 
 export const socialNavItems: NavItem[] = [
   { href: "/friends", label: "Friends", icon: "social" },
-  { href: "/compare", label: "Compare", icon: "compare" },
   { href: "/setlists", label: "Setlists", icon: "setlist" },
   { href: "/badges", label: "Badges", icon: "badge" },
   { href: "/trends", label: "Trends", icon: "trend" },
@@ -45,7 +45,6 @@ const tunePrefixes = ["/library", "/repertoire"]
 const listPrefixes = ["/learning-lists", "/public-lists"]
 const socialPrefixes = [
   "/friends",
-  "/compare",
   "/setlists",
   "/badges",
   "/trends",
@@ -68,6 +67,7 @@ export function getPrimaryDestination(pathname: string): PrimaryDestination | nu
   if (practicePrefixes.some((prefix) => matchesPrefix(pathname, prefix))) return "practice"
   if (tunePrefixes.some((prefix) => matchesPrefix(pathname, prefix))) return "tunes"
   if (listPrefixes.some((prefix) => matchesPrefix(pathname, prefix))) return "lists"
+  if (matchesPrefix(pathname, "/compare")) return "compare"
   if (socialPrefixes.some((prefix) => matchesPrefix(pathname, prefix))) return "social"
 
   return null

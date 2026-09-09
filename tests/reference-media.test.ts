@@ -181,6 +181,19 @@ test("URL selection wins, then the established effective recording, then first",
   )
 })
 
+test("external and missing reference sources retain honest recovery states", () => {
+  const external = {
+    id: "media-external",
+    url: "https://example.com/session-recording.mp3",
+  }
+
+  assert.equal(
+    chooseReferenceMediaSource({ sources: [external] })?.id,
+    "media-external"
+  )
+  assert.equal(chooseReferenceMediaSource({ sources: [] }), null)
+})
+
 test("recording switches use replaceable media URLs with tune identity", () => {
   assert.equal(
     getReferencePracticeHref(42, "media-8"),
@@ -233,6 +246,28 @@ test("the route replaces modal wiring and keeps one persistent player and metron
   assert.equal((layout.match(/<PracticeMetronome/g) ?? []).length, 0)
   assert.equal((shell.match(/<PracticeMetronome variant="hidden"/g) ?? []).length, 1)
   assert.match(workspace, /context: "reference-media"/)
+  assert.match(workspace, /passagePracticeActive/)
+  assert.match(workspace, /Practise this passage/)
+  assert.match(workspace, /does not[\s\S]*change this tune&apos;s Stage/)
+  assert.match(workspace, /Passage deleted/)
+  assert.match(workspace, /Undo/)
+  assert.match(workspace, /sessionStorage/)
+})
+
+test("Reference Mode has route-level loading and recovery states", () => {
+  const loading = readFileSync(
+    new URL("../app/library/[id]/reference-media/loading.tsx", import.meta.url),
+    "utf8"
+  )
+  const error = readFileSync(
+    new URL("../app/library/[id]/reference-media/error.tsx", import.meta.url),
+    "utf8"
+  )
+
+  assert.match(loading, /Opening the recording workspace/)
+  assert.match(loading, /saved passages/)
+  assert.match(error, /Reference Mode could not be opened/)
+  assert.match(error, /onPrimaryAction={reset}/)
 })
 
 test("recording and section mutations retain owner-scoped permissions", () => {

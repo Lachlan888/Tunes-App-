@@ -4,9 +4,15 @@ import PageHeader from "@/components/ui/PageHeader"
 import { loadPracticeIndexData } from "@/lib/loaders/practice-index"
 import { requirePracticeDiaryEnabled } from "@/lib/loaders/practice-diary"
 
-export default async function PracticeDiaryIndexPage() {
+export default async function PracticeDiaryIndexPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ view?: string }>
+}) {
   await requirePracticeDiaryEnabled()
 
+  const params = await searchParams
+  const activeView = params?.view === "notes" ? "notes" : "foci"
   const indexData = await loadPracticeIndexData()
 
   return (
@@ -17,7 +23,7 @@ export default async function PracticeDiaryIndexPage() {
         <PracticeDiaryNav active="index" />
       </section>
 
-      <PracticeDiaryIndex data={indexData} />
+      <PracticeDiaryIndex data={indexData} activeView={activeView} />
     </main>
   )
 }

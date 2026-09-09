@@ -66,6 +66,8 @@ export default async function PracticeFocusDetailPage({
           </p>
         ) : null}
 
+        {focus.status === "active" ? <Link href={`/review?session=focus&focus_id=${focus.id}`} className={`${buttonStyles.primary} mt-4`}>Practise this focus</Link> : null}
+
         <PracticeDiaryNav active="foci" />
       </section>
 
@@ -85,6 +87,7 @@ export default async function PracticeFocusDetailPage({
                 {focus.description}
               </p>
             ) : null}
+            {focus.status === "active" ? <Link href={`/review?session=focus&focus_id=${focus.id}`} className={`${buttonStyles.primary} mt-5`}>Practise this focus</Link> : null}
           </div>
         </div>
 

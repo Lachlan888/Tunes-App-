@@ -769,6 +769,77 @@ export async function moveSetlistItem(formData: FormData) {
   redirect(appendQueryParam(redirectTo, "setlist_item", "moved"))
 }
 
+export async function reorderSetlistItems(input: {
+  setlistId: number
+  orderedItemIds: number[]
+  expectedVersion: string
+}): Promise<{
+  status: "success" | "conflict" | "error"
+  message: string
+  version?: string
+}> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { status: "error", message: "Sign in again before changing the order." }
+  }
+
+  const setlistId = Number(input.setlistId)
+  const orderedItemIds = input.orderedItemIds.map(Number)
+  const expectedVersion = String(input.expectedVersion ?? "")
+  const validVersion = Number.isFinite(Date.parse(expectedVersion))
+
+  if (
+    !Number.isInteger(setlistId) ||
+    setlistId < 1 ||
+    orderedItemIds.length > 200 ||
+    orderedItemIds.some((id) => !Number.isInteger(id) || id < 1) ||
+    new Set(orderedItemIds).size !== orderedItemIds.length ||
+    !validVersion
+  ) {
+    return { status: "error", message: "That order could not be validated." }
+  }
+
+  const canEdit = await requireAcceptedSetlistMember(supabase, setlistId, user.id)
+  if (!canEdit) {
+    return { status: "error", message: "You no longer have permission to manage this setlist." }
+  }
+
+  const { data, error } = await supabase.rpc("reorder_setlist_items", {
+    p_setlist_id: setlistId,
+    p_ordered_item_ids: orderedItemIds,
+    p_expected_updated_at: expectedVersion,
+  })
+
+  if (error) {
+    return { status: "error", message: "The order was not saved. Your previous order has been restored." }
+  }
+
+  const result = Array.isArray(data) ? data[0] : data
+  if (result?.status === "conflict") {
+    return {
+      status: "conflict",
+      message: "Someone changed this setlist first. Their latest order has been restored; try your move again.",
+      version: result.new_updated_at ?? undefined,
+    }
+  }
+
+  if (result?.status !== "success" || !result.new_updated_at) {
+    return { status: "error", message: "The order was rejected and your previous order has been restored." }
+  }
+
+  revalidatePath("/setlists")
+  revalidatePath(`/setlists/${setlistId}`)
+  return {
+    status: "success",
+    message: "Order saved.",
+    version: result.new_updated_at,
+  }
+}
+
 export async function deleteSetlist(formData: FormData) {
   const supabase = await createClient()
 

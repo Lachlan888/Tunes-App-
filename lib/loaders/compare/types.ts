@@ -3,6 +3,7 @@ import type {
   RankedProfileMatch,
 } from "@/lib/profile-search"
 import type { Piece } from "@/lib/types"
+import type { CompareOutcomeGroups } from "@/lib/compare-outcomes"
 
 export type PieceIdRow = {
   piece_id: number
@@ -40,6 +41,8 @@ export type CompareLoaderResult = {
   canCompare: boolean
   error: CompareError
   selectedProfiles: ProfileSearchRow[]
+  outcomeGroups: CompareOutcomeGroups
+  outcomePieces: Piece[]
 }
 
 export type CompareSearchResolution = Pick<

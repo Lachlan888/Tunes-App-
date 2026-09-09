@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import { saveDailyReflection } from "@/lib/actions/practice-diary"
 
@@ -15,8 +18,19 @@ export default function DailyReflectionForm({
   redirectTo,
   initialValue,
 }: DailyReflectionFormProps) {
+  const [isDirty, setIsDirty] = useState(false)
+
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => {
+      if (!isDirty) return
+      event.preventDefault()
+    }
+    window.addEventListener("beforeunload", warn)
+    return () => window.removeEventListener("beforeunload", warn)
+  }, [isDirty])
+
   return (
-    <form action={saveDailyReflection} className="mt-4 space-y-3">
+    <form action={saveDailyReflection} className="mt-4 space-y-3" onSubmit={() => setIsDirty(false)}>
       <input type="hidden" name="practice_date" value={practiceDate} />
       <input type="hidden" name="redirect_to" value={redirectTo} />
 
@@ -26,7 +40,10 @@ export default function DailyReflectionForm({
         defaultValue={initialValue}
         placeholder="What happened in practice overall today?"
         className={textareaClassName}
+        onChange={() => setIsDirty(true)}
       />
+
+      <p aria-live="polite" className="text-xs text-muted-foreground">{isDirty ? "Unsaved changes" : "Saved"}</p>
 
       <SubmitButton
         label="Save reflection"

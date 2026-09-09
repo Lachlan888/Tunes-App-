@@ -1,12 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import Link from "next/link"
+import { useState } from "react"
 import ComparePageStatusMessages from "@/components/compare/ComparePageStatusMessages"
 import CompareInPersonSheet, {
   QrIcon,
 } from "@/components/compare/CompareInPersonSheet"
 import MobileCompareAddPersonSheet from "@/components/compare/MobileCompareAddPersonSheet"
-import MobileCompareResultsPanel from "@/components/compare/MobileCompareResultsPanel"
+import CompareOutcomeExperience from "@/components/compare/CompareOutcomeExperience"
+import { buildCompareHref, removeUserOnce } from "@/lib/compare-page"
+import EnterCompareCodeForm from "@/components/compare/EnterCompareCodeForm"
 import type { CompareViewProps } from "@/components/compare/compare-view-types"
 
 export default function CompareMobile(props: CompareViewProps) {
@@ -24,15 +27,8 @@ export default function CompareMobile(props: CompareViewProps) {
     canCompare,
     redirectTo,
     compareHeading,
-    mutualPieces,
-    availableKeys,
-    availableStyles,
-    availableTimeSignatures,
     canShowResults,
   } = props
-
-  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false)
-  const [isInviteSheetOpen, setIsInviteSheetOpen] = useState(false)
 
   const hasSearchResolution =
     error === "multiple_matches" ||
@@ -40,32 +36,37 @@ export default function CompareMobile(props: CompareViewProps) {
     error === "self_compare" ||
     (error === null && !matchedProfile && searchMatches.length > 0)
 
-  const compareResultsKey = selectedProfiles
-    .map((profile) => profile.id)
-    .join(":")
-
-  useEffect(() => {
-    if (hasSearchResolution) {
-      setIsAddSheetOpen(true)
-    }
-  }, [hasSearchResolution])
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(hasSearchResolution)
+  const [isInviteSheetOpen, setIsInviteSheetOpen] = useState(false)
 
   return (
     <>
       {canShowResults ? (
-        <MobileCompareResultsPanel
-          key={compareResultsKey}
-          compareHeading={compareHeading}
-          selectedProfiles={selectedProfiles}
-          filterPreservedUsers={filterPreservedUsers}
-          includePractice={includePractice}
-          mutualPieces={mutualPieces}
-          availableKeys={availableKeys}
-          availableStyles={availableStyles}
-          availableTimeSignatures={availableTimeSignatures}
-          onAddPerson={() => setIsAddSheetOpen(true)}
-          onCompareInPerson={() => setIsInviteSheetOpen(true)}
-        />
+        <div className="pb-8">
+          <header className="mb-5">
+            <h1 className="font-serif text-4xl font-bold tracking-tight">Compare</h1>
+            <p className="mt-2 text-sm text-muted-foreground">{compareHeading}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {selectedProfiles.map((profile) => (
+                <Link
+                  key={profile.id}
+                  href={buildCompareHref(
+                    profile.username
+                      ? removeUserOnce(filterPreservedUsers, profile.username)
+                      : filterPreservedUsers,
+                    { includePractice }
+                  )}
+                  className="inline-flex min-h-11 items-center rounded-full border border-border px-3 text-sm font-medium"
+                >
+                  {profile.display_name || profile.username || "Musician"} ×
+                </Link>
+              ))}
+              <button type="button" onClick={() => setIsAddSheetOpen(true)} className="min-h-11 rounded-full border border-primary px-4 text-sm font-semibold">Add musician</button>
+              <button type="button" onClick={() => setIsInviteSheetOpen(true)} className="min-h-11 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground">Compare in person</button>
+            </div>
+          </header>
+          <CompareOutcomeExperience {...props} />
+        </div>
       ) : (
         <>
           <header className="mb-6">
@@ -103,6 +104,7 @@ export default function CompareMobile(props: CompareViewProps) {
                 Add person
               </button>
             </div>
+            <EnterCompareCodeForm />
           </section>
 
           {matchedProfile && !canCompare ? (

@@ -11,6 +11,7 @@ import type {
   SetlistItemRow,
   SetlistMemberRow,
   UserKnownPieceRow,
+  UserPieceRow,
 } from "./types"
 
 export async function loadSetlistsPageData() {
@@ -73,10 +74,12 @@ export async function loadSetlistsPageData() {
 
   let memberCountBySetlistId = new Map<number, number>()
   let tuneCountBySetlistId = new Map<number, number>()
-  let itemRowsBySetlistId = new Map<number, SetlistItemRow[]>()
-  let acceptedMemberRowsBySetlistId = new Map<number, SetlistMemberRow[]>()
-  let knownByEveryoneCountBySetlistId = new Map<number, number>()
-  let gapTuneCountBySetlistId = new Map<number, number>()
+  const itemRowsBySetlistId = new Map<number, SetlistItemRow[]>()
+  const acceptedMemberRowsBySetlistId = new Map<number, SetlistMemberRow[]>()
+  const readyCountBySetlistId = new Map<number, number>()
+  const practiceCountBySetlistId = new Map<number, number>()
+  const newToMeCountBySetlistId = new Map<number, number>()
+  const collaboratorLabelsBySetlistId = new Map<number, string[]>()
 
   if (acceptedSetlistIds.length > 0) {
     const [
@@ -162,48 +165,68 @@ export async function loadSetlistsPageData() {
       new Set(typedItems.map((item) => item.piece_id))
     )
 
-    const allMemberUserIds = Array.from(
-      new Set(typedMembers.map((member) => member.user_id))
-    )
-
     let knownRows: UserKnownPieceRow[] = []
+    let practiceRows: UserPieceRow[] = []
 
-    if (allPieceIds.length > 0 && allMemberUserIds.length > 0) {
-      const { data: userKnownPieces, error: knownError } = await supabase
-        .from("user_known_pieces")
-        .select("user_id, piece_id")
-        .in("user_id", allMemberUserIds)
-        .in("piece_id", allPieceIds)
+    if (allPieceIds.length > 0) {
+      const [
+        { data: userKnownPieces, error: knownError },
+        { data: userPracticePieces, error: practiceError },
+      ] = await Promise.all([
+        supabase
+          .from("user_known_pieces")
+          .select("user_id, piece_id")
+          .eq("user_id", user.id)
+          .in("piece_id", allPieceIds),
+        supabase
+          .from("user_pieces")
+          .select("id, user_id, piece_id, stage")
+          .eq("user_id", user.id)
+          .in("piece_id", allPieceIds),
+      ])
 
       if (knownError) {
         throw new Error(knownError.message)
       }
 
+      if (practiceError) {
+        throw new Error(practiceError.message)
+      }
+
       knownRows = (userKnownPieces ?? []) as UserKnownPieceRow[]
+      practiceRows = (userPracticePieces ?? []) as UserPieceRow[]
     }
 
-    const knownKeySet = new Set(
-      knownRows.map((row) => `${row.user_id}:${row.piece_id}`)
+    const knownPieceIds = new Set(knownRows.map((row) => row.piece_id))
+    const practicePieceIds = new Set(practiceRows.map((row) => row.piece_id))
+    const profilesById = await loadProfilesById(
+      supabase,
+      Array.from(new Set(typedMembers.map((member) => member.user_id)))
     )
 
     for (const setlist of acceptedSetlists) {
       const members = acceptedMemberRowsBySetlistId.get(setlist.id) ?? []
       const items = itemRowsBySetlistId.get(setlist.id) ?? []
-
-      const knownByEveryoneCount = items.filter((item) =>
-        members.every((member) =>
-          knownKeySet.has(`${member.user_id}:${item.piece_id}`)
-        )
+      const readyCount = items.filter((item) =>
+        knownPieceIds.has(item.piece_id)
+      ).length
+      const practiceCount = items.filter((item) =>
+        practicePieceIds.has(item.piece_id)
       ).length
 
-      const gapTuneCount = items.filter((item) =>
-        members.some(
-          (member) => !knownKeySet.has(`${member.user_id}:${item.piece_id}`)
-        )
-      ).length
-
-      knownByEveryoneCountBySetlistId.set(setlist.id, knownByEveryoneCount)
-      gapTuneCountBySetlistId.set(setlist.id, gapTuneCount)
+      readyCountBySetlistId.set(setlist.id, readyCount)
+      practiceCountBySetlistId.set(setlist.id, practiceCount)
+      newToMeCountBySetlistId.set(
+        setlist.id,
+        Math.max(0, items.length - readyCount - practiceCount)
+      )
+      collaboratorLabelsBySetlistId.set(
+        setlist.id,
+        members.slice(0, 4).map((member) => {
+          const profile = profilesById.get(member.user_id)
+          return profile?.display_name || profile?.username || "Musician"
+        })
+      )
     }
   }
 
@@ -216,8 +239,10 @@ export async function loadSetlistsPageData() {
     created_by: setlist.created_by,
     memberCount: memberCountBySetlistId.get(setlist.id) ?? 1,
     tuneCount: tuneCountBySetlistId.get(setlist.id) ?? 0,
-    knownByEveryoneCount: knownByEveryoneCountBySetlistId.get(setlist.id) ?? 0,
-    gapTuneCount: gapTuneCountBySetlistId.get(setlist.id) ?? 0,
+    readyCount: readyCountBySetlistId.get(setlist.id) ?? 0,
+    practiceCount: practiceCountBySetlistId.get(setlist.id) ?? 0,
+    newToMeCount: newToMeCountBySetlistId.get(setlist.id) ?? 0,
+    collaboratorLabels: collaboratorLabelsBySetlistId.get(setlist.id) ?? [],
     isCreator: setlist.created_by === user.id,
   }))
 

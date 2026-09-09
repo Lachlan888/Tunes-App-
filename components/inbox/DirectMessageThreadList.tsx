@@ -1,212 +1,87 @@
 import Link from "next/link"
 import SubmitButton from "@/components/SubmitButton"
-import {
-  archiveDirectMessageThread,
-  deleteDirectMessage,
-  sendDirectMessage,
-  updateDirectMessage,
-} from "@/lib/actions/direct-messages"
+import { archiveDirectMessageThread, sendDirectMessage } from "@/lib/actions/direct-messages"
 import type { DirectMessageThread } from "@/lib/loaders/inbox"
 
-type DirectMessageThreadListProps = {
-  threads: DirectMessageThread[]
-}
-
-function getUserLabel(thread: DirectMessageThread) {
-  return (
-    thread.otherUser.display_name ||
-    thread.otherUser.username ||
-    "Unknown player"
-  )
+function userLabel(thread: DirectMessageThread) {
+  return thread.otherUser.display_name || thread.otherUser.username || "Unknown player"
 }
 
 export default function DirectMessageThreadList({
   threads,
-}: DirectMessageThreadListProps) {
+}: {
+  threads: DirectMessageThread[]
+}) {
   if (threads.length === 0) {
     return (
-      <p className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground shadow-sm">
+      <p className="border-y border-dashed border-border py-5 text-sm text-muted-foreground">
         No direct messages yet.
       </p>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className="divide-y divide-border border-y border-border">
       {threads.map((thread) => {
-        const userLabel = getUserLabel(thread)
-        const latestMessage = thread.messages[thread.messages.length - 1]
+        const label = userLabel(thread)
+        const latest = thread.messages.at(-1)
 
         return (
-          <article
-            key={thread.otherUser.id}
-            className="rounded-3xl border border-border bg-card p-5 shadow-sm"
-          >
-            <div className="flex flex-col gap-3 border-b border-border pb-4 md:flex-row md:items-start md:justify-between">
-              <div>
-                <h2 className="font-serif text-2xl font-bold tracking-tight text-foreground">
-                  {userLabel}
-                </h2>
-
-                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                  {latestMessage ? (
-                    <span>
-                      Latest{" "}
-                      {new Date(latestMessage.created_at).toLocaleString(
-                        "en-AU"
-                      )}
-                    </span>
+          <details key={thread.otherUser.id} className="group py-3">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  {thread.unreadCount > 0 ? (
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-state-social" aria-label="Unread messages" />
                   ) : null}
-
-                  {thread.otherUser.username ? (
-                    <Link
-                      href={`/users/${thread.otherUser.username}`}
-                      className="normal-case tracking-normal underline underline-offset-4 hover:text-foreground"
-                    >
-                      View profile
-                    </Link>
-                  ) : null}
+                  <h2 className="truncate font-semibold">{label}</h2>
                 </div>
+                <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+                  {latest?.isOutgoing ? "You: " : ""}{latest?.body ?? "Open conversation"}
+                </p>
               </div>
+              <span className="shrink-0 text-xs font-semibold text-muted-foreground">
+                {thread.unreadCount > 0 ? `${thread.unreadCount} new` : "Open"}
+              </span>
+            </summary>
 
-              <div className="flex flex-wrap items-center gap-2">
-                {thread.unreadCount > 0 ? (
-                  <span className="inline-flex w-fit rounded-full border border-primary bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
-                    {thread.unreadCount} unread
-                  </span>
-                ) : null}
-
-                <form action={archiveDirectMessageThread}>
-                  <input
-                    type="hidden"
-                    name="other_user_id"
-                    value={thread.otherUser.id}
-                  />
-                  <input type="hidden" name="redirect_to" value="/inbox" />
-
-                  <SubmitButton
-                    label="Archive"
-                    pendingLabel="Archiving..."
-                    className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                  />
-                </form>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              {thread.messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${
-                    message.isOutgoing ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div
-                    className={`max-w-2xl rounded-2xl border p-3 text-sm leading-6 shadow-sm ${
-                      message.isOutgoing
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-background/70 text-foreground"
-                    }`}
-                  >
-                    <p className="whitespace-pre-wrap">{message.body}</p>
-
-                    <p
-                      className={`mt-2 text-xs ${
-                        message.isOutgoing
-                          ? "text-primary-foreground/80"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {message.isOutgoing ? "Sent" : "Received"} ·{" "}
-                      {new Date(message.created_at).toLocaleString("en-AU")}
+            <div className="ml-4 mt-3 border-l-2 border-state-social pl-4">
+              {thread.totalMessageCount > thread.messages.length ? (
+                <p className="mb-3 text-xs text-muted-foreground">
+                  Showing the latest {thread.messages.length} of {thread.totalMessageCount} messages.
+                </p>
+              ) : null}
+              <ol className="space-y-3">
+                {thread.messages.map((message) => (
+                  <li key={message.id} className="text-sm">
+                    <p className="whitespace-pre-wrap leading-6">{message.body}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {message.isOutgoing ? "You" : label} · {new Date(message.created_at).toLocaleString("en-AU")}
                     </p>
+                  </li>
+                ))}
+              </ol>
 
-                    {message.isOutgoing ? (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <details className="rounded-2xl border border-primary-foreground/40 bg-primary-foreground/10 p-3">
-                          <summary className="cursor-pointer text-xs font-medium">
-                            Edit
-                          </summary>
-
-                          <form
-                            action={updateDirectMessage}
-                            className="mt-3 space-y-2"
-                          >
-                            <input
-                              type="hidden"
-                              name="message_id"
-                              value={message.id}
-                            />
-                            <input
-                              type="hidden"
-                              name="redirect_to"
-                              value="/inbox"
-                            />
-
-                            <textarea
-                              name="body"
-                              rows={3}
-                              defaultValue={message.body}
-                              className="w-full rounded-2xl border border-border bg-background/90 px-3 py-2 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
-                              required
-                            />
-
-                            <SubmitButton
-                              label="Save edit"
-                              pendingLabel="Saving..."
-                              className="rounded-full border border-primary-foreground/50 bg-primary-foreground px-3 py-1.5 text-xs font-medium text-primary shadow-sm transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                            />
-                          </form>
-                        </details>
-
-                        <form action={deleteDirectMessage}>
-                          <input
-                            type="hidden"
-                            name="message_id"
-                            value={message.id}
-                          />
-                          <input
-                            type="hidden"
-                            name="redirect_to"
-                            value="/inbox"
-                          />
-
-                          <SubmitButton
-                            label="Delete"
-                            pendingLabel="Deleting..."
-                            className="rounded-full border border-primary-foreground/50 bg-transparent px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-sm transition hover:bg-primary-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                          />
-                        </form>
-                      </div>
-                    ) : null}
-                  </div>
+              <form action={sendDirectMessage} className="mt-4 space-y-3">
+                <input type="hidden" name="recipient_user_id" value={thread.otherUser.id} />
+                <input type="hidden" name="redirect_to" value="/inbox?tab=messages" />
+                <label className="block text-sm font-semibold" htmlFor={`reply-${thread.otherUser.id}`}>Reply to {label}</label>
+                <textarea id={`reply-${thread.otherUser.id}`} name="body" rows={3} required className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]" />
+                <div className="flex flex-wrap gap-2">
+                  <SubmitButton label="Send reply" pendingLabel="Sending..." className="min-h-11 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground" />
+                  {thread.otherUser.username ? (
+                    <Link href={`/users/${thread.otherUser.username}`} className="inline-flex min-h-11 items-center px-2 text-sm font-semibold underline underline-offset-4">View profile</Link>
+                  ) : null}
                 </div>
-              ))}
+              </form>
+
+              <form action={archiveDirectMessageThread} className="mt-3">
+                <input type="hidden" name="other_user_id" value={thread.otherUser.id} />
+                <input type="hidden" name="redirect_to" value="/inbox?tab=messages" />
+                <SubmitButton label="Archive conversation" pendingLabel="Archiving..." className="inline-flex min-h-11 items-center text-sm text-muted-foreground underline underline-offset-4" />
+              </form>
             </div>
-
-            <form action={sendDirectMessage} className="mt-5 space-y-3">
-              <input
-                type="hidden"
-                name="recipient_user_id"
-                value={thread.otherUser.id}
-              />
-              <input type="hidden" name="redirect_to" value="/inbox" />
-
-              <textarea
-                name="body"
-                rows={3}
-                placeholder={`Reply to ${userLabel}`}
-                className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
-                required
-              />
-
-              <SubmitButton
-                label="Send reply"
-                pendingLabel="Sending..."
-                className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-              />
-            </form>
-          </article>
+          </details>
         )
       })}
     </div>

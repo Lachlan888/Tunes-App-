@@ -73,10 +73,12 @@ export default function AccountMenu({
   const links: MenuLink[] = [
     { href: "/dashboard", label: "Account & settings", icon: "settings" },
     { href: "/public-lists", label: "Browse public lists", icon: "book" },
-    { href: "/compare", label: "Compare repertoires", icon: "compare" },
     { href: "/setlists", label: "Setlists", icon: "setlist" },
     { href: "/badges", label: "Badges", icon: "badge" },
     { href: "/trends", label: "Trends", icon: "trend" },
+  ]
+  const socialLinks: MenuLink[] = [
+    { href: "/friends", label: "Friends", icon: "social" },
     { href: "/inbox", label: "Inbox", icon: "inbox", count: unreadTotalCount },
   ]
 
@@ -134,6 +136,27 @@ export default function AccountMenu({
                 <CountBadge count={item.count} />
               </Link>
             ))}
+          </div>
+
+          <div className="border-t border-hairline pt-1">
+            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">
+              Social
+            </p>
+            <div className="grid gap-0.5">
+              {socialLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  role="menuitem"
+                  onClick={() => setIsOpen(false)}
+                  className={buttonStyles.menuItem}
+                >
+                  <Icon name={item.icon} />
+                  <span>{item.label}</span>
+                  <CountBadge count={item.count} />
+                </Link>
+              ))}
+            </div>
           </div>
 
           <div className="grid gap-0.5 border-t border-hairline pt-1">

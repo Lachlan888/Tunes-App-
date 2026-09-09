@@ -255,12 +255,15 @@ export function buildFocusSummaries({
   }
 
   return Array.from(focusSummariesById.values())
-    .map(({ tuneIds, ...summary }) => ({
-      ...summary,
-      notes: [...summary.notes]
-        .sort((a, b) => b.noteDate.localeCompare(a.noteDate))
-        .slice(0, 5),
-    }))
+    .map(({ tuneIds, ...summary }) => {
+      void tuneIds
+      return {
+        ...summary,
+        notes: [...summary.notes]
+          .sort((a, b) => b.noteDate.localeCompare(a.noteDate))
+          .slice(0, 5),
+      }
+    })
     .sort(
       (a, b) =>
         b.noteCount - a.noteCount ||
@@ -370,6 +373,7 @@ export function buildMonthDaySummaries({
     const practiceCheckCount = dayEvents.filter(
       (event) => event.event_type === "free_practice"
     ).length
+    const outcomes = dayEvents.map((event) => formatOutcomeForSummary(event))
 
     return {
       date,
@@ -393,6 +397,9 @@ export function buildMonthDaySummaries({
         practiceCheckCount,
         noteCount: dayNotes.length,
       }),
+      roughCount: outcomes.filter((outcome) => outcome === "Rough").length,
+      shakyCount: outcomes.filter((outcome) => outcome === "Shaky").length,
+      solidCount: outcomes.filter((outcome) => outcome === "Solid").length,
     }
   })
 }

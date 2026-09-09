@@ -242,24 +242,26 @@ Acceptance criteria:
 ```text
 Work in the current Tunes App repository after Prompts 1–6. Read AGENTS.md and the audit, inspect and preserve the current implementation, and do not edit sources/. Implement and verify the Reference Media workstream. Respect third-party media limitations instead of faking unsupported behaviour.
 
-Goal: turn the existing strong reference-media route into a polished Reference Mode for recordings, passages, speed, loops, sections, notes and targeted practice.
+Goal: promote Compare to a first-class product destination, then turn the existing strong reference-media route into a polished Reference Mode for recordings, passages, speed, loops, sections, notes and targeted practice.
 
 Implement the following:
 
-1. Preserve the useful Media, Sections and Practice concepts but simplify their hierarchy so the current source and current passage remain evident across tabs.
-2. Connect Reference Media to SessionDock: source identity, play/pause when technically supported, loop state, playback speed, selected passage/section and an expand action.
-3. Persist safe media state across tab changes and brief route changes: current source, position when available, speed, loop bounds and selected section. Use feature detection and document limitations for embedded providers such as YouTube.
-4. Present saved passages as named loop items/chips with start/end or duration. Make create, rename, update and delete flows clear, with undo where practical.
-5. Add a simple time rail/waveform only when the source/API provides reliable timing. Do not invent a misleading waveform for unavailable audio data.
-6. Make “Practise this passage” start a lightweight, clearly labelled practice context without silently changing unrelated tune state. Preserve the person's place when returning.
-7. Improve section management: clear ordering, time references, notes and current-section emphasis. Separate reading from editing/management.
-8. On phone, prioritise media and SessionDock without covering content. On desktop, use a two-column workspace with media on one side and sections/notes/practice on the other.
-9. Integrate the metronome contextually here. Its tempo, sound and active state must not interfere with media unexpectedly; provide an obvious stop action.
-10. Add loading, provider failure, unavailable/embed-blocked and no-reference recovery states. External links must be safe and clearly identified.
-11. Use the Media Session API or equivalent only where supported and appropriate; do not claim background or lock-screen capabilities that the browser/provider cannot deliver.
+1. Before the Reference Media work, use six visible top-level consumer destinations on phone, tablet and desktop: Home, Practice, Tunes, Lists, Social and Compare. Keep Social and Compare as separate icons/destinations, preserve the existing `/compare` page and active-route behaviour, and do not leave Compare available only inside the account menu/“Your tunebook” or treat it as a Social child. Keep this change limited to information architecture and navigation; Prompt 13 still owns the full Compare experience redesign.
+2. Preserve the useful Media, Sections and Practice concepts but simplify their hierarchy so the current source and current passage remain evident across tabs.
+3. Connect Reference Media to SessionDock: source identity, play/pause when technically supported, loop state, playback speed, selected passage/section and an expand action.
+4. Persist safe media state across tab changes and brief route changes: current source, position when available, speed, loop bounds and selected section. Use feature detection and document limitations for embedded providers such as YouTube.
+5. Present saved passages as named loop items/chips with start/end or duration. Make create, rename, update and delete flows clear, with undo where practical.
+6. Add a simple time rail/waveform only when the source/API provides reliable timing. Do not invent a misleading waveform for unavailable audio data.
+7. Make “Practise this passage” start a lightweight, clearly labelled practice context without silently changing unrelated tune state. Preserve the person's place when returning.
+8. Improve section management: clear ordering, time references, notes and current-section emphasis. Separate reading from editing/management.
+9. On phone, prioritise media and SessionDock without covering content. On desktop, use a two-column workspace with media on one side and sections/notes/practice on the other.
+10. Integrate the metronome contextually here. Its tempo, sound and active state must not interfere with media unexpectedly; provide an obvious stop action.
+11. Add loading, provider failure, unavailable/embed-blocked and no-reference recovery states. External links must be safe and clearly identified.
+12. Use the Media Session API or equivalent only where supported and appropriate; do not claim background or lock-screen capabilities that the browser/provider cannot deliver.
 
 Acceptance criteria:
 
+- Primary consumer navigation has six visible destinations at phone, tablet and desktop widths: Home, Practice, Tunes, Lists, Social and Compare. Social and Compare have distinct icons and active states, and Compare is not placed back under “Your tunebook.”
 - A musician can open a reference, set speed, create/select a passage loop, practise it and return without losing context.
 - Controls remain reachable but do not cover sections or notes.
 - Provider limitations fail gracefully with a direct Open source action.
@@ -448,23 +450,25 @@ Goal: lead with what two musicians can play together, then make in-person compar
 
 Implement the following:
 
-1. Rebuild a selected comparison result around outcomes before the full tune list:
+1. Preserve the six-destination primary navigation established in Prompt 7, with Social and Compare as separate visible icons. Do not demote Compare into the account/“Your tunebook” menu or a Social submenu during this redesign; verify its distinct active state and direct discoverability across phone, tablet and desktop navigation.
+2. Rebuild a selected comparison result around outcomes before the full tune list:
    - number playable together now
    - shared Solid/Known tunes
    - shared but shaky tunes
    - tunes one person can teach the other, only where permissions allow
    - a suggested short session set
-2. Define the logic for each group explicitly and test it. Do not present a score that could feel judgemental or expose private practice details without consent.
-3. Paginate the complete overlap below the summaries using TuneRow. Add useful filters/grouping and preserve them in the URL.
-4. Let the suggested session set be reviewed, adjusted and converted into a temporary or saved setlist with explicit confirmation and permissions.
-5. Redesign Compare in person as a time-limited session: clear explanation, readable join code and QR, expiry, privacy summary, waiting/connected/failed status and a visible cancel/leave path.
-6. Ensure codes are unguessable enough for their scope, rate-limited and short-lived. Do not expose account identity or repertoire until both sides have taken the required consent/join action.
-7. Handle invalid, expired, already-used and disconnected joins with human recovery actions such as Start a new comparison or Enter another code.
-8. Make the connected transition and result feel warm and specific to playing music without excessive animation. Respect reduced motion.
-9. Add copy/share actions only where safe; never place sensitive comparison details into a public URL.
+3. Define the logic for each group explicitly and test it. Do not present a score that could feel judgemental or expose private practice details without consent.
+4. Paginate the complete overlap below the summaries using TuneRow. Add useful filters/grouping and preserve them in the URL.
+5. Let the suggested session set be reviewed, adjusted and converted into a temporary or saved setlist with explicit confirmation and permissions.
+6. Redesign Compare in person as a time-limited session: clear explanation, readable join code and QR, expiry, privacy summary, waiting/connected/failed status and a visible cancel/leave path.
+7. Ensure codes are unguessable enough for their scope, rate-limited and short-lived. Do not expose account identity or repertoire until both sides have taken the required consent/join action.
+8. Handle invalid, expired, already-used and disconnected joins with human recovery actions such as Start a new comparison or Enter another code.
+9. Make the connected transition and result feel warm and specific to playing music without excessive animation. Respect reduced motion.
+10. Add copy/share actions only where safe; never place sensitive comparison details into a public URL.
 
 Acceptance criteria:
 
+- Social and Compare remain separate, directly visible top-level destinations at every supported navigation width; Compare is not hidden behind account or Social navigation.
 - The first comparison viewport answers what the musicians can play together.
 - The full overlap is bounded and searchable rather than rendering every tune.
 - Suggested set conversion produces the correct tune order and permissions.

@@ -14,6 +14,7 @@ const contextLabels: Record<SessionDockContext, string> = {
   "focused-practice": "Focused practice",
   "reference-media": "Reference media",
   "catalogue-selection": "Catalogue selection",
+  "list-selection": "List selection",
   "setlist-performance": "Setlist performance",
 }
 

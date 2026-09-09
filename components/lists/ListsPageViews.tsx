@@ -1,10 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import SubmitButton from "@/components/SubmitButton"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
+import { useSessionDock } from "@/components/session-dock/SessionDockProvider"
+import type { SessionDockModel } from "@/components/session-dock/sessionDockModel"
 import type {
   BookmarkedSharedListSummary,
   DirectSharedListSummary,
@@ -28,6 +30,7 @@ type LearningQueueViewProps = {
   learningQueueTunes: LearningQueueTune[]
   startLearning: (formData: FormData) => Promise<void>
   redirectTo: string
+  startSelectedListTunes: (formData: FormData) => Promise<void>
 }
 
 type UnsortedViewProps = {
@@ -85,13 +88,63 @@ function tuneCountLabel(count: number) {
 }
 
 const rowClassName =
-  "rounded-2xl border border-border bg-card p-4 shadow-sm md:p-5"
+  "border-b border-border/70 px-1 py-4 last:border-b-0 md:px-2 md:py-5"
 
 export function LearningQueueView({
   learningQueueTunes,
   startLearning,
+  startSelectedListTunes,
   redirectTo,
 }: LearningQueueViewProps) {
+  const [isSelecting, setIsSelecting] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<number[]>([])
+  const batchFormRef = useRef<HTMLFormElement>(null)
+  const dockModel = useMemo<SessionDockModel | null>(() => {
+    if (!isSelecting) return null
+    return {
+      id: "learning-queue-selection",
+      context: "list-selection",
+      identity: {
+        eyebrow: "Learning Queue",
+        title: `${selectedIds.length} selected`,
+        detail: "Choose up to 50 tunes on this page.",
+      },
+      primaryAction: {
+        id: "start-selected",
+        label: "Start selected",
+        tone: "primary",
+        disabled: selectedIds.length === 0,
+        onInvoke: () => batchFormRef.current?.requestSubmit(),
+      },
+      secondaryActions: [
+        {
+          id: "clear-selection",
+          label: "Clear",
+          tone: "secondary",
+          disabled: selectedIds.length === 0,
+          onInvoke: () => setSelectedIds([]),
+        },
+        {
+          id: "exit-selection",
+          label: "Done",
+          tone: "secondary",
+          onInvoke: () => {
+            setSelectedIds([])
+            setIsSelecting(false)
+          },
+        },
+      ],
+      collapsedContent: { actionIds: ["start-selected"] },
+      expandedContent: {
+        title: "Start several tunes",
+        description: "Only tunes in lists you own are accepted. Existing Practice tunes are left unchanged.",
+        actionIds: ["start-selected", "clear-selection", "exit-selection"],
+      },
+      persistence: { shareable: "none", transient: "session", key: "learning-queue-selection" },
+    }
+  }, [isSelecting, selectedIds.length])
+  useSessionDock("learning-queue-selection", dockModel)
+
   if (learningQueueTunes.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
@@ -102,7 +155,14 @@ export function LearningQueueView({
   }
 
   return (
-    <ul className="space-y-3">
+    <>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">Stage and next action stay visible without opening each tune.</p>
+        <button type="button" onClick={() => { setSelectedIds([]); setIsSelecting((value) => !value) }} className={buttonStyles.secondary} aria-pressed={isSelecting}>
+          {isSelecting ? "Cancel select" : "Select"}
+        </button>
+      </div>
+      <ul className="divide-y-0 border-y border-border/70 md:rounded-3xl md:border md:bg-card md:px-5 md:shadow-sm">
       {learningQueueTunes.map((queueTune) => {
         const tuneTitle = queueTune.piece.title
         const listText = getListNamesText(queueTune.listNames)
@@ -110,7 +170,17 @@ export function LearningQueueView({
         return (
           <li key={queueTune.piece.id} className={rowClassName}>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="min-w-0">
+              <div className="flex min-w-0 items-start gap-3">
+                {isSelecting ? (
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(queueTune.piece.id)}
+                    onChange={(event) => setSelectedIds((current) => event.target.checked ? [...current, queueTune.piece.id].slice(0, 50) : current.filter((id) => id !== queueTune.piece.id))}
+                    aria-label={`Select ${tuneTitle}`}
+                    className="mt-1 h-5 w-5 shrink-0 accent-primary"
+                  />
+                ) : null}
+                <div className="min-w-0">
                 <PendingLinkButton
                   href={`/library/${queueTune.piece.id}`}
                   label={tuneTitle}
@@ -132,9 +202,10 @@ export function LearningQueueView({
                 <p className="mt-1 text-sm text-muted-foreground">
                   First saved: {formatAddedDate(queueTune.firstAddedAt)}
                 </p>
+                </div>
               </div>
 
-              <form action={startLearning}>
+              {!isSelecting ? <form action={startLearning}>
                 <input
                   type="hidden"
                   name="piece_id"
@@ -147,12 +218,17 @@ export function LearningQueueView({
                   pendingLabel="Starting..."
                   className={buttonStyles.primary}
                 />
-              </form>
+              </form> : null}
             </div>
           </li>
         )
       })}
-    </ul>
+      </ul>
+      <form ref={batchFormRef} action={startSelectedListTunes} className="hidden">
+        <input type="hidden" name="redirect_to" value={redirectTo} />
+        {selectedIds.map((pieceId) => <input key={pieceId} type="hidden" name="piece_ids" value={pieceId} />)}
+      </form>
+    </>
   )
 }
 
@@ -209,7 +285,7 @@ export function UnsortedView({
               No in-practice tunes need list organisation.
             </p>
           ) : (
-            <ul className="space-y-3">
+            <ul className="border-y border-border/70 md:rounded-3xl md:border md:bg-card md:px-5 md:shadow-sm">
               {unlistedPracticeTunes.map((userPiece) => {
                 const piece = extractJoinedPiece(userPiece.pieces)
                 const pieceTitle = piece?.title ?? "Untitled tune"
@@ -262,7 +338,7 @@ export function UnsortedView({
               No Known tunes need list organisation.
             </p>
           ) : (
-            <ul className="space-y-3">
+            <ul className="border-y border-border/70 md:rounded-3xl md:border md:bg-card md:px-5 md:shadow-sm">
               {unlistedKnownTunes.map((userKnownPiece) => {
                 const piece = extractJoinedPiece(userKnownPiece.pieces)
                 const pieceTitle = piece?.title ?? "Untitled tune"
@@ -354,7 +430,7 @@ export function SavedSharedView({
             No bookmarked public lists yet.
           </p>
         ) : (
-          <ul className="space-y-3">
+          <ul className="border-y border-border/70 md:rounded-3xl md:border md:bg-card md:px-5 md:shadow-sm">
             {bookmarkedSharedLists.map((list) => (
               <li key={list.id} className={rowClassName}>
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -413,7 +489,7 @@ export function SavedSharedView({
             No directly shared lists yet.
           </p>
         ) : (
-          <ul className="space-y-3">
+          <ul className="border-y border-border/70 md:rounded-3xl md:border md:bg-card md:px-5 md:shadow-sm">
             {directSharedLists.map((list) => (
               <li key={list.id} className={rowClassName}>
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">

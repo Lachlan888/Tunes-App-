@@ -123,4 +123,5 @@ export type ReviewPageData = {
   practiceItems: ReviewQueueItem[]
   dueTodayPieces: ReviewQueueItem[]
   catchUpQueue: ReviewQueueItem[]
+  today: string
 }

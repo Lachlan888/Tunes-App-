@@ -81,13 +81,6 @@ export async function markAllNotificationsRead() {
     throw new Error(error.message)
   }
 
-  await supabase
-    .from("direct_messages")
-    .update({ read_at: now })
-    .eq("recipient_user_id", user.id)
-    .is("read_at", null)
-    .is("recipient_archived_at", null)
-
   revalidatePath("/inbox")
 }
 

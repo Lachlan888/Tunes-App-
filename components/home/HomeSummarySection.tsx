@@ -224,6 +224,12 @@ function TodayActionPanel({
   density: HomeDensity
   previewLimit: number
 }) {
+  const preferredPracticeHref = summary.dueTodayCount > 0
+    ? "/review?session=due-today"
+    : summary.needsAttentionCount > 0
+      ? "/review?session=catch-up"
+      : "/review"
+
   return (
     <section
       className={joinClasses(
@@ -242,7 +248,7 @@ function TodayActionPanel({
         </div>
 
         <PendingLinkButton
-          href="/review#due-today"
+          href={preferredPracticeHref}
           label="Start Practice"
           pendingLabel="Opening Practice..."
           className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
@@ -252,7 +258,7 @@ function TodayActionPanel({
       <div className="grid gap-3 lg:grid-cols-[minmax(0,0.45fr)_minmax(0,1fr)]">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
           <Link
-            href="/review#due-today"
+            href="/review?session=due-today"
             className="rounded-xl border border-border border-l-8 border-l-accent bg-background/70 p-4 transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           >
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -267,7 +273,7 @@ function TodayActionPanel({
           </Link>
 
           <Link
-            href="/review?mode=catch-up#catch-up"
+            href="/review?session=catch-up"
             className="rounded-xl border border-border border-l-8 border-l-warning-strong bg-background/70 p-4 transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           >
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -286,7 +292,7 @@ function TodayActionPanel({
           <div className="mb-3 flex items-center justify-between gap-4">
             <p className="text-sm font-semibold text-foreground">Due next</p>
             <Link
-              href="/review#due-today"
+              href="/review?session=due-today"
               className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             >
               View all

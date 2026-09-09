@@ -10,20 +10,24 @@ import {
 } from "@/components/lists/ListsPageViews"
 import ListsResultsHeader from "@/components/lists/ListsResultsHeader"
 import ListsStatusMessages from "@/components/lists/ListsStatusMessages"
-import { joinClasses } from "@/components/ui/buttonStyles"
+import ListPager from "@/components/lists/ListPager"
+import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import PageHeader from "@/components/ui/PageHeader"
 import {
   addToLearningList,
   deleteList,
   removeTuneFromList,
+  startSelectedListTunes,
   unbookmarkPublicList,
   updateList,
 } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadListsData } from "@/lib/loaders/lists"
+import { paginateListItems, parseListPage } from "@/lib/list-view-state"
 import {
   getListFilterOptions,
   listMatchesFilters,
+  normaliseForSearch,
 } from "@/lib/search-filters"
 
 type LearningListsPageProps = {
@@ -37,6 +41,9 @@ type LearningListsPageProps = {
     source?: string | string[]
     visibility?: string | string[]
     view?: string | string[]
+    page?: string | string[]
+    list_batch?: string
+    group?: string | string[]
   }>
 }
 
@@ -98,6 +105,7 @@ function buildListsHref(options: {
   source: string
   visibility: string
   view?: ListsView
+  group?: string
 }) {
   const params = new URLSearchParams()
 
@@ -124,6 +132,7 @@ function buildListsHref(options: {
   if (options.visibility) {
     params.set("visibility", options.visibility)
   }
+  if (options.group) params.set("group", options.group)
 
   return params.toString()
     ? `/learning-lists?${params.toString()}`
@@ -154,13 +163,15 @@ export default async function LearningListsPage({
   const selectedSource = getSingleValue(resolvedSearchParams?.source)
   const selectedVisibility = getSingleValue(resolvedSearchParams?.visibility)
   const activeView = getListsView(getSingleValue(resolvedSearchParams?.view))
+  const requestedPage = parseListPage(resolvedSearchParams?.page)
+  const batchStatus = resolvedSearchParams?.list_batch ?? ""
+  const selectedGroup = getSingleValue(resolvedSearchParams?.group)
   const activeViewConfig =
     LISTS_VIEWS.find((view) => view.id === activeView) ?? LISTS_VIEWS[0]
 
   const {
     learningLists,
     listOverviews,
-    personalTuneCounts,
     learningQueueTunes,
     unlistedPracticeTunes,
     unlistedKnownTunes,
@@ -179,6 +190,28 @@ export default async function LearningListsPage({
       visibility: selectedVisibility,
     })
   )
+  const normalizedQuery = normaliseForSearch(searchQuery)
+  const matchesQuery = (value: string) =>
+    !normalizedQuery || normaliseForSearch(value).includes(normalizedQuery)
+  const filteredLearningQueueTunes = learningQueueTunes.filter(
+    (item) =>
+      matchesQuery(`${item.piece.title} ${item.listNames.join(" ")}`) &&
+      (!selectedGroup || item.listIds.includes(Number(selectedGroup)))
+  )
+  const filteredPracticeTunes = unlistedPracticeTunes.filter((item) => {
+    const piece = Array.isArray(item.pieces) ? item.pieces[0] : item.pieces
+    return matchesQuery(piece?.title ?? "") && (!selectedGroup || selectedGroup === "practice")
+  })
+  const filteredKnownTunes = unlistedKnownTunes.filter((item) => {
+    const piece = Array.isArray(item.pieces) ? item.pieces[0] : item.pieces
+    return matchesQuery(piece?.title ?? "") && (!selectedGroup || selectedGroup === "known")
+  })
+  const filteredBookmarkedLists = bookmarkedSharedLists.filter(
+    (item) => matchesQuery(`${item.name} ${item.ownerLabel}`) && (!selectedGroup || selectedGroup === "saved")
+  )
+  const filteredDirectSharedLists = directSharedLists.filter(
+    (item) => matchesQuery(`${item.name} ${item.ownerLabel}`) && (!selectedGroup || selectedGroup === "shared")
+  )
 
   const hasActiveFilters =
     searchQuery !== "" ||
@@ -194,7 +227,37 @@ export default async function LearningListsPage({
     source: selectedSource,
     visibility: selectedVisibility,
     view: activeView,
+    group: selectedGroup,
   })
+
+  const visibleSourceIds: number[] =
+    activeView === "my-lists"
+      ? filteredListOverviews.map((item) => item.id)
+      : activeView === "learning-queue"
+        ? filteredLearningQueueTunes.map((item) => item.piece.id)
+        : activeView === "unsorted"
+          ? [...filteredPracticeTunes, ...filteredKnownTunes].map((item) => item.piece_id)
+          : [...filteredBookmarkedLists, ...filteredDirectSharedLists].map((item) => item.id)
+  const pagination = paginateListItems(visibleSourceIds, requestedPage)
+  const visibleIds = new Set(pagination.items)
+  const visibleLearningQueueTunes = filteredLearningQueueTunes.filter((item) =>
+    visibleIds.has(item.piece.id)
+  )
+  const visiblePracticeTunes = filteredPracticeTunes.filter((item) =>
+    visibleIds.has(item.piece_id)
+  )
+  const visibleKnownTunes = filteredKnownTunes.filter((item) =>
+    visibleIds.has(item.piece_id)
+  )
+  const visibleBookmarkedLists = filteredBookmarkedLists.filter((item) =>
+    visibleIds.has(item.id)
+  )
+  const visibleDirectSharedLists = filteredDirectSharedLists.filter((item) =>
+    visibleIds.has(item.id)
+  )
+  const visibleListOverviews = filteredListOverviews.filter((item) =>
+    visibleIds.has(item.id)
+  )
 
   const unsortedCount = unlistedPracticeTunes.length + unlistedKnownTunes.length
   const savedSharedCount =
@@ -216,8 +279,8 @@ export default async function LearningListsPage({
 
       <PageHeader title="Lists" />
 
-      <section className="mb-6 rounded-3xl border border-border bg-card p-5 shadow-sm md:mb-8 md:p-6">
-        <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+      <nav aria-label="List views" className="mb-6 overflow-x-auto border-y border-border/70 py-2 md:mb-8 md:rounded-full md:border md:bg-card md:p-1 md:shadow-sm">
+        <div className="grid min-w-[620px] grid-cols-4">
           {LISTS_VIEWS.map((view) => {
             const isActive = activeView === view.id
 
@@ -227,15 +290,15 @@ export default async function LearningListsPage({
                 href={buildViewHref(view.id)}
                 aria-current={isActive ? "page" : undefined}
                 className={joinClasses(
-                  "rounded-2xl border p-4 transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
+                  "flex min-h-12 items-center justify-center gap-2 rounded-full px-4 py-2 text-center transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
                   isActive
-                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                    : "border-border bg-background/70 text-foreground hover:bg-muted"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-foreground hover:bg-muted"
                 )}
               >
                 <span
                   className={joinClasses(
-                    "text-xs font-semibold uppercase tracking-[0.14em]",
+                    "text-sm font-semibold",
                     isActive
                       ? "text-primary-foreground/85"
                       : "text-muted-foreground"
@@ -243,46 +306,29 @@ export default async function LearningListsPage({
                 >
                   {view.label}
                 </span>
-                <span className="mt-2 block font-serif text-3xl font-bold leading-none">
+                <span className="rounded-full bg-background/20 px-2 py-0.5 text-xs font-bold tabular-nums">
                   {viewCounts[view.id]}
                 </span>
               </Link>
             )
           })}
         </div>
-
-        <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
-          <p className="text-sm font-semibold text-foreground">
-            My Tunes lives in Tunes now.
-          </p>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            You have {personalTuneCounts.total} personal tune
-            {personalTuneCounts.total === 1 ? "" : "s"}:{" "}
-            {personalTuneCounts.inPractice} in Practice and{" "}
-            {personalTuneCounts.known} Known.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Link
-              href="/library/practice"
-              className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-            >
-              Practice Tunes
-            </Link>
-            <Link
-              href="/library/known"
-              className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-            >
-              Known Tunes
-            </Link>
-          </div>
-        </div>
-      </section>
+      </nav>
 
       {showSection("status_messages") ? (
         <ListsStatusMessages
           createListStatus={createListStatus}
           editListStatus={editListStatus}
         />
+      ) : null}
+      {batchStatus ? (
+        <p role="status" className="mb-5 border-y border-border/70 py-3 text-sm font-medium text-foreground">
+          {batchStatus.startsWith("started-")
+            ? `${batchStatus.replace("started-", "")} tune${batchStatus === "started-1" ? "" : "s"} added to Practice.`
+            : batchStatus === "empty"
+              ? "Select at least one tune."
+              : "Couldn’t start the selected tunes. Nothing outside your owned lists was changed."}
+        </p>
       ) : null}
 
       <section className="mb-5">
@@ -298,6 +344,22 @@ export default async function LearningListsPage({
           ) : null}
         </div>
       </section>
+
+      {activeView !== "my-lists" ? (
+        <form method="get" action="/learning-lists" className="mb-5 grid gap-3 border-y border-border/70 py-4 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+          <input type="hidden" name="view" value={activeView} />
+          <label className="sr-only" htmlFor="list-collection-search">Search this view</label>
+          <input id="list-collection-search" name="q" defaultValue={searchQuery} placeholder={`Search ${activeViewConfig.label.toLowerCase()}`} className="min-h-11 rounded-full border border-border bg-card px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]" />
+          <label className="sr-only" htmlFor="list-collection-group">Group</label>
+          <select id="list-collection-group" name="group" defaultValue={selectedGroup} className="min-h-11 rounded-full border border-border bg-card px-4 text-sm">
+            <option value="">All groups</option>
+            {activeView === "learning-queue" ? learningLists.map((list) => <option key={list.id} value={list.id}>{list.name}</option>) : null}
+            {activeView === "unsorted" ? <><option value="practice">In Practice</option><option value="known">Known</option></> : null}
+            {activeView === "saved-shared" ? <><option value="saved">Saved</option><option value="shared">Shared with me</option></> : null}
+          </select>
+          <button className={buttonStyles.primary}>Apply</button>
+        </form>
+      ) : null}
 
       {activeView === "my-lists" ? (
         <>
@@ -354,7 +416,7 @@ export default async function LearningListsPage({
                 </div>
 
                 <div className="space-y-4">
-                  {filteredListOverviews.map((list) => (
+                  {visibleListOverviews.map((list) => (
                     <ListOverviewCard
                       key={list.id}
                       list={list}
@@ -365,6 +427,7 @@ export default async function LearningListsPage({
                     />
                   ))}
                 </div>
+                <ListPager href={redirectTo} page={pagination.page} totalPages={pagination.totalPages} label="Your lists" />
               </section>
             )}
           </>
@@ -373,30 +436,40 @@ export default async function LearningListsPage({
       ) : null}
 
       {activeView === "learning-queue" ? (
-        <LearningQueueView
-          learningQueueTunes={learningQueueTunes}
-          startLearning={startLearning}
-          redirectTo={redirectTo}
-        />
+        <>
+          <LearningQueueView
+            learningQueueTunes={visibleLearningQueueTunes}
+            startLearning={startLearning}
+            startSelectedListTunes={startSelectedListTunes}
+            redirectTo={redirectTo}
+          />
+          <ListPager href={redirectTo} page={pagination.page} totalPages={pagination.totalPages} label="Learning Queue" />
+        </>
       ) : null}
 
       {activeView === "unsorted" ? (
-        <UnsortedView
-          unlistedPracticeTunes={unlistedPracticeTunes}
-          unlistedKnownTunes={unlistedKnownTunes}
-          learningLists={learningLists}
-          addToLearningList={addToLearningList}
-          redirectTo={redirectTo}
-        />
+        <>
+          <UnsortedView
+            unlistedPracticeTunes={visiblePracticeTunes}
+            unlistedKnownTunes={visibleKnownTunes}
+            learningLists={learningLists}
+            addToLearningList={addToLearningList}
+            redirectTo={redirectTo}
+          />
+          <ListPager href={redirectTo} page={pagination.page} totalPages={pagination.totalPages} label="Unsorted tunes" />
+        </>
       ) : null}
 
       {activeView === "saved-shared" ? (
-        <SavedSharedView
-          bookmarkedSharedLists={bookmarkedSharedLists}
-          directSharedLists={directSharedLists}
-          unbookmarkPublicList={unbookmarkPublicList}
-          redirectTo={redirectTo}
-        />
+        <>
+          <SavedSharedView
+            bookmarkedSharedLists={visibleBookmarkedLists}
+            directSharedLists={visibleDirectSharedLists}
+            unbookmarkPublicList={unbookmarkPublicList}
+            redirectTo={redirectTo}
+          />
+          <ListPager href={redirectTo} page={pagination.page} totalPages={pagination.totalPages} label="Saved and shared lists" />
+        </>
       ) : null}
     </main>
   )

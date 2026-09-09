@@ -1,208 +1,114 @@
+import Link from "next/link"
+import type { Metadata } from "next"
 import DirectMessageThreadList from "@/components/inbox/DirectMessageThreadList"
 import InboxItemList from "@/components/inbox/InboxItemList"
 import SubmitButton from "@/components/SubmitButton"
 import PageHeader from "@/components/ui/PageHeader"
-import {
-  archiveAllInboxItems,
-  markAllNotificationsRead,
-} from "@/lib/actions/activity-interactions"
+import { markAllNotificationsRead } from "@/lib/actions/activity-interactions"
+import { paginateItems, parseInboxPage, parseInboxTab } from "@/lib/inbox-view-state"
 import { loadInboxData } from "@/lib/loaders/inbox"
 
+export const metadata: Metadata = {
+  title: "Inbox | Tunes",
+}
+
 type InboxPageProps = {
-  searchParams?: Promise<{
+  searchParams: Promise<{
     direct_message?: string
+    tab?: string
+    page?: string
   }>
 }
 
-function getDirectMessageMessage(status?: string) {
-  if (status === "sent") {
-    return {
-      tone: "success" as const,
-      text: "Message sent.",
-    }
-  }
-
-  if (status === "edited") {
-    return {
-      tone: "success" as const,
-      text: "Message edited.",
-    }
-  }
-
-  if (status === "deleted") {
-    return {
-      tone: "success" as const,
-      text: "Message deleted.",
-    }
-  }
-
-  if (status === "archived") {
-    return {
-      tone: "success" as const,
-      text: "Conversation archived.",
-    }
-  }
-
-  if (status === "missing_user") {
-    return {
-      tone: "warning" as const,
-      text: "Couldn’t tell which person to message.",
-    }
-  }
-
-  if (status === "missing_body") {
-    return {
-      tone: "warning" as const,
-      text: "Write a message before sending.",
-    }
-  }
-
-  if (status === "missing_message") {
-    return {
-      tone: "warning" as const,
-      text: "Couldn’t tell which message to update.",
-    }
-  }
-
-  if (status === "self") {
-    return {
-      tone: "warning" as const,
-      text: "You cannot send a direct message to yourself.",
-    }
-  }
-
-  if (status === "not_found") {
-    return {
-      tone: "error" as const,
-      text: "That person couldn’t be found.",
-    }
-  }
-
+function statusMessage(status?: string) {
+  if (status === "sent") return "Message sent."
+  if (status === "edited") return "Message edited."
+  if (status === "deleted") return "Message deleted."
+  if (status === "archived") return "Conversation archived."
   return null
 }
 
-function getMessageClasses(
-  tone: "success" | "warning" | "error" | "neutral"
-) {
-  if (tone === "success") {
-    return "mb-6 rounded-2xl border border-success bg-muted p-4 text-sm font-medium text-foreground shadow-sm"
-  }
-
-  if (tone === "warning") {
-    return "mb-6 rounded-2xl border border-warning bg-muted p-4 text-sm font-medium text-foreground shadow-sm"
-  }
-
-  if (tone === "error") {
-    return "mb-6 rounded-2xl border border-destructive bg-muted p-4 text-sm font-medium text-destructive shadow-sm"
-  }
-
-  return "mb-6 rounded-2xl border border-border bg-muted p-4 text-sm font-medium text-muted-foreground shadow-sm"
-}
-
 export default async function InboxPage({ searchParams }: InboxPageProps) {
-  const resolvedSearchParams = searchParams ? await searchParams : undefined
-  const directMessageMessage = getDirectMessageMessage(
-    resolvedSearchParams?.direct_message
+  const params = await searchParams
+  const tab = parseInboxTab(params.tab)
+  const page = parseInboxPage(params.page)
+  const data = await loadInboxData()
+  const newItems = data.notificationItems.filter((item) => item.read_at === null).slice(0, 20)
+  const history = paginateItems(
+    data.notificationItems.filter((item) => item.read_at !== null),
+    page
   )
-
-  const {
-    notificationItems,
-    messageThreads,
-    unreadNotificationCount,
-    unreadMessageCount,
-    unreadCount,
-  } = await loadInboxData()
-
-  const hasInboxItems =
-    notificationItems.length > 0 || messageThreads.length > 0
+  const message = statusMessage(params.direct_message)
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
-      {directMessageMessage ? (
-        <div className={getMessageClasses(directMessageMessage.tone)}>
-          {directMessageMessage.text}
-        </div>
+    <main className="mx-auto max-w-[1100px] px-4 py-5 text-foreground sm:px-6 sm:py-8">
+      <PageHeader title="Inbox" />
+
+      {message ? (
+        <p role="status" className="mb-5 border-l-4 border-primary py-2 pl-3 text-sm font-medium">
+          {message}
+        </p>
       ) : null}
 
-      <section className="mb-8">
-        <PageHeader title="Inbox" />
+      <nav aria-label="Inbox categories" className="mb-8 inline-flex rounded-full border border-border bg-muted/50 p-1">
+        <Link
+          href="/inbox?tab=activity"
+          aria-current={tab === "activity" ? "page" : undefined}
+          className={`inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold ${tab === "activity" ? "bg-state-social text-state-social-foreground" : "text-muted-foreground"}`}
+        >
+          Activity {data.unreadNotificationCount > 0 ? `· ${data.unreadNotificationCount}` : ""}
+        </Link>
+        <Link
+          href="/inbox?tab=messages"
+          aria-current={tab === "messages" ? "page" : undefined}
+          className={`inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold ${tab === "messages" ? "bg-state-social text-state-social-foreground" : "text-muted-foreground"}`}
+        >
+          Messages {data.unreadMessageCount > 0 ? `· ${data.unreadMessageCount}` : ""}
+        </Link>
+      </nav>
 
-        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-          <div className="flex flex-col gap-3 md:items-end">
-            <div className="grid gap-3 text-sm sm:grid-cols-3">
-              <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
-                <p className="font-semibold text-foreground">{unreadCount}</p>
-                <p className="text-muted-foreground">Unread total</p>
+      {tab === "messages" ? (
+        <section aria-labelledby="messages-title">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Messages</p>
+          <h1 id="messages-title" className="mt-1 font-serif text-3xl font-bold">Conversations</h1>
+          <p className="mb-5 mt-2 text-sm text-muted-foreground">Open a person to read the latest messages and reply.</p>
+          <DirectMessageThreadList threads={data.messageThreads} />
+        </section>
+      ) : (
+        <div className="space-y-10">
+          <section aria-labelledby="new-title">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-state-social">Activity</p>
+                <h1 id="new-title" className="mt-1 font-serif text-3xl font-bold">New</h1>
               </div>
-
-              <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
-                <p className="font-semibold text-foreground">
-                  {unreadMessageCount}
-                </p>
-                <p className="text-muted-foreground">Messages</p>
-              </div>
-
-              <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
-                <p className="font-semibold text-foreground">
-                  {unreadNotificationCount}
-                </p>
-                <p className="text-muted-foreground">Notifications</p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2 md:justify-end">
-              {unreadCount > 0 ? (
+              {data.unreadNotificationCount > 0 ? (
                 <form action={markAllNotificationsRead}>
-                  <SubmitButton
-                    label="Mark all read"
-                    pendingLabel="Marking read..."
-                    className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                  />
-                </form>
-              ) : (
-                <p className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground">
-                  All caught up
-                </p>
-              )}
-
-              {hasInboxItems ? (
-                <form action={archiveAllInboxItems}>
-                  <SubmitButton
-                    label="Archive all"
-                    pendingLabel="Archiving..."
-                    className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                  />
+                  <SubmitButton label="Mark all read" pendingLabel="Marking read..." className="inline-flex min-h-11 items-center rounded-full border border-state-social px-4 text-sm font-semibold text-state-social" />
                 </form>
               ) : null}
             </div>
-          </div>
+            <div className="mt-4">
+              <InboxItemList items={newItems} emptyMessage="You’re caught up. New activity will appear here." />
+            </div>
+          </section>
+
+          <section aria-labelledby="history-title">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Earlier activity</p>
+            <h2 id="history-title" className="mt-1 font-serif text-2xl font-bold">History</h2>
+            <div className="mt-4">
+              <InboxItemList items={history.items} emptyMessage="No activity history yet." />
+            </div>
+            {(history.hasPrevious || history.hasNext) ? (
+              <nav aria-label="Activity history pages" className="mt-4 flex items-center justify-between gap-4">
+                {history.hasPrevious ? <Link href={`/inbox?tab=activity&page=${history.page - 1}`} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">← Newer</Link> : <span />}
+                <span className="text-sm text-muted-foreground">Page {history.page}</span>
+                {history.hasNext ? <Link href={`/inbox?tab=activity&page=${history.page + 1}`} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Older →</Link> : <span />}
+              </nav>
+            ) : null}
+          </section>
         </div>
-      </section>
-
-      <section className="mb-8">
-        <div className="mb-4">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Messages
-          </h2>
-        </div>
-
-        <DirectMessageThreadList threads={messageThreads} />
-      </section>
-
-      <section>
-        <div className="mb-4">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Notifications
-          </h2>
-
-          <p className="mt-2 text-sm text-muted-foreground">
-            Good craic! reactions, replies, and moderation outcomes appear
-            here.
-          </p>
-        </div>
-
-        <InboxItemList items={notificationItems} />
-      </section>
+      )}
     </main>
   )
 }

@@ -2,6 +2,7 @@ import Link from "next/link"
 import ConnectAndCompareButton from "@/components/compare/ConnectAndCompareButton"
 import { buildCompareJoinPath } from "@/lib/compare-invite-paths"
 import { loadCompareInvitePreview } from "@/lib/loaders/compare-invites"
+import EnterCompareCodeForm from "@/components/compare/EnterCompareCodeForm"
 
 export const dynamic = "force-dynamic"
 
@@ -151,6 +152,15 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
               Compare now
             </Link>
           </>
+        ) : null}
+
+        {preview.state === "invalid" || preview.state === "expired" || preview.state === "revoked" || preview.state === "consumed" ? (
+          <div className="mt-6 border-t border-border pt-5">
+            <div className="flex flex-wrap gap-3">
+              <Link href="/compare" className="inline-flex min-h-11 items-center rounded-full border border-primary bg-primary px-4 text-sm font-semibold text-primary-foreground">Start a new comparison</Link>
+            </div>
+            <EnterCompareCodeForm />
+          </div>
         ) : null}
       </section>
     </main>

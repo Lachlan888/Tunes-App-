@@ -66,12 +66,6 @@ function formatMeta(focus: PracticeFocus) {
   return tuneLabel
 }
 
-function getFocusNoteCount(focus: PracticeFocus) {
-  return focus.tunes.reduce((total, tune) => {
-    return total + (typeof tune.id === "number" ? 0 : 0)
-  }, 0)
-}
-
 function MobileFocusRow({
   focus,
   isSelected,
@@ -204,6 +198,14 @@ function SelectedFocusCard({ focus }: { focus: PracticeFocus }) {
       </div>
 
       <div className="flex flex-wrap gap-3">
+        {focus.status === "active" && focus.tunes.length > 0 ? (
+          <Link
+            href={`/review?session=focus&focus_id=${focus.id}`}
+            className={buttonStyles.primary}
+          >
+            Practise this focus
+          </Link>
+        ) : null}
         <Link
           href={`/review/foci/${focus.id}`}
           className={buttonStyles.secondaryStrong}
@@ -418,7 +420,7 @@ export default function PracticeFocusList({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Selected focus
+              Current intention
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-muted-foreground">

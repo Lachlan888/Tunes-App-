@@ -9,7 +9,7 @@ export function getIncludePracticeFromParam(
   value: string | string[] | undefined
 ) {
   const firstValue = Array.isArray(value) ? value[0] : value
-  return firstValue === "1" || firstValue === "true"
+  return firstValue !== "0" && firstValue !== "false"
 }
 
 export function buildCompareHref(
@@ -21,6 +21,8 @@ export function buildCompareHref(
     time_signature?: string[]
     includePractice?: boolean
     userSearch?: string
+    group?: string
+    page?: number
   }
 ) {
   const params = new URLSearchParams()
@@ -29,8 +31,8 @@ export function buildCompareHref(
     params.append("user", user)
   })
 
-  if (extraParams?.includePractice) {
-    params.set("include_practice", "1")
+  if (typeof extraParams?.includePractice === "boolean") {
+    params.set("include_practice", extraParams.includePractice ? "1" : "0")
   }
 
   if (extraParams?.userSearch?.trim()) {
@@ -52,6 +54,13 @@ export function buildCompareHref(
   extraParams?.time_signature?.forEach((value) => {
     params.append("time_signature", value)
   })
+
+  if (extraParams?.group && extraParams.group !== "all") {
+    params.set("group", extraParams.group)
+  }
+  if (extraParams?.page && extraParams.page > 1) {
+    params.set("page", String(extraParams.page))
+  }
 
   const query = params.toString()
   return query ? `/compare?${query}` : "/compare"

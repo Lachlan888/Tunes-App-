@@ -53,12 +53,15 @@ export default function SharedListCard({ list }: SharedListCardProps) {
 
   return (
     <article
-      className={cardStyles.clickableCard}
+      className={`${cardStyles.clickableCard} overflow-hidden p-0`}
       onClick={openListPage}
       aria-label={`Open public list ${list.name}`}
     >
-      <div className="flex h-full flex-col gap-5">
-        <div className="min-w-0 flex-1">
+      <div className="flex h-full flex-col">
+        <div className={`h-24 border-b border-border px-5 py-4 ${list.id % 3 === 0 ? "bg-success/15" : list.id % 3 === 1 ? "bg-primary/15" : "bg-warning/15"}`} aria-hidden="true">
+          <span className="font-serif text-4xl font-bold text-foreground/15">{list.name.slice(0, 1).toUpperCase()}</span>
+        </div>
+        <div className="min-w-0 flex-1 p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <h2 className="font-serif text-2xl font-bold leading-tight text-foreground">
               <PendingLinkButton
@@ -102,20 +105,18 @@ export default function SharedListCard({ list }: SharedListCardProps) {
             ) : null}
           </div>
 
-          {list.description ? (
-            <p className="mt-4 text-sm leading-6 text-foreground">
-              {list.description}
-            </p>
-          ) : null}
-        </div>
+          <p className="mt-4 line-clamp-3 text-sm leading-6 text-foreground">
+            {list.description || `A ${displayedStyle ? `${displayedStyle.toLowerCase()} ` : ""}collection curated for players looking for their next session.`}
+          </p>
 
-        <div data-card-action>
-          <PendingLinkButton
-            href={listHref}
-            label="Browse"
-            pendingLabel="Opening..."
-            className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-          />
+          <div data-card-action className="mt-5">
+            <PendingLinkButton
+              href={listHref}
+              label="Read the list"
+              pendingLabel="Opening..."
+              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            />
+          </div>
         </div>
       </div>
     </article>

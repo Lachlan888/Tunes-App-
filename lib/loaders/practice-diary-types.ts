@@ -156,6 +156,9 @@ export type PracticeDiaryMonthDaySummary = {
   uniqueTuneCount: number
   hasPractice: boolean
   activityLevel: "none" | "light" | "medium" | "heavy"
+  roughCount: number
+  shakyCount: number
+  solidCount: number
 }
 
 export type PracticeDiaryMonthTuneSummary = {

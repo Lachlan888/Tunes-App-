@@ -92,7 +92,7 @@ export default function TrendTuneList({
 
   return (
     <>
-      <ul className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <ul className="divide-y divide-border border-y border-border">
         {entries.map((entry) => {
           const piece = entry.piece
 
@@ -114,29 +114,29 @@ export default function TrendTuneList({
           return (
             <li
               key={piece.id}
-              className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm"
+              className="py-4"
             >
-              <div className="flex flex-col gap-5">
-                <div>
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0">
                   <Link
                     href={`/library/${piece.id}`}
-                    className="font-serif text-3xl font-bold leading-tight text-foreground underline-offset-4 hover:underline"
+                    className="font-serif text-xl font-bold leading-tight text-foreground underline-offset-4 hover:underline"
                   >
                     {piece.title}
                   </Link>
 
                   {metadata && (
-                    <p className="mt-3 text-sm font-medium text-muted-foreground">
+                    <p className="mt-1 text-sm font-medium text-muted-foreground">
                       {metadata}
                     </p>
                   )}
 
-                  <p className="mt-4 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <p className="mt-1 text-sm font-medium text-muted-foreground">
                     {renderCountText(metricLabel, entry.count, metricUnit)}
                   </p>
 
                   {listLinks.length > 0 && (
-                    <div className="mt-3 text-sm text-muted-foreground">
+                    <div className="mt-1 text-sm text-muted-foreground">
                       <span>In these lists: </span>
                       {listLinks.map((list, index) => (
                         <span key={list.id}>
@@ -153,7 +153,7 @@ export default function TrendTuneList({
                   )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
                   {isAlreadyInPractice ? (
                     <span className="rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm">
                       Already in practice

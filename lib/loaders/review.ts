@@ -127,5 +127,6 @@ export async function loadReviewPageData() {
     practiceItems,
     dueTodayPieces,
     catchUpQueue,
+    today,
   }
 }

@@ -6,11 +6,13 @@ import SharedListsEmptyState from "@/components/shared/SharedListsEmptyState"
 import SharedListsErrorState from "@/components/shared/SharedListsErrorState"
 import SharedListsHeader from "@/components/shared/SharedListsHeader"
 import SharedListsMobileList from "@/components/shared/SharedListsMobileList"
+import ListPager from "@/components/lists/ListPager"
 import {
   loadPublicListsData,
   type SharedList,
 } from "@/lib/loaders/public-lists"
 import { normaliseForSearch } from "@/lib/search-filters"
+import { paginateListItems, parseListPage, PUBLIC_LIST_PAGE_SIZE } from "@/lib/list-view-state"
 
 type PublicListSortValue = "recent" | "alpha" | "tune-count"
 
@@ -19,6 +21,7 @@ type PublicListsPageProps = {
     q?: string | string[]
     sort?: string | string[]
     style?: string | string[]
+    page?: string | string[]
   }>
 }
 
@@ -106,6 +109,7 @@ export default async function PublicListsPage({
   const searchQuery = getSingleValue(resolvedSearchParams?.q)
   const selectedStyles = toArray(resolvedSearchParams?.style)
   const selectedSort = getSortValue(getSingleValue(resolvedSearchParams?.sort))
+  const requestedPage = parseListPage(resolvedSearchParams?.page)
 
   const publicListsData = await loadPublicListsData()
 
@@ -127,6 +131,14 @@ export default async function PublicListsPage({
 
   const hasActiveFilters =
     searchQuery !== "" || selectedStyles.length > 0 || selectedSort !== "recent"
+  const pagination = paginateListItems(filteredLists, requestedPage, PUBLIC_LIST_PAGE_SIZE)
+  const publicListHref = (() => {
+    const params = new URLSearchParams()
+    if (searchQuery) params.set("q", searchQuery)
+    selectedStyles.forEach((style) => params.append("style", style))
+    if (selectedSort !== "recent") params.set("sort", selectedSort)
+    return params.size ? `/public-lists?${params.toString()}` : "/public-lists"
+  })()
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
@@ -152,7 +164,7 @@ export default async function PublicListsPage({
           <section className="mb-4 flex flex-wrap items-center justify-between gap-3 md:mb-5">
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                Showing {filteredLists.length} of{" "}
+                Showing {pagination.items.length} of{" "}
                 {publicListsData.sharedLists.length} public list
                 {publicListsData.sharedLists.length === 1 ? "" : "s"}
               </p>
@@ -178,7 +190,7 @@ export default async function PublicListsPage({
             />
           ) : (
             <>
-              <SharedListsMobileList lists={filteredLists} />
+              <SharedListsMobileList lists={pagination.items} />
 
               <section className="hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -186,11 +198,12 @@ export default async function PublicListsPage({
                 </h2>
 
                 <div className="mt-5 grid gap-4 xl:grid-cols-2">
-                  {filteredLists.map((list) => (
+                  {pagination.items.map((list) => (
                     <SharedListCard key={list.id} list={list} />
                   ))}
                 </div>
               </section>
+              <ListPager href={publicListHref} page={pagination.page} totalPages={pagination.totalPages} label="Public lists" />
             </>
           )}
         </>

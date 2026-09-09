@@ -37,6 +37,12 @@ export default function PracticeStatusMessages({
         </StatusBox>
       )}
 
+      {practiceUpdate === "error" && (
+        <StatusBox tone="error">
+          The review could not be saved. Try the rating again.
+        </StatusBox>
+      )}
+
       {removeFromPracticeStatus === "success" && (
         <StatusBox tone="success">Tune removed from practice.</StatusBox>
       )}

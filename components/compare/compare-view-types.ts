@@ -1,8 +1,10 @@
 import type { CompareError, CompareSuggestion } from "@/lib/loaders/compare"
 import type { ProfileSearchRow, RankedProfileMatch } from "@/lib/profile-search"
 import type { Piece } from "@/lib/types"
+import type { CompareOutcomeGroups } from "@/lib/compare-outcomes"
 
 export type CompareViewProps = {
+  currentUserId: string
   selectedProfiles: ProfileSearchRow[]
   filterPreservedUsers: string[]
   titleQuery: string
@@ -28,4 +30,11 @@ export type CompareViewProps = {
   availableTimeSignatures: string[]
   hasActiveFilters: boolean
   canShowResults: boolean
+  outcomeGroups: CompareOutcomeGroups
+  outcomePieces: Piece[]
+  overlapGroup: "all" | "strong" | "shaky"
+  overlapPage: number
+  overlapTotal: number
+  previousOverlapHref: string | null
+  nextOverlapHref: string | null
 }

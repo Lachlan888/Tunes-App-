@@ -2,10 +2,12 @@ import { redirect } from "next/navigation"
 import ActivePracticeSection from "@/components/practice/ActivePracticeSection"
 import PracticeStatusMessages from "@/components/practice/PracticeStatusMessages"
 import ReviewQueueSection from "@/components/practice/ReviewQueueSection"
+import FocusedPracticeSession from "@/components/practice/FocusedPracticeSession"
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import PracticeDiaryNav from "@/components/practice-diary/PracticeDiaryNav"
 import PageHeader from "@/components/ui/PageHeader"
 import { loadReviewPageData } from "@/lib/loaders/review"
+import { parsePracticeLane } from "@/lib/practice-session"
 
 type ReviewPageProps = {
   searchParams?: Promise<{
@@ -14,6 +16,9 @@ type ReviewPageProps = {
     practice_update?: string
     preferred_reference?: string | string[]
     loop?: string | string[]
+    session?: string
+    list_id?: string
+    focus_id?: string
   }>
 }
 
@@ -30,6 +35,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
   const mode = resolvedSearchParams?.mode ?? ""
   const reviewMode = mode === "catch-up" ? "catch-up" : "due-today"
+  const practiceLane = parsePracticeLane(resolvedSearchParams?.session)
   const removeFromPracticeStatus =
     resolvedSearchParams?.remove_from_practice ?? ""
   const practiceUpdate = resolvedSearchParams?.practice_update ?? ""
@@ -45,6 +51,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     practiceItems,
     dueTodayPieces,
     catchUpQueue,
+    today,
   } = await loadReviewPageData()
 
   const dueTodayRedirectTo = "/review#review-queue"
@@ -54,6 +61,70 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
   if (!streakSummary) {
     redirect("/login")
+  }
+
+  if (practiceLane) {
+    let queue = practiceLane === "catch-up" ? catchUpQueue : dueTodayPieces
+    let sessionLabel: string | undefined
+    let sessionKey: string | undefined
+
+    if (practiceLane === "list") {
+      const listId = Number(resolvedSearchParams?.list_id)
+      const { createClient } = await import("@/lib/supabase/server")
+      const supabase = await createClient()
+      const { data: list } = await supabase
+        .from("learning_lists")
+        .select("id, name")
+        .eq("id", listId)
+        .maybeSingle()
+      const { data: memberships } = list
+        ? await supabase
+            .from("learning_list_items")
+            .select("piece_id")
+            .eq("learning_list_id", list.id)
+        : { data: [] }
+      const pieceIds = new Set((memberships ?? []).map((item) => item.piece_id))
+
+      queue = list ? practiceItems.filter((item) => pieceIds.has(item.piece_id)) : []
+      sessionLabel = list ? list.name : "List unavailable"
+      sessionKey = list ? `list-${list.id}` : "list-unavailable"
+    }
+
+    if (practiceLane === "focus") {
+      const focusId = Number(resolvedSearchParams?.focus_id)
+      const { createClient } = await import("@/lib/supabase/server")
+      const supabase = await createClient()
+      const { data: authData } = await supabase.auth.getUser()
+      const { data: focus } = await supabase
+        .from("practice_foci")
+        .select("id, title")
+        .eq("id", focusId)
+        .eq("user_id", authData.user?.id ?? "")
+        .eq("status", "active")
+        .maybeSingle()
+      const { data: memberships } = focus
+        ? await supabase
+            .from("practice_focus_tunes")
+            .select("piece_id")
+            .eq("focus_id", focus.id)
+        : { data: [] }
+      const pieceIds = new Set((memberships ?? []).map((item) => item.piece_id))
+
+      queue = focus ? practiceItems.filter((item) => pieceIds.has(item.piece_id)) : []
+      sessionLabel = focus ? focus.title : "Focus unavailable"
+      sessionKey = focus ? `focus-${focus.id}` : "focus-unavailable"
+    }
+
+    return (
+      <FocusedPracticeSession
+        lane={practiceLane}
+        initialQueue={queue}
+        sessionDate={today}
+        noteCategories={practiceDiaryEnabled ? noteCategories : []}
+        sessionLabel={sessionLabel}
+        sessionKey={sessionKey}
+      />
+    )
   }
 
   return (
@@ -73,11 +144,6 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         <ReviewQueueSection
           dueTodayPieces={showSection("due_today") ? dueTodayPieces : []}
           catchUpQueue={showSection("catch_up") ? catchUpQueue : []}
-          activeMode={reviewMode}
-          dueTodayRedirectTo={dueTodayRedirectTo}
-          catchUpRedirectTo={catchUpRedirectTo}
-          practiceDiaryEnabled={practiceDiaryEnabled}
-          noteCategories={noteCategories}
         />
       ) : null}
 

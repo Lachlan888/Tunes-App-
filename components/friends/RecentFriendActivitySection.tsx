@@ -1,10 +1,5 @@
-import EmptyState from "@/components/EmptyState"
-import ActivityInteractionPanel from "@/components/activity/ActivityInteractionPanel"
-import {
-  formatFriendActivityRelativeTime,
-  renderFriendActivityText,
-  type FriendActivityItem,
-} from "@/lib/friend-activity"
+import SocialActivityFeed from "@/components/activity/SocialActivityFeed"
+import type { FriendActivityItem } from "@/lib/friend-activity"
 
 type RecentFriendActivitySectionProps = {
   items: FriendActivityItem[]
@@ -27,28 +22,7 @@ export default function RecentFriendActivitySection({
         </p>
       </div>
 
-      {items.length === 0 ? (
-        <EmptyState title="No recent friend activity" />
-      ) : (
-        <div className="divide-y divide-border/70 md:space-y-3 md:divide-y-0">
-          {items.map((item) => (
-            <article
-              key={item.id}
-              className="py-4 transition hover:text-foreground md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm md:hover:bg-muted/70"
-            >
-              <p className="text-sm leading-6 text-foreground">
-                {renderFriendActivityText(item)}
-              </p>
-
-              <p className="mt-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                {formatFriendActivityRelativeTime(item.created_at)}
-              </p>
-
-              <ActivityInteractionPanel item={item} redirectTo="/friends" />
-            </article>
-          ))}
-        </div>
-      )}
+      <SocialActivityFeed items={items} redirectTo="/friends" />
     </section>
   )
 }

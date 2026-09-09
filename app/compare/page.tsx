@@ -12,6 +12,7 @@ import {
 } from "@/lib/compare-page"
 import { loadCompareData, loadCompareUserSearch } from "@/lib/loaders/compare"
 import type { Piece } from "@/lib/types"
+import { parseComparePage } from "@/lib/compare-outcomes"
 
 export const dynamic = "force-dynamic"
 
@@ -25,6 +26,8 @@ type ComparePageProps = {
     include_practice?: string | string[]
     user_search?: string | string[]
     friend_request?: string
+    group?: string | string[]
+    page?: string | string[]
   }>
 }
 
@@ -49,6 +52,12 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
   const selectedKeys = toArray(resolvedSearchParams?.key)
   const selectedStyles = toArray(resolvedSearchParams?.style)
   const selectedTimeSignatures = toArray(resolvedSearchParams?.time_signature)
+  const rawGroup = Array.isArray(resolvedSearchParams?.group)
+    ? resolvedSearchParams?.group[0]
+    : resolvedSearchParams?.group
+  const overlapGroup =
+    rawGroup === "strong" || rawGroup === "shaky" ? rawGroup : "all"
+  const overlapPage = parseComparePage(resolvedSearchParams?.page)
 
   const compareData = await loadCompareData(selectedUsers, { includePractice })
 
@@ -82,7 +91,15 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
     timeSignatures: availableTimeSignatures,
   } = getPieceFilterOptions(mutualPieces)
 
-  const filteredPieces = mutualPieces.filter((piece: Piece) =>
+  const groupIds = new Set(
+    overlapGroup === "strong"
+      ? compareData.outcomeGroups.sharedStrongIds
+      : overlapGroup === "shaky"
+        ? compareData.outcomeGroups.sharedShakyIds
+        : compareData.outcomeGroups.playableTogetherIds
+  )
+  const allFilteredPieces = mutualPieces.filter((piece: Piece) =>
+    groupIds.has(piece.id) &&
     pieceMatchesFilters(piece, {
       q: titleQuery,
       keys: selectedKeys,
@@ -90,6 +107,9 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       timeSignatures: selectedTimeSignatures,
     })
   )
+  const pageSize = 20
+  const pageStart = (overlapPage - 1) * pageSize
+  const filteredPieces = allFilteredPieces.slice(pageStart, pageStart + pageSize)
 
   const hasActiveFilters =
     titleQuery !== "" ||
@@ -122,7 +142,19 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
   const canShowResults =
     selectedProfiles.length > 0 && error === null && canCompare
 
+  const overlapHref = (page: number) =>
+    buildCompareHref(filterPreservedUsers, {
+      q: titleQuery,
+      key: selectedKeys,
+      style: selectedStyles,
+      time_signature: selectedTimeSignatures,
+      includePractice,
+      group: overlapGroup,
+      page,
+    })
+
   const compareViewProps: CompareViewProps = {
+    currentUserId: compareData.currentUserId,
     selectedProfiles,
     filterPreservedUsers,
     titleQuery,
@@ -148,6 +180,16 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
     availableTimeSignatures,
     hasActiveFilters,
     canShowResults,
+    outcomeGroups: compareData.outcomeGroups,
+    outcomePieces: compareData.outcomePieces,
+    overlapGroup,
+    overlapPage,
+    overlapTotal: allFilteredPieces.length,
+    previousOverlapHref: overlapPage > 1 ? overlapHref(overlapPage - 1) : null,
+    nextOverlapHref:
+      pageStart + pageSize < allFilteredPieces.length
+        ? overlapHref(overlapPage + 1)
+        : null,
   }
 
   return (

@@ -264,7 +264,7 @@ function UnavailableWorkspace({
             <a
               href={selectedSource.url}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className={`${buttonStyles.secondary} mt-4`}
             >
               Open source

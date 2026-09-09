@@ -21,7 +21,9 @@ Update this file after major architecture, navigation, product-language, mobile-
 
 ## 3. Current implementation source of truth
 
-The live repo is the implementation source of truth. Older docs remain useful for product intent and architectural reasoning, but they may use older names. If old docs mention names that differ from current files, translate the intent to current names instead of launching broad renames.
+The local repository is the implementation source of truth, including current unfinished work. Read `Prompt Runner State.md` first for progress, recovery, checks and the next action. This context describes established architecture; a recorded checkpoint is not proof of a successful deployment. Older docs remain useful for product intent and architectural reasoning, but they may use older names. Translate older names to current code rather than launching broad renames.
+
+Prompt 14 Setlists is currently an interrupted partial implementation. Preserve its files and follow the live ledger to complete integration; do not treat the new Read/Manage/Performance helpers as a finished route. Earlier completed-prompt results are retained in the historical archive linked from the ledger.
 
 Naming map:
 
@@ -37,44 +39,25 @@ Naming map:
 
 Current shell files:
 
-- `app/layout.tsx` loads nav context and renders `components/layout/AppHeader.tsx`.
-- `AppHeader` renders `DesktopNav` and `MobileNav`.
-- Shared nav definitions live in `components/layout/navItems.ts`.
+- `app/layout.tsx` loads navigation context and renders `components/layout/AppShell.tsx`.
+- `AppShell` composes the phone top bar, desktop rail, phone Navigation Dock, account menu, and the contextual Session Dock.
+- Shared route-to-destination definitions live in `components/layout/navItems.ts`.
 
-Desktop nav for signed-in users:
+Signed-in consumer navigation has exactly six visible, first-class destinations at phone, tablet, and desktop widths:
 
 - Home (`/`)
 - Practice (`/review`, with overdue practice badge)
 - Tunes (`/library`)
-- Lists dropdown:
-  - My Lists (`/learning-lists`)
-  - Public Lists (`/public-lists`)
-- Social dropdown:
-  - Friends (`/friends`)
-  - Compare (`/compare`)
-  - Setlists (`/setlists`)
-  - Badges (`/badges`)
-  - Trends (`/trends`)
-  - Inbox (`/inbox`, with unread badge)
-- Moderator (`/moderator`) only when allowed
-- Dev (`/dev`) only when allowed
-- Profile (`/dashboard`)
-- Logout
+- Lists (`/learning-lists`)
+- Social (`/friends`, with combined social/inbox attention badge)
+- Compare (`/compare`)
 
-Desktop nav for signed-out users shows Login only.
-
-Mobile nav for signed-in users:
-
-- Primary visible row: Home, Practice, Tunes, Lists, Social, More.
-- Lists opens an inline panel with My Lists and Public Lists.
-- Social opens an inline panel with Friends, Compare, Setlists, Badges, Trends, and Inbox. Inbox carries the unread badge.
-- More opens an inline panel with Profile, optional Moderator, optional Dev, and Logout. More carries the moderation badge when present.
-- Signed-out users do not get the mobile nav row.
+Social and Compare are deliberately separate destinations with distinct active states. Compare must not be moved back under Tunes, the account menu, or a generic Social grouping. Secondary destinations such as Public Lists, Setlists, Badges, Trends, Inbox, Account & settings, Metronome, Help & feedback, and role-gated Moderator/Developer tools live in the account menu or contextual surfaces. Signed-out and internal shells do not inherit the consumer rail/dock.
 
 Contextual control layer:
 
 - `components/session-dock/SessionDockProvider.tsx` owns one active Session Dock registration and renders the adaptive dock outside route content. Route features publish typed models rather than adding route checks to `AppShell`.
-- The shared model in `components/session-dock/sessionDockModel.ts` supports Tune Detail, focused Practice, Reference Media, catalogue selection and setlist Performance contexts through one primary/secondary action, progress/status, collapsed/expanded content and persistence contract.
+- The shared model in `components/session-dock/sessionDockModel.ts` supports Tune Detail, focused Practice, Reference Media, catalogue selection, list selection and setlist Performance contexts through one primary/secondary action, progress/status, collapsed/expanded content and persistence contract.
 - The Session Dock sits above the phone Navigation Dock and becomes a bottom contextual toolbar on wider screens. The two layers share `--navigation-dock-space` and `--session-dock-space`; an expanded Session Dock makes the collapsed dock and phone navigation inert and invisible.
 - Tune identity is URL-addressed. Practice queue position, reference playhead/loop/speed/section and setlist position use versioned `sessionStorage`; reference source and setlist performance item are reflected in safe URL parameters. Private selections must not be placed in URLs.
 - Metronome and Feedback no longer render as floating launchers on signed-in pages. Help & feedback remains in the account menu. The metronome is available from contextual Practice, Reference Media and setlist docks, with the account menu as the secondary entry point.
@@ -84,17 +67,17 @@ Navigation is structurally important. Do not casually add, remove, or move top-l
 
 ## 5. Page meaning / information architecture
 
-- Home (`/`): overview and next-action surface, not a builder console. It summarises known tunes, practice, due work, attention, lists, getting started state, streaks, friend activity, and badges where enabled.
-- Practice (`/review`): due reviews, catch-up work, review cards, streaks, backlog, active practice, and Practice Diary/foci entry points. The focused queue publishes its current tune, Stage, Rough/Shaky/Solid actions, queue progress, Next, reference and metronome through the Session Dock. Diary lives under `/review/diary`; foci under `/review/foci`.
+- Home (`/`): overview and next-action surface, not a builder console. It summarises known tunes, practice, due work, attention, lists, getting started state, streaks, friend activity, and badges where enabled. Home Social reuses the same compact activity-feed primitive as Friends and limits the summary to five meaningful events.
+- Practice (`/review`): a compact lane chooser puts the next useful due-today or catch-up session in the first viewport, followed by active practice, Practice Diary/foci, and supporting streak information. Explicit `?session=due-today` and `?session=catch-up` URLs enter Focused Practice, which removes the ordinary app chrome, keeps one tune and its Stage/due/reference context prominent, and publishes Rough/Shaky/Solid, progress, reference, metronome, and End Session through the persistent Session Dock. Ratings have a brief pre-save Undo window; once saved they use the existing idempotent review function and Stage rules, then advance without skipping. Session position and display-only results resume from date-and-lane-scoped session storage, safely clamp when the server queue changes, and feed an end summary with rating distribution, Stage changes, and one next suggestion. Diary lives under `/review/diary`; foci under `/review/foci`.
 - Tunes (`/library`): canonical tune browsing, searching, filtering, tune creation/moderation, tune-level actions, known/practice state, add-to-list, comments, lore, and reference media. The catalogue defaults to dense `TuneRow` results beneath a sticky search/filter/sort/select toolbar; filters are drafted in one bounded sheet and only applied to the URL on confirmation. Select mode keeps a private, session-scoped multi-tune selection and publishes bulk List actions through the Session Dock. Creation begins with tune identity and duplicate suggestions before optional detail fields. Tune detail lives under `/library/[id]` and is a URL-addressable hub with exactly three stable views: `practice` (default), `reference`, and `about`. The compact shared identity header carries one useful alias, type/style/key, source confidence and personal state. Practice owns Stage/schedule/result/history/notes, Reference previews the strongest saved source and sends focused playback to `/library/[id]/reference-media`, and About owns provenance, aliases, related-tune notes, secondary metadata and attributed community information. Infrequent organisation, correction, duplicate-report, moderator-edit and delete actions live behind Manage/Page Options; the Session Dock carries the current tune plus Practice, Reference and overflow actions without recreating page content. Known/practice filtered surfaces live under `/library/known` and `/library/practice` and reuse bounded dense rows with collection-specific grouping.
-- Lists (`/learning-lists`): user-owned tune collections, list search/filtering, My Tunes, learning queue, unlisted practice/known cleanup, create/edit lists, and list membership management. Current route names still use `learning-lists`.
-- Public Lists (`/public-lists`): shared/public list discovery before private organisation or practice decisions.
-- Friends (`/friends`): friend search, requests, current friends, and relevant friend activity.
-- Compare (`/compare`): repertoire alignment using known and optionally practice state, with friend/privacy gates.
+- Lists (`/learning-lists`): a URL-addressed count strip separates My Lists, Learning Queue, Unsorted and Saved/Shared. Growing collections render at most 20 rows per page and Queue/Unsorted support search and grouping. Queue select mode is private and bounded to 50 tunes, with owner-validated bulk Start Practice through the Session Dock. Owned list detail has a calm Reader and a separate Manage mode; Manage owns metadata/sharing, drag plus keyboard reordering with optimistic rollback, membership removal and deletion. Reader can start a real list-scoped Practice session from tunes already in active Practice. Current route names still use `learning-lists`.
+- Public Lists (`/public-lists`): paginated editorial discovery cards foreground curator, premise, tune count and style before private organisation or practice decisions. Detail collections are bounded, and missing/removed/private links recover with neutral privacy wording, search and Back to Public Lists.
+- Friends (`/friends`): friend search, requests, current friends, and a compact meaningful activity feed. Actor, musical action, context, time and exact reaction/comment counts stay visible; reactions, replies and the comment form mount only after opening a discussion. Searches and stale/duplicate request outcomes use neutral privacy-safe recovery wording.
+- Compare (`/compare`): a first-class outcome-led rehearsal tool. A comparison first states how many tunes the selected musicians can play together now, then separates Solid/Known overlap, shared-but-building tunes and two-person teaching possibilities without scoring people. Known plus active Practice is the explicit default; full overlap uses URL-addressed group/search/facet/page state and a bounded 20-row `TuneRow` page. A six-tune suggestion can be reordered or adjusted and saved only after confirmation as an owner-private setlist; selected musicians are not silently added.
 - Setlists (`/setlists`): collaborative performance or rehearsal setlists, coverage, invites, charts, keys, and tune readiness. Setlist detail publishes a lightweight Performance context with current tune, previous/next, key, Tune Detail and metronome controls; the current item is shareable through the `performance` query parameter.
 - Badges (`/badges`): community/user-awarded recognition and badge browsing/creation.
-- Trends (`/trends`): public/community repertoire patterns by style plus friend trend summaries when signed in.
-- Inbox (`/inbox`): notifications and direct messages.
+- Trends (`/trends`): compact personal practice insights and next steps with URL-addressed periods, followed by privacy-aware community/style context and bounded rankings. Style detail lives under `/trends/[style]`.
+- Inbox (`/inbox`): a URL-addressed Activity/Messages surface because direct messages are a real product capability. Activity separates unread New items from bounded 20-item History pages and offers a notification-only bulk-read action. Messages uses compact conversation rows, unread markers and bounded threads (20 people, latest 10 messages each) with reply controls disclosed on expansion.
 - Profile (`/dashboard`): private profile/account, instruments, visibility, privacy, compare discoverability, and diary preference controls. Public profile surfaces live under `/users/[username]`.
 - Moderator and Dev are role-gated operational surfaces.
 
@@ -114,6 +97,9 @@ Route names may not perfectly match user-facing labels. Labels and user mental m
 - Catalogue, Known, and Practice render stable 20-row cursor pages with a public tune ID tie-breaker. Validated search/filter/sort/cursor state stays in the URL; follow-up media, status, and list reads are limited to the current page. `CardPager` is reserved for finite sets of at most 50 items.
 - Catalogue filter drafts and selection state are client-only interaction state: draft checkboxes must not refetch, applied filters remain URL-addressable for back/forward navigation, and selected tune IDs may persist only in session storage. All bulk List mutations revalidate authentication, List ownership, tune IDs, deduplication, and input bounds on the server.
 - Tune Detail keeps identity, media links and personal state stable across its three views, while loading review history only for Practice and community discussion/profile data only for About. Legacy `overview` URLs resolve to Practice and legacy `community` URLs resolve to About.
+- Focused Practice deliberately does not offer a post-save database rollback. Its visible Undo cancels the pending rating before the server action starts, so review history, Stage, due date, streaks, and queue state remain internally consistent. A failed network/server save keeps the tune available and presents a retryable error.
+- Home and Friends share `components/activity/SocialActivityFeed.tsx`; server loaders prioritise and deduplicate musically meaningful events before applying a 25-item bound. Activity replies are capped at 200 per feed load. The `user_activity_events` read policy allows only the owner or an accepted connection; reactions/replies inherit the same visibility boundary, notifications remain recipient-only, and direct messages remain participant-only.
+- Compare outcome logic lives in `lib/compare-outcomes.ts`; loaders keep repertoire reads bounded and server actions revalidate authentication, comparison permission, selected tune IDs and ownership before creating a private setlist. Compare-in-person uses a 256-bit capability token stored only as a hash, a ten-minute pending invitation, a maximum of eight creations per account per hour, explicit acceptance before repertoire is revealed, session-storage reconnect, visible cancellation and safe invalid/expired recovery. `user_known_pieces` and `user_pieces` SELECT policies require owner access or explicit profile/friend/Compare consent rather than blanket authenticated access.
 
 Broad feature work should be implemented as coherent vertical slices: route composition, loader reads, actions/writes, shared types, UI, feedback states, and tests/checks where relevant.
 
@@ -193,8 +179,10 @@ Reference media:
 
 - `reference_url` belongs to the canonical tune record
 - it may appear in Tunes and Practice
-- opening reference media does not count as review completion
-- it does not affect stage, due date, streak, or backlog
+- `/library/[id]/reference-media` is a dedicated Reference Mode with URL-addressed recording selection, a persistent player and Session Dock, phone Media/Sections/Practice views, and a two-column desktop workspace
+- saved passages are owner-scoped to a recording; selecting one restores its loop and speed, and deleting one offers an immediate Undo
+- starting passage practice creates a focused looping context but does not count as review completion or affect Stage, due date, streak, or backlog
+- unavailable external providers and tunes with no media must show honest fallback/empty states and must not render fake playback controls
 
 Practice Diary:
 
@@ -202,6 +190,9 @@ Practice Diary:
 - only deliberate review-quality recall advances spaced repetition
 - Review Events and Practice Events are different
 - Diary/foci/targets should enrich practice context without taking over review scheduling
+- Diary uses one URL-addressed Day/Week/Month control with one previous/current/next period header; Week and Month detail tabs are also URL-addressed and restore through browser history
+- Week answers what was practised, what improved and what needs attention; Month uses an accessible musical calendar that exposes both volume and Rough/Shaky/Solid outcomes in text as well as colour
+- Day is a readable chronology with explicit save status and unsaved-change protection instead of a stack of large summary cards
 
 Foci:
 
@@ -209,6 +200,19 @@ Foci:
 - categories are analytical tags
 - foci are active musical projects
 - attaching a note to a focus should not affect review scheduling
+- user-facing copy is “Focus areas”; internal database and type names may remain `foci`
+- active focus areas are first-class practice-session contexts at `/review?session=focus&focus_id=...`, scoped to linked tunes that are currently in Practice
+- focus detail is organised around intent, linked tunes, evidence and next review, with a prominent “Practise this focus” action
+
+Trends:
+
+- `/trends` is an actionable personal practice overview, not a dashboard of large count cards
+- 4/8/12-week period controls live in the URL and drive server-side weekly aggregates for practice volume, reviews, active days and outcomes
+- responsive charts always include exact values, a plain-language takeaway and a text/table equivalent; colour is never the only encoding
+- zero-value sections remain hidden and a single constructive “Not enough data yet” state points to Practice
+- overdue tunes link directly to catch-up Practice, while repertoire gaps link to filtered catalogue discovery
+- style detail compares the signed-in user’s Known/Practice membership with the visible catalogue and privacy-allowed community memberships, with explicit denominators and bounded six-row rankings
+- Trends loaders bound catalogue, membership, friend, public-list and event reads and do not ship raw practice histories to the client
 
 Badges:
 

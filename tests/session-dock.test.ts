@@ -47,6 +47,7 @@ test("one typed API supports every planned Session Dock context", () => {
     "focused-practice",
     "reference-media",
     "catalogue-selection",
+    "list-selection",
     "setlist-performance",
   ])
 
@@ -155,7 +156,7 @@ test("Session Dock and Navigation Dock reserve one combined safe area", () => {
 test("route integrations preserve only safe contextual state", () => {
   const practice = readFileSync(
     new URL(
-      "../components/practice/ReviewQueueSection.tsx",
+      "../components/practice/FocusedPracticeSession.tsx",
       import.meta.url
     ),
     "utf8"

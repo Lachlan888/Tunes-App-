@@ -157,6 +157,34 @@ function isBadgeActivity(eventType: ActivityEventType) {
   return eventType === "badge_created" || eventType === "badge_awarded"
 }
 
+const MEANINGFUL_ACTIVITY_TYPES = new Set<ActivityEventType>([
+  "started_practice",
+  "tune_reviewed",
+  "marked_known",
+  "public_list_created",
+  "badge_awarded",
+])
+
+export function prioritiseMusicalActivity<T extends {
+  user_id: string
+  event_type: ActivityEventType
+  piece_id: number | null
+  learning_list_id: number | null
+}>(rows: T[], limit: number) {
+  const seen = new Set<string>()
+
+  return rows
+    .filter((row) => MEANINGFUL_ACTIVITY_TYPES.has(row.event_type))
+    .filter((row) => {
+      const subject = row.piece_id ?? row.learning_list_id ?? "none"
+      const key = `${row.user_id}:${row.event_type}:${subject}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    .slice(0, limit)
+}
+
 export function canShowActivityForProfile(
   row: ActivityEventRow,
   profile: ActivityProfileRow | null
@@ -254,7 +282,7 @@ export async function loadRecentFriendActivity(
     )
     .in("user_id", acceptedFriendIds)
     .order("created_at", { ascending: false })
-    .limit(limit)
+    .limit(Math.min(limit * 3, 75))
 
   if (activityError) {
     throw new Error(activityError.message)
@@ -296,11 +324,14 @@ export async function loadRecentFriendActivity(
     )
   }
 
-  const visibleActivityRows = typedActivityRows.filter((row) =>
-    canShowActivityForProfile(
-      row,
-      activityProfilesById.get(row.user_id) ?? null
-    )
+  const visibleActivityRows = prioritiseMusicalActivity(
+    typedActivityRows.filter((row) =>
+      canShowActivityForProfile(
+        row,
+        activityProfilesById.get(row.user_id) ?? null
+      )
+    ),
+    limit
   )
 
   const activityIds = visibleActivityRows.map((row) => row.id)
@@ -420,6 +451,7 @@ export async function loadRecentFriendActivity(
           .select("id, activity_event_id, user_id, body, created_at")
           .in("activity_event_id", activityIds)
           .order("created_at", { ascending: true })
+          .limit(200)
       : Promise.resolve({ data: [], error: null }),
   ])
 

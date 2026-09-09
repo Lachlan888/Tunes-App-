@@ -10,44 +10,37 @@ export default function TrendPublicListSection({
 }: TrendPublicListSectionProps) {
   if (entries.length === 0) {
     return (
-      <div className="rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+      <p className="border-y border-border py-4 text-sm text-muted-foreground">
         No public lists found for this style yet.
-      </div>
+      </p>
     )
   }
 
   return (
-    <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <ul className="divide-y divide-border border-y border-border">
       {entries.map((entry) => (
         <li
           key={entry.id}
-          className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm"
+          className="grid gap-3 py-4 sm:grid-cols-[1fr_auto] sm:items-center"
         >
-          <div className="text-lg font-semibold text-foreground">
-            {entry.name}
-          </div>
-
-          <p className="mt-2 text-sm text-muted-foreground">
-            By {entry.ownerUsername ?? "Unknown player"}
-          </p>
-
-          {entry.description && (
-            <p className="mt-3 text-sm text-muted-foreground">
-              {entry.description}
+          <div>
+            <div className="font-semibold text-foreground">{entry.name}</div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              By {entry.ownerUsername ?? "Unknown player"} · {entry.matchingTuneCount}{" "}
+              matching tune{entry.matchingTuneCount === 1 ? "" : "s"}
             </p>
-          )}
-
-          <p className="mt-4 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground">
-            {entry.matchingTuneCount} matching tune
-            {entry.matchingTuneCount === 1 ? "" : "s"} in this style
-          </p>
-
-          <div className="mt-4">
+            {entry.description ? (
+              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                {entry.description}
+              </p>
+            ) : null}
+          </div>
+          <div>
             <PendingLinkButton
               href={`/public-lists/${entry.id}`}
               label="View list"
               pendingLabel="Opening..."
-              className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             />
           </div>
         </li>

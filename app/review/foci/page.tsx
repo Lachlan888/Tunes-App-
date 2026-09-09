@@ -45,7 +45,7 @@ export default async function PracticeFociPage({
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      <PageHeader title="Foci" />
+      <PageHeader title="Focus areas" />
 
       <section className="mb-6">
         <PracticeDiaryNav active="foci" />

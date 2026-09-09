@@ -13,6 +13,7 @@ import type {
 
 type PracticeDiaryIndexProps = {
   data: PracticeIndexData
+  activeView: PracticeIndexView
 }
 
 type PracticeIndexView = "foci" | "notes"
@@ -152,10 +153,8 @@ function getNoteDayHref(note: PracticeIndexItem) {
 
 function PracticeIndexSwitcher({
   activeView,
-  onViewChange,
 }: {
   activeView: PracticeIndexView
-  onViewChange: (view: PracticeIndexView) => void
 }) {
   return (
     <div
@@ -167,12 +166,11 @@ function PracticeIndexSwitcher({
         const isActive = activeView === view.value
 
         return (
-          <button
+          <Link
             key={view.value}
-            type="button"
             role="tab"
+            href={`/review/diary/index?view=${view.value}`}
             aria-selected={isActive}
-            onClick={() => onViewChange(view.value)}
             className={joinClasses(
               "min-h-11 rounded-full border px-3 py-2 text-center text-sm font-semibold leading-tight transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:px-4 md:text-base",
               isActive
@@ -181,7 +179,7 @@ function PracticeIndexSwitcher({
             )}
           >
             {view.label}
-          </button>
+          </Link>
         )
       })}
     </div>
@@ -465,8 +463,7 @@ function FallbackMatches({
   )
 }
 
-export default function PracticeDiaryIndex({ data }: PracticeDiaryIndexProps) {
-  const [activeView, setActiveView] = useState<PracticeIndexView>("foci")
+export default function PracticeDiaryIndex({ data, activeView }: PracticeDiaryIndexProps) {
   const [query, setQuery] = useState("")
   const normalisedQuery = normaliseSearch(query)
   const currentView = views.find((view) => view.value === activeView) ?? views[0]
@@ -521,11 +518,6 @@ export default function PracticeDiaryIndex({ data }: PracticeDiaryIndexProps) {
     [allNotes, normalisedQuery]
   )
 
-  function handleViewChange(nextView: PracticeIndexView) {
-    setActiveView(nextView)
-    setQuery("")
-  }
-
   const fallback = (
     <FallbackMatches
       activeView={activeView}
@@ -538,10 +530,7 @@ export default function PracticeDiaryIndex({ data }: PracticeDiaryIndexProps) {
   return (
     <section className="grid gap-4 md:gap-5">
       <div className="grid gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm md:rounded-3xl md:p-5">
-        <PracticeIndexSwitcher
-          activeView={activeView}
-          onViewChange={handleViewChange}
-        />
+        <PracticeIndexSwitcher activeView={activeView} />
 
         <PracticeIndexSearch
           activeView={activeView}

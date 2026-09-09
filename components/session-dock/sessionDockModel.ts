@@ -5,6 +5,7 @@ export const SESSION_DOCK_CONTEXTS = [
   "focused-practice",
   "reference-media",
   "catalogue-selection",
+  "list-selection",
   "setlist-performance",
 ] as const
 

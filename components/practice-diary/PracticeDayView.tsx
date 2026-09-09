@@ -1,6 +1,5 @@
 import DailyReflectionForm from "@/components/practice-diary/DailyReflectionForm"
 import PracticeCategoryManagerModal from "@/components/practice-diary/PracticeCategoryManagerModal"
-import PracticeDayNavigator from "@/components/practice-diary/PracticeDayNavigator"
 import PracticeDueTuneList from "@/components/practice-diary/PracticeDueTuneList"
 import PracticeEventList from "@/components/practice-diary/PracticeEventList"
 import type { PracticeDiaryDayDataWithNotes } from "@/lib/loaders/practice-diary"
@@ -17,15 +16,8 @@ export default function PracticeDayView({ data }: PracticeDayViewProps) {
 
   return (
     <div className="space-y-5 md:space-y-6">
-      <PracticeDayNavigator
-        selectedDate={data.selectedDate}
-        previousDate={data.previousDate}
-        nextDate={data.nextDate}
-        today={data.today}
-      />
-
       <section className="space-y-6">
-        <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:rounded-3xl md:p-6">
+        <section className="border-b border-border pb-6">
           <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
             Session summary
           </h2>
@@ -44,7 +36,7 @@ export default function PracticeDayView({ data }: PracticeDayViewProps) {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:rounded-3xl md:p-6">
+        <section className="border-b border-border pb-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">

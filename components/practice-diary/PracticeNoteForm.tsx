@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import { createPracticeNote } from "@/lib/actions/practice-diary"
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
@@ -31,8 +34,19 @@ export default function PracticeNoteForm({
   labelTuneName,
   placeholder = "What do you want to remember for next time?",
 }: PracticeNoteFormProps) {
+  const [isDirty, setIsDirty] = useState(false)
+
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => {
+      if (!isDirty) return
+      event.preventDefault()
+    }
+    window.addEventListener("beforeunload", warn)
+    return () => window.removeEventListener("beforeunload", warn)
+  }, [isDirty])
+
   return (
-    <form action={createPracticeNote} className="mt-4 space-y-3">
+    <form action={createPracticeNote} className="mt-4 space-y-3" onSubmit={() => setIsDirty(false)}>
       <input type="hidden" name="practice_date" value={practiceDate} />
       <input type="hidden" name="redirect_to" value={redirectTo} />
 
@@ -70,6 +84,7 @@ export default function PracticeNoteForm({
           placeholder={placeholder}
           className={inputClassName}
           required
+          onChange={() => setIsDirty(true)}
         />
       </label>
 
@@ -88,6 +103,8 @@ export default function PracticeNoteForm({
           pendingLabel="Saving..."
           className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
         />
+
+        <span aria-live="polite" className="text-xs text-muted-foreground">{isDirty ? "Unsaved note" : "Ready"}</span>
       </div>
     </form>
   )

@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto"
 
 export const COMPARE_INVITE_RANDOM_BYTES = 32
-export const COMPARE_INVITE_LIFETIME_MS = 24 * 60 * 60 * 1000
+export const COMPARE_INVITE_LIFETIME_MS = 10 * 60 * 1000
 
 export type CompareInviteTimestampRow = {
   accepted_at: string | null
@@ -25,6 +25,14 @@ export function isValidCompareInviteToken(token: string) {
 
 export function hashCompareInviteToken(token: string) {
   return createHash("sha256").update(token, "utf8").digest("hex")
+}
+
+export function formatCompareInviteCode(token: string) {
+  return token.match(/.{1,5}/g)?.join(" ") ?? token
+}
+
+export function normaliseCompareInviteCode(code: string) {
+  return code.replace(/\s+/g, "").trim()
 }
 
 export function deriveCompareInviteState(

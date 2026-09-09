@@ -169,6 +169,20 @@ html[data-session-dock="active"] {
   --session-dock-space: 5.25rem;
 }
 
+html[data-focus-mode="practice"] {
+  --navigation-dock-space: 0px;
+}
+
+html[data-focus-mode="practice"] [data-app-header],
+html[data-focus-mode="practice"] [data-desktop-nav],
+html[data-focus-mode="practice"] [data-mobile-nav] {
+  display: none;
+}
+
+html[data-focus-mode="practice"] .app-shell-content {
+  padding-left: 0;
+}
+
 .session-dock {
   bottom: calc(var(--navigation-dock-space) + 0.25rem);
 }

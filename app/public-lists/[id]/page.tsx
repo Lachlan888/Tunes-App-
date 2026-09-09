@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 import TuneMediaLauncher from "@/components/reference-media/TuneMediaLauncher"
 import SubmitButton from "@/components/SubmitButton"
 import TuneCard from "@/components/TuneCard"
+import ListPager from "@/components/lists/ListPager"
 import {
   bookmarkPublicList,
   importPublicList,
@@ -15,6 +16,7 @@ import {
 } from "@/lib/loaders/public-list-detail"
 import type { TuneMediaBundle } from "@/lib/tune-media"
 import type { Piece } from "@/lib/types"
+import { paginateListItems, parseListPage } from "@/lib/list-view-state"
 
 type PublicListDetailPageProps = {
   params: Promise<{ id: string }>
@@ -24,6 +26,7 @@ type PublicListDetailPageProps = {
     duplicate_count?: string
     imported_list_id?: string
     bookmark_public?: string
+    page?: string | string[]
   }>
 }
 
@@ -211,6 +214,7 @@ export default async function PublicListDetailPage({
   const addedCount = Number(resolvedSearchParams?.added_count ?? "0")
   const duplicateCount = Number(resolvedSearchParams?.duplicate_count ?? "0")
   const importedListId = Number(resolvedSearchParams?.imported_list_id ?? "0")
+  const requestedPage = parseListPage(resolvedSearchParams?.page)
 
   const {
     user,
@@ -225,6 +229,8 @@ export default async function PublicListDetailPage({
     isViewingOwnPublicList,
     isBookmarkedByCurrentUser,
   } = await loadPublicListDetailData(id)
+  const pagination = paginateListItems(typedItems, requestedPage)
+  const pageHref = `/public-lists/${typedList.id}`
 
   const importedList =
     importedListId > 0
@@ -484,7 +490,7 @@ export default async function PublicListDetailPage({
           </p>
         ) : (
           <div className="mt-3 divide-y divide-border/70 border-y border-border/70 md:mt-5 md:divide-y-0 md:border-y-0 md:space-y-4">
-            {typedItems.map((item) => {
+            {pagination.items.map((item) => {
               const piece = Array.isArray(item.pieces)
                 ? item.pieces[0]
                 : item.pieces
@@ -565,6 +571,7 @@ export default async function PublicListDetailPage({
             })}
           </div>
         )}
+        <ListPager href={pageHref} page={pagination.page} totalPages={pagination.totalPages} label={`${typedList.name} tunes`} />
       </section>
 
       {user && !isViewingOwnPublicList ? (

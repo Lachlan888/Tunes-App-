@@ -278,7 +278,9 @@ export async function loadSetlistDetailData(rawSetlistId: string) {
     (member) => member.status === "accepted"
   )
 
-  const acceptedMemberIds = acceptedMemberRows.map((member) => member.user_id)
+  const currentUserMemberRows = acceptedMemberRows.filter(
+    (member) => member.user_id === user.id
+  )
 
   const profilesById = await loadProfilesById(
     supabase,
@@ -305,7 +307,7 @@ export async function loadSetlistDetailData(rawSetlistId: string) {
   let userPieces: UserPieceRow[] = []
   let userKnownPieces: UserKnownPieceRow[] = []
 
-  if (pieceIds.length > 0 && acceptedMemberIds.length > 0) {
+  if (pieceIds.length > 0) {
     const [
       { data: userPieceRows, error: userPieceRowsError },
       { data: userKnownPieceRows, error: userKnownPieceRowsError },
@@ -313,13 +315,13 @@ export async function loadSetlistDetailData(rawSetlistId: string) {
       supabase
         .from("user_pieces")
         .select("id, user_id, piece_id, stage")
-        .in("user_id", acceptedMemberIds)
+        .eq("user_id", user.id)
         .in("piece_id", pieceIds),
 
       supabase
         .from("user_known_pieces")
         .select("user_id, piece_id")
-        .in("user_id", acceptedMemberIds)
+        .eq("user_id", user.id)
         .in("piece_id", pieceIds),
     ])
 
@@ -350,7 +352,7 @@ export async function loadSetlistDetailData(rawSetlistId: string) {
 
   const items = mapSetlistItemsWithCoverage({
     itemRows: typedItemRows,
-    acceptedMemberRows,
+    acceptedMemberRows: currentUserMemberRows,
     userPiecesByKey,
     userKnownPiecesByKey,
   })
@@ -388,12 +390,11 @@ export async function loadSetlistDetailData(rawSetlistId: string) {
     friendProfilesById,
   })
 
-  const knownByEveryoneCount = items.filter((item) =>
-    item.coverage.every((coverage) => coverage.status === "known")
+  const readyCount = items.filter(
+    (item) => item.coverage[0]?.status === "known"
   ).length
-
-  const gapTuneCount = items.filter((item) =>
-    item.coverage.some((coverage) => coverage.status === "gap")
+  const practiceCount = items.filter(
+    (item) => item.coverage[0]?.status === "practice"
   ).length
 
   return {
@@ -410,8 +411,9 @@ export async function loadSetlistDetailData(rawSetlistId: string) {
     summary: {
       tuneCount: items.length,
       memberCount: acceptedMembers.length,
-      knownByEveryoneCount,
-      gapTuneCount,
+      readyCount,
+      practiceCount,
+      newToMeCount: Math.max(0, items.length - readyCount - practiceCount),
     },
   }
 }

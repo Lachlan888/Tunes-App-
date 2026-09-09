@@ -43,7 +43,7 @@ export default function AppHeader({
   }
 
   return (
-    <header className="floating-material sticky top-0 z-[350] border-b border-hairline md:hidden">
+    <header data-app-header className="floating-material sticky top-0 z-[350] border-b border-hairline md:hidden">
       <div className="flex min-h-14 items-center justify-between gap-3 px-4">
         <h1 className="truncate font-serif text-lg font-semibold text-text-primary">{pageTitle}</h1>
         <AccountMenu

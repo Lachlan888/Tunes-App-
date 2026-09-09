@@ -9,7 +9,9 @@ import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import {
   getOrCreateCompareInvite,
   pollCompareInvite,
+  cancelCompareInvite,
 } from "@/lib/actions/compare-invites"
+import { formatCompareInviteCode } from "@/lib/compare-invites"
 import { getSiteUrl } from "@/lib/site-url"
 
 const STORED_TOKEN_KEY = "tunes.compare-in-person-token"
@@ -21,6 +23,7 @@ type SheetState =
   | "expired"
   | "revoked"
   | "profile_required"
+  | "rate_limited"
   | "error"
 
 type CompareInPersonSheetProps = {
@@ -80,9 +83,7 @@ export default function CompareInPersonSheet({
       if (isCancelled) return
 
       if (!result.ok) {
-        setSheetState(
-          result.reason === "profile_required" ? "profile_required" : "error"
-        )
+        setSheetState(result.reason === "profile_required" ? "profile_required" : result.reason === "rate_limited" ? "rate_limited" : "error")
         return
       }
 
@@ -169,9 +170,7 @@ export default function CompareInPersonSheet({
       })
 
       if (!result.ok) {
-        setSheetState(
-          result.reason === "profile_required" ? "profile_required" : "error"
-        )
+        setSheetState(result.reason === "profile_required" ? "profile_required" : result.reason === "rate_limited" ? "rate_limited" : "error")
         return
       }
 
@@ -214,6 +213,13 @@ export default function CompareInPersonSheet({
     } catch {
       setShareFeedback("Couldn’t share or copy the link.")
     }
+  }
+
+  async function cancelSession() {
+    if (token) await cancelCompareInvite(token)
+    window.sessionStorage.removeItem(STORED_TOKEN_KEY)
+    setToken(null)
+    setSheetState("revoked")
   }
 
   const expiryLabel = expiresAt
@@ -262,6 +268,17 @@ export default function CompareInPersonSheet({
             Waiting for someone to connect…
           </p>
 
+          {token ? (
+            <div className="mt-4 rounded-2xl border border-border bg-background/70 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Join code</p>
+              <p className="mt-2 break-words font-mono text-lg font-bold tracking-wider text-foreground">{formatCompareInviteCode(token)}</p>
+            </div>
+          ) : null}
+
+          <p className="mt-4 text-left text-sm leading-6 text-muted-foreground">
+            Nothing is revealed while waiting. After the other musician signs in and explicitly accepts, both of you can see only repertoire allowed by your Compare settings.
+          </p>
+
           {expiryLabel ? (
             <p className="mt-1 text-xs text-muted-foreground">
               Code expires {expiryLabel}.
@@ -289,6 +306,7 @@ export default function CompareInPersonSheet({
           <p className="mt-3 min-h-5 text-sm text-muted-foreground" aria-live="polite">
             {shareFeedback}
           </p>
+          <button type="button" onClick={cancelSession} className="min-h-11 px-4 text-sm font-semibold text-destructive underline underline-offset-4">Cancel comparison</button>
         </div>
       ) : null}
 
@@ -350,6 +368,13 @@ export default function CompareInPersonSheet({
           >
             Try again
           </button>
+        </div>
+      ) : null}
+
+      {sheetState === "rate_limited" ? (
+        <div className="text-center">
+          <p className="rounded-2xl border border-warning bg-muted p-4 text-sm text-foreground">Too many new codes were created recently. Wait a little, then start a new comparison.</p>
+          <button type="button" onClick={onClose} className="mt-4 min-h-11 rounded-full border border-border px-4 text-sm font-semibold">Leave</button>
         </div>
       ) : null}
     </ResponsiveModal>

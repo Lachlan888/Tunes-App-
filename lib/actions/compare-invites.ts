@@ -47,7 +47,7 @@ type CreateCompareInviteResult =
     }
   | {
       ok: false
-      reason: "signed_out" | "profile_required" | "unavailable"
+      reason: "signed_out" | "profile_required" | "rate_limited" | "unavailable"
     }
 
 type PollCompareInviteResult =
@@ -190,9 +190,20 @@ export async function getOrCreateCompareInvite(input?: {
       }
     }
 
-    await revokeActiveInvites(user.id)
-
     const supabaseAdmin = createCompareAdminClient()
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const { count: recentInviteCount, error: rateError } = await supabaseAdmin
+      .from("compare_invites")
+      .select("id", { count: "exact", head: true })
+      .eq("creator_user_id", user.id)
+      .gte("created_at", oneHourAgo)
+
+    if (rateError) return { ok: false, reason: "unavailable" }
+    if ((recentInviteCount ?? 0) >= 8) {
+      return { ok: false, reason: "rate_limited" }
+    }
+
+    await revokeActiveInvites(user.id)
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
       const token = createCompareInviteToken()
@@ -227,6 +238,22 @@ export async function getOrCreateCompareInvite(input?: {
   }
 
   return { ok: false, reason: "unavailable" }
+}
+
+export async function cancelCompareInvite(rawToken: string) {
+  const { user } = await getAuthenticatedUser()
+  if (!user || !isValidCompareInviteToken(rawToken)) return { ok: false }
+
+  const supabaseAdmin = createCompareAdminClient()
+  const { error } = await supabaseAdmin
+    .from("compare_invites")
+    .update({ revoked_at: new Date().toISOString() })
+    .eq("creator_user_id", user.id)
+    .eq("token_hash", hashCompareInviteToken(rawToken))
+    .is("accepted_at", null)
+    .is("revoked_at", null)
+
+  return { ok: !error }
 }
 
 export async function pollCompareInvite(

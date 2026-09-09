@@ -60,7 +60,7 @@ export default async function SetlistsPage({ searchParams }: SetlistsPageProps) 
       ) : null}
 
       {showSection("pending_invites") && pendingInvites.length > 0 ? (
-        <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <section className="mb-8 border-y border-hairline py-5">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Pending invitations
           </h2>
@@ -69,7 +69,7 @@ export default async function SetlistsPage({ searchParams }: SetlistsPageProps) 
             {pendingInvites.map((invite) => (
               <article
                 key={invite.membership_id}
-                className="flex flex-col gap-4 rounded-2xl border border-primary bg-background/70 p-4 shadow-sm md:flex-row md:items-center md:justify-between"
+                className="flex flex-col gap-4 border-b border-hairline py-4 last:border-b-0 md:flex-row md:items-center md:justify-between"
               >
                 <div>
                   <p className="font-medium text-foreground">
@@ -123,13 +123,13 @@ export default async function SetlistsPage({ searchParams }: SetlistsPageProps) 
       ) : null}
 
       {showSection("setlists") ? (
-        <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <section className="border-t border-hairline pt-5">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Your setlists
           </h2>
 
           {setlists.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-border bg-background/70 p-5">
+            <div className="mt-5 border-y border-hairline py-5">
               <p className="font-medium text-foreground">No setlists yet.</p>
 
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -145,7 +145,7 @@ export default async function SetlistsPage({ searchParams }: SetlistsPageProps) 
               </Link>
             </div>
           ) : (
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className="mt-3 border-t border-hairline">
               {setlists.map((setlist) => (
                 <SetlistOverviewCard key={setlist.id} setlist={setlist} />
               ))}

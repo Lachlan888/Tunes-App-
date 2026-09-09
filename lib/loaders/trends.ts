@@ -1,5 +1,17 @@
 import { createClient } from "@/lib/supabase/server"
 import type { LearningList, Piece, UserKnownPiece, UserPiece } from "@/lib/types"
+import { getToday } from "@/lib/review"
+import {
+  buildStageDistribution,
+  buildWeeklyPracticeInsights,
+  countRoughToSolidMovements,
+  getTrendRange,
+  type TrendEventInput,
+  type TrendPeriodWeeks,
+} from "@/lib/trends-insights"
+
+const TREND_CATALOGUE_LIMIT = 2000
+const TREND_EVENT_LIMIT = 2000
 
 type LearningListItemForPiece = {
   piece_id: number
@@ -102,6 +114,139 @@ export type FriendTrendOverview = {
   keys: FriendPatternEntry[]
   topTunes: TrendTuneEntry[]
   friendCountByPiece: Map<number, number>
+}
+
+export type PersonalTrendInsight = {
+  periodWeeks: TrendPeriodWeeks
+  startDate: string
+  endDate: string
+  weeks: ReturnType<typeof buildWeeklyPracticeInsights>
+  stageDistribution: ReturnType<typeof buildStageDistribution>
+  improvedTuneCount: number
+  totalEvents: number
+  activeWeeks: number
+  needsAttention: Array<{ pieceId: number; title: string; stage: number; dueDate: string | null }>
+  exploreGap: { kind: "style" | "key"; label: string; catalogueCount: number } | null
+  personalStyleCoverage: Array<{ label: string; count: number }>
+  personalKeyCoverage: Array<{ label: string; count: number }>
+}
+
+export type StyleCoverageSummary = {
+  catalogueTuneCount: number
+  personalKnownCount: number
+  personalPracticeCount: number
+  commonKey: string | null
+  commonTimeSignature: string | null
+}
+
+type PersonalPracticeRow = UserPiece & {
+  pieces: Piece | Piece[] | null
+}
+
+type PersonalRepertoireRow = {
+  piece_id: number
+  pieces: Piece | Piece[] | null
+}
+
+type TrendPracticeEventRow = {
+  practice_day_id: number
+  piece_id: number | null
+  event_type: string
+  practice_outcome: "rough" | "shaky" | "solid" | null
+  review_events: { outcome: "failed" | "shaky" | "solid" } | { outcome: "failed" | "shaky" | "solid" }[] | null
+}
+
+function single<T>(value: T | T[] | null): T | null {
+  if (!value) return null
+  return Array.isArray(value) ? value[0] ?? null : value
+}
+
+function topCounts(values: Array<string | null | undefined>) {
+  const counts = new Map<string, number>()
+  for (const value of values) {
+    const label = value?.trim()
+    if (label) counts.set(label, (counts.get(label) ?? 0) + 1)
+  }
+  return Array.from(counts, ([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
+    .slice(0, 6)
+}
+
+async function loadPersonalTrendInsight({
+  supabase,
+  userId,
+  periodWeeks,
+  cataloguePieces,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  userId: string
+  periodWeeks: TrendPeriodWeeks
+  cataloguePieces: Piece[]
+}): Promise<PersonalTrendInsight> {
+  const today = getToday()
+  const { startDate, endDate } = getTrendRange(today, periodWeeks)
+  const [daysResult, practiceResult, knownResult] = await Promise.all([
+    supabase.from("practice_days").select("id, practice_date").eq("user_id", userId).gte("practice_date", startDate).lte("practice_date", endDate).order("practice_date").limit(periodWeeks * 7),
+    supabase.from("user_pieces").select("id, piece_id, status, next_review_due, stage, pieces(id, title, key, style, time_signature, composer, reference_url)").eq("user_id", userId).eq("status", "learning").order("next_review_due").limit(500),
+    supabase.from("user_known_pieces").select("piece_id, pieces(id, title, key, style, time_signature, composer, reference_url)").eq("user_id", userId).limit(2000),
+  ])
+  if (daysResult.error) throw new Error(daysResult.error.message)
+  if (practiceResult.error) throw new Error(practiceResult.error.message)
+  if (knownResult.error) throw new Error(knownResult.error.message)
+
+  const days = (daysResult.data ?? []) as Array<{ id: number; practice_date: string }>
+  const dayById = new Map(days.map((day) => [day.id, day.practice_date]))
+  const eventsResult = days.length > 0
+    ? await supabase.from("practice_events").select("practice_day_id, piece_id, event_type, practice_outcome, review_events(outcome)").eq("user_id", userId).in("practice_day_id", days.map((day) => day.id)).order("created_at").limit(TREND_EVENT_LIMIT)
+    : { data: [], error: null }
+  if (eventsResult.error) throw new Error(eventsResult.error.message)
+
+  const events: TrendEventInput[] = ((eventsResult.data ?? []) as unknown as TrendPracticeEventRow[]).map((event) => {
+    const reviewOutcome = single(event.review_events)?.outcome
+    return {
+      date: dayById.get(event.practice_day_id) ?? startDate,
+      pieceId: event.piece_id,
+      eventType: event.event_type,
+      outcome: reviewOutcome === "failed" ? "rough" : reviewOutcome ?? event.practice_outcome,
+    }
+  })
+  const practiceRows = (practiceResult.data ?? []) as unknown as PersonalPracticeRow[]
+  const knownRows = (knownResult.data ?? []) as unknown as PersonalRepertoireRow[]
+  const repertoirePieces = [...practiceRows.map((row) => single(row.pieces)), ...knownRows.map((row) => single(row.pieces))].filter((piece): piece is Piece => piece !== null)
+  const ownedStyles = new Set(
+    repertoirePieces
+      .map((piece) => piece.style?.trim())
+      .filter((value): value is string => Boolean(value))
+  )
+  const ownedKeys = new Set(
+    repertoirePieces
+      .map((piece) => piece.key?.trim())
+      .filter((value): value is string => Boolean(value))
+  )
+  const catalogueStyles = topCounts(cataloguePieces.map((piece) => piece.style))
+  const catalogueKeys = topCounts(cataloguePieces.map((piece) => piece.key))
+  const missingStyle = catalogueStyles.find((entry) => !ownedStyles.has(entry.label))
+  const missingKey = catalogueKeys.find((entry) => !ownedKeys.has(entry.label))
+  const gap = missingStyle ?? missingKey
+
+  return {
+    periodWeeks,
+    startDate,
+    endDate,
+    weeks: buildWeeklyPracticeInsights({ events, startDate, weeks: periodWeeks }),
+    stageDistribution: buildStageDistribution(practiceRows.map((row) => row.stage)),
+    improvedTuneCount: countRoughToSolidMovements(events),
+    totalEvents: events.length,
+    activeWeeks: buildWeeklyPracticeInsights({
+      events,
+      startDate,
+      weeks: periodWeeks,
+    }).filter((week) => week.eventCount > 0).length,
+    needsAttention: practiceRows.filter((row) => row.next_review_due && row.next_review_due < today).slice(0, 6).map((row) => ({ pieceId: row.piece_id, title: single(row.pieces)?.title ?? "Unknown tune", stage: row.stage, dueDate: row.next_review_due })),
+    exploreGap: gap ? { kind: missingStyle ? "style" : "key", label: gap.label, catalogueCount: gap.count } : null,
+    personalStyleCoverage: topCounts(repertoirePieces.map((piece) => piece.style)),
+    personalKeyCoverage: topCounts(repertoirePieces.map((piece) => piece.key)),
+  }
 }
 
 function slugifyStyle(style: string) {
@@ -221,9 +366,14 @@ async function loadFriendRepertoireStats(
     supabase
       .from("user_known_pieces")
       .select("user_id, piece_id")
-      .in("user_id", friendIds),
+      .in("user_id", friendIds)
+      .limit(5000),
 
-    supabase.from("user_pieces").select("user_id, piece_id").in("user_id", friendIds),
+    supabase
+      .from("user_pieces")
+      .select("user_id, piece_id")
+      .in("user_id", friendIds)
+      .limit(5000),
   ])
 
   if (knownRowsResult.error) {
@@ -269,6 +419,7 @@ async function loadFriendRepertoireStats(
     .from("pieces")
     .select("id, title, key, style, time_signature, composer, reference_url")
     .in("id", pieceIds)
+    .limit(TREND_CATALOGUE_LIMIT)
 
   if (piecesError) {
     throw new Error(
@@ -348,7 +499,7 @@ async function loadFriendRepertoireStats(
   }
 }
 
-export async function loadTrendLandingData() {
+export async function loadTrendLandingData(periodWeeks: TrendPeriodWeeks = 8) {
   const supabase = await createClient()
 
   const {
@@ -359,15 +510,20 @@ export async function loadTrendLandingData() {
     await Promise.all([
       supabase
         .from("pieces")
-        .select("id, title, style")
+        .select("id, title, key, style, time_signature, composer, reference_url")
         .not("style", "is", null)
-        .order("title", { ascending: true }),
+        .order("title", { ascending: true })
+        .limit(TREND_CATALOGUE_LIMIT),
 
-      supabase.from("user_known_pieces").select("piece_id"),
+      supabase.from("user_known_pieces").select("piece_id").limit(5000),
 
-      supabase.from("user_pieces").select("piece_id"),
+      supabase.from("user_pieces").select("piece_id").limit(5000),
 
-      supabase.from("learning_lists").select("id").eq("visibility", "public"),
+      supabase
+        .from("learning_lists")
+        .select("id")
+        .eq("visibility", "public")
+        .limit(2000),
     ])
 
   if (piecesResult.error) {
@@ -394,11 +550,7 @@ export async function loadTrendLandingData() {
     )
   }
 
-  const pieces = (piecesResult.data ?? []) as Array<{
-    id: number
-    title: string
-    style: string | null
-  }>
+  const pieces = (piecesResult.data ?? []) as Piece[]
 
   const knownCounts = buildCountMap(knownRowsResult.data ?? [])
   const practiceCounts = buildCountMap(practiceRowsResult.data ?? [])
@@ -442,6 +594,7 @@ export async function loadTrendLandingData() {
             "learning_list_id",
             publicListsResult.data.map((list) => list.id)
           )
+          .limit(5000)
       : { data: [], error: null }
 
   if (publicListItemsResult.error) {
@@ -519,6 +672,7 @@ export async function loadTrendLandingData() {
       styleEntries,
       isAuthenticated: false,
       friendOverview: null as FriendTrendOverview | null,
+      personalInsights: null as PersonalTrendInsight | null,
       userPieces: [] as UserPiece[],
       userKnownPieces: [] as UserKnownPiece[],
       learningLists: [] as LearningList[],
@@ -526,7 +680,15 @@ export async function loadTrendLandingData() {
     }
   }
 
-  const acceptedFriendIds = await loadAcceptedFriendIds(supabase, user.id)
+  const [acceptedFriendIds, personalInsights] = await Promise.all([
+    loadAcceptedFriendIds(supabase, user.id),
+    loadPersonalTrendInsight({
+      supabase,
+      userId: user.id,
+      periodWeeks,
+      cataloguePieces: pieces,
+    }),
+  ])
   const friendOverview = await loadFriendRepertoireStats(supabase, acceptedFriendIds)
 
   const visiblePieceIds = friendOverview.topTunes.map((entry) => entry.piece.id)
@@ -537,6 +699,7 @@ export async function loadTrendLandingData() {
       styleEntries,
       isAuthenticated: true,
       friendOverview,
+      personalInsights,
       userPieces: [] as UserPiece[],
       userKnownPieces: [] as UserKnownPiece[],
       learningLists: [] as LearningList[],
@@ -598,6 +761,7 @@ export async function loadTrendLandingData() {
     styleEntries,
     isAuthenticated: true,
     friendOverview,
+    personalInsights,
     userPieces: (userPiecesResult.data ?? []) as UserPiece[],
     userKnownPieces: (userKnownPiecesResult.data ?? []) as UserKnownPiece[],
     learningLists: (learningListsResult.data ?? []) as LearningList[],
@@ -621,6 +785,7 @@ export async function loadStyleTrendData(styleSlug: string) {
     .select("id, title, key, style, time_signature, composer, reference_url")
     .not("style", "is", null)
     .order("title", { ascending: true })
+    .limit(TREND_CATALOGUE_LIMIT)
 
   if (piecesError) {
     throw new Error(
@@ -636,6 +801,7 @@ export async function loadStyleTrendData(styleSlug: string) {
     return {
       isAuthenticated,
       styleName: null,
+      coverageSummary: null as StyleCoverageSummary | null,
       summaryCards: [] as TrendSummaryCard[],
       popularAmongFriendsTunes: [] as TrendTuneEntry[],
       recommendedTunes: [] as TrendTuneEntry[],
@@ -656,15 +822,21 @@ export async function loadStyleTrendData(styleSlug: string) {
       supabase
         .from("user_known_pieces")
         .select("piece_id")
-        .in("piece_id", pieceIds),
+        .in("piece_id", pieceIds)
+        .limit(5000),
 
-      supabase.from("user_pieces").select("piece_id").in("piece_id", pieceIds),
+      supabase
+        .from("user_pieces")
+        .select("piece_id")
+        .in("piece_id", pieceIds)
+        .limit(5000),
 
       supabase
         .from("learning_lists")
         .select("id, user_id, name, description")
         .eq("visibility", "public")
-        .order("name", { ascending: true }),
+        .order("name", { ascending: true })
+        .limit(2000),
     ])
 
   if (knownRowsResult.error) {
@@ -698,7 +870,9 @@ export async function loadStyleTrendData(styleSlug: string) {
       return a.piece.title.localeCompare(b.piece.title)
     })
 
-  const topKnownTunes = rankedKnownTunes.slice(0, 12)
+  const topKnownTunes = rankedKnownTunes
+    .filter((entry) => entry.count > 0)
+    .slice(0, 8)
 
   const rankedPracticeTunes = matchingPieces
     .map((piece) => ({
@@ -710,7 +884,9 @@ export async function loadStyleTrendData(styleSlug: string) {
       return a.piece.title.localeCompare(b.piece.title)
     })
 
-  const topPracticeTunes = rankedPracticeTunes.slice(0, 12)
+  const topPracticeTunes = rankedPracticeTunes
+    .filter((entry) => entry.count > 0)
+    .slice(0, 6)
 
   const publicLists = (publicListsResult.data ?? []) as PublicLearningListRow[]
   const publicListIds = publicLists.map((list) => list.id)
@@ -723,7 +899,8 @@ export async function loadStyleTrendData(styleSlug: string) {
       supabase
         .from("learning_list_items")
         .select("learning_list_id, pieces(id, style)")
-        .in("learning_list_id", publicListIds),
+        .in("learning_list_id", publicListIds)
+        .limit(5000),
 
       supabase.from("profiles").select("id, username").in("id", ownerIds),
     ])
@@ -825,6 +1002,15 @@ export async function loadStyleTrendData(styleSlug: string) {
     return {
       isAuthenticated,
       styleName: matchingPieces[0].style,
+      coverageSummary: {
+        catalogueTuneCount: matchingPieces.length,
+        personalKnownCount: 0,
+        personalPracticeCount: 0,
+        commonKey: getMostCommonValue(matchingPieces.map((piece) => piece.key)),
+        commonTimeSignature: getMostCommonValue(
+          matchingPieces.map((piece) => piece.time_signature)
+        ),
+      } satisfies StyleCoverageSummary,
       summaryCards,
       popularAmongFriendsTunes,
       recommendedTunes: topKnownTunes,
@@ -883,7 +1069,7 @@ export async function loadStyleTrendData(styleSlug: string) {
       (entry) =>
         !activePieceIds.has(entry.piece.id) && !knownPieceIds.has(entry.piece.id)
     )
-    .slice(0, 12)
+    .slice(0, 6)
 
   const visiblePieceIds = Array.from(
     new Set([
@@ -912,6 +1098,15 @@ export async function loadStyleTrendData(styleSlug: string) {
   return {
     isAuthenticated,
     styleName: matchingPieces[0].style,
+    coverageSummary: {
+      catalogueTuneCount: matchingPieces.length,
+      personalKnownCount: userKnownPieces.length,
+      personalPracticeCount: userPieces.length,
+      commonKey: getMostCommonValue(matchingPieces.map((piece) => piece.key)),
+      commonTimeSignature: getMostCommonValue(
+        matchingPieces.map((piece) => piece.time_signature)
+      ),
+    } satisfies StyleCoverageSummary,
     summaryCards,
     popularAmongFriendsTunes,
     recommendedTunes,

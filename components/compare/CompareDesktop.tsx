@@ -1,41 +1,35 @@
 import CompareBlockedSection from "@/components/compare/CompareBlockedSection"
 import CompareCandidateListSection from "@/components/compare/CompareCandidateListSection"
-import CompareMutualPiecesSection from "@/components/compare/CompareMutualPiecesSection"
 import ComparePageStatusMessages from "@/components/compare/ComparePageStatusMessages"
-import CompareResultsHeader from "@/components/compare/CompareResultsHeader"
 import CompareSearchForm from "@/components/compare/CompareSearchForm"
 import CompareSuggestionsSection from "@/components/compare/CompareSuggestionsSection"
 import CurrentCompareGroupSection from "@/components/compare/CurrentCompareGroupSection"
 import PageHeader from "@/components/ui/PageHeader"
 import type { CompareViewProps } from "@/components/compare/compare-view-types"
+import CompareOutcomeExperience from "@/components/compare/CompareOutcomeExperience"
+import CompareInPersonLauncher from "@/components/compare/CompareInPersonLauncher"
 
-export default function CompareDesktop({
-  selectedProfiles,
-  filterPreservedUsers,
-  titleQuery,
-  selectedKeys,
-  selectedStyles,
-  selectedTimeSignatures,
-  includePractice,
-  friendRequestStatus,
-  error,
-  primarySearchValue,
-  compareSuggestions,
-  matchingProfiles,
-  searchMatches,
-  matchedProfile,
-  isAcceptedFriend,
-  canCompare,
-  redirectTo,
-  compareHeading,
-  mutualPieces,
-  filteredPieces,
-  availableKeys,
-  availableStyles,
-  availableTimeSignatures,
-  hasActiveFilters,
-  canShowResults,
-}: CompareViewProps) {
+export default function CompareDesktop(props: CompareViewProps) {
+  const {
+    selectedProfiles,
+    filterPreservedUsers,
+    titleQuery,
+    selectedKeys,
+    selectedStyles,
+    selectedTimeSignatures,
+    includePractice,
+    friendRequestStatus,
+    error,
+    primarySearchValue,
+    compareSuggestions,
+    matchingProfiles,
+    searchMatches,
+    matchedProfile,
+    isAcceptedFriend,
+    canCompare,
+    redirectTo,
+    canShowResults,
+  } = props
   return (
     <>
       <PageHeader title="Compare" />
@@ -47,6 +41,7 @@ export default function CompareDesktop({
             selectedUsers={filterPreservedUsers}
             includePractice={includePractice}
           />
+          <CompareInPersonLauncher />
 
           {filterPreservedUsers.length > 0 ? (
             <CurrentCompareGroupSection
@@ -101,32 +96,10 @@ export default function CompareDesktop({
           ) : null}
         </section>
 
-        <aside className="min-w-0 lg:sticky lg:top-8">
-          <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+        <aside className="min-w-0">
+          <section className="rounded-3xl border border-border bg-card p-5 shadow-sm lg:p-6">
             {canShowResults ? (
-              <>
-                <CompareResultsHeader
-                  compareHeading={compareHeading}
-                  selectedProfiles={selectedProfiles}
-                  mutualPiecesCount={mutualPieces.length}
-                  isAcceptedFriend={isAcceptedFriend}
-                />
-
-                <CompareMutualPiecesSection
-                  filteredPieces={filteredPieces}
-                  mutualPiecesCount={mutualPieces.length}
-                  titleQuery={titleQuery}
-                  selectedKeys={selectedKeys}
-                  selectedStyles={selectedStyles}
-                  selectedTimeSignatures={selectedTimeSignatures}
-                  availableKeys={availableKeys}
-                  availableStyles={availableStyles}
-                  availableTimeSignatures={availableTimeSignatures}
-                  hasActiveFilters={hasActiveFilters}
-                  filterPreservedUsers={filterPreservedUsers}
-                  includePractice={includePractice}
-                />
-              </>
+              <CompareOutcomeExperience {...props} />
             ) : (
               <div>
                 <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">

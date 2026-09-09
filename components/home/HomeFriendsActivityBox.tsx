@@ -1,10 +1,6 @@
 import Link from "next/link"
-import ActivityInteractionPanel from "@/components/activity/ActivityInteractionPanel"
-import {
-  formatFriendActivityRelativeTime,
-  renderFriendActivityText,
-  type FriendActivityItem,
-} from "@/lib/friend-activity"
+import SocialActivityFeed from "@/components/activity/SocialActivityFeed"
+import type { FriendActivityItem } from "@/lib/friend-activity"
 
 type HomeFriendsActivityBoxProps = {
   items: FriendActivityItem[]
@@ -30,29 +26,7 @@ export default function HomeFriendsActivityBox({
         </Link>
       </div>
 
-      {items.length === 0 ? (
-        <p className="rounded-xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-          No recent friend activity yet.
-        </p>
-      ) : (
-        <ul className="space-y-3">
-          {items.map((item) => (
-            <li
-              key={item.id}
-              className="rounded-xl border border-border bg-background/70 p-4"
-            >
-              <p className="text-sm leading-6 text-foreground">
-                {renderFriendActivityText(item)}
-              </p>
-              <p className="mt-2 text-xs font-medium text-muted-foreground">
-                {formatFriendActivityRelativeTime(item.created_at)}
-              </p>
-
-              <ActivityInteractionPanel item={item} redirectTo="/" />
-            </li>
-          ))}
-        </ul>
-      )}
+      <SocialActivityFeed items={items} redirectTo="/" limit={5} />
     </section>
   )
 }

@@ -8,7 +8,7 @@ import {
   primaryNavItems,
 } from "../components/layout/navItems.ts"
 
-test("phone and desktop consumer navigation expose exactly five destinations", () => {
+test("phone and desktop consumer navigation expose six first-class destinations", () => {
   assert.deepEqual(
     primaryNavItems.map(({ label, href }) => ({ label, href })),
     [
@@ -17,6 +17,7 @@ test("phone and desktop consumer navigation expose exactly five destinations", (
       { label: "Tunes", href: "/library" },
       { label: "Lists", href: "/learning-lists" },
       { label: "Social", href: "/friends" },
+      { label: "Compare", href: "/compare" },
     ]
   )
 })
@@ -32,7 +33,7 @@ test("nested routes select their primary destination", () => {
     "/public-lists/list-id": "lists",
     "/friends/person-id": "social",
     "/users/person-id": "social",
-    "/compare/person-id": "social",
+    "/compare/person-id": "compare",
     "/inbox/thread-id": "social",
   } as const
 
@@ -66,7 +67,7 @@ test("fixed shell layers reserve safe space and keep 44px navigation targets", (
   const shell = readFileSync(new URL("../components/layout/AppShell.tsx", import.meta.url), "utf8")
   const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8")
 
-  assert.match(dock, /grid-cols-5/)
+  assert.match(dock, /grid-cols-6/)
   assert.match(dock, /min-h-11 min-w-11/)
   assert.match(dock, /env\(safe-area-inset-bottom\)/)
   assert.match(dock, /md:hidden/)
@@ -84,6 +85,9 @@ test("secondary navigation overlays and the Home view is persisted", () => {
 
   assert.match(accountMenu, /floating-material absolute/)
   assert.match(accountMenu, /Account & settings/)
+  assert.match(accountMenu, /Social/)
+  assert.match(accountMenu, /Friends/)
+  assert.doesNotMatch(accountMenu, /Compare repertoires/)
   assert.match(accountMenu, /canModerate \?/)
   assert.match(accountMenu, /canAccessDev \?/)
   assert.match(home, /tunes\.home\.mobile-view/)

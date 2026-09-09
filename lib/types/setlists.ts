@@ -61,8 +61,10 @@ export type SetlistOverview = {
   created_by: string
   memberCount: number
   tuneCount: number
-  knownByEveryoneCount: number
-  gapTuneCount: number
+  readyCount: number
+  practiceCount: number
+  newToMeCount: number
+  collaboratorLabels: string[]
   isCreator: boolean
 }
 

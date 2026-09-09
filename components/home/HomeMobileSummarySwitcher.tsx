@@ -1,16 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useSyncExternalStore } from "react"
-import SubmitButton from "@/components/SubmitButton"
+import { useSyncExternalStore } from "react"
+import SocialActivityFeed from "@/components/activity/SocialActivityFeed"
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
-import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import MobileViewSwitcher from "@/components/ui/MobileViewSwitcher"
-import {
-  formatFriendActivityRelativeTime,
-  renderFriendActivityText,
-} from "@/lib/friend-activity"
-import { addActivityReply } from "@/lib/actions/activity-interactions"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import type { FriendActivityItem } from "@/lib/friend-activity"
 import type { HomeSummaryData, StreakSummary } from "@/lib/types"
@@ -195,101 +189,6 @@ function MobileSwitcher({
   )
 }
 
-function getActivityCommentLabel(item: FriendActivityItem) {
-  const commentCount = item.replies.length
-
-  if (commentCount === 0) {
-    return "Comment"
-  }
-
-  return `Comment · ${commentCount} comment${commentCount === 1 ? "" : "s"}`
-}
-
-function getActivityAuthorName(reply: FriendActivityItem["replies"][number]) {
-  return reply.author?.display_name || reply.author?.username || "Unknown player"
-}
-
-function ActivityCommentModal({
-  item,
-  onClose,
-}: {
-  item: FriendActivityItem
-  onClose: () => void
-}) {
-  return (
-    <ResponsiveModal
-      isOpen
-      onClose={onClose}
-      eyebrow="Friend activity"
-      title="Comments"
-      mobileMode="sheet"
-      desktopMaxWidth="md:max-w-lg"
-    >
-      <div className="space-y-5">
-        <div className="rounded-2xl border border-border bg-background/70 p-4">
-          <p className="text-sm leading-6 text-foreground">
-            {renderFriendActivityText(item)}
-          </p>
-          <p className="mt-2 text-xs font-medium text-muted-foreground">
-            {formatFriendActivityRelativeTime(item.created_at)}
-          </p>
-        </div>
-
-        <div className="space-y-3">
-          {item.replies.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-              No comments yet.
-            </p>
-          ) : (
-            item.replies.map((reply) => (
-              <article
-                key={reply.id}
-                className="rounded-2xl border border-border bg-muted/70 p-3 text-sm"
-              >
-                <p className="whitespace-pre-wrap leading-6 text-foreground">
-                  {reply.body}
-                </p>
-                <p className="mt-2 text-xs font-medium text-muted-foreground">
-                  {reply.author?.username ? (
-                    <Link
-                      href={`/users/${encodeURIComponent(reply.author.username)}`}
-                      className="underline underline-offset-4 hover:text-foreground"
-                    >
-                      {getActivityAuthorName(reply)}
-                    </Link>
-                  ) : (
-                    getActivityAuthorName(reply)
-                  )}{" "}
-                  · {formatFriendActivityRelativeTime(reply.created_at)}
-                </p>
-              </article>
-            ))
-          )}
-        </div>
-
-        <form action={addActivityReply} className="space-y-3">
-          <input type="hidden" name="activity_event_id" value={item.id} />
-          <input type="hidden" name="redirect_to" value="/" />
-
-          <textarea
-            name="body"
-            rows={3}
-            placeholder="Add a comment"
-            required
-            className="w-full rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
-          />
-
-          <SubmitButton
-            label="Post"
-            pendingLabel="Posting..."
-            className={buttonStyles.primary}
-          />
-        </form>
-      </div>
-    </ResponsiveModal>
-  )
-}
-
 function TodayPanel({
   summary,
   streakSummary,
@@ -302,19 +201,27 @@ function TodayPanel({
   const previewLimit = getPreviewLimit(density)
   const continueTune = summary.dueTodayPreview[0] ?? summary.inPracticePreview[0]
   const queuedTune = summary.learningQueuePreview[0]
-  const continueHref = continueTune
-    ? `/library/${continueTune.piece_id}`
-    : queuedTune
-      ? `/library/${queuedTune.piece_id}`
-      : "/review"
-  const continueTitle = continueTune?.title ?? queuedTune?.title ?? "Open today’s practice"
-  const continueMeta = continueTune
-    ? summary.dueTodayPreview[0]?.piece_id === continueTune.piece_id
-      ? `Due today · Stage ${continueTune.stage}`
-      : `In practice · Stage ${continueTune.stage}`
-    : queuedTune
-      ? `Next from ${queuedTune.firstListName}`
-      : "Your practice room is ready"
+  const continueHref = summary.dueTodayCount > 0
+    ? "/review?session=due-today"
+    : summary.needsAttentionCount > 0
+      ? "/review?session=catch-up"
+      : continueTune
+        ? `/library/${continueTune.piece_id}`
+        : queuedTune
+          ? `/library/${queuedTune.piece_id}`
+          : "/review"
+  const continueTitle = summary.needsAttentionCount > 0 && summary.dueTodayCount === 0
+    ? "Continue catch-up"
+    : continueTune?.title ?? queuedTune?.title ?? "Open today’s practice"
+  const continueMeta = summary.needsAttentionCount > 0 && summary.dueTodayCount === 0
+    ? `${summary.needsAttentionCount} overdue tune${summary.needsAttentionCount === 1 ? "" : "s"} · oldest first`
+    : continueTune
+      ? summary.dueTodayPreview[0]?.piece_id === continueTune.piece_id
+        ? `Due today · Stage ${continueTune.stage}`
+        : `In practice · Stage ${continueTune.stage}`
+      : queuedTune
+        ? `Next from ${queuedTune.firstListName}`
+        : "Your practice room is ready"
   const dueQueuePreview = summary.dueTodayPreview.slice(1, Math.min(previewLimit, 3))
   const learningQueuePreview = dueQueuePreview.length === 0
     ? summary.learningQueuePreview.slice(continueTune || queuedTune ? 1 : 0, 2)
@@ -327,7 +234,11 @@ function TodayPanel({
         <h2 className="mt-2 font-serif text-2xl font-bold leading-tight text-text-primary">{continueTitle}</h2>
         <p className="mt-1 text-sm text-text-muted">{continueMeta}</p>
         <Link href={continueHref} className={`${buttonStyles.primary} mt-4`}>
-          {continueTune || queuedTune ? "Open tune" : "Start practice"}
+          {summary.dueTodayCount > 0 || summary.needsAttentionCount > 0
+            ? "Continue Practice"
+            : continueTune || queuedTune
+              ? "Open tune"
+              : "Start Practice"}
         </Link>
       </section>
 
@@ -360,8 +271,8 @@ function TodayPanel({
 
       <MobileStatGrid
         items={[
-          { label: "Due today", value: summary.dueTodayCount, href: "/review#due-today" },
-          { label: "Needs attention", value: summary.needsAttentionCount, href: "/review?mode=catch-up#catch-up" },
+          { label: "Due today", value: summary.dueTodayCount, href: "/review?session=due-today" },
+          { label: "Needs attention", value: summary.needsAttentionCount, href: "/review?session=catch-up" },
         ]}
       />
 
@@ -452,11 +363,6 @@ function SocialPanel({
 }: {
   recentFriendActivity: FriendActivityItem[]
 }) {
-  const [selectedItemId, setSelectedItemId] = useState<number | null>(null)
-  const visibleActivity = recentFriendActivity.slice(0, 5)
-  const selectedItem =
-    visibleActivity.find((item) => item.id === selectedItemId) ?? null
-
   return (
     <div className="space-y-5">
       <section className="space-y-2">
@@ -469,42 +375,12 @@ function SocialPanel({
           }
         />
 
-        {visibleActivity.length === 0 ? (
-          <MobileEmptyBlock>No recent friend activity yet.</MobileEmptyBlock>
-        ) : (
-          <div className="border-y border-border/70">
-            {visibleActivity.map((item) => (
-              <div
-                key={item.id}
-                className="border-b border-border/70 py-3 text-sm last:border-b-0"
-              >
-                <p className="leading-6 text-foreground">
-                  {renderFriendActivityText(item)}
-                </p>
-
-                <p className="mt-1 text-xs font-medium text-muted-foreground">
-                  {formatFriendActivityRelativeTime(item.created_at)}
-                </p>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedItemId(item.id)}
-                  className="mt-2 text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                >
-                  {getActivityCommentLabel(item)}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {selectedItem ? (
-        <ActivityCommentModal
-          item={selectedItem}
-          onClose={() => setSelectedItemId(null)}
+        <SocialActivityFeed
+          items={recentFriendActivity}
+          redirectTo="/"
+          limit={5}
         />
-      ) : null}
+      </section>
     </div>
   )
 }

@@ -48,7 +48,7 @@ export default function DesktopNav({
   const selectedDestination = getPrimaryDestination(pathname)
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-[300] hidden w-[4.75rem] border-r border-hairline bg-surface-paper md:flex md:flex-col lg:w-60">
+    <aside data-desktop-nav className="fixed inset-y-0 left-0 z-[300] hidden w-[4.75rem] border-r border-hairline bg-surface-paper md:flex md:flex-col lg:w-60">
       <Link
         href="/"
         aria-label="Tunes home"

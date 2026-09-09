@@ -1,7 +1,7 @@
 import PracticeDiaryNav from "@/components/practice-diary/PracticeDiaryNav"
-import PracticeDiaryViewSwitcher from "@/components/practice-diary/PracticeDiaryViewSwitcher"
 import PracticeDayView from "@/components/practice-diary/PracticeDayView"
 import PracticeMonthView from "@/components/practice-diary/PracticeMonthView"
+import PracticePeriodHeader from "@/components/practice-diary/PracticePeriodHeader"
 import PracticeWeekView from "@/components/practice-diary/PracticeWeekView"
 import PageHeader from "@/components/ui/PageHeader"
 import {
@@ -18,6 +18,8 @@ type PracticeDiaryPageProps = {
   searchParams?: Promise<{
     date?: string
     view?: string
+    tab?: string
+    diary?: string
   }>
 }
 
@@ -35,6 +37,18 @@ function getDiaryView(value: string | undefined): PracticeDiaryView {
   return "day"
 }
 
+function getDiaryStatus(value: string | undefined) {
+  if (value === "reflection_saved") return "Reflection saved."
+  if (value === "note_saved") return "Note saved."
+  if (value === "note_updated") return "Note updated."
+  if (value === "note_deleted") return "Note deleted."
+  if (value === "empty_note") return "Write something before saving the note."
+  if (value === "invalid_note_context") return "That note changed elsewhere. Refresh and try again."
+  if (value === "invalid_category") return "That note category is no longer available."
+  if (value === "missing_piece" || value === "missing_note") return "That item is no longer available."
+  return null
+}
+
 export default async function PracticeDiaryPage({
   searchParams,
 }: PracticeDiaryPageProps) {
@@ -45,6 +59,8 @@ export default async function PracticeDiaryPage({
     ? resolvedSearchParams.date
     : getToday()
   const activeView = getDiaryView(resolvedSearchParams?.view)
+  const activeTab = resolvedSearchParams?.tab
+  const statusMessage = getDiaryStatus(resolvedSearchParams?.diary)
 
   const diaryData =
     activeView === "day"
@@ -61,20 +77,41 @@ export default async function PracticeDiaryPage({
       ? await loadPracticeDiaryMonthData(selectedDate)
       : null
 
+  const period = diaryData
+    ? {
+        label: diaryData.selectedDate === diaryData.today ? "Today" : diaryData.selectedDate,
+        previousDate: diaryData.previousDate,
+        currentDate: diaryData.today,
+        nextDate: diaryData.nextDate,
+      }
+    : weekData
+      ? {
+          label: `${weekData.weekStartDate} – ${weekData.weekEndDate}`,
+          previousDate: weekData.previousWeekDate,
+          currentDate: weekData.currentWeekDate,
+          nextDate: weekData.nextWeekDate,
+        }
+      : {
+          label: monthData?.monthStartDate.slice(0, 7) ?? selectedDate.slice(0, 7),
+          previousDate: monthData?.previousMonthDate ?? selectedDate,
+          currentDate: monthData?.currentMonthDate ?? selectedDate,
+          nextDate: monthData?.nextMonthDate ?? selectedDate,
+        }
+
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       <PageHeader title="Practice Diary" />
 
-      <section className="mb-5 md:mb-6">
+      <section className="mb-5 space-y-5 md:mb-6">
         <PracticeDiaryNav active="diary" />
-
-        <div className="mt-5">
-          <PracticeDiaryViewSwitcher
-            activeView={activeView}
-            selectedDate={selectedDate}
-          />
-        </div>
+        <PracticePeriodHeader activeView={activeView} selectedDate={selectedDate} {...period} />
       </section>
+
+      {statusMessage ? (
+        <p role="status" className="mb-5 border-l-4 border-primary bg-card px-4 py-3 text-sm font-medium text-foreground">
+          {statusMessage}
+        </p>
+      ) : null}
 
       {activeView === "day" ? (
         diaryData ? (
@@ -82,10 +119,10 @@ export default async function PracticeDiaryPage({
         ) : null
       ) : activeView === "week" ? (
         weekData ? (
-          <PracticeWeekView data={weekData} />
+          <PracticeWeekView data={weekData} activeTab={activeTab} />
         ) : null
       ) : monthData ? (
-        <PracticeMonthView data={monthData} />
+        <PracticeMonthView data={monthData} activeTab={activeTab} />
       ) : null}
     </main>
   )

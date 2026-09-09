@@ -37,10 +37,11 @@ export default function NavigationDock({
 
   return (
     <nav
+      data-mobile-nav
       aria-label="Primary navigation"
       onFocusCapture={() => setIsCompact(false)}
       className={joinClasses(
-        "floating-material fixed inset-x-2 bottom-[max(0.5rem,env(safe-area-inset-bottom))] z-[300] grid grid-cols-5 border border-hairline shadow-material-floating transition-[padding,border-radius] [transition-duration:var(--motion-standard)] [transition-timing-function:var(--ease-folk)] md:hidden",
+        "floating-material fixed inset-x-2 bottom-[max(0.5rem,env(safe-area-inset-bottom))] z-[300] grid grid-cols-6 border border-hairline shadow-material-floating transition-[padding,border-radius] [transition-duration:var(--motion-standard)] [transition-timing-function:var(--ease-folk)] md:hidden",
         isCompact ? "rounded-object p-1" : "rounded-sheet p-1.5"
       )}
     >

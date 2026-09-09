@@ -59,6 +59,7 @@ export type ConnectionRow = {
 export type SetlistSummary = {
   tuneCount: number
   memberCount: number
-  knownByEveryoneCount: number
-  gapTuneCount: number
+  readyCount: number
+  practiceCount: number
+  newToMeCount: number
 }
