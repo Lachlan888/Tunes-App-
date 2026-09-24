@@ -61,6 +61,27 @@ test("nested pages receive concise phone top-bar titles", () => {
   assert.equal(getPageTitle("/dashboard"), "Account & settings")
 })
 
+test("Lists section promotes Public lists beside My lists without changing view routes", () => {
+  const sectionNav = readFileSync(new URL("../components/lists/ListsSectionNav.tsx", import.meta.url), "utf8")
+  const listsPage = readFileSync(new URL("../app/learning-lists/page.tsx", import.meta.url), "utf8")
+
+  const expectedViews = [
+    '["my-lists", "My lists", "/learning-lists?view=my-lists"]',
+    '["discover", "Public lists", "/public-lists"]',
+    '["saved-shared", "Saved & shared", "/learning-lists?view=saved-shared"]',
+    '["learning-queue", "Learning Queue", "/learning-lists?view=learning-queue"]',
+    '["unsorted", "Unsorted tunes", "/learning-lists?view=unsorted"]',
+  ]
+
+  const positions = expectedViews.map((view) => sectionNav.indexOf(view))
+  assert.ok(positions.every((position) => position >= 0))
+  assert.deepEqual(positions, [...positions].sort((a, b) => a - b))
+  assert.match(sectionNav, /aria-current=\{activeView === id \? "page" : undefined\}/)
+  assert.match(sectionNav, /counts\[id\] !== undefined/)
+  assert.doesNotMatch(sectionNav, /"Discover"/)
+  assert.match(listsPage, /id: "unsorted",\s+label: "Unsorted tunes"/)
+})
+
 test("fixed shell layers reserve safe space and keep 44px navigation targets", () => {
   const dock = readFileSync(new URL("../components/layout/NavigationDock.tsx", import.meta.url), "utf8")
   const rail = readFileSync(new URL("../components/layout/DesktopNav.tsx", import.meta.url), "utf8")
@@ -71,8 +92,8 @@ test("fixed shell layers reserve safe space and keep 44px navigation targets", (
   assert.match(dock, /min-h-11 min-w-11/)
   assert.match(dock, /env\(safe-area-inset-bottom\)/)
   assert.match(dock, /md:hidden/)
-  assert.match(rail, /md:flex md:flex-col lg:w-60/)
-  assert.match(shell, /md:pl-\[4\.75rem\] lg:pl-60/)
+  assert.match(rail, /md:flex md:flex-col xl:w-48/)
+  assert.match(shell, /md:pl-\[var\(--app-rail-width\)\]/)
   assert.match(shell, /SessionDockProvider/)
   assert.match(shell, /SessionDockNavigation/)
   assert.match(css, /--navigation-dock-space:/)
@@ -86,7 +107,7 @@ test("secondary navigation overlays and the Home view is persisted", () => {
   assert.match(accountMenu, /floating-material absolute/)
   assert.match(accountMenu, /Account & settings/)
   assert.match(accountMenu, /Social/)
-  assert.match(accountMenu, /Friends/)
+  assert.doesNotMatch(accountMenu, /label: "Friends"/)
   assert.doesNotMatch(accountMenu, /Compare repertoires/)
   assert.match(accountMenu, /canModerate \?/)
   assert.match(accountMenu, /canAccessDev \?/)

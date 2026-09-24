@@ -1,0 +1,18 @@
+{
+  "verified_at": "2026-09-23T01:12:47.463461+00:00",
+  "sha256": {
+    "tests/integration/catalogue-filter-lifecycle.mjs": "0c129957128f68e02b2d3205468705dd947a1ee731626a2eb8f3fe9228184501",
+    "components/library/PieceSearchFilters.tsx": "3b0cffb2ecf59768c9548a9901679ef93c15e8a95d0da1cce2cb599c6e78210b",
+    "components/library/CataloguePreview.tsx": "6abe9bfde0c3959cc2241525ad37ef92df32fe58d1364c00eba5f9cac6e1af51",
+    "components/library/CatalogueWorkspace.tsx": "cacc01aa13c837033d316dc301eee620bfd36f0d270eea509b513624c40440bb",
+    "components/library/LibraryTuneCardActions.tsx": "1eb162c9994cda3ae4c2cda05a7631c1fa0c516c85dd88103cccb60dd84b6e0f",
+    "components/library/LibraryResultsHeader.tsx": "83fb2de68da7ccf8c5a149cd9f1a508e7a71624bd0552ad15f890a95c88a9aad",
+    "components/filters/FilterShell.tsx": "86cde0247579955793f56d089673525056a38ada2261563ee08530cca671e84f",
+    "components/filters/FilterPanel.tsx": "f837a517b0ab3c00ee173a5c155713995dc3a0413042c750450bf78d61b39773",
+    "components/filters/FilterSection.tsx": "1e2abc99bfd98c98fe06dbb6d8cd2f491ac4fb0beb1c334537da5e62e14ba99a",
+    "components/layout/AccountMenu.tsx": "ac10e3863ab94bd8685fcd2eda37e33769597c1a6fc6b2510c8d4a6cf6d13ee1",
+    "tests/catalogue-workflows.test.ts": "2980dfd4770cb48a434c260c0ca6e6f0b4307f0968662ac8a7a1f51197cd92ee",
+    "tests/navigation-shell.test.ts": "84a581dc29198371be0acd1b18ae11ab6e94eb20fdda9dcc83bf254cd051e596",
+    "tests/reference-media.test.ts": "9ec6c7fdc8ba125c90dabfb07548b3fb1ea624c52c750caacf83a104a1e38c23"
+  }
+}

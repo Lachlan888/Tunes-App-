@@ -75,7 +75,7 @@ function CommentForm({
       ) : null}
 
       <textarea
-        name="body"
+        name="body" aria-label="Comment"
         rows={parentCommentId ? 3 : 5}
         placeholder={placeholder}
         className={inputClassName}

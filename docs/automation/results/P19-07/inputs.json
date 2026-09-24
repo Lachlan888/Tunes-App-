@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-09-23T04:09:33.458540+00:00",
+  "scope_note": "Relevant primary inputs; additional imported inputs must also be confirmed unchanged before future carry-forward. React renderer fixture runtime /private/tmp/tunes-review-lifecycle.",
+  "sha256": {
+    "components/practice/PracticeMetronome.tsx": "b29220cf089943284a90489f52e716eb1c46a84046114eac9f0f8f36ec7a8255",
+    "components/ui/FloatingTool.tsx": "d4550eb8c000fa4e3d071041f6a5fd0871360c6ecffe3151a34ec207afb7da18",
+    "components/layout/AppShell.tsx": "d2a85ea2e7e4377a05621d7b4a35bc39b2c88cd9d42107bbe1c2bedfdcc70242",
+    "tests/integration/metronome-lifecycle.mjs": "d7def77e773946d835adf27d78de0ecfe715273d80400cdd47611cd8119fbfbe",
+    "tests/session-dock.test.ts": "40d64a38af8b4dcdef020b89aaa618e5fdf17f14f1c0c8a351833fe583be26f9",
+    "tests/practice-session.test.ts": "1408c86c55e5ce4026c1d89662969e33e0c6fd3c23d8b46872a9489722f8418e",
+    "package.json": "8bb6e210891fbc184e12fb8e8407b556b01eb42dc9cc8e4ef05b04c94d78d0d1",
+    "package-lock.json": "42f3a674b0cba3314b2559341ff93ad904be09a0f01044913e870f35881c87e1",
+    "tsconfig.json": "2e641f8b3b8e7aaea424abf9c41533f81b24850e5e14db8cd2f53af9c120fcd4",
+    "eslint.config.mjs": "c6752f242afc0b7fbd47efe50b81a93a96b5b3ee64715b7ce83daaa639937afc"
+  }
+}

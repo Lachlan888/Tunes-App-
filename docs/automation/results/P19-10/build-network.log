@@ -1,0 +1,72 @@
+
+> tunes-app@0.1.0 build
+> next build
+
+▲ Next.js 16.1.7 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.9s
+  Running TypeScript ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/9) ...
+  Generating static pages using 7 workers (2/9) 
+  Generating static pages using 7 workers (4/9) 
+  Generating static pages using 7 workers (6/9) 
+✓ Generating static pages using 7 workers (9/9) in 57.8ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /api/activity
+├ ƒ /api/cron/notification-digests
+├ ƒ /api/keep-alive
+├ ƒ /api/library/duplicate-suggestions
+├ ƒ /api/media-loops
+├ ƒ /api/youtube/search
+├ ƒ /auth/confirm
+├ ƒ /badges
+├ ƒ /badges/[slug]
+├ ƒ /badges/[slug]/edit
+├ ƒ /badges/new
+├ ƒ /compare
+├ ƒ /compare/join/[token]
+├ ƒ /dashboard
+├ ƒ /dev
+├ ƒ /dev/design-system
+├ ƒ /friends
+├ ƒ /inbox
+├ ƒ /learning-lists
+├ ƒ /learning-lists/[id]
+├ ƒ /library
+├ ƒ /library/[id]
+├ ƒ /library/[id]/reference-media
+├ ƒ /library/known
+├ ƒ /library/practice
+├ ƒ /login
+├ ○ /manifest.webmanifest
+├ ƒ /moderator
+├ ƒ /public-lists
+├ ƒ /public-lists/[id]
+├ ƒ /repertoire
+├ ƒ /review
+├ ƒ /review/diary
+├ ƒ /review/diary/categories/[id]
+├ ƒ /review/diary/index
+├ ƒ /review/diary/index/categories/[id]
+├ ƒ /review/foci
+├ ƒ /review/foci/[id]
+├ ƒ /setlists
+├ ƒ /setlists/[id]
+├ ƒ /trends
+├ ƒ /trends/[style]
+├ ƒ /update-password
+└ ƒ /users/[username]
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

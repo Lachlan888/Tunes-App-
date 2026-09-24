@@ -1,0 +1,5 @@
+is_learning_list_owner: outsider own identity=false; missing=false; supplied other identity=false
+has_direct_learning_list_share: outsider own identity=false; missing=false; supplied other identity=false
+can_view_learning_list: outsider own identity=false; missing=false; supplied other identity=false
+PASS: identity binding, owner, shared reader, ordinary viewer, revoked and null-identity public/private controls
+PASS: real PostgreSQL RLS owner/shared/outsider reads, denied mutations, owner writes and immediate revocation

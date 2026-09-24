@@ -1,6 +1,5 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import UserIdentityLink from "@/components/UserIdentityLink"
 import type { CompareSuggestion } from "@/lib/loaders/compare"
@@ -12,28 +11,6 @@ type CompareSuggestionsSectionProps = {
   includePractice: boolean
 }
 
-function clickedInsideInteractiveElement(target: EventTarget | null) {
-  if (!(target instanceof Element)) return false
-
-  return Boolean(
-    target.closest(
-      [
-        "a",
-        "button",
-        "input",
-        "select",
-        "textarea",
-        "label",
-        "summary",
-        "details",
-        "form",
-        "[role='button']",
-        "[data-card-action]",
-      ].join(", ")
-    )
-  )
-}
-
 function SuggestionCard({
   friend,
   filterPreservedUsers,
@@ -43,9 +20,7 @@ function SuggestionCard({
   filterPreservedUsers: string[]
   includePractice: boolean
 }) {
-  const router = useRouter()
   const label = friend.display_name || friend.username || "Unnamed player"
-  const profileHref = `/users/${encodeURIComponent(friend.username)}`
 
   const alreadySelected = filterPreservedUsers.some(
     (user) => user.toLowerCase() === friend.username.toLowerCase()
@@ -53,15 +28,10 @@ function SuggestionCard({
 
   const nextUsers = addConfirmedCompareUser(filterPreservedUsers, friend.username)
 
-  function openProfile(event: React.MouseEvent<HTMLElement>) {
-    if (clickedInsideInteractiveElement(event.target)) return
-    router.push(profileHref)
-  }
-
   return (
     <article
-      className="cursor-pointer rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted/70 hover:shadow-md focus-within:ring-2 focus-within:ring-[var(--focus-ring)]"
-      onClick={openProfile}
+      className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted/70 hover:shadow-md focus-within:ring-2 focus-within:ring-[var(--focus-ring)]"
+
       aria-label={`Open profile for ${label}`}
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -92,8 +62,8 @@ function SuggestionCard({
             refresh
             className={
               alreadySelected
-                ? "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                : "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                ? "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+                : "inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
             }
           />
         </div>

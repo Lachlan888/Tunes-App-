@@ -1,0 +1,2 @@
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+PASS: direct controls, bounded/deduplicated feed, hidden-page continuation, loading/retry/end, keyboard button fallback, discussion paging guard, newest reset, unauthorized recovery and abort

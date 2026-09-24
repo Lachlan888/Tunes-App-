@@ -1,0 +1,21 @@
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: close cancels a pending start
++ actual - expected
+
++ 'running'
+- 'suspended'
+
+    at file:///Users/lachlan.haycox/Desktop/tunes-app/tests/integration/metronome-lifecycle.mjs:122:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'running',
+  expected: 'suspended',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.0

@@ -6,6 +6,7 @@ import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 
 type EmptyStateProps = {
   title: string
+  headingAs?: "h1" | "h2" | "h3"
   description?: string
   primaryActionHref?: string
   primaryActionLabel?: string
@@ -19,6 +20,7 @@ type EmptyStateProps = {
 
 export default function EmptyState({
   title,
+  headingAs: Heading = "h3",
   description,
   primaryActionHref,
   primaryActionLabel,
@@ -43,7 +45,7 @@ export default function EmptyState({
         <Icon name={icon} size={20} />
       </span>
 
-      <h3 className={titleClassName}>{title}</h3>
+      <Heading className={titleClassName}>{title}</Heading>
 
       {description ? (
         <p className="mt-2 text-sm leading-6 text-text-muted">

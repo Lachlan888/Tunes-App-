@@ -60,6 +60,20 @@ export type SessionDockStatus = {
 
 export type SessionDockTool = "metronome"
 
+export type SessionDockTransport = {
+  currentTime: number
+  duration: number
+  disabled?: boolean
+  unavailableMessage?: string
+  onSeek: (seconds: number) => void
+  speed: {
+    value: number
+    options: number[]
+    disabled?: boolean
+    onChange: (rate: number) => void
+  }
+}
+
 export type SessionDockModel = {
   /** Stable within a task. Used for registration and transient state ownership. */
   id: string
@@ -83,7 +97,9 @@ export type SessionDockModel = {
     description?: string
     actionIds?: string[]
     tools?: SessionDockTool[]
+    showIdentity?: boolean
   }
+  transport?: SessionDockTransport
   /** Documents the safe boundary used by the route's real state owner. */
   persistence: {
     shareable: "url" | "none"

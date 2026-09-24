@@ -1,6 +1,9 @@
 "use client"
 
+import { useEffect } from "react"
 import { usePathname } from "next/navigation"
+import ConnectionStatus from "@/components/resilience/ConnectionStatus"
+import InternalShell from "@/components/layout/InternalShell"
 import AppHeader from "@/components/layout/AppHeader"
 import DesktopNav from "@/components/layout/DesktopNav"
 import MobileNav from "@/components/layout/MobileNav"
@@ -20,6 +23,7 @@ type AppShellProps = {
   socialAttentionCount: number
   pendingModerationCount: number
   canModerate: boolean
+  environment: string
   canAccessDev: boolean
 }
 
@@ -33,10 +37,34 @@ export default function AppShell({
   pendingModerationCount,
   canModerate,
   canAccessDev,
+  environment,
 }: AppShellProps) {
   const pathname = usePathname()
   const shellKind = getShellKind(pathname, isSignedIn)
   const pageTitle = getPageTitle(pathname)
+
+  useEffect(() => {
+    if (shellKind !== "consumer") return
+    const breakpoint = window.matchMedia("(min-width: 768px)")
+    let lastFocused: HTMLElement | null = null
+    function rememberFocus(event: FocusEvent) {
+      lastFocused = event.target instanceof HTMLElement ? event.target : null
+    }
+    function restoreNavigationFocus() {
+      if (!lastFocused?.isConnected || lastFocused.getClientRects().length > 0) return
+      if (!lastFocused.closest("[data-desktop-nav], [data-mobile-nav], [data-app-header]")) return
+      const href = lastFocused.closest("a")?.getAttribute("href")
+      const candidates = document.querySelectorAll<HTMLElement>(href ? "[data-desktop-nav] a, [data-mobile-nav] a" : '[aria-label="Open account menu"]')
+      const replacement = Array.from(candidates).find(element => element.getClientRects().length > 0 && (!href || element.getAttribute("href") === href))
+      ;(replacement ?? document.getElementById("main-content"))?.focus()
+    }
+    document.addEventListener("focusin", rememberFocus)
+    breakpoint.addEventListener("change", restoreNavigationFocus)
+    return () => {
+      document.removeEventListener("focusin", rememberFocus)
+      breakpoint.removeEventListener("change", restoreNavigationFocus)
+    }
+  }, [shellKind])
 
   return (
     <SessionDockProvider
@@ -44,6 +72,7 @@ export default function AppShell({
         shellKind === "consumer" || pathname === "/dev/design-system"
       }
     >
+      {shellKind === "internal" ? <InternalShell canModerate={canModerate} canAccessDev={canAccessDev} environment={environment}>{children}</InternalShell> : <>
       <a href="#main-content" className="fixed left-3 top-3 z-[1000] -translate-y-24 rounded-control bg-action-primary px-4 py-2 text-sm font-semibold text-action-primary-foreground shadow-material-floating focus:translate-y-0">
         Skip to content
       </a>
@@ -71,8 +100,9 @@ export default function AppShell({
       <div
         id="main-content"
         tabIndex={-1}
-        className={shellKind === "signed-out" ? "min-h-[calc(100vh-4rem)]" : "app-shell-content min-h-screen md:pl-[4.75rem] lg:pl-60"}
+        className={shellKind === "signed-out" ? "min-h-[calc(100vh-4rem)]" : "app-shell-content min-h-screen md:pl-[var(--app-rail-width)]"}
       >
+        <ConnectionStatus />
         {children}
       </div>
       {shellKind === "consumer" ? (
@@ -84,8 +114,10 @@ export default function AppShell({
           />
         </SessionDockNavigation>
       ) : null}
-      {isSignedIn ? <PracticeMetronome variant="hidden" /> : null}
-      {isSignedIn ? <FloatingFeedbackButton variant="hidden" /> : null}
+      </>}
+      {isSignedIn && shellKind === "consumer" ? <PracticeMetronome variant="hidden" /> : null}
+      {/* Keep feedback visible throughout the beta period. */}
+      {isSignedIn && shellKind === "consumer" ? <FloatingFeedbackButton variant="floating" /> : null}
     </SessionDockProvider>
   )
 }

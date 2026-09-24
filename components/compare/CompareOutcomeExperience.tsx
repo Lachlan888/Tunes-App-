@@ -72,9 +72,8 @@ export default function CompareOutcomeExperience(props: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="border-y border-hairline py-5" aria-labelledby="playable-now-title">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">PLAY TOGETHER</p>
+    <div className="compare-workbench">
+      <section className="compare-summary border-y border-hairline py-5" aria-labelledby="playable-now-title">
         <h2 id="playable-now-title" className="mt-1 font-serif text-3xl font-bold text-text-primary md:text-4xl">
           You can play {outcomeGroups.playableTogetherIds.length} tune{outcomeGroups.playableTogetherIds.length === 1 ? "" : "s"} together now
         </h2>
@@ -88,6 +87,7 @@ export default function CompareOutcomeExperience(props: Props) {
         </dl>
       </section>
 
+      <aside className="workbench-context" aria-label="Suggested session">
       {playablePieces.length > 0 ? (
         <SuggestedSessionSet
           suggestedIds={outcomeGroups.suggestedSetIds}
@@ -103,8 +103,9 @@ export default function CompareOutcomeExperience(props: Props) {
         />
       )}
 
-      <section aria-labelledby="full-overlap-title">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">FULL OVERLAP</p>
+      </aside>
+
+      <section className="min-w-0" aria-labelledby="full-overlap-title">
         <h2 id="full-overlap-title" className="mt-1 text-xl font-semibold">Browse shared tunes</h2>
         <nav aria-label="Overlap groups" className="mt-4 flex gap-2 overflow-x-auto pb-1">
           {(["all", "strong", "shaky"] as const).map((group) => (

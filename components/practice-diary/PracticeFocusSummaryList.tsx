@@ -57,7 +57,7 @@ function PracticeFocusSummaryRow({
 
           <span
             aria-hidden="true"
-            className="shrink-0 rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground transition group-hover:border-primary group-hover:bg-card group-hover:text-primary"
+            className="inline-flex min-h-11 shrink-0 rounded-control border border-border bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground transition group-hover:border-primary group-hover:bg-card group-hover:text-primary items-center justify-center"
           >
             Open
           </span>

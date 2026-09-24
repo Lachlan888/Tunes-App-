@@ -68,7 +68,7 @@ export default function DirectMessageThreadList({
                 <label className="block text-sm font-semibold" htmlFor={`reply-${thread.otherUser.id}`}>Reply to {label}</label>
                 <textarea id={`reply-${thread.otherUser.id}`} name="body" rows={3} required className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]" />
                 <div className="flex flex-wrap gap-2">
-                  <SubmitButton label="Send reply" pendingLabel="Sending..." className="min-h-11 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground" />
+                  <SubmitButton label="Send reply" pendingLabel="Sending..." className="inline-flex min-h-11 rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]" />
                   {thread.otherUser.username ? (
                     <Link href={`/users/${thread.otherUser.username}`} className="inline-flex min-h-11 items-center px-2 text-sm font-semibold underline underline-offset-4">View profile</Link>
                   ) : null}

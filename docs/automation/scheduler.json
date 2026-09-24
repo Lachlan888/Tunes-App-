@@ -1,0 +1,13 @@
+{
+  "automation_id": "tunes-hourly-prompt-runner",
+  "project_id": "a54e73a3-31b6-4b4f-9ae0-3bb039cb651e",
+  "name": "Tunes hourly batch runner",
+  "schedule": "Hourly at minute 00",
+  "execution_environment": "local",
+  "model": "gpt-6-astra",
+  "reasoning_effort": "medium",
+  "created_status": "ACTIVE",
+  "max_batch_minutes": 40,
+  "max_related_slices": 3,
+  "purpose": "Identify only this runner for completion or genuine input suspension."
+}

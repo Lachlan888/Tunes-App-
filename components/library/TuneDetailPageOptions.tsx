@@ -29,7 +29,6 @@ export default function TuneDetailPageOptions({
       <ResponsiveModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        eyebrow="Tune"
         title="Manage tune"
         description="Organisation, contributions, corrections and permission-gated tune actions."
         mobileMode="sheet"

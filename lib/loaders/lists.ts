@@ -1,3 +1,5 @@
+import { redirectToLogin } from "@/lib/auth/login-redirect"
+import { readBoundedResult } from "@/lib/loaders/bounded-read"
 import { getStyleLabelsFromPiece } from "@/lib/search-filters"
 import { createClient } from "@/lib/supabase/server"
 import type {
@@ -7,7 +9,6 @@ import type {
   UserKnownPieceWithPiece,
   UserPieceWithPiece,
 } from "@/lib/types"
-import { redirect } from "next/navigation"
 
 type LearningListItemWithPieceRow = {
   id: number
@@ -189,7 +190,7 @@ export async function loadListsData() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    return redirectToLogin()
   }
 
   const [
@@ -203,13 +204,14 @@ export async function loadListsData() {
     { data: bookmarkedSharedListRows, error: bookmarkedSharedListRowsError },
     { data: directSharedListRows, error: directSharedListRowsError },
   ] = await Promise.all([
-    supabase
+    readBoundedResult((from, to) => supabase
       .from("learning_lists")
-      .select("id, name, description, visibility, is_imported")
+      .select("id, name, description, visibility, is_imported", { count: "exact" })
       .eq("user_id", user.id)
-      .order("id", { ascending: false }),
+      .order("id", { ascending: false })
+      .range(from, to)),
 
-    supabase
+    readBoundedResult((from, to) => supabase
       .from("user_pieces")
       .select(`
         id,
@@ -219,10 +221,12 @@ export async function loadListsData() {
           id,
           title
         )
-      `)
-      .eq("user_id", user.id),
+      `, { count: "exact" })
+      .eq("user_id", user.id)
+      .order("id")
+      .range(from, to)),
 
-    supabase
+    readBoundedResult((from, to) => supabase
       .from("user_known_pieces")
       .select(`
         id,
@@ -231,10 +235,12 @@ export async function loadListsData() {
           id,
           title
         )
-      `)
-      .eq("user_id", user.id),
+      `, { count: "exact" })
+      .eq("user_id", user.id)
+      .order("id")
+      .range(from, to)),
 
-    supabase
+    readBoundedResult((from, to) => supabase
       .from("learning_list_items")
       .select(`
         id,
@@ -263,12 +269,14 @@ export async function loadListsData() {
           name,
           user_id
         )
-      `)
+      `, { count: "exact" })
       .eq("learning_lists.user_id", user.id)
       .order("created_at", { ascending: true })
-      .order("position", { ascending: true }),
+      .order("position", { ascending: true })
+      .order("id")
+      .range(from, to)),
 
-    supabase
+    readBoundedResult((from, to) => supabase
       .from("learning_list_bookmarks")
       .select(
         `
@@ -281,13 +289,15 @@ export async function loadListsData() {
           description,
           visibility
         )
-      `
+      `, { count: "exact" }
       )
       .eq("user_id", user.id)
       .eq("learning_lists.visibility", "public")
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .order("learning_list_id")
+      .range(from, to)),
 
-    supabase
+    readBoundedResult((from, to) => supabase
       .from("learning_list_shares")
       .select(
         `
@@ -299,10 +309,12 @@ export async function loadListsData() {
           description,
           visibility
         )
-      `
+      `, { count: "exact" }
       )
       .eq("shared_with_user_id", user.id)
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .order("learning_list_id")
+      .range(from, to)),
   ])
 
   if (learningListsError) {
@@ -483,10 +495,12 @@ export async function loadListsData() {
 
   if (sharedOwnerIds.length > 0) {
     const { data: bookmarkProfiles, error: bookmarkProfilesError } =
-      await supabase
+      await readBoundedResult((from, to) => supabase
         .from("profiles")
-        .select("id, username, display_name")
+        .select("id, username, display_name", { count: "exact" })
         .in("id", sharedOwnerIds)
+      .order("id")
+      .range(from, to))
 
     if (bookmarkProfilesError) {
       throw new Error(bookmarkProfilesError.message)
@@ -508,10 +522,12 @@ export async function loadListsData() {
 
   if (bookmarkedListIds.length > 0) {
     const { data: bookmarkCountRows, error: bookmarkCountRowsError } =
-      await supabase
+      await readBoundedResult((from, to) => supabase
         .from("learning_list_items")
-        .select("learning_list_id")
+        .select("learning_list_id", { count: "exact" })
         .in("learning_list_id", bookmarkedListIds)
+      .order("id")
+      .range(from, to))
 
     if (bookmarkCountRowsError) {
       throw new Error(bookmarkCountRowsError.message)
@@ -529,10 +545,12 @@ export async function loadListsData() {
 
   if (directSharedListIds.length > 0) {
     const { data: directSharedCountRows, error: directSharedCountRowsError } =
-      await supabase
+      await readBoundedResult((from, to) => supabase
         .from("learning_list_items")
-        .select("learning_list_id")
+        .select("learning_list_id", { count: "exact" })
         .in("learning_list_id", directSharedListIds)
+      .order("id")
+      .range(from, to))
 
     if (directSharedCountRowsError) {
       throw new Error(directSharedCountRowsError.message)

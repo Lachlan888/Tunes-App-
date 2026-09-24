@@ -15,7 +15,8 @@ import {
   updateList,
 } from "@/lib/actions/lists"
 import { loadLearningListDetailData } from "@/lib/loaders/list-detail"
-import { LIST_PAGE_SIZE, paginateListItems, parseListPage } from "@/lib/list-view-state"
+import { LIST_PAGE_SIZE, paginateListItems, parseListPage, withListPage } from "@/lib/list-view-state"
+import { learningListHref, safeListReturn } from "@/lib/list-return"
 import type { Piece } from "@/lib/types"
 
 type LearningListDetailPageProps = {
@@ -24,6 +25,7 @@ type LearningListDetailPageProps = {
     remove_tune?: string
     edit_list?: string
     share_list?: string
+    return_to?: string | string[]
     mode?: string
     page?: string | string[]
   }>
@@ -104,90 +106,30 @@ export default async function LearningListDetailPage({
   const activeTuneCount = visibleItems.filter(({ piece }) =>
     activePieceStates.has(piece.id)
   ).length
-  const viewHref = `/learning-lists/${typedList.id}`
-  const pageHref = mode === "manage" ? `${viewHref}?mode=manage` : viewHref
+  const backHref = safeListReturn(resolvedSearchParams?.return_to)
+  const viewHref = withListPage(learningListHref(typedList.id, backHref), pagination.page)
+  const manageHref = withListPage(learningListHref(typedList.id, backHref, "manage"), pagination.page)
+  const pageHref = mode === "manage" ? manageHref : viewHref
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       <div className="mb-5">
         <Link
-          href="/learning-lists"
+          href={backHref}
           className="text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
         >
           Back to Lists
         </Link>
       </div>
 
-      <header className="rounded-3xl border border-border bg-card p-5 shadow-sm md:p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0 flex-1">
-            <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-              {typedList.name}
-            </h1>
 
-            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-muted-foreground">
-              <span>
-                {typedList.visibility === "public" ? "Public" : "Private"}
-              </span>
-
-              <span aria-hidden="true">•</span>
-
-              <span>
-                {typedItems.length} tune{typedItems.length === 1 ? "" : "s"}
-              </span>
-
-              {typedList.is_imported && (
-                <>
-                  <span aria-hidden="true">•</span>
-                  <span className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold text-muted-foreground">
-                    Your editable copy
-                  </span>
-                </>
-              )}
-
-              {accessMode === "shared_viewer" ? (
-                <>
-                  <span aria-hidden="true">•</span>
-                  <span>Shared by {ownerProfile.label}</span>
-                </>
-              ) : null}
-            </div>
-
-            {typedList.description ? (
-              <p className="mt-5 max-w-3xl text-base leading-7 text-foreground">
-                {typedList.description}
-              </p>
-            ) : null}
-          </div>
-
-          {isOwner && mode === "manage" ? (
-            <EditListModal
-              listId={typedList.id}
-              name={typedList.name}
-              description={typedList.description}
-              visibility={typedList.visibility}
-              redirectTo={redirectTo}
-              tunes={tunes}
-              updateList={updateList}
-              removeTuneFromList={removeTuneFromList}
-              deleteList={deleteList}
-              shareLearningListPrivately={shareLearningListPrivately}
-              searchLearningListShareRecipients={searchLearningListShareRecipients}
-              revokeLearningListPrivateShare={revokeLearningListPrivateShare}
-              shareRecipients={shareRecipients}
-              triggerLabel="Manage List"
-            />
-          ) : null}
-        </div>
-      </header>
-
-      <div className="mt-4 flex flex-col gap-3 border-b border-border/70 pb-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-6 mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {isOwner ? (
           <nav aria-label="List detail mode" className="inline-flex rounded-full border border-border bg-card p-1">
             <Link href={viewHref} aria-current={mode === "reader" ? "page" : undefined} className={`rounded-full px-4 py-2 text-sm font-semibold ${mode === "reader" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
               Reader
             </Link>
-            <Link href={`${viewHref}?mode=manage`} aria-current={mode === "manage" ? "page" : undefined} className={`rounded-full px-4 py-2 text-sm font-semibold ${mode === "manage" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+            <Link href={manageHref} aria-current={mode === "manage" ? "page" : undefined} className={`rounded-full px-4 py-2 text-sm font-semibold ${mode === "manage" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
               Manage
             </Link>
           </nav>
@@ -196,7 +138,7 @@ export default async function LearningListDetailPage({
         )}
 
         {activeTuneCount > 0 ? (
-          <Link href={`/review?session=list&list_id=${typedList.id}`} className="inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
+          <Link href={`/review?session=list&list_id=${typedList.id}`} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
             Start Practice · {activeTuneCount}
           </Link>
         ) : (
@@ -309,7 +251,69 @@ export default async function LearningListDetailPage({
         <StatusMessage tone="error">Couldn’t update private access.</StatusMessage>
       )}
 
-      <section className="mt-8 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
+      <header className="border-b border-border/70 pb-5 md:rounded-3xl md:border md:bg-card md:p-6 md:shadow-sm">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 flex-1">
+            <h1 className="break-words font-serif text-3xl font-bold tracking-tight text-foreground md:text-5xl">
+              {typedList.name}
+            </h1>
+
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-muted-foreground">
+              <span>By {ownerProfile.label}</span>
+
+              <span aria-hidden="true">•</span>
+
+              <span>
+                {typedList.visibility === "public" ? "Public" : "Private"}
+              </span>
+
+              <span aria-hidden="true">•</span>
+
+              <span>
+                {typedItems.length} tune{typedItems.length === 1 ? "" : "s"}
+              </span>
+
+              {typedList.is_imported && (
+                <>
+                  <span aria-hidden="true">•</span>
+                  <span className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold text-muted-foreground">
+                    Your editable copy
+                  </span>
+                </>
+              )}
+
+              {accessMode === "shared_viewer" ? <span className="sr-only">Shared list</span> : null}
+            </div>
+
+            {typedList.description ? (
+              <p className="mt-5 max-w-3xl break-words text-base leading-7 text-foreground">
+                {typedList.description}
+              </p>
+            ) : null}
+          </div>
+
+          {isOwner && mode === "manage" ? (
+            <EditListModal
+              listId={typedList.id}
+              name={typedList.name}
+              description={typedList.description}
+              visibility={typedList.visibility}
+              redirectTo={redirectTo}
+              tunes={tunes}
+              updateList={updateList}
+              removeTuneFromList={removeTuneFromList}
+              deleteList={deleteList}
+              shareLearningListPrivately={shareLearningListPrivately}
+              searchLearningListShareRecipients={searchLearningListShareRecipients}
+              revokeLearningListPrivateShare={revokeLearningListPrivateShare}
+              shareRecipients={shareRecipients}
+              triggerLabel="Manage List"
+            />
+          ) : null}
+        </div>
+      </header>
+
+      <section className="mt-7 md:mt-8 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           {mode === "manage" ? "Manage order and membership" : "Tunes in playing order"}
         </h2>
@@ -336,23 +340,21 @@ export default async function LearningListDetailPage({
             reorderListItems={reorderListItems}
           />
         ) : (
-          <ul className="mt-3 divide-y divide-border/70 border-y border-border/70">
-            {pagination.items.map(({ item, piece }, itemIndex) => {
+          <ol className="mt-3 divide-y divide-border/70 border-y border-border/70">
+            {pagination.items.map(({ item, piece }) => {
               const activePieceState = activePieceStates.get(piece.id) ?? null
               const isAlreadyInPractice = Boolean(activePieceState)
               const isKnown = knownPieceIds.has(piece.id)
-              const absoluteIndex = (pagination.page - 1) * LIST_PAGE_SIZE + itemIndex
               return (
                 <li key={item.id}>
                   <TuneRow
                     piece={piece}
-                    supportingContent={<span>Position {absoluteIndex + 1}</span>}
                     personalState={<TuneStateIndicator isAlreadyInPractice={isAlreadyInPractice} isKnown={isKnown} stage={activePieceState?.stage ?? null} />}
                   />
                 </li>
               )
             })}
-          </ul>
+          </ol>
         )}
         <ListPager href={pageHref} page={pagination.page} totalPages={pagination.totalPages} label={`${typedList.name} tunes`} />
       </section>

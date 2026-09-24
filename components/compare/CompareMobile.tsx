@@ -61,8 +61,8 @@ export default function CompareMobile(props: CompareViewProps) {
                   {profile.display_name || profile.username || "Musician"} ×
                 </Link>
               ))}
-              <button type="button" onClick={() => setIsAddSheetOpen(true)} className="min-h-11 rounded-full border border-primary px-4 text-sm font-semibold">Add musician</button>
-              <button type="button" onClick={() => setIsInviteSheetOpen(true)} className="min-h-11 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground">Compare in person</button>
+              <button type="button" onClick={() => setIsAddSheetOpen(true)} className="inline-flex min-h-11 rounded-control border border-primary px-4 text-sm font-semibold items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Add musician</button>
+              <button type="button" onClick={() => setIsInviteSheetOpen(true)} className="inline-flex min-h-11 rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Compare in person</button>
             </div>
           </header>
           <CompareOutcomeExperience {...props} />
@@ -90,7 +90,7 @@ export default function CompareMobile(props: CompareViewProps) {
               <button
                 type="button"
                 onClick={() => setIsInviteSheetOpen(true)}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               >
                 <QrIcon />
                 <span>Compare in person</span>
@@ -99,7 +99,7 @@ export default function CompareMobile(props: CompareViewProps) {
               <button
                 type="button"
                 onClick={() => setIsAddSheetOpen(true)}
-                className="min-h-12 rounded-full border border-border bg-background/70 px-5 py-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="inline-flex min-h-12 rounded-control border border-border bg-background/70 px-5 py-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
               >
                 Add person
               </button>
@@ -147,7 +147,7 @@ export default function CompareMobile(props: CompareViewProps) {
                     <button
                       type="button"
                       onClick={() => setIsAddSheetOpen(true)}
-                      className="shrink-0 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                      className="inline-flex min-h-11 shrink-0 rounded-control border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
                     >
                       Add
                     </button>

@@ -11,7 +11,7 @@ After each prompt:
 3. Resolve any reported failures before starting the next prompt.
 4. Save a Git checkpoint/commit if that is part of your normal workflow.
 
-The series now runs through Prompt 19. Complete Prompt 18 before starting the user-feedback refinement in Prompt 19; do not stop the runner at 18.
+User priority override, 13 September 2026: implement expanded Prompt 19 before finishing Prompt 18. Preserve partial hardening, complete the features/fixes, then resume Prompt 18. Stop only after both pass.
 
 The prompts deliberately ask Codex to implement rather than merely propose. They also tell it to preserve current business logic and use the current component tree as the source of truth.
 
@@ -610,6 +610,8 @@ Acceptance criteria:
 
 ## Prompt 18 — Final accessibility, performance, offline-resilience and QA hardening
 
+Execution override (14 September 2026): `docs/automation/RUNNER.md` governs read scope, one-chunk stopping, recovery and verification timing for Prompts 19 and 18. Older full-audit/all-changes reads below apply only when directly needed, especially finalisation; product acceptance requirements remain unchanged.
+
 ```text
 Work in the current Tunes App repository after Prompts 1–17. Read AGENTS.md and the full audit, inspect all accumulated changes, preserve business logic and do not edit sources/. This is the final cross-cutting hardening pass. Fix verified issues rather than merely producing an audit. Run the broadest practical automated and real-browser verification and clearly report anything that remains.
 
@@ -659,13 +661,11 @@ Final acceptance criteria:
 ```
 
 ---
+## Prompt 19 - Refine contrast, navigation, reference playback and unified Lists
 
-## Prompt 19 — Refine contrast, navigation, reference playback and unified Lists
+User-authorised order change, 13 September 2026: run this prompt now, before completing Prompt 18. Preserve existing partial Prompt 18 work and return to its final hardening afterward. Work in the current Tunes repository, read docs/automation/RUNNER.md, docs/automation/state.json and the current chunk specification first; consult only its requirements and directly relevant architectural/audit guidance plus applicable AGENTS.md files. Inspect the current implementation, including partial Prompt 18 hardening; file names mentioned below are starting points, not a requirement to restore old code. Preserve existing work, permissions, practice rules and provider limitations. Do not edit sources/.
 
-```text
-Run this prompt only after Prompts 1–18 are complete. Work in the current Tunes repository, read docs/Prompt Runner State.md first, then docs/Tunes-App-Current-Context.md, this exact prompt, applicable AGENTS.md files and the relevant audit sections. Inspect the implementation that exists after Prompt 18; file names mentioned below are starting points, not a requirement to restore old code. Preserve existing work, permissions, practice rules and provider limitations. Do not edit sources/.
-
-Goal: address the user's 9 September 2026 visual and workflow feedback by making controls readable, eliminating duplicate destinations and unnecessary reference handoffs, and bringing personal/shared/public lists together in one coherent Lists section. Implement and verify the complete workstream rather than stopping at a plan.
+Goal: address the user's 9 September 2026 visual and workflow feedback by making controls readable, eliminating duplicate destinations and unnecessary reference handoffs, improving Reference Mode, and bringing personal/shared/public lists together in one coherent Lists section with a consistent editorial card design. Implement and verify the complete workstream rather than stopping at a plan.
 
 User feedback and authority:
 
@@ -673,12 +673,13 @@ User feedback and authority:
 - Social and Friends currently look like different features while leading to the same page. Present one coherent destination.
 - In practice review, Reveal reference currently reveals only a label and an Open Reference Mode link. It should reveal a simple playable reference video in the current review.
 - Tune Detail's Reference tab is an unnecessary intermediate screen. Choosing Reference should open the real Reference Mode directly.
-- The user likes the editorial look of public lists, but wants public and private lists in the same section of the app.
+- The user likes the editorial look of public lists and wants that visual language to become the standard presentation for both public and private lists inside one Lists section.
+- The current public-list card uses a decorative initial in the coloured header and then repeats the list title below. Replace the decorative initial with the actual list title, styled as the dominant serif display element inside the coloured header. Do not repeat the title underneath.
 - In a follow-up, the user asked for full Reference Mode to feel more like a DAW: familiar transport-style buttons and saved loops presented as a playlist.
 
 Read docs/ui-feedback/prompt-19/README.md and inspect its four screenshots. The screenshots are evidence of the observed problems, not a pixel-perfect target or instructions to preserve the surrounding defects. Daley's Reel and Abe's Retreat are examples; verify equivalent available fixtures if those records change.
 
-This is a user-authorised refinement of earlier prompts. It supersedes the intermediate Reference-preview tab requirement from Prompt 6 and separate public-list destination treatment where they conflict with the requirements below. Preserve the six primary destinations Home, Practice, Tunes, Lists, Social and Compare. Social and Compare remain distinct. Keep prior functionality, privacy boundaries and useful public-list styling.
+This is a user-authorised refinement of earlier prompts. It supersedes the intermediate Reference-preview tab requirement from Prompt 6 and separate public-list destination treatment where they conflict with the requirements below. Preserve the six primary destinations Home, Practice, Tunes, Lists, Social and Compare. Social and Compare remain distinct. Keep prior functionality, privacy boundaries and the editorial public-list visual character.
 
 Implement the following:
 
@@ -690,11 +691,91 @@ Implement the following:
 
 4. Make Tune Detail's Reference action navigate directly to its actual reference-media workspace in one activation. Remove the redundant summary/preview-only Reference panel and the second Open Reference Mode step. Keep Practice/About content and a clear direct Reference action in a semantically correct navigation group; do not present an unloaded intermediate panel as a local tab. Preserve source identity, safe relevant parameters, access checks, saved passages, sections, notes and the workspace's advanced controls. Handle existing /library/[id]?view=reference links with a safe direct redirect or equivalent canonical navigation, preserving supported source/return context without redirect loops or open redirects. Update catalogue/dock/internal links that still point at the obsolete handoff. From Reference Mode, provide an obvious way back to the originating review or tune. Empty/unavailable media should recover within the real workspace rather than recreating the intermediate screen.
 
-5. Restyle full Reference Mode as a focused, DAW-inspired reference player. Make the source/player, transport and saved-loop playlist the dominant structure. Provide recognisable, clearly labelled play/pause, stop where the provider supports it, previous/next loop, loop on/off, playback position/duration and speed controls, with distinct active, unavailable and loading states. Use readable time values and a seek rail only when timing is reliable; do not invent a waveform, multitrack arrangement or unsupported editing features. Present saved loops/passages as an ordered playlist of compact rows showing name, start/end or duration and the active/playing state. Selecting a row selects that saved passage; its deliberate Play/Audition action plays that passage through the shared player. Make loop controls and transport affect the same selected passage, and preserve its source and playback state across workspace view changes. Provide accessible rename, reorder, adjust and delete actions without turning every row into an expanded editor; preserve existing undo/recovery and ownership rules. If playlist order is persisted, scope it to the correct user/source and handle rejected writes without losing the prior order. Make previous/next select loops in displayed order, define their playback behaviour consistently, and show an honest empty state with a clear create-loop action. Keep this a loop playlist, not a silently enabled auto-play sequence: any continuous sequence feature must be explicit and provider-supported. Reconcile the visible transport with Session Dock so they share one playback state and do not create competing controls or overlapping players. On desktop, make the reference player/transport and loop playlist readable together; on phone, keep transport reachable and playlist rows compact without hiding basic controls behind multiple tabs. Preserve notes, sections and advanced loop editing through clear secondary controls. This fuller workspace must not make the inline review player from item 3 heavy or complex.
+5. Restyle full Reference Mode as a focused, DAW-inspired reference player. Make the source/player, transport and saved-loop playlist the dominant structure. Provide recognisable, clearly labelled play/pause, stop where the provider supports it, previous/next loop, loop on/off, playback position/duration and speed controls, with distinct active, unavailable and loading states. Use readable time values and a seek rail only when timing is reliable; do not invent a waveform, multitrack arrangement or unsupported editing features.
 
-6. Unify personal, shared/saved and public discovery under the single primary Lists destination and one consistent section shell. Provide understandable in-section views such as My lists, Saved & shared and Discover, retaining Learning Queue and Unsorted where they remain useful. A person must be able to move between their own lists and public discovery without returning to the account menu or feeling they have left Lists. Keep the public-list editorial cards, curator identity, premise, typography and visual hierarchy the user likes; adapt surrounding layouts to make the whole section coherent rather than replacing that design with a generic table. Preserve search, bounded pagination, filters, counts, bookmarks, sharing and return position. Existing /public-lists and public-list detail links must still resolve correctly and select Lists; implementation may retain those URLs under the unified shell or migrate them with compatible redirects. Remove misleading duplicate top-level/account navigation once discovery is directly available inside Lists.
+Present saved loops/passages as an ordered playlist of compact rows showing name, start/end or duration and the active/playing state. Selecting a row selects that saved passage; its deliberate Play/Audition action plays that passage through the shared player. Make loop controls and transport affect the same selected passage, and preserve its source and playback state across workspace view changes.
 
-7. Keep visibility and actions explicit within unified Lists. One section does not mean one permission model or an automatic data merge: private lists stay private, public lists stay public, directly shared lists stay limited to authorised people, and creator/editor/reader permissions remain server-enforced. Show clear Public/Private/Shared status where it helps a decision. Do not silently publish, duplicate, bookmark, add to Practice or change membership when switching views. Preserve public access to already-public links according to current product rules. Test owner, collaborator, ordinary viewer, signed-out access and revoked/private/missing links without leaking private list existence.
+Provide accessible rename, reorder, adjust and delete actions without turning every row into an expanded editor; preserve existing undo/recovery and ownership rules. If playlist order is persisted, scope it to the correct user/source and handle rejected writes without losing the prior order. Make previous/next select loops in displayed order, define their playback behaviour consistently, and show an honest empty state with a clear create-loop action.
+
+Keep this a loop playlist, not a silently enabled auto-play sequence: any continuous sequence feature must be explicit and provider-supported. Reconcile the visible transport with Session Dock so they share one playback state and do not create competing controls or overlapping players.
+
+On desktop, make the reference player/transport and loop playlist readable together. On phone, keep transport reachable and playlist rows compact without hiding basic controls behind multiple tabs. Preserve notes, sections and advanced loop editing through clear secondary controls. This fuller workspace must not make the inline review player from item 3 heavy or complex.
+
+6. Unify personal, shared/saved and public discovery under the single primary Lists destination and one consistent section shell. Provide understandable in-section views such as My lists, Saved & shared and Discover, retaining Learning Queue and Unsorted where they remain useful. A person must be able to move between their own lists and public discovery without returning to the account menu or feeling they have left Lists.
+
+Use the existing editorial public-list card design as the visual basis for list presentation throughout this section, including both the user's public and private lists. Do not turn private lists into generic utility rows while public lists retain the richer card treatment. Public and private lists should feel like the same kind of object presented through the same underlying card system, with visibility, ownership and available actions changing according to context.
+
+Refine that card design as follows:
+
+- Remove the decorative single initial currently displayed inside the coloured header area.
+- Put the actual list title inside the coloured header area instead.
+- Style the list title using the same large serif/display treatment and editorial character currently associated with the decorative initial.
+- Make the title the dominant element of the coloured header.
+- Remove the second large title currently rendered underneath the coloured header. A card must not display its title twice.
+- Allow longer titles to wrap naturally inside the header. Use responsive sizing and sensible line-height rather than shrinking text excessively or clipping it.
+- Preserve a deliberate coloured header area with enough vertical space for one-line and multi-line titles to feel designed rather than cramped.
+- The body beneath the header should begin with the appropriate list status/relationship information and metadata, followed by description and actions.
+- Examples of status treatment may include Your public list, Your private list, Shared with you or Saved public list where those distinctions are useful. Do not expose permissions merely through colour.
+- Preserve useful metadata such as curator/owner identity, tune count and style/category where available.
+- Preserve the public-list editorial premise, typography, visual hierarchy, description treatment and prominent action styling that the user likes.
+- Reuse one coherent card/component system where practical rather than maintaining unrelated private-list and public-list designs.
+- Do not make visual unification imply identical permissions or actions.
+
+The intended public-card hierarchy is approximately:
+
+[coloured editorial header]
+Buried In a Cape - Andrew Marlin
+
+[body]
+Your public list
+
+By Lach (@lach) • 14 tunes • Bluegrass
+
+Tracklist from Andrew Marlin's Buried In a Cape album.
+
+Read the list
+
+rather than:
+
+[coloured editorial header]
+B
+
+[body]
+Buried In a Cape - Andrew Marlin
+
+Your public list
+
+By Lach (@lach) • 14 tunes • Bluegrass
+
+Tracklist from Andrew Marlin's Buried In a Cape album.
+
+Read the list
+
+Use the equivalent hierarchy for private and shared lists, substituting the correct status, metadata and actions rather than inventing public-specific content.
+
+Preserve search, bounded pagination, filters, counts, bookmarks, sharing and return position. Existing /public-lists and public-list detail links must still resolve correctly and select Lists; implementation may retain those URLs under the unified shell or migrate them with compatible redirects. Remove misleading duplicate top-level/account navigation once discovery is directly available inside Lists.
+
+7. Keep visibility and actions explicit within unified Lists. One section and one card language do not mean one permission model or an automatic data merge: private lists stay private, public lists stay public, directly shared lists stay limited to authorised people, and creator/editor/reader permissions remain server-enforced.
+
+Show clear Public/Private/Shared status where it helps a decision. The card design may be visually consistent across visibility types, but the UI must never imply that a private list is publicly accessible merely because it resembles a public card.
+
+Do not silently publish, duplicate, bookmark, add to Practice or change membership when switching views. Preserve public access to already-public links according to current product rules. Test owner, collaborator, ordinary viewer, signed-out access and revoked/private/missing links without leaking private list existence.
+
+
+Additional user feedback incorporated on 13 September 2026:
+
+Read `docs/ui-feedback/prompt-19/september-13/README.md` and all twelve screenshots from the user-linked Google Doc. These requirements are part of Prompt 19, not postponed to hardening:
+
+8. Make the Tunes catalogue preview play the selected tune's available reference using the same lightweight player as inline review. Avoid separate duplicate Reference and Preview handoffs. Consolidate each tune's actions into a compact, aligned group; Mark Known must be visibly a button. Repair result-count/card padding and awkward action wrapping.
+9. Compact the tune filter sheet into grouped responsive columns/options, preserving 44px targets, draft/apply semantics and bounded content. Fix stacking so sticky collection toolbars cannot cover account menus or modal dialogs, including Bulk Import.
+10. Make the metronome a persistent movable floating tool once deliberately opened, with a reachable drag handle, keyboard position controls, viewport bounds, collapse/close and explicit playback state. It should survive navigation while started, including Practice and Reference Mode, without duplicate audio engines. Opening it is user initiated; prevent it covering essential controls or trapping the whole app behind a modal.
+11. In full Reference Mode, put the clip first and transport directly underneath, with clear recording/loop selectors and compact loop playlist. Loop creation is ready by default: no prerequisite New passage click. Capturing an end with no start uses 00:00; closing/starting the loop creates one editable draft. Allow precise manual start/end adjustment and explicit owner-scoped save, avoiding accidental duplicate saved passages. Preserve provider limitations and shared playback state.
+12. Make Home's Recent changes meaning explicit from its actual data (for example Recently added to practice if that is what is queried), with meaningful dates/state. Replace the disliked olive streak box with a calm neutral treatment using the established palette.
+13. Remove redundant Open context when the linked tune/object already provides the same navigation. Expose Good craic and Comment as direct controls with counts; opening Comment may disclose the thread/editor but reacting must not require opening another menu.
+14. Home Social and Social activity must support progressive infinite scrolling with bounded server pages and bounded rendered content, not fetch everything initially or silently stop at a five/25-event cap. Preserve visibility, deduplication, chronological cursor order, loading/retry/end states and a keyboard-accessible Load more fallback. Do not add tracking.
+15. Remove decorative eyebrow labels throughout the app where they repeat/compete with the actual heading (e.g. Badges + Recognition). Keep one clear meaningful heading and retain functional field labels, status/permissions, counts and accessible names. Do not hide real semantics merely to remove visual clutter.
+
+Capture focused before/after evidence for these additions and include them in the final Prompt 19 changed-behaviour and verification report. Broader final hardening remains Prompt 18 afterward.
 
 Verification and acceptance:
 
@@ -703,37 +784,82 @@ Verification and acceptance:
 - Revealing a supported review reference produces an inline playable video without navigation. Playback stops when hidden or when the tune changes, ratings and note drafts remain intact, and full-workspace return restores the review. Unsupported providers have tested recovery.
 - Selecting Reference from Tune Detail opens the real workspace in one action. Legacy reference links resolve safely and back/forward navigation has no redundant handoff or loops.
 - Full Reference Mode has a recognisable transport and an ordered saved-loop playlist. Verify play/pause, supported stop/seek/speed, loop toggle, loop selection/audition, previous/next, playlist edits and state restoration on phone and desktop. Controls have accessible names, keyboard support, visible focus and clear unavailable-provider states; only one player owns playback.
-- One Lists section exposes owned, saved/shared and public discovery, preserves the public-list visual character and URL/filter/scroll context, and keeps every visibility/permission boundary intact.
+- One Lists section exposes owned, saved/shared and public discovery while preserving URL/filter/scroll context and every visibility/permission boundary.
+- Public and private list cards use the same coherent editorial visual system rather than separate public and utility designs.
+- The list title appears prominently inside the coloured card header in place of the old decorative initial and is not repeated beneath it.
+- Verify short, medium and long list titles at phone, tablet and desktop widths. Titles must wrap cleanly without clipping, overflow, unreadably small type or broken card proportions.
+- Verify public, private, shared and saved-list examples so that status and allowed actions remain obvious despite their shared visual language.
 - Add focused regression coverage for the changed behaviour and routing, then run the existing required tests, type check, lint and production build. Perform authenticated browser checks of the complete affected flows, keyboard/focus handling and media lifecycle; report any provider test that could not actually be verified. Keep the Prompt 18 accessibility, performance and privacy guarantees intact. Do not claim completion based only on source matching or screenshots.
-- Update docs/Tunes-App-Current-Context.md to the implemented navigation, Lists and reference behaviour, and update docs/Prompt Runner State.md with files changed, actual checks/results, known limitations and completion. Until acceptance passes, leave Prompt 19 in progress. Stop the numbered series after Prompt 19 is complete; follow the existing runner's commit/deployment/migration rules.
-```
+- Update docs/Tunes-App-Current-Context.md to the implemented navigation, Lists and reference behaviour, and record concise chunk evidence under docs/automation/results, one run entry in docs/automation/history.jsonl, and minimal next-invocation state in docs/automation/state.json. Until acceptance passes, leave Prompt 19 in progress. After Prompt 19 is complete, resume the paused Prompt 18 hardening/checking pass; stop only after both prompts pass; follow the existing runner's commit/deployment/migration rules.
 
-Contrast references: [WCAG 2.2 text contrast](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html) and [non-text contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html).
+Contrast references:
+https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html
+https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html
 
----
+# Continuation after Prompt 19 — September 15 feedback
 
-## Coverage map
+Prompts 20–32 are fully drafted from the latest feedback document and all 16 embedded screenshots. They are stored individually so each run can load only its active specification. These entries are now registered in the existing runner (15 September 2026); they do not mark Prompt 19 complete.
 
-| Audit recommendation area | Prompt |
-|---|---:|
-| Semantic folk palette, typography, surfaces and motion | 1 |
-| Phone bottom navigation, tablet/desktop shell | 2, 17 |
-| Floating contextual controls, metronome and Feedback | 3 |
-| Pagination, TuneRow and oversized DOM/query repair | 4, 18 |
-| Catalogue, filters, selection and Create Tune | 5 |
-| Tune Detail information architecture | 6 |
-| Reference Media and saved passages | 7 |
-| Review, catch-up and Focused Practice | 8 |
-| Lists, Queue, Unsorted, shared and public lists | 9 |
-| Diary, Notes and Focus areas | 10 |
-| Trends and style detail | 11 |
-| Home Social, Friends and Inbox | 12 |
-| Compare and Compare in person | 13 |
-| Setlists and Performance Mode | 14 |
-| Profiles, Dashboard, Login and account transitions | 15 |
-| Badges, Moderator, Dev and internal shell | 16 |
-| Full tablet/desktop workbench | 17 |
-| Accessibility, offline resilience, performance, copy and final QA | 18 |
-| User feedback: contrast, Social naming, inline review media, direct Reference, DAW-style transport/loop playlist and unified Lists | 19 |
+- Overview and proposed ordering: [Series 20–32](automation/series-20-32/README.md).
+- Shared execution rules: [Contract](automation/series-20-32/CONTRACT.md).
+- Feedback and picture mapping: [September 15 evidence](ui-feedback/september-15/README.md).
 
-This sequence covers the recommendations in the audit while keeping each Codex task bounded enough to review before the next one changes the same area.
+Activated order: finish Prompt 19, execute 20–31, integrate with 32, implement festival hubs with 33, then complete remaining Prompt 18 release hardening. Preserve the current P19 chunk and advance through the registered successors. Do not infer execution order from numbering alone or start a second overlapping runner.
+
+The linked prompt files contain the complete requirements, bounded slices, starting files and acceptance criteria. Load the active file and shared contract instead of this entire catalogue. Existing verified work is carried forward; visual refinements do not authorise rebuilding its underlying feature.
+
+## Prompt 20 — Consistent action button shape
+
+[Full specification](automation/series-20-32/prompts/20.md). Use the shared continuation contract and complete one bounded slice per run.
+
+## Prompt 21 — Replace Home schedule with streaks
+
+[Full specification](automation/series-20-32/prompts/21.md). Use the shared continuation contract and complete one bounded slice per run.
+
+## Prompt 22 — Make Home and Social activity scroll as a feed
+
+[Full specification](automation/series-20-32/prompts/22.md). Use the shared continuation contract and complete one bounded slice per run.
+
+## Prompt 23 — Simplify the Practice entry and review layout
+
+[Full specification](automation/series-20-32/prompts/23.md). Use the shared continuation contract and complete one bounded slice per run.
+
+## Prompt 24 — Fit catalogue actions and preview on a laptop
+
+[Full specification](automation/series-20-32/prompts/24.md). Use the shared continuation contract and complete one bounded slice per run.
+
+## Prompt 25 — Put Reference transport in the persistent bar
+
+[Full specification](automation/series-20-32/prompts/25.md). Use the shared continuation contract and complete one bounded slice per run.
+
+## Prompt 26 — Promote Public lists and simplify list reading
+
+[Full specification](automation/series-20-32/prompts/26.md). Use the shared continuation contract and complete one bounded slice per run.
+
+## Prompt 27 — Enforce fill once tune contributions with attribution
+
+[Full specification](automation/series-20-32/prompts/27.md). Use the shared continuation contract and complete one bounded slice per run.
+
+## Prompt 28 — Add inline tune editing and quiet contributor credits
+
+[Full specification](automation/series-20-32/prompts/28.md). Use the shared continuation contract and complete one bounded slice per run.
+
+## Prompt 29 — Suggest relevant musicians in Find friends
+
+[Full specification](automation/series-20-32/prompts/29.md). Use the shared continuation contract and complete one bounded slice per run.
+
+## Prompt 30 — Compare with a suggested friend in one click
+
+[Full specification](automation/series-20-32/prompts/30.md). Use the shared continuation contract and complete one bounded slice per run.
+
+## Prompt 31 — Use readable themed Compare join codes
+
+[Full specification](automation/series-20-32/prompts/31.md). Use the shared continuation contract and complete one bounded slice per run.
+
+## Prompt 32 — Accept the feedback series without repeating finished work
+
+[Full specification](automation/series-20-32/prompts/32.md). Use the shared continuation contract and complete one bounded slice per run.
+
+## Prompt 33 — Curated festival hubs with controlled activation
+
+[Full specification](automation/prompts/33.md). Owner-curated reusable festival hubs reference existing public lists, tune/media tools, Save list and Compare. Home promotion is controlled in Dev by a persistent default-Off festival-mode toggle and festival selector. New hubs are private drafts; publication is explicit and archives retain stable links. Execute P33-01 through P33-07 after P32-01 and before P18-01. The automation must leave production festival mode Off and content unpublished.

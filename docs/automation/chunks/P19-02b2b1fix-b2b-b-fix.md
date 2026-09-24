@@ -1,0 +1,7 @@
+# P19-02b2b1fix-b2b-b-fix — Restore list-origin scroll position
+
+Depends P19-02b2b1fix-b2b-b. Next P19-02b2b1fix-b2b-b-accept. Prompt 19 item 6.
+Confirmed defect 2026-09-15, authenticated LOCAL Chrome 2160×1218: /learning-lists shows 16 lists. Scroll near bottom (Bryan Sutton card visible); click its title → /learning-lists/52?return_to=%2Flearning-lists → Back to Lists. Actual: top heading/filter/first cards. Expected: original nonzero scroll position.
+Read P19-02b2b1fix-b2b-b result; inspect only return navigation and list-origin scroll lifecycle plus applicable instructions. Diagnose and implement the smallest fix, preserving existing dirty work. Targeted regression test and read-only browser reproduction required; verify original position returns after Back. Carry Adam query/Reader/Manage pass and prior URL validation forward unless relevant changes invalidate them. No production mutations. Split further before edits if needed. Remaining other-surface acceptance is in successor.
+
+Implementation checkpoint 2026-09-15T13:38:15.503543+00:00: ListOriginScroll mounted in overview; scoped regression (5/5 including existing return tests), lint, typecheck and diff check passed. Browser acceptance pending because CUA scrolling returned noWindowsAvailable and tab connections timed out; fresh authenticated tab 726184093 did render 16 lists. Read current result only for precise recovery. Do not rebuild or rerun passed checks without relevant edits.

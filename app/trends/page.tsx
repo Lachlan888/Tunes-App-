@@ -38,9 +38,6 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
           className="border-y border-border py-7"
           aria-labelledby="signed-out-trends-title"
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Catalogue view
-          </p>
           <h2
             id="signed-out-trends-title"
             className="mt-2 font-serif text-2xl font-bold"
@@ -53,7 +50,7 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
           </p>
           <Link
             href="/login"
-            className="mt-4 inline-flex min-h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
+            className="mt-4 inline-flex min-h-11 items-center rounded-control bg-primary px-5 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
           >
             Sign in
           </Link>
@@ -65,9 +62,6 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
           className="mt-10 border-t border-border pt-8"
           aria-labelledby="friend-pattern-title"
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Friend pattern
-          </p>
           <h2
             id="friend-pattern-title"
             className="mt-1 font-serif text-2xl font-bold"
@@ -96,9 +90,6 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
       >
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Catalogue coverage
-            </p>
             <h2 id="styles-title" className="mt-1 font-serif text-2xl font-bold">
               Browse by style
             </h2>

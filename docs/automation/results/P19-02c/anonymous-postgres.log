@@ -1,0 +1,2 @@
+PASS: anonymous public detail join, browse, tunes, attribution and media; private/missing/unlisted rows concealed; sensitive columns and writes denied
+PASS: immediate public-to-private revocation across dependencies; existing authenticated read policy preserved

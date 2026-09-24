@@ -33,7 +33,7 @@ export default function CreateSetlistModal({
       <button
         type="button"
         onClick={handleOpen}
-        className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        className="min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
       >
         Create setlist
       </button>
@@ -49,14 +49,14 @@ export default function CreateSetlistModal({
         <form
           action={async (formData: FormData) => {
             setIsSubmitting(true)
-            await createSetlist(formData)
+            try { await createSetlist(formData) } finally { setIsSubmitting(false) }
           }}
           className="space-y-4"
         >
           <div>
-            <label className="text-sm font-medium text-foreground">Name</label>
+            <label htmlFor="CreateSetlistModal-name" className="text-sm font-medium text-foreground">Name</label>
             <input
-              name="name"
+              id="CreateSetlistModal-name" name="name"
               required
               placeholder="Festival set"
               className={`${inputClass} mt-2`}
@@ -64,11 +64,9 @@ export default function CreateSetlistModal({
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground">
-              Description
-            </label>
+            <label htmlFor="CreateSetlistModal-description" className="text-sm font-medium text-foreground">Description</label>
             <textarea
-              name="description"
+              id="CreateSetlistModal-description" name="description"
               rows={3}
               placeholder="Notes about the gig, jam, or rehearsal."
               className={`${inputClass} mt-2`}
@@ -77,22 +75,18 @@ export default function CreateSetlistModal({
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="text-sm font-medium text-foreground">
-                Event date
-              </label>
+              <label htmlFor="CreateSetlistModal-event_date" className="text-sm font-medium text-foreground">Event date</label>
               <input
                 type="date"
-                name="event_date"
+                id="CreateSetlistModal-event_date" name="event_date"
                 className={`${inputClass} mt-2`}
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground">
-                Location
-              </label>
+              <label htmlFor="CreateSetlistModal-location" className="text-sm font-medium text-foreground">Location</label>
               <input
-                name="location"
+                id="CreateSetlistModal-location" name="location"
                 placeholder="Nathalia, Footscray, online..."
                 className={`${inputClass} mt-2`}
               />
@@ -102,7 +96,7 @@ export default function CreateSetlistModal({
           <SubmitButton
             label="Create setlist"
             pendingLabel="Creating..."
-            className="w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
           />
         </form>
       </ResponsiveModal>

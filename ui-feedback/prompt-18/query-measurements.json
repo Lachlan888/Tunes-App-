@@ -1,0 +1,117 @@
+{
+  "method": "Opt-in development server fetch instrumentation; sequential route loads; data/auth counts exclude proxy, admin clients and third-party media. Adjacent manifest requests contain no measured queries. Cold/warm consecutive pairs.",
+  "samples": [
+    {
+      "route": "/",
+      "status": 200,
+      "serverTime": "2.2s",
+      "dataRequests": 30,
+      "authRequests": 0,
+      "failedRequests": 0
+    },
+    {
+      "route": "/",
+      "status": 200,
+      "serverTime": "1857ms",
+      "dataRequests": 30,
+      "authRequests": 0,
+      "failedRequests": 0
+    },
+    {
+      "route": "/library",
+      "status": 200,
+      "serverTime": "1679ms",
+      "dataRequests": 21,
+      "authRequests": 0,
+      "failedRequests": 0
+    },
+    {
+      "route": "/library",
+      "status": 200,
+      "serverTime": "1077ms",
+      "dataRequests": 21,
+      "authRequests": 0,
+      "failedRequests": 0
+    },
+    {
+      "route": "/review",
+      "status": 200,
+      "serverTime": "1504ms",
+      "dataRequests": 27,
+      "authRequests": 1,
+      "failedRequests": 0
+    },
+    {
+      "route": "/review",
+      "status": 200,
+      "serverTime": "1408ms",
+      "dataRequests": 27,
+      "authRequests": 1,
+      "failedRequests": 0
+    },
+    {
+      "route": "/learning-lists",
+      "status": 200,
+      "serverTime": "1369ms",
+      "dataRequests": 17,
+      "authRequests": 1,
+      "failedRequests": 0
+    },
+    {
+      "route": "/learning-lists",
+      "status": 200,
+      "serverTime": "899ms",
+      "dataRequests": 17,
+      "authRequests": 1,
+      "failedRequests": 0
+    },
+    {
+      "route": "/compare?user=erin_heycox&include_practice=1",
+      "status": 200,
+      "serverTime": "1699ms",
+      "dataRequests": 16,
+      "authRequests": 1,
+      "failedRequests": 0
+    },
+    {
+      "route": "/compare?user=erin_heycox&include_practice=1",
+      "status": 200,
+      "serverTime": "1001ms",
+      "dataRequests": 16,
+      "authRequests": 1,
+      "failedRequests": 0
+    },
+    {
+      "route": "/trends",
+      "status": 200,
+      "serverTime": "1883ms",
+      "dataRequests": 26,
+      "authRequests": 1,
+      "failedRequests": 0
+    },
+    {
+      "route": "/trends",
+      "status": 200,
+      "serverTime": "1584ms",
+      "dataRequests": 26,
+      "authRequests": 1,
+      "failedRequests": 0
+    },
+    {
+      "route": "/friends",
+      "status": 200,
+      "serverTime": "1741ms",
+      "dataRequests": 17,
+      "authRequests": 1,
+      "failedRequests": 0
+    },
+    {
+      "route": "/friends",
+      "status": 200,
+      "serverTime": "807ms",
+      "dataRequests": 17,
+      "authRequests": 1,
+      "failedRequests": 0
+    }
+  ]
+}

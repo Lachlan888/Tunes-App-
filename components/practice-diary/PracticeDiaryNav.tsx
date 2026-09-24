@@ -4,6 +4,7 @@ import { segmentedControlStyles } from "@/components/ui/segmentedControlStyles"
 
 type PracticeDiaryNavProps = {
   active: "review" | "diary" | "index" | "foci"
+  compact?: boolean
 }
 
 const links = [
@@ -29,11 +30,16 @@ const links = [
   },
 ] as const
 
-export default function PracticeDiaryNav({ active }: PracticeDiaryNavProps) {
+export default function PracticeDiaryNav({
+  active,
+  compact = false,
+}: PracticeDiaryNavProps) {
   return (
     <nav
       className={joinClasses(
-        "mt-5 flex flex-wrap justify-center md:justify-start",
+        compact
+          ? "inline-flex w-fit max-w-full flex-wrap justify-start self-start"
+          : "mt-5 inline-flex max-w-full flex-wrap justify-center md:justify-start",
         segmentedControlStyles.group
       )}
       aria-label="Practice sections"

@@ -30,7 +30,7 @@ export default function SetlistOverviewCard({ setlist }: { setlist: SetlistOverv
         <span><strong>{setlist.readyCount}</strong> Known</span>
         <span><strong>{setlist.practiceCount}</strong> in Practice</span>
         <span><strong>{setlist.newToMeCount}</strong> new to you</span>
-        <Link href={`/setlists/${setlist.id}`} className="inline-flex min-h-11 items-center rounded-full border border-hairline px-4 font-semibold">Open</Link>
+        <Link href={`/setlists/${setlist.id}`} className="inline-flex min-h-11 items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-hairline px-4 font-semibold">Open</Link>
       </div>
     </article>
   )

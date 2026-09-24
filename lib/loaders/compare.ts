@@ -1,10 +1,8 @@
-import { redirect } from "next/navigation"
+import { redirectToLogin } from "@/lib/auth/login-redirect"
 import { checkCompareFriendshipAccess } from "@/lib/loaders/compare/friendship"
 import { resolveSelectedProfile } from "@/lib/loaders/compare/profile-resolution"
 import {
-  intersectSets,
   loadMutualPieces,
-  loadUsersRepertoirePieceIds,
 } from "@/lib/loaders/compare/repertoire"
 import { loadCompareSuggestions } from "@/lib/loaders/compare/suggestions"
 import { createClient } from "@/lib/supabase/server"
@@ -14,6 +12,7 @@ import type {
   CompareLoaderResult,
   CompareSearchResolution,
 } from "@/lib/loaders/compare/types"
+import { readBoundedRows } from "@/lib/loaders/bounded-read"
 import { deriveCompareOutcomeGroups } from "@/lib/compare-outcomes"
 
 export type {
@@ -120,41 +119,6 @@ async function resolveProfilesForCompare({
   }
 }
 
-async function getMutualPieceIds({
-  supabase,
-  currentUserId,
-  resolvedProfiles,
-  includePractice,
-}: {
-  supabase: Awaited<ReturnType<typeof createClient>>
-  currentUserId: string
-  resolvedProfiles: ProfileSearchRow[]
-  includePractice: boolean
-}) {
-  const comparedUserIds = [
-    currentUserId,
-    ...resolvedProfiles.map((profile) => profile.id),
-  ]
-  const repertoireByUserId = await loadUsersRepertoirePieceIds(
-    supabase,
-    comparedUserIds,
-    { includePractice }
-  )
-
-  const currentUserPieceIds =
-    repertoireByUserId.get(currentUserId) ?? new Set<number>()
-
-  let mutualPieceIds = new Set<number>(currentUserPieceIds)
-
-  for (const profile of resolvedProfiles) {
-    const otherUserPieceIds =
-      repertoireByUserId.get(profile.id) ?? new Set<number>()
-    mutualPieceIds = intersectSets(mutualPieceIds, otherUserPieceIds)
-  }
-
-  return mutualPieceIds
-}
-
 async function loadComparisonOutcomes({
   supabase,
   currentUserId,
@@ -168,22 +132,15 @@ async function loadComparisonOutcomes({
     currentUserId,
     ...resolvedProfiles.map((profile) => profile.id),
   ]
-  const [knownResult, practiceResult] = await Promise.all([
-    supabase
-      .from("user_known_pieces")
-      .select("user_id, piece_id")
-      .in("user_id", participantIds)
-      .limit(2000),
-    supabase
-      .from("user_pieces")
-      .select("user_id, piece_id, stage")
-      .in("user_id", participantIds)
-      .eq("status", "learning")
-      .limit(2000),
+  const [knownRows, practiceRows] = await Promise.all([
+    readBoundedRows((from, to) => supabase.from("user_known_pieces")
+      .select("user_id, piece_id", { count: "exact" })
+      .in("user_id", participantIds).order("user_id").order("piece_id").range(from, to)),
+    readBoundedRows((from, to) => supabase.from("user_pieces")
+      .select("user_id, piece_id, stage", { count: "exact" })
+      .in("user_id", participantIds).eq("status", "learning")
+      .order("user_id").order("piece_id").range(from, to)),
   ])
-
-  if (knownResult.error) throw new Error(knownResult.error.message)
-  if (practiceResult.error) throw new Error(practiceResult.error.message)
 
   const byPieceId = new Map<number, Record<string, { known: boolean; practiceStage: number | null }>>()
   function ensure(pieceId: number) {
@@ -196,10 +153,10 @@ async function loadComparisonOutcomes({
     return created
   }
 
-  for (const row of knownResult.data ?? []) {
+  for (const row of knownRows) {
     ensure(row.piece_id)[row.user_id].known = true
   }
-  for (const row of practiceResult.data ?? []) {
+  for (const row of practiceRows) {
     ensure(row.piece_id)[row.user_id].practiceStage = row.stage ?? 1
   }
 
@@ -208,10 +165,8 @@ async function loadComparisonOutcomes({
     byUserId,
   }))
   const outcomeGroups = deriveCompareOutcomeGroups(participantIds, tuneStates)
-  const visibleIds = new Set([
-    ...outcomeGroups.playableTogetherIds,
-    ...Object.values(outcomeGroups.teachableByUserId).flat(),
-  ])
+  // Teaching is a count only; do not load non-visible tune metadata.
+  const visibleIds = new Set(outcomeGroups.playableTogetherIds)
   const outcomePieces = await loadMutualPieces(supabase, visibleIds)
   const titleById = new Map(outcomePieces.map((piece) => [piece.id, piece.title]))
   const byTitle = (a: number, b: number) =>
@@ -226,7 +181,10 @@ async function loadComparisonOutcomes({
     ...outcomeGroups.sharedShakyIds,
   ].slice(0, 6)
 
-  return { outcomeGroups, outcomePieces }
+  const knownTogetherIds = new Set(tuneStates.filter((tune) =>
+    participantIds.every((id) => tune.byUserId[id].known)
+  ).map((tune) => tune.pieceId))
+  return { outcomeGroups, outcomePieces, knownTogetherIds }
 }
 
 export async function loadCompareData(
@@ -241,7 +199,7 @@ export async function loadCompareData(
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    return redirectToLogin()
   }
 
   const compareSuggestionsPromise = loadCompareSuggestions(supabase, user.id)
@@ -257,6 +215,10 @@ export async function loadCompareData(
   }
 
   const compareSuggestions = await compareSuggestionsPromise
+
+  if (cleanedSearchValues.length > 7) {
+    return { ...buildEmptyCompareResult({ currentUserId: user.id, compareSuggestions }), error: "group_too_large" }
+  }
 
   const profileResolution = await resolveProfilesForCompare({
     currentUserId: user.id,
@@ -301,17 +263,11 @@ export async function loadCompareData(
     }
   }
 
-  const [{ outcomeGroups, outcomePieces }, mutualPieceIds] = await Promise.all([
-    loadComparisonOutcomes({ supabase, currentUserId: user.id, resolvedProfiles }),
-    getMutualPieceIds({
-      supabase,
-      currentUserId: user.id,
-      resolvedProfiles,
-      includePractice,
-    }),
-  ])
-  const mutualIdSet = new Set(mutualPieceIds)
-  const mutualPieces = outcomePieces.filter((piece) => mutualIdSet.has(piece.id))
+  const { outcomeGroups, outcomePieces, knownTogetherIds } =
+    await loadComparisonOutcomes({ supabase, currentUserId: user.id, resolvedProfiles })
+  const mutualPieces = includePractice
+    ? outcomePieces
+    : outcomePieces.filter((piece) => knownTogetherIds.has(piece.id))
 
   return {
     currentUserId: user.id,

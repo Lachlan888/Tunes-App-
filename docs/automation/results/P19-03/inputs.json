@@ -1,0 +1,15 @@
+{
+  "verified_at": "2026-09-23T01:10:43.870434+00:00",
+  "sha256": {
+    "tests/integration/review-reference-lifecycle.mjs": "fc58f1e7b698b6db038eb5c3d97f13516ffe665468dbb8f6995b3a8868dd9180",
+    "components/practice/FocusedPracticeSession.tsx": "29fe27aa0f54cf975d7444de69d9544544d8b449d8c1aa51105326c092190d6b",
+    "components/reference-media/InlineReferencePlayer.tsx": "cf0ef149052a686062e9f314515c2670008a7aac865a4460fab2dd8688911940",
+    "lib/reference-media-routing.ts": "46853f9cef06c0961e2dde3a234a513365d8c92586976e08461e16635bf5f187",
+    "app/library/[id]/page.tsx": "bd5e70afcd199b1710fd953c8d6509f0e75cc28e5366960030b1003a332dc9e0",
+    "app/library/[id]/reference-media/page.tsx": "68c2ff207e8fc9ec8199d93e4dfbb06412e5911792084c4258cd867a13ecd7e6",
+    "tests/reference-media.test.ts": "9ec6c7fdc8ba125c90dabfb07548b3fb1ea624c52c750caacf83a104a1e38c23",
+    "tests/tune-detail.test.ts": "f41e2758a2eadd15d8a5f8cefd25ef9e0f431f5b6ba1f87df1c2a845539261af",
+    "tests/session-dock.test.ts": "40d64a38af8b4dcdef020b89aaa618e5fdf17f14f1c0c8a351833fe583be26f9",
+    "tests/practice-session.test.ts": "1408c86c55e5ce4026c1d89662969e33e0c6fd3c23d8b46872a9489722f8418e"
+  }
+}

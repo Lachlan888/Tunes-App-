@@ -27,7 +27,7 @@ export default function InviteSetlistCollaboratorForm({
       <input type="hidden" name="setlist_id" value={setlistId} />
       <input type="hidden" name="redirect_to" value={redirectTo} />
 
-      <label className="text-sm font-medium text-foreground">
+      <label htmlFor={`setlist-${setlistId}-collaborator`} className="text-sm font-medium text-foreground">
         Invite collaborator
       </label>
 
@@ -39,6 +39,7 @@ export default function InviteSetlistCollaboratorForm({
       ) : (
         <div className="mt-2 flex flex-col gap-2 sm:flex-row">
           <select
+            id={`setlist-${setlistId}-collaborator`}
             name="collaborator_user_id"
             required
             className="min-w-0 flex-1 rounded-full border border-border bg-card px-4 py-2 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
@@ -54,7 +55,7 @@ export default function InviteSetlistCollaboratorForm({
           <SubmitButton
             label="Invite"
             pendingLabel="Inviting..."
-            className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className="min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
         </div>
       )}

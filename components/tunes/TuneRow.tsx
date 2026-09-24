@@ -50,7 +50,7 @@ export default function TuneRow({
 
       {actions ? (
         <div
-          className="flex flex-wrap items-center gap-2 md:max-w-sm md:justify-end"
+          className="flex flex-wrap items-center gap-2 md:justify-end"
           aria-label={`Actions for ${piece.title}`}
         >
           {actions}

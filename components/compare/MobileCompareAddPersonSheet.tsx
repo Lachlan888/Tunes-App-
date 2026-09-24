@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import UserIdentityLink from "@/components/UserIdentityLink"
+import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import LoadingSpinner from "@/components/ui/LoadingSpinner"
 import type { CompareError, CompareSuggestion } from "@/lib/loaders/compare"
 import type { ProfileSearchRow, RankedProfileMatch } from "@/lib/profile-search"
@@ -72,7 +73,6 @@ export default function MobileCompareAddPersonSheet({
 
     startTransition(() => {
       router.push(href)
-      router.refresh()
       onClose()
     })
   }
@@ -86,7 +86,6 @@ export default function MobileCompareAddPersonSheet({
 
     startTransition(() => {
       router.push(href)
-      router.refresh()
     })
   }
 
@@ -120,41 +119,12 @@ export default function MobileCompareAddPersonSheet({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end bg-foreground/30"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Add person to compare"
+    <ResponsiveModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Add person to compare"
+      desktopMaxWidth="md:max-w-2xl"
     >
-      <button
-        type="button"
-        className="absolute inset-0 cursor-default"
-        aria-label="Close add person sheet"
-        onClick={onClose}
-      />
-
-      <section className="relative z-10 flex max-h-[90vh] w-full max-w-full flex-col overflow-hidden rounded-t-3xl border border-border bg-background shadow-2xl">
-        <header className="shrink-0 border-b border-border bg-card px-4 py-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Compare
-              </p>
-
-              <h2 className="mt-1 text-xl font-semibold text-foreground">
-                Add person
-              </h2>
-            </div>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-            >
-              Close
-            </button>
-          </div>
-
           <form onSubmit={addQuery} className="mt-4 flex gap-2">
             <input
               value={query}
@@ -166,7 +136,7 @@ export default function MobileCompareAddPersonSheet({
             <button
               type="submit"
               disabled={isPending}
-              className="shrink-0 rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 shrink-0 rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
             >
               {pendingValue === query.trim() && isPending ? (
                 <span className="inline-flex items-center justify-center gap-2">
@@ -178,9 +148,7 @@ export default function MobileCompareAddPersonSheet({
               )}
             </button>
           </form>
-        </header>
-
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
+        <div className="pt-5">
           {error === "user_not_found" ? (
             <p className="mb-5 border-y border-border py-3 text-sm text-muted-foreground">
               No player found for “{primarySearchValue}”.
@@ -226,7 +194,7 @@ export default function MobileCompareAddPersonSheet({
                       type="button"
                       disabled={!profile.username || isPending}
                       onClick={() => addProfile(profile)}
-                      className="shrink-0 rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex min-h-11 shrink-0 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
                     >
                       {profile.username &&
                       pendingValue === profile.username &&
@@ -271,7 +239,7 @@ export default function MobileCompareAddPersonSheet({
                       type="button"
                       disabled={isPending}
                       onClick={() => addSuggestion(suggestion)}
-                      className="shrink-0 rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex min-h-11 shrink-0 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
                     >
                       {pendingValue === suggestion.username && isPending ? (
                         <span className="inline-flex items-center justify-center gap-2">
@@ -293,7 +261,6 @@ export default function MobileCompareAddPersonSheet({
             )}
           </section>
         </div>
-      </section>
-    </div>
+    </ResponsiveModal>
   )
 }

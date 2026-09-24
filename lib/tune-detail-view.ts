@@ -15,6 +15,7 @@ export function resolveTuneDetailView(
 }
 
 export function getTuneDetailHref(pieceId: number, view: TuneDetailView) {
+  if (view === "reference") return `/library/${pieceId}/reference-media`
   const params = new URLSearchParams({ view })
   return `/library/${pieceId}?${params.toString()}`
 }

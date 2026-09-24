@@ -1,4 +1,5 @@
 import Link from "next/link"
+import ConfirmedActionForm from "@/components/ui/ConfirmedActionForm"
 import SubmitButton from "@/components/SubmitButton"
 import PageHeader from "@/components/ui/PageHeader"
 import {
@@ -22,6 +23,7 @@ function getSingleValue(value: string | string[] | undefined) {
 }
 
 function getStatusMessage(status: string) {
+  if (status === "confirmation_required") return "Review the action and confirm its scope before submitting."
   if (status === "approved") return "Tune edit request approved."
   if (status === "rejected") return "Tune edit request rejected."
   if (status === "comment_hidden") return "Comment hidden."
@@ -182,7 +184,7 @@ export default async function ModeratorPage({
                     </div>
 
                     <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                      <form action={approvePieceEditRequest} className="space-y-3">
+                      <ConfirmedActionForm scope={`Apply the proposed changes in tune edit request #${request.id} to the shared catalogue. The reviewer and decision are recorded. Any composer attribution notification follows the existing rules.`} action={approvePieceEditRequest} className="space-y-3">
                         <input
                           type="hidden"
                           name="request_id"
@@ -196,17 +198,17 @@ export default async function ModeratorPage({
                         <textarea
                           name="moderator_comment"
                           rows={3}
-                          placeholder="Optional moderator comment"
+                          aria-label="Optional moderator comment" placeholder="Optional moderator comment"
                           className={textareaClassName}
                         />
                         <SubmitButton
                           label="Approve request"
                           pendingLabel="Approving..."
-                          className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                          className="min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                         />
-                      </form>
+                      </ConfirmedActionForm>
 
-                      <form action={rejectPieceEditRequest} className="space-y-3">
+                      <ConfirmedActionForm scope={`Reject tune edit request #${request.id}. The decision and moderator comment are recorded.`} action={rejectPieceEditRequest} className="space-y-3">
                         <input
                           type="hidden"
                           name="request_id"
@@ -220,15 +222,15 @@ export default async function ModeratorPage({
                         <textarea
                           name="moderator_comment"
                           rows={3}
-                          placeholder="Reason for rejection"
+                          aria-label="Reason for rejection" placeholder="Reason for rejection"
                           className={textareaClassName}
                         />
                         <SubmitButton
                           label="Reject request"
                           pendingLabel="Rejecting..."
-                          className="rounded-full border border-destructive bg-background/70 px-4 py-2 text-sm font-medium text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                          className="min-h-11 rounded-control border border-destructive bg-background/70 px-4 py-2 text-sm font-medium text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                         />
-                      </form>
+                      </ConfirmedActionForm>
                     </div>
                   </li>
                 )
@@ -295,7 +297,7 @@ export default async function ModeratorPage({
                   ) : null}
 
                   <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                    <form action={hideReportedComment} className="space-y-3">
+                    <ConfirmedActionForm scope={`Hide comment #${report.comment_id} from the community and resolve report #${report.id}. The moderator and note are recorded.`} action={hideReportedComment} className="space-y-3">
                       <input type="hidden" name="report_id" value={report.id} />
                       <input
                         type="hidden"
@@ -306,31 +308,31 @@ export default async function ModeratorPage({
                       <textarea
                         name="moderator_note"
                         rows={3}
-                        placeholder="Optional moderation note"
+                        aria-label="Optional moderation note" placeholder="Optional moderation note"
                         className={textareaClassName}
                       />
                       <SubmitButton
                         label="Hide comment"
                         pendingLabel="Hiding..."
-                        className="rounded-full border border-destructive bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                        className="min-h-11 rounded-control border border-destructive bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       />
-                    </form>
+                    </ConfirmedActionForm>
 
-                    <form action={dismissCommentReport} className="space-y-3">
+                    <ConfirmedActionForm scope={`Dismiss comment report #${report.id}, preserving the comment. The moderator and note are recorded.`} action={dismissCommentReport} className="space-y-3">
                       <input type="hidden" name="report_id" value={report.id} />
                       <input type="hidden" name="redirect_to" value="/moderator" />
                       <textarea
                         name="moderator_note"
                         rows={3}
-                        placeholder="Why are you dismissing this report?"
+                        aria-label="Reason for dismissing report" placeholder="Why are you dismissing this report?"
                         className={textareaClassName}
                       />
                       <SubmitButton
                         label="Dismiss report"
                         pendingLabel="Dismissing..."
-                        className="rounded-full border border-primary bg-background/70 px-4 py-2 text-sm font-medium text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                        className="min-h-11 rounded-control border border-primary bg-background/70 px-4 py-2 text-sm font-medium text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       />
-                    </form>
+                    </ConfirmedActionForm>
                   </div>
                 </li>
               ))}
@@ -403,45 +405,45 @@ export default async function ModeratorPage({
                   <div className="mt-5 flex flex-wrap gap-2">
                     <Link
                       href={`/library/${report.pieceId}`}
-                      className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                      className="min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                     >
                       Open tune to edit lore
                     </Link>
                   </div>
 
                   <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                    <form action={actionLoreReport} className="space-y-3">
+                    <ConfirmedActionForm scope={`Mark lore report #${report.id} actioned. This records your decision; it does not delete the lore.`} action={actionLoreReport} className="space-y-3">
                       <input type="hidden" name="report_id" value={report.id} />
                       <input type="hidden" name="piece_id" value={report.pieceId} />
                       <input type="hidden" name="redirect_to" value="/moderator" />
                       <textarea
                         name="moderator_note"
                         rows={3}
-                        placeholder="What action did you take?"
+                        aria-label="Action taken" placeholder="What action did you take?"
                         className={textareaClassName}
                       />
                       <SubmitButton
                         label="Mark actioned"
                         pendingLabel="Saving..."
-                        className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                        className="min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       />
-                    </form>
+                    </ConfirmedActionForm>
 
-                    <form action={dismissLoreReport} className="space-y-3">
+                    <ConfirmedActionForm scope={`Dismiss lore report #${report.id}, preserving the lore. The moderator and note are recorded.`} action={dismissLoreReport} className="space-y-3">
                       <input type="hidden" name="report_id" value={report.id} />
                       <input type="hidden" name="redirect_to" value="/moderator" />
                       <textarea
                         name="moderator_note"
                         rows={3}
-                        placeholder="Why are you dismissing this report?"
+                        aria-label="Reason for dismissing report" placeholder="Why are you dismissing this report?"
                         className={textareaClassName}
                       />
                       <SubmitButton
                         label="Dismiss report"
                         pendingLabel="Dismissing..."
-                        className="rounded-full border border-primary bg-background/70 px-4 py-2 text-sm font-medium text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                        className="min-h-11 rounded-control border border-primary bg-background/70 px-4 py-2 text-sm font-medium text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       />
-                    </form>
+                    </ConfirmedActionForm>
                   </div>
                 </li>
               ))}

@@ -5,7 +5,7 @@ import type { ReactNode } from "react"
 import TuneMediaLauncher from "@/components/reference-media/TuneMediaLauncher"
 import TuneIdentity from "@/components/tunes/TuneIdentity"
 import TuneMetadataSummary from "@/components/tunes/TuneMetadataSummary"
-import ClickableCard from "@/components/ui/ClickableCard"
+import { cardStyles } from "@/components/ui/cardStyles"
 import type { TuneMediaBundle } from "@/lib/tune-media"
 import type { Piece } from "@/lib/types"
 
@@ -60,11 +60,7 @@ export default function TuneCard({
   )
 
   return (
-    <ClickableCard
-      href={`/library/${id}`}
-      ariaLabel={`Open tune page for ${title}`}
-      as="article"
-    >
+    <article className={cardStyles.displayCard}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <TuneIdentity id={id} title={title} />
@@ -140,6 +136,6 @@ export default function TuneCard({
           {children}
         </div>
       )}
-    </ClickableCard>
+    </article>
   )
 }

@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation"
+import { redirectToLogin } from "@/lib/auth/login-redirect"
 import { createClient } from "@/lib/supabase/server"
 import type {
   Setlist,
@@ -22,7 +22,7 @@ export async function loadSetlistsPageData() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    return redirectToLogin()
   }
 
   const { data: membershipRows, error: membershipError } = await supabase

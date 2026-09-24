@@ -5,13 +5,9 @@ import { createPracticeFocus } from "@/lib/actions/practice-foci"
 export default function PracticeFocusCreateForm() {
   return (
     <details className="rounded-2xl border border-border bg-card p-4 shadow-sm md:rounded-3xl md:p-6 xl:open:block">
-      <summary className="cursor-pointer list-none">
+      <summary className="min-h-11 cursor-pointer list-none rounded-control focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
-              New focus
-            </p>
-
             <h2 className="mt-2 font-serif text-2xl font-bold leading-tight text-foreground">
               Create a practice focus
             </h2>
@@ -22,7 +18,7 @@ export default function PracticeFocusCreateForm() {
             </p>
           </div>
 
-          <span className="rounded-full border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm md:hidden">
+          <span className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm md:hidden items-center justify-center">
             Show
           </span>
         </div>

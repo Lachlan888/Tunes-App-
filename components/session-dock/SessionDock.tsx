@@ -20,13 +20,13 @@ const actionToneClasses: Record<SessionDockActionTone, string> = {
   secondary:
     "border-hairline bg-surface-paper text-text-primary hover:bg-surface-note",
   practice:
-    "border-state-practice bg-state-practice text-state-practice-foreground hover:bg-state-practice/90",
+    "border-state-practice bg-state-practice text-state-practice-foreground hover:bg-state-practice-hover",
   rough:
-    "border-state-overdue bg-state-overdue text-state-overdue-foreground hover:bg-state-overdue/90",
+    "border-state-overdue bg-state-overdue text-state-overdue-foreground hover:bg-state-overdue-hover",
   shaky:
     "border-state-due bg-state-due text-state-due-foreground hover:bg-state-due/88",
   solid:
-    "border-state-known bg-state-known text-state-known-foreground hover:bg-state-known/90",
+    "border-state-known bg-state-known text-state-known-foreground hover:bg-state-known-hover",
 }
 
 function ActionControl({
@@ -122,6 +122,73 @@ function ProgressSummary({ model }: { model: SessionDockModel }) {
   )
 }
 
+function formatTransportTime(seconds: number) {
+  const safeSeconds = Math.max(0, Number.isFinite(seconds) ? seconds : 0)
+  const minutes = Math.floor(safeSeconds / 60)
+  const remainder = Math.floor(safeSeconds - minutes * 60)
+  return `${minutes.toString().padStart(2, "0")}:${remainder
+    .toString()
+    .padStart(2, "0")}`
+}
+
+function TransportControls({ model }: { model: SessionDockModel }) {
+  const transport = model.transport
+  if (!transport) return null
+
+  const duration = Math.max(0, transport.duration)
+  const currentTime = Math.min(Math.max(0, transport.currentTime), duration || 0)
+  const seekDisabled = transport.disabled || duration <= 0
+
+  return (
+    <section
+      aria-label="Playback position and speed"
+      className="rounded-object border border-hairline bg-surface-note p-3"
+    >
+      <label className="block text-xs font-semibold text-text-muted">
+        Playback position · {formatTransportTime(transport.currentTime)} /{" "}
+        {formatTransportTime(duration)}
+        <input
+          aria-label="Seek recording"
+          type="range"
+          min={0}
+          max={duration || 1}
+          step={0.1}
+          value={currentTime}
+          disabled={seekDisabled}
+          onChange={(event) => transport.onSeek(Number(event.target.value))}
+          className="mt-1 block min-h-11 w-full accent-primary"
+        />
+      </label>
+
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+        <p className="min-w-0 text-xs text-text-muted" role="status">
+          {transport.disabled
+            ? transport.unavailableMessage ?? "Playback controls unavailable"
+            : "Transport follows the active recording and passage."}
+        </p>
+        <label className="flex shrink-0 items-center gap-2 text-sm font-semibold text-text-primary">
+          Speed
+          <select
+            aria-label="Playback speed"
+            value={transport.speed.value}
+            disabled={transport.disabled || transport.speed.disabled}
+            onChange={(event) =>
+              transport.speed.onChange(Number(event.target.value))
+            }
+            className="min-h-11 rounded-control border border-hairline bg-surface-paper px-2"
+          >
+            {transport.speed.options.map((rate) => (
+              <option key={rate} value={rate}>
+                {rate}×
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+    </section>
+  )
+}
+
 export default function SessionDock({
   model,
   isExpanded,
@@ -165,7 +232,7 @@ export default function SessionDock({
         inert={isExpanded}
         aria-hidden={isExpanded || undefined}
         className={joinClasses(
-          "session-dock floating-material fixed inset-x-2 z-[320] rounded-sheet border border-hairline p-2 shadow-material-floating transition-[opacity,transform] [transition-duration:var(--motion-standard)] [transition-timing-function:var(--ease-folk)] md:inset-x-auto md:bottom-4 md:left-[calc(4.75rem+1rem)] md:right-4 md:mx-auto md:max-w-4xl lg:left-[calc(15rem+1rem)]",
+          "session-dock floating-material fixed inset-x-2 z-[320] rounded-sheet border border-hairline p-2 shadow-material-floating transition-[opacity,transform] [transition-duration:var(--motion-standard)] [transition-timing-function:var(--ease-folk)] md:inset-x-auto md:bottom-4 md:left-[calc(var(--app-rail-width)+1rem)] md:right-4 md:mx-auto md:max-w-4xl",
           isExpanded && "pointer-events-none invisible translate-y-2 opacity-0"
         )}
       >
@@ -254,24 +321,28 @@ export default function SessionDock({
         panelClassName="session-dock-sheet"
       >
         <div className="grid gap-5">
-          <div className="rounded-object border border-hairline bg-surface-note p-4">
-            <p className="font-serif text-xl font-semibold text-text-primary">
-              {model.identity.title}
-            </p>
-            {model.identity.detail ? (
-              <p className="mt-1 text-sm text-text-muted">
-                {model.identity.detail}
+          {model.expandedContent.showIdentity !== false ? (
+            <div className="rounded-object border border-hairline bg-surface-note p-4">
+              <p className="font-serif text-xl font-semibold text-text-primary">
+                {model.identity.title}
               </p>
-            ) : null}
-            {model.status ? (
-              <p className="mt-2 text-sm font-semibold text-text-primary">
-                {model.status.label}
-              </p>
-            ) : null}
-            <div className="mt-3">
-              <ProgressSummary model={model} />
+              {model.identity.detail ? (
+                <p className="mt-1 text-sm text-text-muted">
+                  {model.identity.detail}
+                </p>
+              ) : null}
+              {model.status ? (
+                <p className="mt-2 text-sm font-semibold text-text-primary">
+                  {model.status.label}
+                </p>
+              ) : null}
+              <div className="mt-3">
+                <ProgressSummary model={model} />
+              </div>
             </div>
-          </div>
+          ) : null}
+
+          <TransportControls model={model} />
 
           {expandedActions.length > 0 ? (
             <div

@@ -8,6 +8,7 @@ import { APP_TIME_ZONE } from "@/lib/review"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 
 type ActivePracticeSectionProps = {
+  totalCount: number
   practiceItems: ReviewQueueItem[]
   redirectTo: string
 }
@@ -22,18 +23,21 @@ function formatDueDate(dateValue: string | null) {
 
 export default function ActivePracticeSection({
   practiceItems,
+  totalCount,
   redirectTo,
 }: ActivePracticeSectionProps) {
   return (
     <section className="mt-10 border-y border-border/70 py-4 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
       <details>
         <summary className="cursor-pointer text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Currently in practice ({practiceItems.length})
+          Currently in practice ({totalCount})
         </summary>
 
         <p className="mt-3 text-sm text-muted-foreground">
-          Full list of tunes currently in your practice system.
+          Your next 20 scheduled tunes. Browse your full Practice collection for search and paging.
         </p>
+
+        <Link href="/library/practice" className={buttonStyles.text}>Browse all Practice tunes</Link>
 
         {practiceItems.length === 0 ? (
           <p className="mt-4 border-y border-dashed border-border py-4 text-sm text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-4">
@@ -41,7 +45,7 @@ export default function ActivePracticeSection({
           </p>
         ) : (
           <ul className="mt-4 divide-y divide-border/70 md:space-y-3 md:divide-y-0">
-            {practiceItems.map((userPiece) => {
+            {practiceItems.slice(0, 20).map((userPiece) => {
               const badgeLabel =
                 userPiece.overdue_days > 0
                   ? "Overdue"

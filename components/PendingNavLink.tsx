@@ -52,7 +52,7 @@ export default function PendingNavLink({
           router.push(href)
         })
       }}
-      className={`inline-flex shrink-0 items-center rounded-full border font-medium transition disabled:cursor-not-allowed disabled:opacity-70 ${sizeClasses} ${
+      className={`inline-flex shrink-0 items-center min-h-11 rounded-control border font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70 ${sizeClasses} ${
         isActive
           ? "border-primary bg-primary text-primary-foreground shadow-sm"
           : "border-transparent text-foreground hover:border-border hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"

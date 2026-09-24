@@ -1,0 +1,19 @@
+{
+  "recorded_at": "2026-09-23T04:09:33.458540+00:00",
+  "scope_note": "Relevant primary inputs; additional imported inputs must also be confirmed unchanged before future carry-forward. React renderer fixture runtime /private/tmp/tunes-review-lifecycle.",
+  "sha256": {
+    "app/globals.css": "c2e35267ec1a4741bbdac83b017d6cbadbace08bcff12631ca093f3dcb9b0f4f",
+    "components/ui/buttonStyles.ts": "12ece3807b5b907ab35dc094a699c64bd3a08ba304f10f39db37313cc34eb21a",
+    "components/ui/segmentedControlStyles.ts": "44e38bf4a767e5a0e4d78ad66bc928a9de8c021346ab3b7e83c1a39ed31c1a9e",
+    "components/compare/CompareScopeToggle.tsx": "c181c95a9af404ee575c0ba4b4f4c895df94b1cff284fbf66e397fda7d4e23f2",
+    "app/badges/page.tsx": "c3de6f6033bea82e9582005d75fffb886c5e1afc7e191cb28cdc093a8da58915",
+    "tests/semantic-contrast.test.ts": "ccf6ab52758f7fb238aa0eff683b27ee5ae3adae59e0acaf24e77b18acb3fcbd",
+    "tests/design-system.test.ts": "ab92ff1f029ea2f16ccc23b7c0f35f6b5a03c34fe1b732325233ddba6b03d639",
+    "tests/navigation-shell.test.ts": "84a581dc29198371be0acd1b18ae11ab6e94eb20fdda9dcc83bf254cd051e596",
+    "tests/session-dock.test.ts": "40d64a38af8b4dcdef020b89aaa618e5fdf17f14f1c0c8a351833fe583be26f9",
+    "package.json": "8bb6e210891fbc184e12fb8e8407b556b01eb42dc9cc8e4ef05b04c94d78d0d1",
+    "package-lock.json": "42f3a674b0cba3314b2559341ff93ad904be09a0f01044913e870f35881c87e1",
+    "tsconfig.json": "2e641f8b3b8e7aaea424abf9c41533f81b24850e5e14db8cd2f53af9c120fcd4",
+    "eslint.config.mjs": "c6752f242afc0b7fbd47efe50b81a93a96b5b3ee64715b7ce83daaa639937afc"
+  }
+}

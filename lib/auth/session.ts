@@ -1,3 +1,5 @@
+import { headers } from "next/headers"
+import { getAuthReturnPath } from "@/lib/auth/redirects"
 import { redirect } from "next/navigation"
 import { cache } from "react"
 import { createClient } from "@/lib/supabase/server"
@@ -87,7 +89,8 @@ export async function requireUserContext(): Promise<CurrentUserContext> {
   const context = await getOptionalUserContext()
 
   if (!context) {
-    redirect("/login")
+    const path = getAuthReturnPath((await headers()).get("x-tunes-return-path"), "/")
+    redirect(`/login?next=${encodeURIComponent(path)}`)
   }
 
   return context

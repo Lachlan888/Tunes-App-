@@ -30,6 +30,7 @@ export default function TunePrivateNotesSection({
 
         <textarea
           name="notes"
+          aria-label="Private tune notes"
           defaultValue={userPieceMetadata?.notes || ""}
           rows={8}
           placeholder="Add your private notes for this tune"

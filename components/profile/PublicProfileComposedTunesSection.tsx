@@ -27,9 +27,6 @@ export default function PublicProfileComposedTunesSection({
     <section className="min-w-0 max-w-full md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Composed tunes
-          </p>
           <h2 className="mt-2 break-words font-serif text-2xl font-bold leading-tight tracking-tight text-foreground md:text-3xl">
             Tunes by {displayName}
           </h2>

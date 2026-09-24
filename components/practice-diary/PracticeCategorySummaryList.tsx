@@ -81,7 +81,7 @@ function PracticeCategorySummaryCard({
 
         <Link
           href={`/review/diary/index/categories/${summary.categoryId}`}
-          className="shrink-0 rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground transition hover:border-primary hover:bg-card hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground transition hover:border-primary hover:bg-card hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           aria-label={`Open ${summary.categoryName} category`}
         >
           {summary.noteCount}

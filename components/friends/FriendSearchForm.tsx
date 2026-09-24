@@ -33,6 +33,7 @@ export default function FriendSearchForm({
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:flex-row">
       <input
         name="q"
+        aria-label="Search musicians"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder="Search by name or username"
@@ -43,7 +44,7 @@ export default function FriendSearchForm({
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
       >
         {isPending ? (
           <span className="inline-flex items-center justify-center gap-2">

@@ -339,7 +339,7 @@ async function loadRequiredTunesForBadge({
     (row) => row.id
   )
 
-  let membershipsByPieceId = new Map<number, number[]>()
+  const membershipsByPieceId = new Map<number, number[]>()
 
   if (viewerListIds.length > 0) {
     const { data: membershipRows, error: membershipsError } = await supabase
@@ -500,13 +500,13 @@ async function attachBadgeDisplayData({
           : null
 
       const viewerProgress =
-        viewerId !== null
+        viewerId !== null && badge.awarding_mode === "auto_when_eligible" && Boolean(badge.condition_logic.conditions?.length)
           ? await calculateBadgeProgress({
               supabase,
               userId: viewerId,
               conditionLogic: badge.condition_logic,
             })
-          : null
+          : viewerId ? { isEligible: false, isCalculable: false, current: 0, required: 0, label: "Awarded by the badge creator." } : null
 
       const viewerAward =
         viewerId !== null && viewerProgress?.isEligible
@@ -549,7 +549,7 @@ export async function loadBadgeIndexData(): Promise<BadgeIndexData> {
 
   const viewerId = user?.id ?? null
 
-  const { data: badgeRows, error: badgeError } = await supabase
+  let indexQuery = supabase
     .from("badges")
     .select(
       `
@@ -567,8 +567,11 @@ export async function loadBadgeIndexData(): Promise<BadgeIndexData> {
         updated_at
       `
     )
-    .in("visibility", ["public", "unlisted"])
     .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+
+  indexQuery = viewerId ? indexQuery.or(`visibility.eq.public,owner_user_id.eq.${viewerId}`) : indexQuery.eq("visibility", "public")
+  const { data: badgeRows, error: badgeError } = await indexQuery
 
   if (badgeError) {
     throw new Error(badgeError.message)
@@ -630,6 +633,10 @@ export async function loadBadgeDetailData(
   }
 
   const badge = mapBadgeRow(badgeRow as BadgeRow)
+
+  if (badge.visibility === "private" && badge.owner_user_id !== viewerId) {
+    return { status: "not_found", viewerId }
+  }
 
   const [badgeWithOwner] = await attachBadgeDisplayData({
     supabase,
@@ -713,11 +720,6 @@ export async function loadEditBadgeData(slug: string): Promise<EditBadgeData> {
     throw new Error("Not authenticated")
   }
 
-  const formOptions = await loadBadgeFormOptions({
-    supabase,
-    userId: user.id,
-  })
-
   const { data: badgeRow, error: badgeError } = await supabase
     .from("badges")
     .select(
@@ -745,7 +747,7 @@ export async function loadEditBadgeData(slug: string): Promise<EditBadgeData> {
 
   if (!badgeRow) {
     return {
-      ...formOptions,
+      viewerId: user.id, publicLists: [], pieces: [], styleOptions: [], keyOptions: [], timeSignatureOptions: [],
       status: "not_found",
       badge: null,
       awardCount: 0,
@@ -756,7 +758,7 @@ export async function loadEditBadgeData(slug: string): Promise<EditBadgeData> {
 
   if (badge.owner_user_id !== user.id) {
     return {
-      ...formOptions,
+      viewerId: user.id, publicLists: [], pieces: [], styleOptions: [], keyOptions: [], timeSignatureOptions: [],
       status: "not_owner",
       badge: null,
       awardCount: 0,
@@ -771,6 +773,8 @@ export async function loadEditBadgeData(slug: string): Promise<EditBadgeData> {
   if (awardCountError) {
     throw new Error(awardCountError.message)
   }
+
+  const formOptions = await loadBadgeFormOptions({ supabase, userId: user.id })
 
   return {
     ...formOptions,

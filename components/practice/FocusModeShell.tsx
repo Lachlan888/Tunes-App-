@@ -9,12 +9,14 @@ export default function FocusModeShell({
   title,
   detail,
   onEnd,
+  exitHref = "/review",
   endDisabled = false,
   children,
 }: {
   eyebrow: string
   title: string
   detail: string
+  exitHref?: string
   onEnd?: () => void
   endDisabled?: boolean
   children: ReactNode
@@ -46,7 +48,7 @@ export default function FocusModeShell({
             End session
           </button>
         ) : (
-          <Link href="/review" className={`${buttonStyles.secondary} !w-auto shrink-0`}>
+          <Link href={exitHref} className={`${buttonStyles.secondary} !w-auto shrink-0`}>
             Exit
           </Link>
         )}

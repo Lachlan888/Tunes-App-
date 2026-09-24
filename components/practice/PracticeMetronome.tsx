@@ -1,5 +1,7 @@
 "use client"
 
+import { preferenceStorage } from "@/lib/browser-storage"
+
 import {
   useCallback,
   useEffect,
@@ -7,7 +9,7 @@ import {
   useState,
   type KeyboardEvent,
 } from "react"
-import ResponsiveModal from "@/components/ui/ResponsiveModal"
+import FloatingTool from "@/components/ui/FloatingTool"
 import Icon from "@/components/ui/Icon"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import { OPEN_METRONOME_EVENT } from "@/lib/ui-events"
@@ -253,6 +255,8 @@ export default function PracticeMetronome({
   const nextBeatRef = useRef(0)
   const hydratedRef = useRef(false)
   const isPlayingRef = useRef(false)
+  const isStartingRef = useRef(false)
+  const startGenerationRef = useRef(0)
   const bpmRef = useRef(bpm)
   const numeratorRef = useRef(numerator)
   const patternRef = useRef(pattern)
@@ -347,6 +351,8 @@ export default function PracticeMetronome({
   }, [runScheduler])
 
   const stop = useCallback(() => {
+    startGenerationRef.current += 1
+    isStartingRef.current = false
     isPlayingRef.current = false
     setIsPlaying(false)
     setCurrentBeat(0)
@@ -359,7 +365,7 @@ export default function PracticeMetronome({
   }, [clearSchedulerTimer, clearVisualTimers])
 
   const start = useCallback(async () => {
-    if (isPlayingRef.current) return
+    if (isPlayingRef.current || isStartingRef.current) return
 
     const audioWindow = window as AudioWindow
     const AudioContextConstructor =
@@ -371,8 +377,25 @@ export default function PracticeMetronome({
       audioContextRef.current ?? new AudioContextConstructor()
     audioContextRef.current = audioContext
 
-    if (audioContext.state === "suspended") {
-      await audioContext.resume()
+    const generation = ++startGenerationRef.current
+    isStartingRef.current = true
+    try {
+      if (audioContext.state === "suspended") {
+        await audioContext.resume()
+      }
+    } catch {
+      // A denied/interrupted resume leaves the explicit Start control available.
+      return
+    } finally {
+      if (generation === startGenerationRef.current) isStartingRef.current = false
+    }
+    if (generation !== startGenerationRef.current) {
+      // Close/stop/unmount wins over a pending browser audio resume. Do not
+      // suspend a newer start that took ownership while this one was pending.
+      if (!isPlayingRef.current && !isStartingRef.current && audioContext.state === "running") {
+        void audioContext.suspend()
+      }
+      return
     }
 
     clearVisualTimers()
@@ -387,11 +410,10 @@ export default function PracticeMetronome({
 
   useEffect(() => {
     const storedSettings = parseStoredSettings(
-      window.localStorage.getItem(STORAGE_KEY)
+      preferenceStorage.getItem(STORAGE_KEY)
     )
 
     // Hydrate persisted browser-only metronome preferences after mount.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBpm(storedSettings.bpm)
     setBpmDraft(String(storedSettings.bpm))
     setNumerator(storedSettings.numerator)
@@ -416,7 +438,7 @@ export default function PracticeMetronome({
   useEffect(() => {
     if (!hydratedRef.current) return
 
-    window.localStorage.setItem(
+    preferenceStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({ bpm, numerator, denominator, pattern })
     )
@@ -424,6 +446,8 @@ export default function PracticeMetronome({
 
   useEffect(() => {
     return () => {
+      startGenerationRef.current += 1
+      isStartingRef.current = false
       isPlayingRef.current = false
       clearSchedulerTimer()
       clearVisualTimers()
@@ -652,17 +676,9 @@ export default function PracticeMetronome({
         ) : null}
       </button>}
 
-      <ResponsiveModal
-        isOpen={isControlsOpen}
-        onClose={() => setIsControlsOpen(false)}
-        title="Metronome"
-        description={settingsSummary}
-        mobileMode="sheet"
-        desktopMaxWidth="md:max-w-2xl"
-        bodyClassName="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 md:p-6"
-      >
+      {isControlsOpen && <FloatingTool title="Metronome" status={`${isPlaying ? "Playing" : "Stopped"} · ${settingsSummary}`} onClose={() => { stop(); setIsControlsOpen(false) }} compactControl={<button type="button" className={buttonStyles.primary} onClick={isPlaying ? stop : start}>{isPlaying ? "Stop" : "Start"}</button>}>
         {renderControls()}
-      </ResponsiveModal>
+      </FloatingTool>}
     </>
   )
 }

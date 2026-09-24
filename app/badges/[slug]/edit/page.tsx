@@ -47,7 +47,7 @@ export default async function EditBadgePage({
   try {
     data = await loadEditBadgeData(slug)
   } catch {
-    redirect("/login")
+    redirect(`/login?next=${encodeURIComponent(`/badges/${slug}/edit`)}`)
   }
 
   if (data.status === "not_found") {
@@ -55,7 +55,7 @@ export default async function EditBadgePage({
   }
 
   if (data.status === "not_owner") {
-    redirect(`/badges/${encodeURIComponent(slug)}?update_badge=not_owner`)
+    notFound()
   }
 
   if (data.status !== "loaded" || !data.badge) {
@@ -69,7 +69,7 @@ export default async function EditBadgePage({
   const message = getUpdateBadgeMessage(status)
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+    <main className="mx-auto max-w-5xl px-4 py-5 md:px-6 text-foreground">
       <div className="mb-5">
         <Link
           href={`/badges/${encodeURIComponent(badge.slug)}`}
@@ -85,12 +85,8 @@ export default async function EditBadgePage({
         </div>
       ) : null}
 
-      <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Badges
-        </p>
-
-        <h1 className="mt-3 font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+      <section className="mb-5 border-b border-border pb-5">
+        <h1 className="mt-3 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
           Edit Badge
         </h1>
 

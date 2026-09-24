@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import YouTubeLoopPlayer, {
   type ReferencePracticeView,
 } from "@/components/library/YouTubeLoopPlayer"
@@ -74,9 +74,6 @@ function RecordingSelector({
     <section className="min-w-0 rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Media
-          </p>
           <h2 className="mt-1 font-serif text-2xl font-bold text-foreground">
             {sources.length === 1 ? "Recording" : "Recordings"}
           </h2>
@@ -87,56 +84,10 @@ function RecordingSelector({
       </div>
 
       {sources.length > 0 ? (
-        <div className="mt-4 divide-y divide-border/70 border-y border-border/70">
-          {sources.map((source) => {
-            const isSelected = source.id === selectedSource?.id
-            const content = (
-              <span className="flex items-start justify-between gap-3">
-                <span className="min-w-0">
-                  <span className="block break-words font-semibold">
-                    {source.label}
-                  </span>
-                  <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.12em]">
-                    {sourceKindLabel(source)}
-                  </span>
-                  {source.notes ? (
-                    <span className="mt-1 line-clamp-2 block text-sm leading-5">
-                      {source.notes}
-                    </span>
-                  ) : null}
-                </span>
-                {isSelected ? (
-                  <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.12em] text-primary">
-                    Selected
-                  </span>
-                ) : null}
-              </span>
-            )
-
-            if (sources.length === 1) {
-              return (
-                <div key={source.id} className="py-3 text-foreground">
-                  {content}
-                </div>
-              )
-            }
-
-            return (
-              <button
-                key={source.id}
-                type="button"
-                onClick={() => onSelect(source)}
-                className={joinClasses(
-                  "block w-full py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
-                  isSelected ? "text-foreground" : "text-muted-foreground"
-                )}
-                aria-pressed={isSelected}
-              >
-                {content}
-              </button>
-            )
-          })}
-        </div>
+        <label className="mt-3 block text-sm font-semibold">Recording
+          <select aria-label="Reference recording" value={selectedSource?.id ?? ""} onChange={event => { const source = sources.find(item => item.id === event.target.value); if (source) onSelect(source) }} className="mt-1 min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3">{sources.map(source => <option key={source.id} value={source.id}>{source.label} · {sourceKindLabel(source)}</option>)}</select>
+          {selectedSource?.notes && <p className="mt-2 text-sm font-normal text-text-muted">{selectedSource.notes}</p>}
+        </label>
       ) : (
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
           No reference recordings have been added to this tune yet.
@@ -153,19 +104,19 @@ function RecordingSelector({
           <input type="hidden" name="piece_id" value={pieceId} />
           <input type="hidden" name="redirect_to" value={redirectTo} />
           <input
-            name="title"
+            name="title" aria-label="Recording title"
             placeholder="Title, eg Live at the session"
             className={inputClassName}
             required
           />
           <input
-            name="url"
+            name="url" aria-label="Recording URL"
             type="url"
             placeholder="https://..."
             className={inputClassName}
             required
           />
-          <select name="media_type" defaultValue="Recording" className={inputClassName}>
+          <select name="media_type" aria-label="Media type" defaultValue="Recording" className={inputClassName}>
             {mediaTypes.map((mediaType) => (
               <option key={mediaType} value={mediaType}>
                 {mediaType}
@@ -173,7 +124,7 @@ function RecordingSelector({
             ))}
           </select>
           <textarea
-            name="notes"
+            name="notes" aria-label="Recording notes"
             placeholder="Optional performer, source, or practice note"
             rows={2}
             className={inputClassName}
@@ -241,8 +192,8 @@ function UnavailableWorkspace({
   useSessionDock(`reference-media:${piece.id}`, dockModel)
 
   return (
-    <div className="md:grid md:grid-cols-[minmax(0,0.92fr)_minmax(22rem,1.08fr)] md:items-start md:gap-6">
-      <section className="flex min-w-0 flex-col md:sticky md:top-24">
+    <div className="reference-workbench md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,1fr)] md:items-start md:gap-6">
+      <section className="reference-player flex min-w-0 flex-col md:sticky md:top-6">
         <div
           className={joinClasses(
             "order-3 mt-4 md:order-1 md:mt-0",
@@ -287,9 +238,6 @@ function UnavailableWorkspace({
             mobileView === "sections" ? "block" : "hidden md:block"
           )}
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Sections
-          </p>
           <h2 className="mt-1 font-serif text-2xl font-bold text-foreground">
             Whole recording
           </h2>
@@ -303,9 +251,6 @@ function UnavailableWorkspace({
             mobileView === "practice" ? "block" : "hidden md:block"
           )}
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Practice
-          </p>
           <h2 className="mt-1 font-serif text-2xl font-bold text-foreground">
             Player unavailable
           </h2>
@@ -325,27 +270,28 @@ export default function ReferencePracticeWorkspace({
   requestedSourceId,
 }: ReferencePracticeWorkspaceProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const returnTo = searchParams.get("return_to")
   const sources = useMemo(
     () => getReferenceMediaSources(mediaBundle),
     [mediaBundle]
   )
-  const [selectedSourceId, setSelectedSourceId] = useState(initialSourceId)
   const selectedSource =
-    sources.find((source) => source.id === selectedSourceId) ?? sources[0] ?? null
+    sources.find((source) => source.id === requestedSourceId) ??
+    sources.find((source) => source.id === initialSourceId) ?? sources[0] ?? null
 
   useEffect(() => {
     if (!selectedSource || requestedSourceId === selectedSource.id) return
 
-    router.replace(getReferencePracticeHref(piece.id, selectedSource.id), {
+    router.replace(getReferencePracticeHref(piece.id, selectedSource.id, returnTo), {
       scroll: false,
     })
-  }, [piece.id, requestedSourceId, router, selectedSource])
+  }, [piece.id, requestedSourceId, returnTo, router, selectedSource])
 
   function selectSource(source: TuneMediaSource) {
     if (source.id === selectedSource?.id) return
 
-    setSelectedSourceId(source.id)
-    router.replace(getReferencePracticeHref(piece.id, source.id), {
+    router.replace(getReferencePracticeHref(piece.id, source.id, returnTo), {
       scroll: false,
     })
   }
@@ -371,6 +317,7 @@ export default function ReferencePracticeWorkspace({
 
   return (
     <YouTubeLoopPlayer
+      key={`${piece.id}:${selectedSource.youtubeVideoId}`}
       videoId={selectedSource.youtubeVideoId}
       title={`${piece.title} — ${selectedSource.label}`}
       recordingLabel={selectedSource.label}

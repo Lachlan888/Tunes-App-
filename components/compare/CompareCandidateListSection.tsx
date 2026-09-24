@@ -1,6 +1,5 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import SubmitButton from "@/components/SubmitButton"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import UserIdentityLink from "@/components/UserIdentityLink"
@@ -23,32 +22,10 @@ type CompareCandidateListSectionProps = {
 }
 
 const primaryButtonClass =
-  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
 
 const secondaryButtonClass =
-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
-
-function clickedInsideInteractiveElement(target: EventTarget | null) {
-  if (!(target instanceof Element)) return false
-
-  return Boolean(
-    target.closest(
-      [
-        "a",
-        "button",
-        "input",
-        "select",
-        "textarea",
-        "label",
-        "summary",
-        "details",
-        "form",
-        "[role='button']",
-        "[data-card-action]",
-      ].join(", ")
-    )
-  )
-}
+  "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
 
 function CandidateCard({
   profile,
@@ -61,8 +38,6 @@ function CandidateCard({
   includePractice: boolean
   redirectTo: string
 }) {
-  const router = useRouter()
-  const label = profile.display_name || profile.username || "Unnamed player"
   const profileHref = profile.username
     ? `/users/${encodeURIComponent(profile.username)}`
     : null
@@ -72,21 +47,14 @@ function CandidateCard({
     profile.username ?? ""
   )
 
-  function openProfile(event: React.MouseEvent<HTMLElement>) {
-    if (!profileHref) return
-    if (clickedInsideInteractiveElement(event.target)) return
-    router.push(profileHref)
-  }
-
   return (
     <article
       className={
         profileHref
-          ? "flex cursor-pointer flex-col gap-4 rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted/70 hover:shadow-md focus-within:ring-2 focus-within:ring-[var(--focus-ring)] md:flex-row md:items-center md:justify-between"
+          ? "flex flex-col gap-4 rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted/70 hover:shadow-md focus-within:ring-2 focus-within:ring-[var(--focus-ring)] md:flex-row md:items-center md:justify-between"
           : "flex flex-col gap-4 rounded-2xl border border-border bg-background/70 p-4 shadow-sm md:flex-row md:items-center md:justify-between"
       }
-      onClick={openProfile}
-      aria-label={profileHref ? `Open profile for ${label}` : undefined}
+
     >
       <div>
         <p className="text-base font-semibold text-foreground">

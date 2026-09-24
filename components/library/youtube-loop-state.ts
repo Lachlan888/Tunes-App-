@@ -189,3 +189,18 @@ export function crossedLoopEnd(
     currentTime >= loopEnd
   )
 }
+
+/** Resume inside an enabled loop after a seek or boundary edit. */
+export function loopResumePosition(
+  currentTime: number,
+  loopStart: number | null,
+  loopEnd: number | null,
+  enabled: boolean
+) {
+  if (
+    enabled && loopStart !== null && loopEnd !== null &&
+    loopEnd > loopStart + MINIMUM_LOOP_LENGTH &&
+    (currentTime < loopStart || currentTime >= loopEnd)
+  ) return loopStart
+  return currentTime
+}

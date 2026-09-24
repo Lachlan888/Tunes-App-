@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation"
+import { redirectToLogin } from "@/lib/auth/login-redirect"
 import { createClient } from "@/lib/supabase/server"
 import {
   finaliseTuneCollectionPage,
@@ -210,7 +210,7 @@ async function loadRepertoirePage(
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) redirect("/login")
+  if (!user) return redirectToLogin()
   const safePageSize = normaliseTuneCollectionPageSize(pageSize)
   const membershipAlias =
     mode === "known" ? "known_membership" : "practice_membership"

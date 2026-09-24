@@ -242,6 +242,14 @@ test("catalogue and repertoire routes render bounded rows without per-row forms"
     "utf8"
   )
   const tuneRow = readFileSync("components/tunes/TuneRow.tsx", "utf8")
+  const libraryActions = readFileSync(
+    "components/library/LibraryTuneCardActions.tsx",
+    "utf8"
+  )
+  const paginatedCollection = readFileSync(
+    "components/tunes/PaginatedTuneCollection.tsx",
+    "utf8"
+  )
 
   assert.doesNotMatch(libraryLoader, /mobilePieces|visibleCount === "all"/)
   assert.doesNotMatch(libraryList, /CardPager|<form/)
@@ -251,4 +259,11 @@ test("catalogue and repertoire routes render bounded rows without per-row forms"
   assert.match(repertoireLoader, /!inner/)
   assert.match(tuneRow, /<article/)
   assert.match(tuneRow, /aria-label={`Actions for \$\{piece\.title\}`}/)
+  assert.doesNotMatch(tuneRow, /md:max-w-sm/)
+  assert.match(libraryList, /whitespace-nowrap/)
+  assert.match(libraryActions, /whitespace-nowrap/)
+  assert.match(
+    paginatedCollection,
+    /justify-between gap-3 px-4 pb-4 md:px-5/
+  )
 })

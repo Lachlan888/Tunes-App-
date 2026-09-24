@@ -45,7 +45,7 @@ export default function PracticeReviewCard({
           confirmMessage={`Stop Practice for "${title}"? Review scheduling will stop. The tune will remain in any lists, the shared tune will not be deleted, and stopping Practice does not automatically mark it Known.`}
           label="Stop Practice"
           pendingLabel="Stopping..."
-          className="inline-flex min-h-9 items-center justify-center rounded-full border border-destructive/50 bg-background/80 px-3 py-1.5 text-xs font-semibold text-destructive shadow-sm transition hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          className="inline-flex min-h-11 items-center justify-center rounded-control border border-destructive/50 bg-background/80 px-3 py-1.5 text-xs font-semibold text-destructive shadow-sm transition hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
         />
       </div>
 
@@ -90,7 +90,7 @@ export default function PracticeReviewCard({
             pieceId={userPiece.piece.id}
             redirectTo={redirectTo}
             label="Open Reference Media"
-            className="flex w-full items-center justify-center rounded-full border border-border bg-muted px-4 py-2 text-center text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className="min-h-11 flex w-full items-center justify-center rounded-control border border-border bg-muted px-4 py-2 text-center text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
           <div className="mt-2 text-center">
             <PendingLinkButton

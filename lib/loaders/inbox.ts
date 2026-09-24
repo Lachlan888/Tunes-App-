@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation"
+import { redirectToLogin } from "@/lib/auth/login-redirect"
 import { createClient } from "@/lib/supabase/server"
 import { getActivitySummaryText } from "@/lib/friend-activity"
 
@@ -156,7 +156,7 @@ export async function loadInboxData() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    return redirectToLogin()
   }
 
   const [

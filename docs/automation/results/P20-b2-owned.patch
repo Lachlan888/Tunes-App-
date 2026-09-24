@@ -1,0 +1,669 @@
+--- a/components/home/HomeBadgesPanel.tsx
++++ b/components/home/HomeBadgesPanel.tsx
+@@ -66,7 +66,7 @@
+ 
+         <Link
+           href="/badges"
+-          className="rounded-full border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++          className="inline-flex min-h-11 rounded-control border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+         >
+           View all
+         </Link>
+--- a/components/home/HomeFriendsActivityBox.tsx
++++ b/components/home/HomeFriendsActivityBox.tsx
+@@ -22,7 +22,7 @@
+ 
+         <Link
+           href="/friends"
+-          className="rounded-full border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++          className="inline-flex min-h-11 rounded-control border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+         >
+           View all
+         </Link>
+--- a/components/home/GettingStartedSection.tsx
++++ b/components/home/GettingStartedSection.tsx
+@@ -49,7 +49,7 @@
+               href={task.href}
+               label={task.actionLabel}
+               pendingLabel={task.pendingLabel}
+-              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++              className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+             />
+           )}
+         </div>
+@@ -95,7 +95,7 @@
+                   href={state.nextTask.href}
+                   label={state.nextTask.actionLabel}
+                   pendingLabel={state.nextTask.pendingLabel}
+-                  className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                  className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+                 />
+               </div>
+             </div>
+--- a/components/home/HomeMobileSummarySwitcher.tsx
++++ b/components/home/HomeMobileSummarySwitcher.tsx
+@@ -151,7 +151,7 @@
+       </div>
+ 
+       {href ? (
+-        <span className="shrink-0 rounded-full border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground">
++        <span className="inline-flex min-h-11 shrink-0 rounded-control border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground items-center justify-center">
+           {actionLabel}
+         </span>
+       ) : null}
+--- a/components/badges/CreateBadgeForm.tsx
++++ b/components/badges/CreateBadgeForm.tsx
+@@ -86,10 +86,10 @@
+   "border-b border-border pb-5"
+ 
+ const primaryButtonClassName =
+-  "rounded-full border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+ 
+ const dangerButtonClassName =
+-  "rounded-full border border-destructive bg-destructive px-5 py-2.5 text-sm font-medium text-destructive-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++  "inline-flex min-h-11 rounded-control border border-destructive bg-destructive px-5 py-2.5 text-sm font-medium text-destructive-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+ 
+ function getBadge(data: CreateBadgeFormProps["data"]): Badge | null {
+   if ("badge" in data && data.badge) {
+--- a/components/badges/BadgeBrowser.tsx
++++ b/components/badges/BadgeBrowser.tsx
+@@ -419,7 +419,7 @@
+           type="button"
+           onClick={onClearFilters}
+           disabled={!hasActiveFilters}
+-          className="w-full rounded-full border border-border bg-background/70 px-4 py-3 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50"
++          className="inline-flex min-h-11 w-full rounded-control border border-border bg-background/70 px-4 py-3 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50 items-center justify-center"
+         >
+           Clear
+         </button>
+@@ -658,7 +658,7 @@
+           <button
+             type="button"
+             onClick={() => setIsMobileFilterOpen(true)}
+-            className="mt-5 rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:hidden"
++            className="inline-flex min-h-11 mt-5 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:hidden items-center justify-center"
+           >
+             Edit filters
+           </button>
+@@ -684,7 +684,7 @@
+             <button
+               type="button"
+               onClick={() => setIsMobileFilterOpen(false)}
+-              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++              className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+             >
+               Show badges
+             </button>
+--- a/components/compare/CompareBlockedSection.tsx
++++ b/components/compare/CompareBlockedSection.tsx
+@@ -12,7 +12,7 @@
+ }
+ 
+ const secondaryButtonClass =
+-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++  "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+ 
+ export default function CompareBlockedSection({
+   matchedProfile,
+--- a/components/compare/CompareInPersonLauncher.tsx
++++ b/components/compare/CompareInPersonLauncher.tsx
+@@ -10,7 +10,7 @@
+     <section className="mb-8 border-y border-border py-5">
+       <h2 className="mt-1 text-xl font-semibold">Compare in person</h2>
+       <p className="mt-2 text-sm text-muted-foreground">Create a ten-minute private invitation, or enter the complete code on another musician’s screen.</p>
+-      <button type="button" onClick={() => setOpen(true)} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground"><QrIcon /> Create join code</button>
++      <button type="button" onClick={() => setOpen(true)} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"><QrIcon /> Create join code</button>
+       <EnterCompareCodeForm />
+       <CompareInPersonSheet isOpen={open} onClose={() => setOpen(false)} />
+     </section>
+--- a/components/compare/EnterCompareCodeForm.tsx
++++ b/components/compare/EnterCompareCodeForm.tsx
+@@ -26,7 +26,7 @@
+         <input value={code} onChange={(event) => setCode(event.target.value)} autoComplete="off" spellCheck={false} placeholder="Paste or type the full code" className="mt-2 min-h-12 w-full rounded-control border border-hairline bg-surface-paper px-3 font-mono text-sm" />
+       </label>
+       {error ? <p className="mt-2 text-sm text-destructive" role="alert">{error}</p> : null}
+-      <button type="submit" className="mt-3 min-h-11 rounded-full border border-hairline px-4 text-sm font-semibold">Enter code</button>
++      <button type="submit" className="inline-flex mt-3 min-h-11 rounded-control border border-hairline px-4 text-sm font-semibold items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Enter code</button>
+     </form>
+   )
+ }
+--- a/components/compare/SuggestedSessionSet.tsx
++++ b/components/compare/SuggestedSessionSet.tsx
+@@ -104,7 +104,7 @@
+           label="Save private setlist"
+           pendingLabel="Saving setlist…"
+           disabled={selectedIds.length === 0}
+-          className="inline-flex min-h-11 items-center justify-center rounded-full bg-text-primary px-5 text-sm font-semibold text-surface-paper"
++          className="inline-flex min-h-11 items-center justify-center rounded-control bg-text-primary px-5 text-sm font-semibold text-surface-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+         />
+       </form>
+     </section>
+--- a/components/compare/CompareSearchForm.tsx
++++ b/components/compare/CompareSearchForm.tsx
+@@ -63,7 +63,7 @@
+         <button
+           type="submit"
+           disabled={isPending}
+-          className="rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++          className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+         >
+           {isPending ? (
+             <span className="inline-flex items-center justify-center gap-2">
+--- a/components/compare/ConnectAndCompareButton.tsx
++++ b/components/compare/ConnectAndCompareButton.tsx
+@@ -66,7 +66,7 @@
+         type="button"
+         onClick={acceptInvite}
+         disabled={isPending}
+-        className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
++        className="inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+       >
+         {isPending ? (
+           <span className="inline-flex items-center gap-2">
+--- a/components/compare/CurrentCompareGroupSection.tsx
++++ b/components/compare/CurrentCompareGroupSection.tsx
+@@ -71,7 +71,7 @@
+                     })}
+                     label="Remove"
+                     pendingLabel="Removing..."
+-                    className="rounded-full border border-border bg-transparent px-3 py-1 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                    className="inline-flex min-h-11 rounded-control border border-border bg-transparent px-3 py-1 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+                     refresh
+                   />
+                 )}
+--- a/components/compare/CompareSuggestionsSection.tsx
++++ b/components/compare/CompareSuggestionsSection.tsx
+@@ -62,8 +62,8 @@
+             refresh
+             className={
+               alreadySelected
+-                ? "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+-                : "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                ? "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
++                : "inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+             }
+           />
+         </div>
+--- a/components/compare/CompareInPersonSheet.tsx
++++ b/components/compare/CompareInPersonSheet.tsx
+@@ -291,7 +291,7 @@
+             <button
+               type="button"
+               onClick={shareLink}
+-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++              className="inline-flex min-h-11 items-center justify-center rounded-control border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+             >
+               Share link
+             </button>
+@@ -299,7 +299,7 @@
+               type="button"
+               onClick={generateNewCode}
+               disabled={isReplacing}
+-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-background/70 px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++              className="inline-flex min-h-11 items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+             >
+               {isReplacing ? "Generating…" : "Generate new code"}
+             </button>
+@@ -334,7 +334,7 @@
+             type="button"
+             onClick={generateNewCode}
+             disabled={isReplacing}
+-            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:opacity-60 sm:w-auto"
++            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-control border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:opacity-60 sm:w-auto"
+           >
+             {isReplacing ? "Generating…" : "Generate new code"}
+           </button>
+@@ -366,7 +366,7 @@
+             type="button"
+             onClick={generateNewCode}
+             disabled={isReplacing}
+-            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:opacity-60 sm:w-auto"
++            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-control border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:opacity-60 sm:w-auto"
+           >
+             Try again
+           </button>
+@@ -376,7 +376,7 @@
+       {sheetState === "rate_limited" ? (
+         <div className="text-center">
+           <p className="rounded-2xl border border-warning bg-muted p-4 text-sm text-foreground">Too many new codes were created recently. Wait a little, then start a new comparison.</p>
+-          <button type="button" onClick={onClose} className="mt-4 min-h-11 rounded-full border border-border px-4 text-sm font-semibold">Leave</button>
++          <button type="button" onClick={onClose} className="inline-flex mt-4 min-h-11 rounded-control border border-border px-4 text-sm font-semibold items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Leave</button>
+         </div>
+       ) : null}
+     </ResponsiveModal>
+--- a/components/compare/MobileCompareAddPersonSheet.tsx
++++ b/components/compare/MobileCompareAddPersonSheet.tsx
+@@ -136,7 +136,7 @@
+             <button
+               type="submit"
+               disabled={isPending}
+-              className="shrink-0 rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++              className="inline-flex min-h-11 shrink-0 rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+             >
+               {pendingValue === query.trim() && isPending ? (
+                 <span className="inline-flex items-center justify-center gap-2">
+@@ -194,7 +194,7 @@
+                       type="button"
+                       disabled={!profile.username || isPending}
+                       onClick={() => addProfile(profile)}
+-                      className="shrink-0 rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++                      className="inline-flex min-h-11 shrink-0 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+                     >
+                       {profile.username &&
+                       pendingValue === profile.username &&
+@@ -239,7 +239,7 @@
+                       type="button"
+                       disabled={isPending}
+                       onClick={() => addSuggestion(suggestion)}
+-                      className="shrink-0 rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++                      className="inline-flex min-h-11 shrink-0 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+                     >
+                       {pendingValue === suggestion.username && isPending ? (
+                         <span className="inline-flex items-center justify-center gap-2">
+--- a/components/compare/CompareCandidateListSection.tsx
++++ b/components/compare/CompareCandidateListSection.tsx
+@@ -22,10 +22,10 @@
+ }
+ 
+ const primaryButtonClass =
+-  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+ 
+ const secondaryButtonClass =
+-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++  "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+ 
+ function CandidateCard({
+   profile,
+--- a/components/compare/CompareMobile.tsx
++++ b/components/compare/CompareMobile.tsx
+@@ -61,8 +61,8 @@
+                   {profile.display_name || profile.username || "Musician"} ×
+                 </Link>
+               ))}
+-              <button type="button" onClick={() => setIsAddSheetOpen(true)} className="min-h-11 rounded-full border border-primary px-4 text-sm font-semibold">Add musician</button>
+-              <button type="button" onClick={() => setIsInviteSheetOpen(true)} className="min-h-11 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground">Compare in person</button>
++              <button type="button" onClick={() => setIsAddSheetOpen(true)} className="inline-flex min-h-11 rounded-control border border-primary px-4 text-sm font-semibold items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Add musician</button>
++              <button type="button" onClick={() => setIsInviteSheetOpen(true)} className="inline-flex min-h-11 rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Compare in person</button>
+             </div>
+           </header>
+           <CompareOutcomeExperience {...props} />
+@@ -90,7 +90,7 @@
+               <button
+                 type="button"
+                 onClick={() => setIsInviteSheetOpen(true)}
+-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+               >
+                 <QrIcon />
+                 <span>Compare in person</span>
+@@ -99,7 +99,7 @@
+               <button
+                 type="button"
+                 onClick={() => setIsAddSheetOpen(true)}
+-                className="min-h-12 rounded-full border border-border bg-background/70 px-5 py-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                className="inline-flex min-h-12 rounded-control border border-border bg-background/70 px-5 py-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+               >
+                 Add person
+               </button>
+@@ -147,7 +147,7 @@
+                     <button
+                       type="button"
+                       onClick={() => setIsAddSheetOpen(true)}
+-                      className="shrink-0 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                      className="inline-flex min-h-11 shrink-0 rounded-control border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+                     >
+                       Add
+                     </button>
+--- a/components/friends/FriendSearchForm.tsx
++++ b/components/friends/FriendSearchForm.tsx
+@@ -44,7 +44,7 @@
+       <button
+         type="submit"
+         disabled={isPending}
+-        className="rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++        className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+       >
+         {isPending ? (
+           <span className="inline-flex items-center justify-center gap-2">
+--- a/components/friends/FriendsListSection.tsx
++++ b/components/friends/FriendsListSection.tsx
+@@ -19,7 +19,7 @@
+ const DEFAULT_VISIBLE_COUNT = 4
+ 
+ const secondaryButtonClass =
+-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++  "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+ 
+ function FriendCard({ friend }: { friend: AcceptedFriend }) {
+   const label = friend.display_name || friend.username || "Unnamed player"
+--- a/components/inbox/DirectMessageThreadList.tsx
++++ b/components/inbox/DirectMessageThreadList.tsx
+@@ -68,7 +68,7 @@
+                 <label className="block text-sm font-semibold" htmlFor={`reply-${thread.otherUser.id}`}>Reply to {label}</label>
+                 <textarea id={`reply-${thread.otherUser.id}`} name="body" rows={3} required className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]" />
+                 <div className="flex flex-wrap gap-2">
+-                  <SubmitButton label="Send reply" pendingLabel="Sending..." className="min-h-11 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground" />
++                  <SubmitButton label="Send reply" pendingLabel="Sending..." className="inline-flex min-h-11 rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]" />
+                   {thread.otherUser.username ? (
+                     <Link href={`/users/${thread.otherUser.username}`} className="inline-flex min-h-11 items-center px-2 text-sm font-semibold underline underline-offset-4">View profile</Link>
+                   ) : null}
+--- a/components/inbox/InboxItemList.tsx
++++ b/components/inbox/InboxItemList.tsx
+@@ -72,7 +72,7 @@
+                 </div>
+               </div>
+               <div className="flex flex-wrap items-center gap-2 pl-3 sm:pl-0">
+-                <Link href={contextHref(item)} className="inline-flex min-h-11 items-center rounded-full border border-border px-3 text-sm font-semibold hover:bg-muted">Open</Link>
++                <Link href={contextHref(item)} className="inline-flex min-h-11 items-center rounded-control border border-border px-3 text-sm font-semibold hover:bg-muted justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Open</Link>
+                 {isUnread ? (
+                   <form action={markNotificationRead}>
+                     <input type="hidden" name="notification_id" value={item.id} />
+--- a/components/profile/PublicProfileActions.tsx
++++ b/components/profile/PublicProfileActions.tsx
+@@ -20,10 +20,10 @@
+ }
+ 
+ const primaryButtonClass =
+-  "max-w-full rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++  "inline-flex min-h-11 max-w-full rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+ 
+ const secondaryButtonClass =
+-  "max-w-full rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++  "inline-flex min-h-11 max-w-full rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+ 
+ const textareaClassName =
+   "max-h-[22rem] min-h-28 w-full resize-none overflow-hidden rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm leading-6 text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+--- a/components/profile/PublicProfileRepertoireSection.tsx
++++ b/components/profile/PublicProfileRepertoireSection.tsx
+@@ -34,7 +34,7 @@
+   "w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+ 
+ const secondaryButtonClass =
+-  "inline-flex items-center justify-center rounded-xl border border-border bg-background/70 px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++  "inline-flex min-h-11 items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+ 
+ const activeChipClass =
+   "rounded-full border border-primary bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-sm transition"
+@@ -350,7 +350,7 @@
+                 <button
+                   type="button"
+                   onClick={clearFilters}
+-                  className="rounded-full border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground"
++                  className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+                 >
+                   Clear filters
+                 </button>
+--- a/components/profile/PublicProfileBadgesSection.tsx
++++ b/components/profile/PublicProfileBadgesSection.tsx
+@@ -109,7 +109,7 @@
+ 
+         <Link
+           href="/badges"
+-          className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++          className="inline-flex min-h-11 rounded-control border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+         >
+           Browse badges
+         </Link>
+--- a/components/profile/UserInstrumentsSection.tsx
++++ b/components/profile/UserInstrumentsSection.tsx
+@@ -33,10 +33,10 @@
+   "flex-1 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+ 
+ const primaryButtonClassName =
+-  "rounded-full border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70"
++  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center"
+ 
+ const secondaryButtonClassName =
+-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70"
++  "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center"
+ 
+ function ProfileDraftHiddenInputs({
+   profileDraft,
+--- a/components/profile/ProfileDetailsSection.tsx
++++ b/components/profile/ProfileDetailsSection.tsx
+@@ -47,10 +47,10 @@
+   "mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground"
+ 
+ const primaryButtonClassName =
+-  "rounded-full border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70"
++  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center"
+ 
+ const secondaryButtonClassName =
+-  "inline-flex rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++  "min-h-11 inline-flex rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+ 
+ export default function ProfileDetailsSection({
+   nextPath,
+--- a/components/trends/PersonalTrendInsights.tsx
++++ b/components/trends/PersonalTrendInsights.tsx
+@@ -52,7 +52,7 @@
+         </p>
+         <Link
+           href="/review?session=due-today"
+-          className="mt-4 inline-flex min-h-11 items-center rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
++          className="mt-4 inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+         >
+           Start Practice
+         </Link>
+@@ -166,7 +166,7 @@
+                 </li>
+               ))}
+             </ul>
+-            <Link href="/review?session=catch-up" className="mt-4 inline-flex min-h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground">Start catch-up</Link>
++            <Link href="/review?session=catch-up" className="mt-4 inline-flex min-h-11 items-center rounded-control bg-primary px-5 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Start catch-up</Link>
+           </section>
+         ) : null}
+ 
+@@ -175,7 +175,7 @@
+             <InsightHeader eyebrow="Explore a gap" title={`Try ${insight.exploreGap.label}`} takeaway={`Your repertoire has no ${insight.exploreGap.kind} match yet; the catalogue has ${insight.exploreGap.catalogueCount}.`} />
+             <Link
+               href={`/library?${insight.exploreGap.kind}=${encodeURIComponent(insight.exploreGap.label)}`}
+-              className="mt-4 inline-flex min-h-11 items-center rounded-full border border-border px-5 text-sm font-semibold hover:bg-muted"
++              className="mt-4 inline-flex min-h-11 items-center rounded-control border border-border px-5 text-sm font-semibold hover:bg-muted justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+             >
+               Explore tunes
+             </Link>
+--- a/components/trends/TrendFriendPatternsSection.tsx
++++ b/components/trends/TrendFriendPatternsSection.tsx
+@@ -22,7 +22,7 @@
+           href="/friends"
+           label="Find friends"
+           pendingLabel="Opening..."
+-          className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++          className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+         />
+       </div>
+     )
+@@ -58,7 +58,7 @@
+                     href={entry.href}
+                     label="View"
+                     pendingLabel="Opening..."
+-                    className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                    className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+                   />
+                 ) : null}
+               </li>
+--- a/components/trends/TrendPublicListSection.tsx
++++ b/components/trends/TrendPublicListSection.tsx
+@@ -40,7 +40,7 @@
+               href={`/public-lists/${entry.id}`}
+               label="View list"
+               pendingLabel="Opening..."
+-              className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++              className="inline-flex min-h-11 items-center rounded-control border border-border px-4 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] justify-center"
+             />
+           </div>
+         </li>
+--- a/components/trends/TrendTuneList.tsx
++++ b/components/trends/TrendTuneList.tsx
+@@ -165,7 +165,7 @@
+                       <SubmitButton
+                         label="Start Practice"
+                         pendingLabel="Starting..."
+-                        className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                        className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+                       />
+                     </form>
+                   )}
+@@ -186,14 +186,14 @@
+                         <SubmitButton
+                           label="Mark Known"
+                           pendingLabel="Saving..."
+-                          className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                          className="inline-flex min-h-11 rounded-control border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+                         />
+                       </form>
+                     ))}
+ 
+                   <button
+                     type="button"
+-                    className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++                    className="inline-flex min-h-11 rounded-control border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+                     onClick={() => {
+                       setSelectedPiece(piece)
+                       setSelectedListId("")
+--- a/app/badges/page.tsx
++++ b/app/badges/page.tsx
+@@ -62,14 +62,14 @@
+               viewerId ? (
+                 <Link
+                   href="/badges/new"
+-                  className="inline-flex min-h-10 w-full items-center justify-center rounded-full border border-border bg-surface-paper px-5 py-2 text-center text-sm font-medium text-state-social shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-11 md:w-auto md:py-2.5"
++                  className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border bg-surface-paper px-5 py-2 text-center text-sm font-medium text-state-social shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-11 md:w-auto md:py-2.5"
+                 >
+                   Create badge · workspace
+                 </Link>
+               ) : (
+                 <Link
+                   href="/login"
+-                  className="inline-flex min-h-10 w-full items-center justify-center rounded-full border border-border px-5 py-2 text-center text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-11 md:w-auto md:py-2.5"
++                  className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border px-5 py-2 text-center text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-11 md:w-auto md:py-2.5"
+                 >
+                   Log in to create badges
+                 </Link>
+--- a/app/badges/[slug]/page.tsx
++++ b/app/badges/[slug]/page.tsx
+@@ -73,7 +73,7 @@
+         {viewerIsOwner ? (
+           <Link
+             href={`/badges/${encodeURIComponent(data.badge.slug)}/edit`}
+-            className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++            className="inline-flex min-h-11 rounded-control border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+           >
+             Edit badge · workspace
+           </Link>
+--- a/app/compare/join/[token]/page.tsx
++++ b/app/compare/join/[token]/page.tsx
+@@ -94,13 +94,13 @@
+                 <>
+                   <Link
+                     href={signupHref}
+-                    className="inline-flex min-h-12 items-center justify-center rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                    className="inline-flex min-h-12 items-center justify-center rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                   >
+                     Sign up to compare
+                   </Link>
+                   <Link
+                     href={loginHref}
+-                    className="inline-flex min-h-12 items-center justify-center rounded-full border border-border bg-background/70 px-5 py-3 text-sm font-medium text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                    className="inline-flex min-h-12 items-center justify-center rounded-control border border-border bg-background/70 px-5 py-3 text-sm font-medium text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                   >
+                     Log in
+                   </Link>
+@@ -109,7 +109,7 @@
+ 
+               <Link
+                 href="/"
+-                className="inline-flex min-h-12 items-center justify-center rounded-full px-5 py-3 text-sm font-medium text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                className="inline-flex min-h-12 items-center justify-center rounded-control px-5 py-3 text-sm font-medium text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+               >
+                 Not now
+               </Link>
+@@ -129,7 +129,7 @@
+               <ConnectAndCompareButton token={token} label="Compare now" />
+               <Link
+                 href="/"
+-                className="inline-flex min-h-12 items-center justify-center rounded-full px-5 py-3 text-sm font-medium text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                className="inline-flex min-h-12 items-center justify-center rounded-control px-5 py-3 text-sm font-medium text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+               >
+                 Not now
+               </Link>
+@@ -147,7 +147,7 @@
+             </p>
+             <Link
+               href={preview.compareHref}
+-              className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] sm:w-auto"
++              className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] sm:w-auto"
+             >
+               Compare now
+             </Link>
+@@ -157,7 +157,7 @@
+         {preview.state === "invalid" || preview.state === "expired" || preview.state === "revoked" || preview.state === "consumed" ? (
+           <div className="mt-6 border-t border-border pt-5">
+             <div className="flex flex-wrap gap-3">
+-              <Link href="/compare" className="inline-flex min-h-11 items-center rounded-full border border-primary bg-primary px-4 text-sm font-semibold text-primary-foreground">Start a new comparison</Link>
++              <Link href="/compare" className="inline-flex min-h-11 items-center rounded-control border border-primary bg-primary px-4 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Start a new comparison</Link>
+             </div>
+             <EnterCompareCodeForm />
+           </div>
+--- a/app/inbox/page.tsx
++++ b/app/inbox/page.tsx
+@@ -82,7 +82,7 @@
+               </div>
+               {data.unreadNotificationCount > 0 ? (
+                 <form action={markAllNotificationsRead}>
+-                  <SubmitButton label="Mark all read" pendingLabel="Marking read..." className="inline-flex min-h-11 items-center rounded-full border border-state-social px-4 text-sm font-semibold text-state-social" />
++                  <SubmitButton label="Mark all read" pendingLabel="Marking read..." className="inline-flex min-h-11 items-center rounded-control border border-state-social px-4 text-sm font-semibold text-state-social justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]" />
+                 </form>
+               ) : null}
+             </div>
+--- a/app/trends/page.tsx
++++ b/app/trends/page.tsx
+@@ -50,7 +50,7 @@
+           </p>
+           <Link
+             href="/login"
+-            className="mt-4 inline-flex min-h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
++            className="mt-4 inline-flex min-h-11 items-center rounded-control bg-primary px-5 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+           >
+             Sign in
+           </Link>
+--- a/app/trends/[style]/page.tsx
++++ b/app/trends/[style]/page.tsx
+@@ -95,7 +95,7 @@
+         <section className="border-y border-border py-7" aria-labelledby="style-empty-title">
+           <h2 id="style-empty-title" className="font-serif text-2xl font-bold">Not enough data yet</h2>
+           <p className="mt-2 text-sm text-muted-foreground">Browse the catalogue to find a {resolvedStyleName} tune and start building this view.</p>
+-          <Link href={`/library?style=${encodeURIComponent(resolvedStyleName)}`} className="mt-4 inline-flex min-h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground">Explore {resolvedStyleName}</Link>
++          <Link href={`/library?style=${encodeURIComponent(resolvedStyleName)}`} className="mt-4 inline-flex min-h-11 items-center rounded-control bg-primary px-5 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Explore {resolvedStyleName}</Link>
+         </section>
+       ) : null}
+ 
+--- a/components/activity/ActivityInteractionPanel.tsx
++++ b/components/activity/ActivityInteractionPanel.tsx
+@@ -77,8 +77,8 @@
+ 
+                   {canManageReply ? (
+                     <div className="flex flex-wrap items-center gap-2">
+-                      <details className="rounded-full border border-border bg-background/70 px-3 py-1">
+-                        <summary className="cursor-pointer list-none text-xs font-medium text-muted-foreground hover:text-foreground">
++                      <details className="rounded-control border border-border bg-background/70 px-3 py-1">
++                        <summary className="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center rounded-control text-xs font-medium text-muted-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
+                           Edit
+                         </summary>
+ 
+--- a/components/profile/PublicProfileOverview.tsx
++++ b/components/profile/PublicProfileOverview.tsx
+@@ -106,9 +106,7 @@
+               Featured public lists
+             </p>
+ 
+-            <span className="shrink-0 text-sm font-medium text-muted-foreground md:rounded-full md:border md:border-border md:bg-background/70 md:px-3 md:py-1">
+-              <Link href={listsHref ?? `/users/${encodeURIComponent(profile.username)}?tab=lists`} className="underline">Browse all</Link>
+-            </span>
++            <Link href={listsHref ?? `/users/${encodeURIComponent(profile.username)}?tab=lists`} className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-control border border-border bg-background/70 px-3 py-1 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Browse all</Link>
+           </div>
+ 
+           {publicLists.length > 0 ? (

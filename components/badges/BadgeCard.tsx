@@ -1,130 +1,17 @@
-"use client"
+import Link from 'next/link'
+import BadgeArtwork from './BadgeArtwork'
+import BadgeProgressSummary from './BadgeProgressSummary'
+import { badgeFamilies } from '@/lib/badges/identity'
+import type { BadgeWithOwner } from '@/lib/types'
 
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import BadgeProgressSummary from "@/components/badges/BadgeProgressSummary"
-import { cardStyles } from "@/components/ui/cardStyles"
-import StatusMark from "@/components/ui/StatusMark"
-import type { BadgeWithOwner } from "@/lib/types"
-
-type BadgeCardProps = {
-  badge: BadgeWithOwner
-}
-
-function titleCase(value: string) {
-  return value
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ")
-}
-
-function getOwnerName(badge: BadgeWithOwner) {
-  return (
-    badge.owner_profile?.display_name ||
-    badge.owner_profile?.username ||
-    "Unknown player"
-  )
-}
-
-function getOwnerHref(badge: BadgeWithOwner) {
-  return badge.owner_profile?.username
-    ? `/users/${encodeURIComponent(badge.owner_profile.username)}`
-    : null
-}
-
-function clickedInsideInteractiveElement(target: EventTarget | null) {
-  if (!(target instanceof Element)) return false
-
-  return Boolean(
-    target.closest(
-      [
-        "a",
-        "button",
-        "input",
-        "select",
-        "textarea",
-        "label",
-        "summary",
-        "details",
-        "form",
-        "[role='button']",
-        "[data-card-action]",
-      ].join(", ")
-    )
-  )
-}
-
-export default function BadgeCard({ badge }: BadgeCardProps) {
-  const router = useRouter()
-  const badgeHref = `/badges/${encodeURIComponent(badge.slug)}`
-  const ownerHref = getOwnerHref(badge)
-  const ownerName = getOwnerName(badge)
-
-  function openBadgePage(event: React.MouseEvent<HTMLElement>) {
-    if (clickedInsideInteractiveElement(event.target)) return
-    router.push(badgeHref)
-  }
-
-  return (
-    <article
-      className={cardStyles.clickableCard}
-      onClick={openBadgePage}
-      aria-label={`Open badge ${badge.name}`}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-state-social">
-            {titleCase(badge.category)} badge
-          </p>
-
-          <h2 className="mt-2 font-serif text-2xl font-bold tracking-tight text-foreground">
-            <Link href={badgeHref} className="underline-offset-4 hover:underline">
-              {badge.name}
-            </Link>
-          </h2>
-
-          <p className="mt-2 text-sm text-muted-foreground">
-            Awarded by{" "}
-            {ownerHref ? (
-              <Link
-                href={ownerHref}
-                className="font-medium text-foreground underline underline-offset-4 transition hover:text-primary"
-              >
-                {ownerName}
-              </Link>
-            ) : (
-              <span>{ownerName}</span>
-            )}
-          </p>
-        </div>
-
-        <StatusMark tone="social">
-          {badge.recipient_count} recipient
-          {badge.recipient_count === 1 ? "" : "s"}
-        </StatusMark>
-      </div>
-
-      {badge.description ? (
-        <p className="mt-4 text-sm leading-6 text-foreground">
-          {badge.description}
-        </p>
-      ) : null}
-
-      <div className="mt-5 rounded-object bg-surface-note p-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Condition
-        </p>
-        <p className="mt-2 text-sm leading-6 text-foreground">
-          {badge.condition_summary}
-        </p>
-      </div>
-
-      <div data-card-action className="mt-5">
-        <BadgeProgressSummary
-          viewerAward={badge.viewer_award}
-          progress={badge.viewer_progress}
-        />
-      </div>
-    </article>
-  )
+export default function BadgeCard({badge}: {badge:BadgeWithOwner}) {
+  const href = `/badges/${encodeURIComponent(badge.slug)}`
+  const family = badgeFamilies[badge.category] ?? badgeFamilies.social
+  const ownerName = badge.owner_profile?.display_name || badge.owner_profile?.username || 'a fellow player'
+  return <article className="rounded-object border border-border bg-surface-paper p-4">
+    <div className="flex items-start gap-3"><BadgeArtwork category={badge.category} earned={Boolean(badge.viewer_award)} className="h-20 w-20 shrink-0" /><div className="min-w-0"><p className="text-xs font-semibold text-state-social">{family.label} · {badge.category}</p><h2 className="mt-1 break-words text-xl font-bold"><Link href={href} className="underline-offset-4 hover:underline">{badge.name}</Link></h2><p className="mt-1 text-sm text-muted-foreground">Awarded by {badge.owner_profile?.username ? <Link href={`/users/${encodeURIComponent(badge.owner_profile.username)}`} className="underline">{ownerName}</Link> : ownerName}</p></div></div>
+    <p className="my-3 text-sm leading-6">{badge.description || badge.condition_summary || 'A little recognition for your musical life.'}</p>
+    <BadgeProgressSummary viewerAward={badge.viewer_award} progress={badge.viewer_progress} />
+    <div className="mt-3 flex items-center justify-between gap-2 text-sm"><span className="text-muted-foreground">{badge.recipient_count} recipient{badge.recipient_count === 1 ? '' : 's'}{badge.visibility !== 'public' ? ` · ${badge.visibility}` : ''}</span><Link href={href} className="inline-flex min-h-11 items-center font-semibold text-state-social underline">Meaning & next step<span className="sr-only"> for {badge.name}</span></Link></div>
+  </article>
 }

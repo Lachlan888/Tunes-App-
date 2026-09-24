@@ -11,9 +11,9 @@ export const buttonStyles = {
 
   secondaryStrong: `${controlBase} border-hairline bg-surface-paper text-text-primary hover:border-action-primary/45 hover:bg-surface-note`,
 
-  practice: `${controlBase} border-state-practice bg-state-practice text-state-practice-foreground hover:-translate-y-px hover:bg-state-practice/90 hover:shadow-material-raised active:translate-y-0`,
+  practice: `${controlBase} border-state-practice bg-state-practice text-state-practice-foreground hover:-translate-y-px hover:bg-state-practice-hover hover:shadow-material-raised active:translate-y-0`,
 
-  social: `${controlBase} border-state-social bg-state-social text-state-social-foreground hover:-translate-y-px hover:bg-state-social/90 hover:shadow-material-raised active:translate-y-0`,
+  social: `${controlBase} border-state-social bg-state-social text-state-social-foreground hover:-translate-y-px hover:bg-state-social-hover hover:shadow-material-raised active:translate-y-0`,
 
   due: `${controlBase} border-state-due bg-state-due text-state-due-foreground hover:-translate-y-px hover:bg-state-due/88 hover:shadow-material-raised active:translate-y-0`,
 
@@ -47,13 +47,13 @@ export const buttonStyles = {
   modalClose: `${compactControlBase} border-hairline bg-surface-paper text-text-muted hover:bg-surface-note hover:text-text-primary`,
 
   reviewRough:
-    "inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-pill border border-state-overdue bg-state-overdue px-2 py-2 text-sm font-semibold text-state-overdue-foreground shadow-material-rest transition-[background-color,box-shadow,transform] [transition-duration:var(--motion-standard)] hover:-translate-y-px hover:bg-state-overdue/90 hover:shadow-material-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[104px] sm:px-4",
+    "inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-control border border-state-overdue bg-state-overdue px-2 py-2 text-sm font-semibold text-state-overdue-foreground shadow-material-rest transition-[background-color,box-shadow,transform] [transition-duration:var(--motion-standard)] hover:-translate-y-px hover:bg-state-overdue-hover hover:shadow-material-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[104px] sm:px-4",
 
   reviewShaky:
-    "inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-pill border border-state-due bg-state-due px-2 py-2 text-sm font-semibold text-state-due-foreground shadow-material-rest transition-[background-color,box-shadow,transform] [transition-duration:var(--motion-standard)] hover:-translate-y-px hover:bg-state-due/88 hover:shadow-material-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[104px] sm:px-4",
+    "inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-control border border-state-due bg-state-due px-2 py-2 text-sm font-semibold text-state-due-foreground shadow-material-rest transition-[background-color,box-shadow,transform] [transition-duration:var(--motion-standard)] hover:-translate-y-px hover:bg-state-due/88 hover:shadow-material-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[104px] sm:px-4",
 
   reviewSolid:
-    "inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-pill border border-state-known bg-state-known px-2 py-2 text-sm font-semibold text-state-known-foreground shadow-material-rest transition-[background-color,box-shadow,transform] [transition-duration:var(--motion-standard)] hover:-translate-y-px hover:bg-state-known/90 hover:shadow-material-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[104px] sm:px-4",
+    "inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-control border border-state-known bg-state-known px-2 py-2 text-sm font-semibold text-state-known-foreground shadow-material-rest transition-[background-color,box-shadow,transform] [transition-duration:var(--motion-standard)] hover:-translate-y-px hover:bg-state-known-hover hover:shadow-material-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[104px] sm:px-4",
 } as const
 
 export type ButtonVariant = keyof typeof buttonStyles

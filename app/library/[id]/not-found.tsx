@@ -7,6 +7,7 @@ export default function TuneDetailNotFound() {
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
       <EmptyState
+        headingAs="h1"
         title="Tune not found"
         description="This tune may have been removed or its link may be incorrect. Search the catalogue for another title or alias."
         icon="search"

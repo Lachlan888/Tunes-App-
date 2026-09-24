@@ -16,12 +16,11 @@ export default function SetlistReadView({
 
   return (
     <section aria-labelledby="running-order-title">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">RUNNING ORDER</p>
           <h2 id="running-order-title" className="mt-1 text-xl font-semibold">Tunes in playing order</h2>
         </div>
-        <Link href={`?mode=performance&performance=${items[0].id}`} className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground">Performance Mode</Link>
+        <Link href={`?mode=performance`} className="inline-flex min-h-11 items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground">Performance Mode</Link>
       </div>
       <ol className="mt-4 divide-y divide-hairline border-y border-hairline">
         {items.map((item, index) => {

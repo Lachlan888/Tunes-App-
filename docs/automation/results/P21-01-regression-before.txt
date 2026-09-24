@@ -1,0 +1,102 @@
+(node:32157) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/home-streak-composition.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ Home places one authoritative streak summary in Repertoire: populated (4.610916ms)
+✖ Home places one authoritative streak summary in Repertoire: new user (0.925625ms)
+✖ Home places one authoritative streak summary in Repertoire: broken streak (0.818375ms)
+✖ Home badge reads retain user filters and exact counts without preview reads (0.243709ms)
+✖ Home badge count failures remain visible (0.518583ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 0
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 275.986083
+
+✖ failing tests:
+
+test at tests/home-streak-composition.test.ts:35:3
+✖ Home places one authoritative streak summary in Repertoire: populated (4.610916ms)
+  TypeError: Cannot read properties of undefined (reading 'map')
+      at RepertoirePanel (eval at load (file:///Users/lachlan.haycox/Desktop/tunes-app/tests/home-streak-composition.test.ts:16:3), <anonymous>:113:54)
+      at Object.react_stack_bottom_frame (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6417:31)
+      at renderNodeDestructive (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6367:11)
+      at renderNode (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6905:18)
+      at renderElement (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5619:18)
+      at retryNode (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6417:31)
+      at renderNodeDestructive (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6367:11)
+
+test at tests/home-streak-composition.test.ts:35:3
+✖ Home places one authoritative streak summary in Repertoire: new user (0.925625ms)
+  TypeError: Cannot read properties of undefined (reading 'map')
+      at RepertoirePanel (eval at load (file:///Users/lachlan.haycox/Desktop/tunes-app/tests/home-streak-composition.test.ts:16:3), <anonymous>:113:54)
+      at Object.react_stack_bottom_frame (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6417:31)
+      at renderNodeDestructive (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6367:11)
+      at renderNode (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6905:18)
+      at renderElement (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5619:18)
+      at retryNode (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6417:31)
+      at renderNodeDestructive (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6367:11)
+
+test at tests/home-streak-composition.test.ts:35:3
+✖ Home places one authoritative streak summary in Repertoire: broken streak (0.818375ms)
+  TypeError: Cannot read properties of undefined (reading 'map')
+      at RepertoirePanel (eval at load (file:///Users/lachlan.haycox/Desktop/tunes-app/tests/home-streak-composition.test.ts:16:3), <anonymous>:113:54)
+      at Object.react_stack_bottom_frame (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6417:31)
+      at renderNodeDestructive (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6367:11)
+      at renderNode (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6905:18)
+      at renderElement (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5619:18)
+      at retryNode (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6417:31)
+      at renderNodeDestructive (/Users/lachlan.haycox/Desktop/tunes-app/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6367:11)
+
+test at tests/home-streak-composition.test.ts:56:1
+✖ Home badge reads retain user filters and exact counts without preview reads (0.243709ms)
+  TypeError: supabase.from(...).select(...).eq(...).order is not a function
+      at loadHomeBadgeSummary (eval at load (file:///Users/lachlan.haycox/Desktop/tunes-app/tests/home-streak-composition.test.ts:16:3), <anonymous>:262:14)
+      at TestContext.<anonymous> (file:///Users/lachlan.haycox/Desktop/tunes-app/tests/home-streak-composition.test.ts:68:25)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at tests/home-streak-composition.test.ts:76:1
+✖ Home badge count failures remain visible (0.518583ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /fixture read failure/. Input:
+  
+  'TypeError: supabase.from(...).select(...).eq(...).order is not a function'
+  
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///Users/lachlan.haycox/Desktop/tunes-app/tests/home-streak-composition.test.ts:78:3)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: TypeError: supabase.from(...).select(...).eq(...).order is not a function
+        at loadHomeBadgeSummary (eval at load (file:///Users/lachlan.haycox/Desktop/tunes-app/tests/home-streak-composition.test.ts:16:3), <anonymous>:262:14)
+        at file:///Users/lachlan.haycox/Desktop/tunes-app/tests/home-streak-composition.test.ts:78:44
+        at waitForActual (node:assert:632:21)
+        at strict.rejects (node:assert:769:31)
+        at TestContext.<anonymous> (file:///Users/lachlan.haycox/Desktop/tunes-app/tests/home-streak-composition.test.ts:78:16)
+        at Test.runInAsyncScope (node:async_hooks:228:14)
+        at Test.run (node:internal/test_runner/test:1118:25)
+        at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+        at Test.postRun (node:internal/test_runner/test:1247:19)
+        at Test.run (node:internal/test_runner/test:1175:12),
+    expected: /fixture read failure/,
+    operator: 'rejects',
+    diff: 'simple'
+  }

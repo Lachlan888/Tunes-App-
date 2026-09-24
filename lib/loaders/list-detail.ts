@@ -1,4 +1,5 @@
-import { notFound, redirect } from "next/navigation"
+import { redirectToLogin } from "@/lib/auth/login-redirect"
+import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { loadTuneMediaBundles } from "@/lib/tune-media"
 import type {
@@ -97,7 +98,7 @@ export async function loadLearningListDetailData(rawListId: string) {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    return redirectToLogin()
   }
 
   const { data: list, error: listError } = await supabase

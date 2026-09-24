@@ -62,9 +62,13 @@ export default function AccountMenu({
       triggerRef.current?.focus()
     }
 
+    const railBreakpoint = window.matchMedia("(min-width: 768px)")
+    function closeOnLayoutChange() { setIsOpen(false) }
+    railBreakpoint.addEventListener("change", closeOnLayoutChange)
     document.addEventListener("pointerdown", handlePointerDown)
     document.addEventListener("keydown", handleKeyDown)
     return () => {
+      railBreakpoint.removeEventListener("change", closeOnLayoutChange)
       document.removeEventListener("pointerdown", handlePointerDown)
       document.removeEventListener("keydown", handleKeyDown)
     }
@@ -72,13 +76,11 @@ export default function AccountMenu({
 
   const links: MenuLink[] = [
     { href: "/dashboard", label: "Account & settings", icon: "settings" },
-    { href: "/public-lists", label: "Browse public lists", icon: "book" },
     { href: "/setlists", label: "Setlists", icon: "setlist" },
     { href: "/badges", label: "Badges", icon: "badge" },
     { href: "/trends", label: "Trends", icon: "trend" },
   ]
   const socialLinks: MenuLink[] = [
-    { href: "/friends", label: "Friends", icon: "social" },
     { href: "/inbox", label: "Inbox", icon: "inbox", count: unreadTotalCount },
   ]
 
@@ -109,7 +111,7 @@ export default function AccountMenu({
           role="menu"
           aria-label="Account and secondary navigation"
           className={joinClasses(
-            "floating-material absolute z-[400] w-[min(20rem,calc(100vw-2rem))] rounded-sheet border border-hairline p-2 shadow-material-floating",
+            "floating-material absolute max-h-[calc(100dvh-5rem)] overflow-y-auto z-[400] w-[min(20rem,calc(100vw-2rem))] rounded-sheet border border-hairline p-2 shadow-material-floating",
             placement === "above-right"
               ? "bottom-0 left-[calc(100%+0.75rem)]"
               : "right-0 top-[calc(100%+0.5rem)]"

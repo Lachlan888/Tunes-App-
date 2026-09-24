@@ -1,0 +1,13 @@
+{
+  "verified_at": "2026-09-22T13:13:53.819981+00:00",
+  "sha256": {
+    "tests/list-permissions.test.ts": "57aeeddfa8bb88d11f240090f8254f4857d252ce83e06e30f636cbb14ce6a0b6",
+    "tests/integration/list-permission-helpers.mjs": "7502da34ca7373737032704af2d7171052d3b00342f00a43b2aad7c600d2589f",
+    "supabase/migrations/20260623002000_fix_learning_list_share_rls_recursion.sql": "76994cd54acaadf1737fad3aa0dc9943d55bc5b625a1f5af098f44dd0700a8de",
+    "supabase/migrations/20260922131057_bind_learning_list_helpers_to_caller.sql": "14e24b34fab60f11258a6d3a4f7efcd14a23bcb1b290ddf8e3233a6370f62c53",
+    "lib/loaders/list-detail.ts": "0395accba9d88333c6860b28700f28d6204ce78322a6481abd9bd90364fd164e",
+    "lib/loaders/public-list-detail.ts": "ee897d2a7256222857d29709eabe9032f0b8eb1a3750840d8f298417798e3c05",
+    "lib/actions/lists.ts": "737e90e45f8dcc1342c3174bc32d97981c808b962a830ee0f33da08494281bfd",
+    "package-lock.json": "42f3a674b0cba3314b2559341ff93ad904be09a0f01044913e870f35881c87e1"
+  }
+}

@@ -1,0 +1,2441 @@
+{
+  "status": "Prompt 17 responsive acceptance complete",
+  "updated_at": "2026-09-12T09:18:18.015576+00:00",
+  "results": [
+    {
+      "route": "/",
+      "width": 390,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "panels": [
+        {
+          "id": "today",
+          "visible": false
+        },
+        {
+          "id": "repertoire",
+          "visible": false
+        },
+        {
+          "id": "social",
+          "visible": true
+        }
+      ],
+      "title": "Home",
+      "screenshot": "home-390.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/",
+      "width": 430,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "panels": [
+        {
+          "id": "today",
+          "visible": false
+        },
+        {
+          "id": "repertoire",
+          "visible": false
+        },
+        {
+          "id": "social",
+          "visible": true
+        }
+      ],
+      "title": "Home",
+      "screenshot": "home-430.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/",
+      "width": 768,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "panels": [
+        {
+          "id": "today",
+          "visible": true
+        },
+        {
+          "id": "repertoire",
+          "visible": true
+        },
+        {
+          "id": "social",
+          "visible": true
+        }
+      ],
+      "title": "Home",
+      "screenshot": "home-768.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/",
+      "width": 1024,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "panels": [
+        {
+          "id": "today",
+          "visible": true
+        },
+        {
+          "id": "repertoire",
+          "visible": true
+        },
+        {
+          "id": "social",
+          "visible": true
+        }
+      ],
+      "title": "Home",
+      "screenshot": "home-1024.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/",
+      "width": 1440,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "panels": [
+        {
+          "id": "today",
+          "visible": true
+        },
+        {
+          "id": "repertoire",
+          "visible": true
+        },
+        {
+          "id": "social",
+          "visible": true
+        }
+      ],
+      "title": "Home",
+      "screenshot": "home-1440.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/learning-lists",
+      "width": 390,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Lists",
+      "screenshot": "lists-390.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/learning-lists",
+      "width": 430,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Lists",
+      "screenshot": "lists-430.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/learning-lists",
+      "width": 768,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Lists",
+      "screenshot": "lists-768.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/learning-lists",
+      "width": 1024,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Lists",
+      "screenshot": "lists-1024.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/learning-lists",
+      "width": 1440,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Lists",
+      "screenshot": "lists-1440.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/learning-lists?view=learning-queue",
+      "width": 390,
+      "overflow": false,
+      "duplicates": [],
+      "title": "Lists",
+      "nav": 1,
+      "screenshot": "queue-390.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/learning-lists?view=learning-queue",
+      "width": 430,
+      "overflow": false,
+      "duplicates": [],
+      "title": "Lists",
+      "nav": 1,
+      "screenshot": "queue-430.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/learning-lists?view=learning-queue",
+      "width": 768,
+      "overflow": false,
+      "duplicates": [],
+      "title": "Lists",
+      "nav": 1,
+      "screenshot": "queue-768.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/learning-lists?view=learning-queue",
+      "width": 1024,
+      "overflow": false,
+      "duplicates": [],
+      "title": "Lists",
+      "nav": 1,
+      "screenshot": "queue-1024.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/learning-lists?view=learning-queue",
+      "width": 1440,
+      "overflow": false,
+      "duplicates": [],
+      "title": "Lists",
+      "nav": 1,
+      "screenshot": "queue-1440.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library",
+      "width": 390,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Tunes",
+      "screenshot": "catalogue-390.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library",
+      "width": 430,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Tunes",
+      "screenshot": "catalogue-430.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library",
+      "width": 768,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Tunes",
+      "screenshot": "catalogue-768.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library",
+      "width": 1024,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Tunes",
+      "screenshot": "catalogue-1024.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library",
+      "width": 1440,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Tunes",
+      "screenshot": "catalogue-1440.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library/known",
+      "width": 390,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Known Tunes",
+      "screenshot": "known-390.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library/known",
+      "width": 430,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Known Tunes",
+      "screenshot": "known-430.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library/known",
+      "width": 768,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Known Tunes",
+      "screenshot": "known-768.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library/known",
+      "width": 1024,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Known Tunes",
+      "screenshot": "known-1024.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library/known",
+      "width": 1440,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Known Tunes",
+      "screenshot": "known-1440.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library/practice",
+      "width": 390,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Practice Tunes",
+      "screenshot": "practice-collection-390.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library/practice",
+      "width": 430,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Practice Tunes",
+      "screenshot": "practice-collection-430.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library/practice",
+      "width": 768,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Practice Tunes",
+      "screenshot": "practice-collection-768.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library/practice",
+      "width": 1024,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Practice Tunes",
+      "screenshot": "practice-collection-1024.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library/practice",
+      "width": 1440,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Practice Tunes",
+      "screenshot": "practice-collection-1440.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/public-lists",
+      "width": 390,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Public Lists",
+      "screenshot": "public-lists-390.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/public-lists",
+      "width": 430,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Public Lists",
+      "screenshot": "public-lists-430.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/public-lists",
+      "width": 768,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Public Lists",
+      "screenshot": "public-lists-768.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/public-lists",
+      "width": 1024,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Public Lists",
+      "screenshot": "public-lists-1024.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/public-lists",
+      "width": 1440,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Public Lists",
+      "screenshot": "public-lists-1440.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/review",
+      "width": 390,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Practice",
+      "screenshot": "review-390.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/review",
+      "width": 430,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Practice",
+      "screenshot": "review-430.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/review",
+      "width": 768,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Practice",
+      "screenshot": "review-768.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/review",
+      "width": 1024,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Practice",
+      "screenshot": "review-1024.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/review",
+      "width": 1440,
+      "overflow": false,
+      "duplicates": [],
+      "nav": 1,
+      "title": "Practice",
+      "screenshot": "review-1440.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/setlists",
+      "width": 390,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Setlists",
+      "screenshot": "setlists-390.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/setlists",
+      "width": 430,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Setlists",
+      "screenshot": "setlists-430.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/setlists",
+      "width": 768,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Setlists",
+      "screenshot": "setlists-768.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/setlists",
+      "width": 1024,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Setlists",
+      "screenshot": "setlists-1024.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/setlists",
+      "width": 1440,
+      "duplicates": [],
+      "nav": 1,
+      "overflow": false,
+      "title": "Setlists",
+      "screenshot": "setlists-1440.png",
+      "capture": "viewport"
+    },
+    {
+      "route": "/library/623",
+      "width": 390,
+      "screenshot": "continued-0-390.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/library/623",
+      "width": 430,
+      "screenshot": "continued-1-430.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/library/623",
+      "width": 768,
+      "screenshot": "continued-2-768.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/library/623",
+      "width": 1024,
+      "screenshot": "continued-3-1024.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/library/623",
+      "width": 1440,
+      "screenshot": "continued-4-1440.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/library/623?view=reference",
+      "width": 390,
+      "screenshot": "continued-5-390.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/library/623?view=reference",
+      "width": 430,
+      "screenshot": "continued-6-430.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/library/623?view=reference",
+      "width": 768,
+      "screenshot": "continued-7-768.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/library/623?view=reference",
+      "width": 1024,
+      "screenshot": "continued-8-1024.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/library/623?view=reference",
+      "width": 1440,
+      "screenshot": "continued-9-1440.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/library/623/reference-media",
+      "width": 390,
+      "screenshot": "continued-10-390.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/library/623/reference-media",
+      "width": 430,
+      "screenshot": "continued-11-430.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/library/623/reference-media",
+      "width": 768,
+      "screenshot": "continued-12-768.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/library/623/reference-media",
+      "width": 1024,
+      "screenshot": "continued-13-1024.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/library/623/reference-media",
+      "width": 1440,
+      "screenshot": "continued-14-1440.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/library/623?view=about",
+      "width": 390,
+      "screenshot": "continued-15-390.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/library/623?view=about",
+      "width": 430,
+      "screenshot": "continued-16-430.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/library/623?view=about",
+      "width": 768,
+      "screenshot": "continued-17-768.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/library/623?view=about",
+      "width": 1024,
+      "screenshot": "continued-18-1024.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/library/623?view=about",
+      "width": 1440,
+      "screenshot": "continued-19-1440.png",
+      "duplicateIds": [],
+      "heading": "Abe's Retreat",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/learning-lists/66",
+      "width": 390,
+      "screenshot": "continued-20-390.png",
+      "duplicateIds": [],
+      "heading": "Earl White Stringband - Fiddlin' Earl White",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/learning-lists/66",
+      "width": 430,
+      "screenshot": "continued-21-430.png",
+      "duplicateIds": [],
+      "heading": "Earl White Stringband - Fiddlin' Earl White",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/learning-lists/66",
+      "width": 768,
+      "screenshot": "continued-22-768.png",
+      "duplicateIds": [],
+      "heading": "Earl White Stringband - Fiddlin' Earl White",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/learning-lists/66",
+      "width": 1024,
+      "screenshot": "continued-23-1024.png",
+      "duplicateIds": [],
+      "heading": "Earl White Stringband - Fiddlin' Earl White",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/learning-lists/66",
+      "width": 1440,
+      "screenshot": "continued-24-1440.png",
+      "duplicateIds": [],
+      "heading": "Earl White Stringband - Fiddlin' Earl White",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/learning-lists/66?mode=manage",
+      "width": 390,
+      "screenshot": "continued-25-390.png",
+      "duplicateIds": [],
+      "heading": "Earl White Stringband - Fiddlin' Earl White",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/learning-lists/66?mode=manage",
+      "width": 430,
+      "screenshot": "continued-26-430.png",
+      "duplicateIds": [],
+      "heading": "Earl White Stringband - Fiddlin' Earl White",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/learning-lists/66?mode=manage",
+      "width": 768,
+      "screenshot": "continued-27-768.png",
+      "duplicateIds": [],
+      "heading": "Earl White Stringband - Fiddlin' Earl White",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/learning-lists/66?mode=manage",
+      "width": 1024,
+      "screenshot": "continued-28-1024.png",
+      "duplicateIds": [],
+      "heading": "Earl White Stringband - Fiddlin' Earl White",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/learning-lists/66?mode=manage",
+      "width": 1440,
+      "screenshot": "continued-29-1440.png",
+      "duplicateIds": [],
+      "heading": "Earl White Stringband - Fiddlin' Earl White",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/setlists/3",
+      "width": 390,
+      "screenshot": "continued-30-390.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/setlists/3",
+      "width": 430,
+      "screenshot": "continued-31-430.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/setlists/3",
+      "width": 768,
+      "screenshot": "continued-32-768.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/setlists/3",
+      "width": 1024,
+      "screenshot": "continued-33-1024.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/setlists/3",
+      "width": 1440,
+      "screenshot": "continued-34-1440.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/setlists/3?mode=manage",
+      "width": 390,
+      "screenshot": "continued-35-390.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/setlists/3?mode=manage",
+      "width": 430,
+      "screenshot": "continued-36-430.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/setlists/3?mode=manage",
+      "width": 768,
+      "screenshot": "continued-37-768.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/setlists/3?mode=manage",
+      "width": 1024,
+      "screenshot": "continued-38-1024.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/setlists/3?mode=manage",
+      "width": 1440,
+      "screenshot": "continued-39-1440.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/setlists/3?mode=performance",
+      "width": 390,
+      "screenshot": "continued-40-390.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/setlists/3?mode=performance",
+      "width": 430,
+      "screenshot": "continued-41-430.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/setlists/3?mode=performance",
+      "width": 768,
+      "screenshot": "continued-42-768.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/setlists/3?mode=performance",
+      "width": 1024,
+      "screenshot": "continued-43-1024.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/setlists/3?mode=performance",
+      "width": 1440,
+      "screenshot": "continued-44-1440.png",
+      "duplicateIds": [],
+      "heading": "Test",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/review?session=due-today",
+      "width": 390,
+      "screenshot": "continued-45-390.png",
+      "duplicateIds": [],
+      "heading": "0 tunes practised",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/review?session=due-today",
+      "width": 430,
+      "screenshot": "continued-46-430.png",
+      "duplicateIds": [],
+      "heading": "0 tunes practised",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/review?session=due-today",
+      "width": 768,
+      "screenshot": "continued-47-768.png",
+      "duplicateIds": [],
+      "heading": "0 tunes practised",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/review?session=due-today",
+      "width": 1024,
+      "screenshot": "continued-48-1024.png",
+      "duplicateIds": [],
+      "heading": "0 tunes practised",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/review?session=due-today",
+      "width": 1440,
+      "screenshot": "continued-49-1440.png",
+      "duplicateIds": [],
+      "heading": "0 tunes practised",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/review?session=catch-up",
+      "width": 390,
+      "screenshot": "continued-50-390.png",
+      "duplicateIds": [],
+      "heading": "Focused Practice",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/review?session=catch-up",
+      "width": 430,
+      "screenshot": "continued-51-430.png",
+      "duplicateIds": [],
+      "heading": "Focused Practice",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/review?session=catch-up",
+      "width": 768,
+      "screenshot": "continued-52-768.png",
+      "duplicateIds": [],
+      "heading": "Focused Practice",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/review?session=catch-up",
+      "width": 1024,
+      "screenshot": "continued-53-1024.png",
+      "duplicateIds": [],
+      "heading": "Focused Practice",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/review?session=catch-up",
+      "width": 1440,
+      "screenshot": "continued-54-1440.png",
+      "duplicateIds": [],
+      "heading": "Focused Practice",
+      "navCount": 0,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/review/diary",
+      "width": 390,
+      "screenshot": "continued-55-390.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/review/diary",
+      "width": 430,
+      "screenshot": "continued-56-430.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/review/diary",
+      "width": 768,
+      "screenshot": "continued-57-768.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/review/diary",
+      "width": 1024,
+      "screenshot": "continued-58-1024.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/review/diary",
+      "width": 1440,
+      "screenshot": "continued-59-1440.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/review/diary?view=week",
+      "width": 390,
+      "screenshot": "continued-60-390.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/review/diary?view=week",
+      "width": 430,
+      "screenshot": "continued-61-430.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/review/diary?view=week",
+      "width": 768,
+      "screenshot": "continued-62-768.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/review/diary?view=week",
+      "width": 1024,
+      "screenshot": "continued-63-1024.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/review/diary?view=week",
+      "width": 1440,
+      "screenshot": "continued-64-1440.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/review/diary?view=month",
+      "width": 390,
+      "screenshot": "continued-65-390.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/review/diary?view=month",
+      "width": 430,
+      "screenshot": "continued-66-430.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/review/diary?view=month",
+      "width": 768,
+      "screenshot": "continued-67-768.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/review/diary?view=month",
+      "width": 1024,
+      "screenshot": "continued-68-1024.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/review/diary?view=month",
+      "width": 1440,
+      "screenshot": "continued-69-1440.png",
+      "duplicateIds": [],
+      "heading": "Practice Diary",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/trends",
+      "width": 390,
+      "screenshot": "continued-70-390.png",
+      "duplicateIds": [],
+      "heading": "Trends",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/trends",
+      "width": 430,
+      "screenshot": "continued-71-430.png",
+      "duplicateIds": [],
+      "heading": "Trends",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/trends",
+      "width": 768,
+      "screenshot": "continued-72-768.png",
+      "duplicateIds": [],
+      "heading": "Trends",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/trends",
+      "width": 1024,
+      "screenshot": "continued-73-1024.png",
+      "duplicateIds": [],
+      "heading": "Trends",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/trends",
+      "width": 1440,
+      "screenshot": "continued-74-1440.png",
+      "duplicateIds": [],
+      "heading": "Trends",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/friends",
+      "width": 390,
+      "screenshot": "continued-75-390.png",
+      "duplicateIds": [],
+      "heading": "Friends",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/friends",
+      "width": 430,
+      "screenshot": "continued-76-430.png",
+      "duplicateIds": [],
+      "heading": "Friends",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/friends",
+      "width": 768,
+      "screenshot": "continued-77-768.png",
+      "duplicateIds": [],
+      "heading": "Friends",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/friends",
+      "width": 1024,
+      "screenshot": "continued-78-1024.png",
+      "duplicateIds": [],
+      "heading": "Friends",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/friends",
+      "width": 1440,
+      "screenshot": "continued-79-1440.png",
+      "duplicateIds": [],
+      "heading": "Friends",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/inbox",
+      "width": 390,
+      "screenshot": "continued-80-390.png",
+      "duplicateIds": [],
+      "heading": "Inbox",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/inbox",
+      "width": 430,
+      "screenshot": "continued-81-430.png",
+      "duplicateIds": [],
+      "heading": "Inbox",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/inbox",
+      "width": 768,
+      "screenshot": "continued-82-768.png",
+      "duplicateIds": [],
+      "heading": "Inbox",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/inbox",
+      "width": 1024,
+      "screenshot": "continued-83-1024.png",
+      "duplicateIds": [],
+      "heading": "Inbox",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/inbox",
+      "width": 1440,
+      "screenshot": "continued-84-1440.png",
+      "duplicateIds": [],
+      "heading": "Inbox",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/inbox?tab=messages",
+      "width": 390,
+      "screenshot": "continued-85-390.png",
+      "duplicateIds": [],
+      "heading": "Inbox",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/inbox?tab=messages",
+      "width": 430,
+      "screenshot": "continued-86-430.png",
+      "duplicateIds": [],
+      "heading": "Inbox",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/inbox?tab=messages",
+      "width": 768,
+      "screenshot": "continued-87-768.png",
+      "duplicateIds": [],
+      "heading": "Inbox",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/inbox?tab=messages",
+      "width": 1024,
+      "screenshot": "continued-88-1024.png",
+      "duplicateIds": [],
+      "heading": "Inbox",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/inbox?tab=messages",
+      "width": 1440,
+      "screenshot": "continued-89-1440.png",
+      "duplicateIds": [],
+      "heading": "Inbox",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/badges",
+      "width": 390,
+      "screenshot": "continued-90-390.png",
+      "duplicateIds": [],
+      "heading": "Badges",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/badges",
+      "width": 430,
+      "screenshot": "continued-91-430.png",
+      "duplicateIds": [],
+      "heading": "Badges",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/badges",
+      "width": 768,
+      "screenshot": "continued-92-768.png",
+      "duplicateIds": [],
+      "heading": "Badges",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/badges",
+      "width": 1024,
+      "screenshot": "continued-93-1024.png",
+      "duplicateIds": [],
+      "heading": "Badges",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/badges",
+      "width": 1440,
+      "screenshot": "continued-94-1440.png",
+      "duplicateIds": [],
+      "heading": "Badges",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/trends/old-time",
+      "width": 390,
+      "screenshot": "continued-95-390.png",
+      "duplicateIds": [],
+      "heading": "Old-Time",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 390
+    },
+    {
+      "route": "/trends/old-time",
+      "width": 430,
+      "screenshot": "continued-96-430.png",
+      "duplicateIds": [],
+      "heading": "Old-Time",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 430
+    },
+    {
+      "route": "/trends/old-time",
+      "width": 768,
+      "screenshot": "continued-97-768.png",
+      "duplicateIds": [],
+      "heading": "Old-Time",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 768
+    },
+    {
+      "route": "/trends/old-time",
+      "width": 1024,
+      "screenshot": "continued-98-1024.png",
+      "duplicateIds": [],
+      "heading": "Old-Time",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1024
+    },
+    {
+      "route": "/trends/old-time",
+      "width": 1440,
+      "screenshot": "continued-99-1440.png",
+      "duplicateIds": [],
+      "heading": "Old-Time",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport",
+      "imageWidth": 1440
+    },
+    {
+      "route": "/public-lists/73",
+      "width": 390,
+      "screenshot": "continued-100-390.png",
+      "duplicateIds": [],
+      "heading": "Evie's Tunes",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/public-lists/73",
+      "width": 430,
+      "screenshot": "continued-101-430.png",
+      "duplicateIds": [],
+      "heading": "Evie's Tunes",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/public-lists/73",
+      "width": 768,
+      "screenshot": "continued-102-768.png",
+      "duplicateIds": [],
+      "heading": "Evie's Tunes",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/public-lists/73",
+      "width": 1024,
+      "screenshot": "continued-103-1024.png",
+      "duplicateIds": [],
+      "heading": "Evie's Tunes",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/public-lists/73",
+      "width": 1440,
+      "screenshot": "continued-104-1440.png",
+      "duplicateIds": [],
+      "heading": "Evie's Tunes",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/users/lach",
+      "width": 390,
+      "screenshot": "continued-105-390.png",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/users/lach",
+      "width": 430,
+      "screenshot": "continued-106-430.png",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/users/lach",
+      "width": 768,
+      "screenshot": "continued-107-768.png",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/users/lach",
+      "width": 1024,
+      "screenshot": "continued-108-1024.png",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/users/lach",
+      "width": 1440,
+      "screenshot": "continued-109-1440.png",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/badges/a-modal-support-group",
+      "width": 390,
+      "screenshot": "continued-110-390.png",
+      "duplicateIds": [],
+      "heading": "A Modal Support Group",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/badges/a-modal-support-group",
+      "width": 430,
+      "screenshot": "continued-111-430.png",
+      "duplicateIds": [],
+      "heading": "A Modal Support Group",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/badges/a-modal-support-group",
+      "width": 768,
+      "screenshot": "continued-112-768.png",
+      "duplicateIds": [],
+      "heading": "A Modal Support Group",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/badges/a-modal-support-group",
+      "width": 1024,
+      "screenshot": "continued-113-1024.png",
+      "duplicateIds": [],
+      "heading": "A Modal Support Group",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/badges/a-modal-support-group",
+      "width": 1440,
+      "screenshot": "continued-114-1440.png",
+      "duplicateIds": [],
+      "heading": "A Modal Support Group",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard",
+      "width": 390,
+      "screenshot": "continued-115-390.png",
+      "duplicateIds": [],
+      "heading": "Account & settings",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard",
+      "width": 430,
+      "screenshot": "continued-116-430.png",
+      "duplicateIds": [],
+      "heading": "Account & settings",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard",
+      "width": 768,
+      "screenshot": "continued-117-768.png",
+      "duplicateIds": [],
+      "heading": "Account & settings",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard",
+      "width": 1024,
+      "screenshot": "continued-118-1024.png",
+      "duplicateIds": [],
+      "heading": "Account & settings",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard",
+      "width": 1440,
+      "screenshot": "continued-119-1440.png",
+      "duplicateIds": [],
+      "heading": "Account & settings",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/compare",
+      "width": 390,
+      "screenshot": "continued-120-390.png",
+      "duplicateIds": [],
+      "heading": "Compare",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/compare",
+      "width": 430,
+      "screenshot": "continued-121-430.png",
+      "duplicateIds": [],
+      "heading": "Compare",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/compare",
+      "width": 768,
+      "screenshot": "continued-122-768.png",
+      "duplicateIds": [],
+      "heading": "Compare",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/compare",
+      "width": 1024,
+      "screenshot": "continued-123-1024.png",
+      "duplicateIds": [],
+      "heading": "Compare",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/compare",
+      "width": 1440,
+      "screenshot": "continued-124-1440.png",
+      "duplicateIds": [],
+      "heading": "Compare",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/compare?user=erin_heycox&include_practice=1",
+      "width": 390,
+      "screenshot": "continued-125-390.png",
+      "duplicateIds": [],
+      "heading": "Compare",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/compare?user=erin_heycox&include_practice=1",
+      "width": 430,
+      "screenshot": "continued-126-430.png",
+      "duplicateIds": [],
+      "heading": "Compare",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/compare?user=erin_heycox&include_practice=1",
+      "width": 768,
+      "screenshot": "continued-127-768.png",
+      "duplicateIds": [],
+      "heading": "Compare",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/compare?user=erin_heycox&include_practice=1",
+      "width": 1024,
+      "screenshot": "continued-128-1024.png",
+      "duplicateIds": [],
+      "heading": "Compare",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/compare?user=erin_heycox&include_practice=1",
+      "width": 1440,
+      "screenshot": "continued-129-1440.png",
+      "duplicateIds": [],
+      "heading": "Compare",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=profile",
+      "width": 390,
+      "screenshot": "continued-130-390.png",
+      "duplicateIds": [],
+      "heading": "Profile",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=profile",
+      "width": 430,
+      "screenshot": "continued-131-430.png",
+      "duplicateIds": [],
+      "heading": "Profile",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=profile",
+      "width": 768,
+      "screenshot": "continued-132-768.png",
+      "duplicateIds": [],
+      "heading": "Profile",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=profile",
+      "width": 1024,
+      "screenshot": "continued-133-1024.png",
+      "duplicateIds": [],
+      "heading": "Profile",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=profile",
+      "width": 1440,
+      "screenshot": "continued-134-1440.png",
+      "duplicateIds": [],
+      "heading": "Profile",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=privacy",
+      "width": 390,
+      "screenshot": "continued-135-390.png",
+      "duplicateIds": [],
+      "heading": "Privacy and sharing",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=privacy",
+      "width": 430,
+      "screenshot": "continued-136-430.png",
+      "duplicateIds": [],
+      "heading": "Privacy and sharing",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=privacy",
+      "width": 768,
+      "screenshot": "continued-137-768.png",
+      "duplicateIds": [],
+      "heading": "Privacy and sharing",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=privacy",
+      "width": 1024,
+      "screenshot": "continued-138-1024.png",
+      "duplicateIds": [],
+      "heading": "Privacy and sharing",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=privacy",
+      "width": 1440,
+      "screenshot": "continued-139-1440.png",
+      "duplicateIds": [],
+      "heading": "Privacy and sharing",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=practice",
+      "width": 390,
+      "screenshot": "continued-140-390.png",
+      "duplicateIds": [],
+      "heading": "Practice preferences",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=practice",
+      "width": 430,
+      "screenshot": "continued-141-430.png",
+      "duplicateIds": [],
+      "heading": "Practice preferences",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=practice",
+      "width": 768,
+      "screenshot": "continued-142-768.png",
+      "duplicateIds": [],
+      "heading": "Practice preferences",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=practice",
+      "width": 1024,
+      "screenshot": "continued-143-1024.png",
+      "duplicateIds": [],
+      "heading": "Practice preferences",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=practice",
+      "width": 1440,
+      "screenshot": "continued-144-1440.png",
+      "duplicateIds": [],
+      "heading": "Practice preferences",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=notifications",
+      "width": 390,
+      "screenshot": "continued-145-390.png",
+      "duplicateIds": [],
+      "heading": "Notifications",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=notifications",
+      "width": 430,
+      "screenshot": "continued-146-430.png",
+      "duplicateIds": [],
+      "heading": "Notifications",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=notifications",
+      "width": 768,
+      "screenshot": "continued-147-768.png",
+      "duplicateIds": [],
+      "heading": "Notifications",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=notifications",
+      "width": 1024,
+      "screenshot": "continued-148-1024.png",
+      "duplicateIds": [],
+      "heading": "Notifications",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=notifications",
+      "width": 1440,
+      "screenshot": "continued-149-1440.png",
+      "duplicateIds": [],
+      "heading": "Notifications",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=security",
+      "width": 390,
+      "screenshot": "continued-150-390.png",
+      "duplicateIds": [],
+      "heading": "Account and security",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=security",
+      "width": 430,
+      "screenshot": "continued-151-430.png",
+      "duplicateIds": [],
+      "heading": "Account and security",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=security",
+      "width": 768,
+      "screenshot": "continued-152-768.png",
+      "duplicateIds": [],
+      "heading": "Account and security",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=security",
+      "width": 1024,
+      "screenshot": "continued-153-1024.png",
+      "duplicateIds": [],
+      "heading": "Account and security",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/dashboard?section=security",
+      "width": 1440,
+      "screenshot": "continued-154-1440.png",
+      "duplicateIds": [],
+      "heading": "Account and security",
+      "navCount": 1,
+      "overflow": false,
+      "capture": "viewport"
+    },
+    {
+      "route": "/review/foci",
+      "width": 390,
+      "screenshot": "continued-155-390.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Focus areas",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/review/foci",
+      "width": 430,
+      "screenshot": "continued-156-430.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Focus areas",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/review/foci",
+      "width": 768,
+      "screenshot": "continued-157-768.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Focus areas",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/review/foci",
+      "width": 1024,
+      "screenshot": "continued-158-1024.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Focus areas",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/review/foci",
+      "width": 1440,
+      "screenshot": "continued-159-1440.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Focus areas",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/review/diary/index",
+      "width": 390,
+      "screenshot": "continued-160-390.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Practice Index",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/review/diary/index",
+      "width": 430,
+      "screenshot": "continued-161-430.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Practice Index",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/review/diary/index",
+      "width": 768,
+      "screenshot": "continued-162-768.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Practice Index",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/review/diary/index",
+      "width": 1024,
+      "screenshot": "continued-163-1024.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Practice Index",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/review/diary/index",
+      "width": 1440,
+      "screenshot": "continued-164-1440.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Practice Index",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=repertoire",
+      "width": 390,
+      "screenshot": "continued-165-390.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=repertoire",
+      "width": 430,
+      "screenshot": "continued-166-430.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=repertoire",
+      "width": 768,
+      "screenshot": "continued-167-768.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=repertoire",
+      "width": 1024,
+      "screenshot": "continued-168-1024.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=repertoire",
+      "width": 1440,
+      "screenshot": "continued-169-1440.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=lists",
+      "width": 390,
+      "screenshot": "continued-170-390.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=lists",
+      "width": 430,
+      "screenshot": "continued-171-430.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=lists",
+      "width": 768,
+      "screenshot": "continued-172-768.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=lists",
+      "width": 1024,
+      "screenshot": "continued-173-1024.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=lists",
+      "width": 1440,
+      "screenshot": "continued-174-1440.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=badges",
+      "width": 390,
+      "screenshot": "continued-175-390.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=badges",
+      "width": 430,
+      "screenshot": "continued-176-430.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=badges",
+      "width": 768,
+      "screenshot": "continued-177-768.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=badges",
+      "width": 1024,
+      "screenshot": "continued-178-1024.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    },
+    {
+      "route": "/users/lach?tab=badges",
+      "width": 1440,
+      "screenshot": "continued-179-1440.png",
+      "capture": "viewport",
+      "duplicateIds": [],
+      "heading": "Lach",
+      "navCount": 1,
+      "overflow": false
+    }
+  ],
+  "interaction_checks": [
+    "Home: arrow-key phone view switching; three single-instance desktop panels; focused Social panel survives return to phone.",
+    "Catalogue: preview heading receives focus; Escape restores Preview trigger after resize. Five widths retain 20 rows, one navigation and no horizontal overflow.",
+    "Catalogue resize: server timing log unchanged across five widths and filter opening; no repeated catalogue, filters, media/user-state or layout loader calls. Browser API does not expose network events; source review confirms resize handlers only change local display/focus.",
+    "Compare Add person: shared modal traps reverse Tab, closes with Escape, restores trigger and fits 768\u00d7430 landscape (387px dialog).",
+    "Account menu: closes at rail/dock breakpoint and retains visible focus, including focused menu-item removal.",
+    "Filters: reverse-Tab containment, Escape trigger restoration and 387px landscape dialog verified.",
+    "Reference: real YouTube iframe loaded provider timing (4:22); two-column media/passages layout and reachable fixed Session Dock verified at tablet/landscape. Expanded dock traps focus, hides phone navigation, and restores trigger after Escape/resize. No browser error/warning logs.",
+    "All 225 stored image widths verified against their matrix entries; 17 stale-size captures replaced on this run and checked for loaded headings, overflow, duplicate IDs and navigation."
+  ],
+  "limitations": [
+    "Screenshots capture the viewport, not complete page height.",
+    "Standalone Playwright suite syntax/lint checked; equivalent CUA browser scenarios ran. The standalone entry point itself was not run.",
+    "Read-only production-backed verification; no forms saved, messages sent, practice rated or remote data changed."
+  ]
+}

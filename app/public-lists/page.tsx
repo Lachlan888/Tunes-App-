@@ -12,7 +12,7 @@ import {
   type SharedList,
 } from "@/lib/loaders/public-lists"
 import { normaliseForSearch } from "@/lib/search-filters"
-import { paginateListItems, parseListPage, PUBLIC_LIST_PAGE_SIZE } from "@/lib/list-view-state"
+import { paginateListItems, parseListPage, PUBLIC_LIST_PAGE_SIZE, withListPage } from "@/lib/list-view-state"
 
 type PublicListSortValue = "recent" | "alpha" | "tune-count"
 
@@ -140,6 +140,8 @@ export default async function PublicListsPage({
     return params.size ? `/public-lists?${params.toString()}` : "/public-lists"
   })()
 
+  const redirectTo = withListPage(publicListHref, pagination.page)
+
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       {showSection("shared_header") ? <SharedListsHeader /> : null}
@@ -173,7 +175,7 @@ export default async function PublicListsPage({
             {hasActiveFilters ? (
               <Link
                 href="/public-lists"
-                className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="min-h-11 inline-flex items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               >
                 Reset view
               </Link>
@@ -190,7 +192,7 @@ export default async function PublicListsPage({
             />
           ) : (
             <>
-              <SharedListsMobileList lists={pagination.items} />
+              <SharedListsMobileList lists={pagination.items} redirectTo={redirectTo} />
 
               <section className="hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -199,7 +201,7 @@ export default async function PublicListsPage({
 
                 <div className="mt-5 grid gap-4 xl:grid-cols-2">
                   {pagination.items.map((list) => (
-                    <SharedListCard key={list.id} list={list} />
+                    <SharedListCard key={list.id} list={list} redirectTo={redirectTo} />
                   ))}
                 </div>
               </section>

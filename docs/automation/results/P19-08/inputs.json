@@ -1,0 +1,20 @@
+{
+  "recorded_at": "2026-09-23T04:09:33.458540+00:00",
+  "scope_note": "Relevant primary inputs; additional imported inputs must also be confirmed unchanged before future carry-forward. React renderer fixture runtime /private/tmp/tunes-review-lifecycle.",
+  "sha256": {
+    "components/activity/SocialActivityFeed.tsx": "1cbfc23a70aa55385f98b316f107c6166322f4d09c3c1bb89d997dcecb47141b",
+    "lib/activity-pagination.ts": "fc173ca6d5832600915900d33a318a30ee4c1aa4cfb489a8199b364bd478d525",
+    "lib/loaders/friends.ts": "9fa8ddc0a57beda3c992ba87992005bb52fe40d268fb4f6f9612c16b1b0affe9",
+    "lib/loaders/homepage.ts": "b4d093d39147476c927c381f8750c4eeac68760f712907189f13281060922113",
+    "components/home/HomeMobileSummarySwitcher.tsx": "a6494100325fd5b6a7851e18f4cbc16e2841d15e054940429ebe869efdabe054",
+    "components/practice/StreakSummarySection.tsx": "d62f31ef064a0fb89f420f895cbea2a7c745cb6f12926f4c931b4bd81a3badae",
+    "tests/integration/social-feed-lifecycle.mjs": "ff5bc78e4f8730de58dac462b4b9b86fbbd3b85fe3fce24fdef3a6305ce342af",
+    "tests/activity-pagination.test.ts": "5b89163b1b545dd408be58e4d610e8fde610106456491128d0e31796f8e0108b",
+    "tests/social-surfaces.test.ts": "5a8c23e04db1373bff7a4f01f1fdce237de7afeb6ac7184f09fe726a8d7b8eb9",
+    "tests/navigation-shell.test.ts": "84a581dc29198371be0acd1b18ae11ab6e94eb20fdda9dcc83bf254cd051e596",
+    "package.json": "8bb6e210891fbc184e12fb8e8407b556b01eb42dc9cc8e4ef05b04c94d78d0d1",
+    "package-lock.json": "42f3a674b0cba3314b2559341ff93ad904be09a0f01044913e870f35881c87e1",
+    "tsconfig.json": "2e641f8b3b8e7aaea424abf9c41533f81b24850e5e14db8cd2f53af9c120fcd4",
+    "eslint.config.mjs": "c6752f242afc0b7fbd47efe50b81a93a96b5b3ee64715b7ce83daaa639937afc"
+  }
+}

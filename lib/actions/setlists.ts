@@ -72,25 +72,6 @@ async function loadPieceTitle(supabase: SupabaseServerClient, pieceId: number) {
   return data?.title ?? "a tune"
 }
 
-async function getNextPosition(
-  supabase: SupabaseServerClient,
-  setlistId: number
-) {
-  const { data, error } = await supabase
-    .from("setlist_items")
-    .select("position")
-    .eq("setlist_id", setlistId)
-    .order("position", { ascending: false })
-    .limit(1)
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  const lastPosition = data?.[0]?.position
-  return typeof lastPosition === "number" ? lastPosition + 1 : 1
-}
-
 export async function createSetlist(formData: FormData) {
   const supabase = await createClient()
 
@@ -140,7 +121,7 @@ export async function createSetlist(formData: FormData) {
   }
 
   revalidatePath("/setlists")
-  redirect(`/setlists/${setlist.id}?setlist=created`)
+  redirect(`/setlists/${setlist.id}?mode=manage&setlist=created`)
 }
 
 export async function updateSetlist(formData: FormData) {
@@ -179,7 +160,7 @@ export async function updateSetlist(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "setlist", "forbidden"))
   }
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from("setlists")
     .update({
       name,
@@ -189,10 +170,14 @@ export async function updateSetlist(formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", setlistId)
+    .eq("updated_at", String(formData.get("expected_version") ?? ""))
+    .select("id")
+    .maybeSingle()
 
   if (error) {
     redirect(appendQueryParam(redirectTo, "setlist", "error"))
   }
+  if (!updated) redirect(appendQueryParam(redirectTo, "setlist", "conflict"))
 
   await notifySetlistMembers({
     supabase,
@@ -462,36 +447,13 @@ export async function addTuneToSetlist(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "setlist_item", "forbidden"))
   }
 
-  const { data: existingItem, error: existingError } = await supabase
-    .from("setlist_items")
-    .select("id")
-    .eq("setlist_id", setlistId)
-    .eq("piece_id", pieceId)
-    .maybeSingle()
-
-  if (existingError) {
-    throw new Error(existingError.message)
-  }
-
-  if (existingItem) {
-    redirect(appendQueryParam(redirectTo, "setlist_item", "duplicate"))
-  }
-
-  const nextPosition = await getNextPosition(supabase, setlistId)
-
-  const { data: insertedItem, error: insertError } = await supabase
-    .from("setlist_items")
-    .insert({
-      setlist_id: setlistId,
-      piece_id: pieceId,
-      position: nextPosition,
-      added_by: user.id,
-    })
-    .select("id")
-    .single()
-
-  if (insertError || !insertedItem) {
-    redirect(appendQueryParam(redirectTo, "setlist_item", "error"))
+  const { data, error: insertError } = await supabase.rpc("mutate_setlist_item", {
+    p_setlist_id: setlistId, p_operation: "add", p_piece_id: pieceId,
+  })
+  const insertedItem = Array.isArray(data) ? data[0] : data
+  if (insertError || insertedItem?.status !== "success") {
+    const status = ["duplicate", "limit", "forbidden"].includes(insertedItem?.status) ? insertedItem.status : "error"
+    redirect(appendQueryParam(redirectTo, "setlist_item", status))
   }
 
   const [setlistName, pieceTitle] = await Promise.all([
@@ -505,7 +467,7 @@ export async function addTuneToSetlist(formData: FormData) {
     actorUserId: user.id,
     notificationType: "setlist_tune_added",
     pieceId,
-    setlistItemId: insertedItem.id,
+    setlistItemId: insertedItem.item_id,
     bodyPreview: `${pieceTitle} was added to ${setlistName}.`,
   })
 
@@ -575,21 +537,17 @@ export async function updateSetlistItem(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "setlist_item", "not_found"))
   }
 
-  const { error } = await supabase
-    .from("setlist_items")
-    .update({
-      performance_key: performanceKey,
-      notes: notes || null,
-      chart_url: chartUrl || null,
-      chart_label: chartLabel || null,
-      chart_type: chartType || null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", itemId)
-    .eq("setlist_id", setlistId)
-
-  if (error) {
-    redirect(appendQueryParam(redirectTo, "setlist_item", "error"))
+  const { data, error } = await supabase.rpc("mutate_setlist_item", {
+    p_setlist_id: setlistId, p_operation: "edit", p_item_id: itemId,
+    p_expected_updated_at: String(formData.get("expected_version") ?? "") || null,
+    p_details: {
+      performance_key: performanceKey, notes: notes || null,
+      chart_url: chartUrl || null, chart_label: chartLabel || null, chart_type: chartType || null,
+    },
+  })
+  const result = Array.isArray(data) ? data[0] : data
+  if (error || result?.status !== "success") {
+    redirect(appendQueryParam(redirectTo, "setlist_item", result?.status === "conflict" ? "conflict" : "error"))
   }
 
   const pieceTitle = await loadPieceTitle(supabase, existingItem.piece_id)
@@ -659,14 +617,12 @@ export async function removeTuneFromSetlist(formData: FormData) {
 
   const pieceTitle = await loadPieceTitle(supabase, existingItem.piece_id)
 
-  const { error } = await supabase
-    .from("setlist_items")
-    .delete()
-    .eq("id", itemId)
-    .eq("setlist_id", setlistId)
-
-  if (error) {
-    redirect(appendQueryParam(redirectTo, "setlist_item", "error"))
+  const { data, error } = await supabase.rpc("mutate_setlist_item", {
+    p_setlist_id: setlistId, p_operation: "remove", p_item_id: itemId,
+  })
+  const result = Array.isArray(data) ? data[0] : data
+  if (error || result?.status !== "success") {
+    redirect(appendQueryParam(redirectTo, "setlist_item", result?.status === "not_found" ? "not_found" : "error"))
   }
 
   await notifySetlistMembers({
@@ -721,6 +677,7 @@ export async function moveSetlistItem(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "setlist_item", "forbidden"))
   }
 
+  const { data: setlist } = await supabase.from("setlists").select("updated_at").eq("id", setlistId).single()
   const { data: items, error: itemsError } = await supabase
     .from("setlist_items")
     .select("id, position")
@@ -744,29 +701,10 @@ export async function moveSetlistItem(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "setlist_item", "moved"))
   }
 
-  const currentItem = typedItems[currentIndex]
-  const targetItem = typedItems[targetIndex]
-
-  const { error: currentUpdateError } = await supabase
-    .from("setlist_items")
-    .update({ position: targetItem.position })
-    .eq("id", currentItem.id)
-
-  if (currentUpdateError) {
-    redirect(appendQueryParam(redirectTo, "setlist_item", "error"))
-  }
-
-  const { error: targetUpdateError } = await supabase
-    .from("setlist_items")
-    .update({ position: currentItem.position })
-    .eq("id", targetItem.id)
-
-  if (targetUpdateError) {
-    redirect(appendQueryParam(redirectTo, "setlist_item", "error"))
-  }
-
-  revalidatePath(`/setlists/${setlistId}`)
-  redirect(appendQueryParam(redirectTo, "setlist_item", "moved"))
+  const orderedIds = typedItems.map(item => item.id)
+  ;[orderedIds[currentIndex], orderedIds[targetIndex]] = [orderedIds[targetIndex], orderedIds[currentIndex]]
+  const result = await reorderSetlistItems({ setlistId, orderedItemIds: orderedIds, expectedVersion: setlist?.updated_at ?? "" })
+  redirect(appendQueryParam(redirectTo, "setlist_item", result.status === "success" ? "moved" : result.status))
 }
 
 export async function reorderSetlistItems(input: {
@@ -788,7 +726,7 @@ export async function reorderSetlistItems(input: {
   }
 
   const setlistId = Number(input.setlistId)
-  const orderedItemIds = input.orderedItemIds.map(Number)
+  const orderedItemIds = Array.isArray(input.orderedItemIds) ? input.orderedItemIds.map(Number) : []
   const expectedVersion = String(input.expectedVersion ?? "")
   const validVersion = Number.isFinite(Date.parse(expectedVersion))
 
@@ -883,4 +821,19 @@ export async function deleteSetlist(formData: FormData) {
 
   revalidatePath("/setlists")
   redirect("/setlists?setlist=deleted")
+}
+
+export async function searchSetlistTunes(input: { setlistId: number; query: string; page: number }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || !Number.isSafeInteger(input.setlistId) || input.setlistId < 1 || !await requireAcceptedSetlistMember(supabase, input.setlistId, user.id)) {
+    return { pieces: [], hasNext: false, error: "You no longer have permission to add tunes." }
+  }
+  const page = Number.isSafeInteger(input.page) ? Math.max(0, Math.min(5000, input.page)) : 0
+  const query = String(input.query ?? "").trim().slice(0, 100).replace(/[\\%_]/g, "\\$&")
+  let request = supabase.from("pieces").select("id, title, key, style").order("title").order("id")
+  if (query) request = request.ilike("title", `%${query}%`)
+  const { data, error } = await request.range(page * 20, page * 20 + 20)
+  if (error) return { pieces: [], hasNext: false, error: "Tunes could not be loaded. Try again." }
+  return { pieces: (data ?? []).slice(0, 20), hasNext: (data?.length ?? 0) > 20, error: null }
 }

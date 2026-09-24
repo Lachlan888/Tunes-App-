@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { getSafeInternalPath } from "@/lib/auth/redirects"
 import { createClient } from "@/lib/supabase/server"
 
 function getProfileDraftParams(formData: FormData) {
@@ -58,7 +59,7 @@ function redirectWithDraft(
 
 export async function addUserInstrument(formData: FormData) {
   const instrumentName = String(formData.get("instrument_name") ?? "").trim()
-  const redirectTo = String(formData.get("redirect_to") ?? "/dashboard")
+  const redirectTo = getSafeInternalPath(String(formData.get("redirect_to") ?? ""), "/dashboard?section=profile")
 
   if (!instrumentName) {
     redirectWithDraft(
@@ -140,7 +141,7 @@ export async function addUserInstrument(formData: FormData) {
 
 export async function removeUserInstrument(formData: FormData) {
   const instrumentId = Number(formData.get("instrument_id"))
-  const redirectTo = String(formData.get("redirect_to") ?? "/dashboard")
+  const redirectTo = getSafeInternalPath(String(formData.get("redirect_to") ?? ""), "/dashboard?section=profile")
 
   if (!instrumentId || Number.isNaN(instrumentId)) {
     redirectWithDraft(

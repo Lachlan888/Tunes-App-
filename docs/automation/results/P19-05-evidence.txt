@@ -1,0 +1,62 @@
+P19-05 automated evidence 2026-09-23T02:04:01.572617+00:00
+
+components/library/YouTubeLoopPlayer.tsx SHA256 b3a9f75dbb7ea499c2e3af5a615fc1d016c347a7c74a504732cc827f4e3fb6c8
+components/library/youtube-loop-state.ts SHA256 db2b3763976dc81a8a1e9ab31197ff5b0623cf8e667690f19243ed586d43765e
+components/reference-media/ReferencePracticeWorkspace.tsx SHA256 09600c7acbf92cf0c64be68ac668a51bd0b38c5b1381912364a309180021817f
+components/session-dock/SessionDock.tsx SHA256 45038f76db44171c4d5929acd9692dac06e353fe5fe55ddced8222e58e451048
+components/session-dock/SessionDockProvider.tsx SHA256 7b60a4286070d9a61454f024430008b00612b0005c5096afcb0cab6abf2aff7d
+components/session-dock/sessionDockModel.ts SHA256 df553a38ea472d243cfe57a526a9fce5c29eec27bd07ad968b890eaac5498f2c
+lib/actions/media-loops.ts SHA256 981b1a6c05a4f55256cce65aa25bc1a92546c7243ee6279f6c2c847fc4b1858e
+tests/reference-media.test.ts SHA256 9ec6c7fdc8ba125c90dabfb07548b3fb1ea624c52c750caacf83a104a1e38c23
+tests/session-dock.test.ts SHA256 40d64a38af8b4dcdef020b89aaa618e5fdf17f14f1c0c8a351833fe583be26f9
+tests/integration/reference-transport-lifecycle.mjs SHA256 5f471af48275178f9dcf8e9721c8bb86d37a42808d5bd912d22d4314c2e41e5a
+package-lock.json SHA256 42f3a674b0cba3314b2559341ff93ad904be09a0f01044913e870f35881c87e1
+
+
+p19-05-tests.log
+(node:96942) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/reference-media.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ loop resume returns to start after shortening the end or seeking outside (1.315125ms)
+✔ new sections start at zero without changing playback transport (0.091125ms)
+✔ a new section can set its end while retaining the default zero start (0.088208ms)
+✔ setting or revising the start does not seek or pause playback (0.091334ms)
+✔ saved selection and boundary edits preserve the playhead (0.164459ms)
+✔ only a genuine forward crossing of the active end loops playback (0.061667ms)
+✔ next and previous shift an equal loop window without moving playback (0.43ms)
+✔ playback continues into an advanced window and loops only at its new end (0.058417ms)
+✔ all tune recordings retain stable ordering and identity (0.616416ms)
+✔ URL selection wins, then the established effective recording, then first (0.174208ms)
+✔ external and missing reference sources retain honest recovery states (0.067625ms)
+✔ recording switches use replaceable media URLs with tune identity (0.140375ms)
+✔ full reference returns only to safe review or tune contexts (0.249125ms)
+✔ existing saved sections remain isolated by recording provider identity (0.099625ms)
+✔ the route replaces modal wiring and keeps one persistent player and metronome (2.157ms)
+✔ Reference Mode has route-level loading and recovery states (1.027791ms)
+✔ recording and section mutations retain owner-scoped permissions (0.757209ms)
+(node:96943) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/session-dock.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ one typed API supports every planned Session Dock context (1.480209ms)
+✔ the latest mounted context wins and the previous context is restored (0.1245ms)
+✔ the explicit handle distinguishes a tap from an upward full-screen drag (0.074167ms)
+✔ expansion, focus restoration and single-layer suppression are wired (1.795834ms)
+✔ Session Dock and Navigation Dock reserve one combined safe area (1.881792ms)
+✔ route integrations preserve only safe contextual state (2.117083ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 124.410417
+
+p19-05-lifecycle.log
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+PASS: seek/speed, zero-start capture, single draft, boundary/resume, shared dock, duplicate-save guard, update rejection, source/view restoration, provider recovery
+
+p19-05-lint.log

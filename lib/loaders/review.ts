@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation"
+import { redirectToLogin } from "@/lib/auth/login-redirect"
 import { loadActivePracticeFociByPieceId, loadActivePracticeFocusOptions } from "@/lib/loaders/review/foci"
 import {
   loadPracticeNoteCategoriesForUser,
@@ -32,7 +32,7 @@ export type {
   ReviewQueueItem,
 } from "@/lib/loaders/review/types"
 
-export async function loadReviewPageData() {
+export async function loadReviewPageData(options: { lane?: string | null; listId?: number; focusId?: number } = {}) {
   const supabase = await createClient()
 
   const {
@@ -40,7 +40,7 @@ export async function loadReviewPageData() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    return redirectToLogin()
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -55,14 +55,42 @@ export async function loadReviewPageData() {
 
   const practiceDiaryEnabled = Boolean(profile?.practice_diary_enabled)
 
-  const [noteCategories, streakSummary, rows] = await Promise.all([
+  const today = getToday()
+  let scope: { kind: "list" | "focus"; id: number } | null | undefined
+  let sessionLabel: string | undefined
+  let sessionKey: string | undefined
+  if (options.lane === "list" || options.lane === "focus") {
+    const isList = options.lane === "list"
+    const id = isList ? options.listId : options.focusId
+    scope = null
+    sessionLabel = isList ? "List unavailable" : "Focus unavailable"
+    sessionKey = `${options.lane}-unavailable`
+    if (id && Number.isSafeInteger(id) && id > 0) {
+      const scopeResult = isList
+        ? await supabase.from("learning_lists").select("id, name").eq("id", id).maybeSingle()
+        : await supabase.from("practice_foci").select("id, title").eq("id", id).eq("user_id", user.id).eq("status", "active").maybeSingle()
+      if (scopeResult.error) throw new Error("Practice context could not be loaded")
+      if (scopeResult.data) {
+        scope = { kind: isList ? "list" : "focus", id }
+        sessionLabel = "name" in scopeResult.data ? scopeResult.data.name : scopeResult.data.title
+        sessionKey = `${options.lane}-${id}`
+      }
+    }
+  }
+  const countQuery = () => supabase.from("user_pieces").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "learning").not("next_review_due", "is", null)
+  const [noteCategories, streakSummary, page, dueCount, catchUpCount, activeCount] = await Promise.all([
     practiceDiaryEnabled
       ? loadPracticeNoteCategoriesForUser(supabase, user.id)
       : [],
     reconcileStreaksForUser(supabase, user.id) as Promise<StreakSummary>,
-    loadReviewPieceRows(supabase, user.id),
+    loadReviewPieceRows(supabase, user.id, { today, lane: options.lane, scope, limit: options.lane ? 50 : 20 }),
+    countQuery().eq("next_review_due", today),
+    countQuery().lt("next_review_due", today),
+    countQuery(),
   ])
 
+  for (const result of [dueCount, catchUpCount, activeCount]) if (result.error) throw new Error("Practice counts could not be loaded")
+  const rows = page.rows
   const pieceIds = getReviewPieceIds(rows)
 
   const [
@@ -88,8 +116,6 @@ export async function loadReviewPageData() {
       userId: user.id,
     }),
   ])
-
-  const today = getToday()
 
   const practiceItems = buildReviewQueueItems({
     rows,
@@ -121,6 +147,12 @@ export async function loadReviewPageData() {
 
   return {
     user,
+    dueTodayCount: dueCount.count ?? 0,
+    catchUpCount: catchUpCount.count ?? 0,
+    activeCount: activeCount.count ?? 0,
+    queueTotal: page.total,
+    sessionLabel,
+    sessionKey,
     practiceDiaryEnabled,
     noteCategories,
     streakSummary,

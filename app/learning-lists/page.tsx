@@ -1,4 +1,5 @@
-import Link from "next/link"
+import ListsSectionNav from "@/components/lists/ListsSectionNav"
+import ListOriginScroll from "@/components/lists/ListOriginScroll"
 import EmptyState from "@/components/EmptyState"
 import CreateListModal from "@/components/lists/CreateListModal"
 import ListOverviewCard from "@/components/lists/ListOverviewCard"
@@ -11,7 +12,7 @@ import {
 import ListsResultsHeader from "@/components/lists/ListsResultsHeader"
 import ListsStatusMessages from "@/components/lists/ListsStatusMessages"
 import ListPager from "@/components/lists/ListPager"
-import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import PageHeader from "@/components/ui/PageHeader"
 import {
   addToLearningList,
@@ -23,7 +24,7 @@ import {
 } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { loadListsData } from "@/lib/loaders/lists"
-import { paginateListItems, parseListPage } from "@/lib/list-view-state"
+import { paginateListItems, parseListPage, withListPage } from "@/lib/list-view-state"
 import {
   getListFilterOptions,
   listMatchesFilters,
@@ -63,7 +64,7 @@ const LISTS_VIEWS: Array<{
   },
   {
     id: "unsorted",
-    label: "Unsorted",
+    label: "Unsorted tunes",
   },
   {
     id: "saved-shared",
@@ -137,10 +138,6 @@ function buildListsHref(options: {
   return params.toString()
     ? `/learning-lists?${params.toString()}`
     : "/learning-lists"
-}
-
-function buildViewHref(view: ListsView) {
-  return view === "my-lists" ? "/learning-lists" : `/learning-lists?view=${view}`
 }
 
 export default async function LearningListsPage({
@@ -220,7 +217,7 @@ export default async function LearningListsPage({
     selectedSource !== "" ||
     selectedVisibility !== ""
 
-  const redirectTo = buildListsHref({
+  const filteredViewHref = buildListsHref({
     q: searchQuery,
     size: selectedSize,
     styles: selectedStyles,
@@ -239,6 +236,7 @@ export default async function LearningListsPage({
           ? [...filteredPracticeTunes, ...filteredKnownTunes].map((item) => item.piece_id)
           : [...filteredBookmarkedLists, ...filteredDirectSharedLists].map((item) => item.id)
   const pagination = paginateListItems(visibleSourceIds, requestedPage)
+  const redirectTo = withListPage(filteredViewHref, pagination.page)
   const visibleIds = new Set(pagination.items)
   const visibleLearningQueueTunes = filteredLearningQueueTunes.filter((item) =>
     visibleIds.has(item.piece.id)
@@ -271,6 +269,7 @@ export default async function LearningListsPage({
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
+      <ListOriginScroll originHref={redirectTo} />
       {bookmarkMessage ? (
         <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
           {bookmarkMessage}
@@ -279,41 +278,7 @@ export default async function LearningListsPage({
 
       <PageHeader title="Lists" />
 
-      <nav aria-label="List views" className="mb-6 overflow-x-auto border-y border-border/70 py-2 md:mb-8 md:rounded-full md:border md:bg-card md:p-1 md:shadow-sm">
-        <div className="grid min-w-[620px] grid-cols-4">
-          {LISTS_VIEWS.map((view) => {
-            const isActive = activeView === view.id
-
-            return (
-              <Link
-                key={view.id}
-                href={buildViewHref(view.id)}
-                aria-current={isActive ? "page" : undefined}
-                className={joinClasses(
-                  "flex min-h-12 items-center justify-center gap-2 rounded-full px-4 py-2 text-center transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
-                  isActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-foreground hover:bg-muted"
-                )}
-              >
-                <span
-                  className={joinClasses(
-                    "text-sm font-semibold",
-                    isActive
-                      ? "text-primary-foreground/85"
-                      : "text-muted-foreground"
-                  )}
-                >
-                  {view.label}
-                </span>
-                <span className="rounded-full bg-background/20 px-2 py-0.5 text-xs font-bold tabular-nums">
-                  {viewCounts[view.id]}
-                </span>
-              </Link>
-            )
-          })}
-        </div>
-      </nav>
+      <ListsSectionNav activeView={activeView} counts={viewCounts} />
 
       {showSection("status_messages") ? (
         <ListsStatusMessages
@@ -349,9 +314,9 @@ export default async function LearningListsPage({
         <form method="get" action="/learning-lists" className="mb-5 grid gap-3 border-y border-border/70 py-4 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
           <input type="hidden" name="view" value={activeView} />
           <label className="sr-only" htmlFor="list-collection-search">Search this view</label>
-          <input id="list-collection-search" name="q" defaultValue={searchQuery} placeholder={`Search ${activeViewConfig.label.toLowerCase()}`} className="min-h-11 rounded-full border border-border bg-card px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]" />
+          <input id="list-collection-search" name="q" defaultValue={searchQuery} placeholder={`Search ${activeViewConfig.label.toLowerCase()}`} className="min-h-11 min-w-0 w-full rounded-full border border-border bg-card px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]" />
           <label className="sr-only" htmlFor="list-collection-group">Group</label>
-          <select id="list-collection-group" name="group" defaultValue={selectedGroup} className="min-h-11 rounded-full border border-border bg-card px-4 text-sm">
+          <select id="list-collection-group" name="group" defaultValue={selectedGroup} className="min-h-11 min-w-0 w-full rounded-full border border-border bg-card px-4 text-sm">
             <option value="">All groups</option>
             {activeView === "learning-queue" ? learningLists.map((list) => <option key={list.id} value={list.id}>{list.name}</option>) : null}
             {activeView === "unsorted" ? <><option value="practice">In Practice</option><option value="known">Known</option></> : null}
@@ -409,13 +374,7 @@ export default async function LearningListsPage({
               />
             ) : (
               <section>
-                <div className="mb-4">
-                  <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Your lists
-                  </h2>
-                </div>
-
-                <div className="space-y-4">
+                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                   {visibleListOverviews.map((list) => (
                     <ListOverviewCard
                       key={list.id}

@@ -102,3 +102,16 @@ test("Focused Practice uses reduced chrome, persistent ratings, Undo and summary
   assert.match(session, /Practice complete/)
   assert.match(session, /Keyboard: 1 Rough · 2 Shaky · 3 Solid/)
 })
+
+test("Focused Practice uses one separator after reference and preserves note drafts", () => {
+  const session = readFileSync(
+    new URL("../components/practice/FocusedPracticeSession.tsx", import.meta.url),
+    "utf8"
+  )
+
+  assert.match(session, /ref=\{referenceRegion\}[\s\S]*?className="py-3 sm:col-span-2 focus:outline-none"/)
+  assert.match(session, /<details className="border-t border-hairline pt-3 sm:col-span-2">/)
+  assert.doesNotMatch(session, /referenceRegion[^\n]*border-y/)
+  assert.match(session, /sessionStorage\.setItem\(draftKey/)
+  assert.match(session, /value=\{noteBody\}[\s\S]*?saveDraft\(\{ body: event\.target\.value \}\)/)
+})

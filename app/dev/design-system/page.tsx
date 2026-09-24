@@ -79,9 +79,7 @@ const routeExamples = [
 ] as const
 
 export default async function DesignSystemPage() {
-  if (process.env.NODE_ENV !== "development") {
-    await requireAppAdmin()
-  }
+  await requireAppAdmin()
 
   return (
     <main className="mx-auto max-w-[1200px] px-4 py-8 text-text-primary md:px-6 md:py-10">
@@ -127,7 +125,6 @@ export default async function DesignSystemPage() {
 
       <section className="mb-12">
         <SectionHeader
-          eyebrow="Tune identity"
           title="The Maid Behind the Bar"
           description="Editorial serif is reserved for tune titles and selected openings. Controls and metadata stay system sans."
           variant="editorial"

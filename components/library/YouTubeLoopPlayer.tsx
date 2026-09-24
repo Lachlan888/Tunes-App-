@@ -1,5 +1,7 @@
 "use client"
 
+import { usePrivateSessionStorage } from "@/components/resilience/PrivateSessionProvider"
+
 import {
   type FormEvent,
   type ReactNode,
@@ -10,7 +12,6 @@ import {
   useState,
   useTransition,
 } from "react"
-import MobileViewSwitcher from "@/components/ui/MobileViewSwitcher"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import { useSessionDock } from "@/components/session-dock/SessionDockProvider"
 import type { SessionDockModel } from "@/components/session-dock/sessionDockModel"
@@ -22,12 +23,12 @@ import {
 import type { UserPieceMediaLoop } from "@/lib/types"
 import {
   crossedLoopEnd,
+  loopResumePosition,
   nudgeLoopBoundary,
   resizeLoopWindow,
   selectSavedLoopWindow,
   setLoopEndAtPlayhead,
   setLoopStartAtPlayhead,
-  shiftLoopWindow,
   startNewSectionDraft,
   type LoopPlaybackState,
 } from "@/components/library/youtube-loop-state"
@@ -98,11 +99,7 @@ export type YouTubePlaybackSnapshot = {
 
 const DEFAULT_SPEEDS = [0.5, 0.75, 1]
 const NUDGE_AMOUNTS = [0.1, 0.5, 1] as const
-const mobileViews = [
-  { id: "media", label: "Media" },
-  { id: "sections", label: "Sections" },
-  { id: "practice", label: "Practice" },
-] as const
+
 
 type NudgeAmount = (typeof NUDGE_AMOUNTS)[number]
 type MarkingStage = "idle" | "draft" | "ready"
@@ -115,10 +112,15 @@ export function loadYouTubeIframeApi() {
   }
 
   if (!youtubeApiPromise) {
-    youtubeApiPromise = new Promise((resolve) => {
+    youtubeApiPromise = new Promise<void>((resolve, reject) => {
       const previousReadyHandler = window.onYouTubeIframeAPIReady
+      const timeout = window.setTimeout(() => {
+        youtubeApiPromise = null
+        reject(new Error("The video provider did not respond. Try reloading or open the source."))
+      }, 15000)
 
       window.onYouTubeIframeAPIReady = () => {
+        window.clearTimeout(timeout)
         previousReadyHandler?.()
         resolve()
       }
@@ -197,14 +199,14 @@ function compactButton(className: string) {
   return joinClasses(className, "px-3 py-2 text-xs sm:px-4 sm:text-sm")
 }
 
-function readPlaybackSnapshot(storageKey: string) {
+function readPlaybackSnapshot(storageKey: string, sessionStorage: import("@/lib/browser-storage").BrowserStorage) {
   try {
     const parsed = JSON.parse(
-      window.sessionStorage.getItem(storageKey) ?? "null"
+      sessionStorage.getItem(storageKey) ?? "null"
     ) as Partial<YouTubePlaybackSnapshot> | null
     if (!parsed) return null
 
-    const mobileView = mobileViews.some((view) => view.id === parsed.mobileView)
+    const mobileView = ["media", "sections", "practice"].includes(parsed.mobileView ?? "")
       ? parsed.mobileView!
       : "media"
 
@@ -243,6 +245,7 @@ export default function YouTubeLoopPlayer({
   mediaPanel,
   className,
 }: YouTubeLoopPlayerProps) {
+  const sessionStorage = usePrivateSessionStorage()
   const playbackStorageKey = `tunes.session.v1.reference.${pieceId}.${videoId}`
   const containerRef = useRef<HTMLDivElement | null>(null)
   const playerRef = useRef<YouTubePlayer | null>(null)
@@ -251,7 +254,15 @@ export default function YouTubeLoopPlayer({
   const lastPlaybackTimeRef = useRef(0)
   const [mobileView, setMobileView] =
     useState<ReferencePracticeView>("media")
-  const [loops, setLoops] = useState(() => sortLoops(savedLoops))
+  const [playlistOrder, setPlaylistOrder] = useState<number[]>([])
+  const playlistKey = `tunes.reference.playlist.${pieceId}.${videoId}`
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(sessionStorage.getItem(playlistKey) ?? "[]")
+      setPlaylistOrder(Array.isArray(stored) ? stored.filter(Number.isInteger) : [])
+    } catch { /* Start with chronological order. */ }
+  }, [playlistKey, sessionStorage])
+  const [rawLoops, setLoops] = useState(() => sortLoops(savedLoops))
   const [activeLoopId, setActiveLoopId] = useState<number | null>(null)
   const [isReady, setIsReady] = useState(false)
   const [playerError, setPlayerError] = useState<string | null>(null)
@@ -271,42 +282,36 @@ export default function YouTubeLoopPlayer({
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [deletedLoop, setDeletedLoop] = useState<UserPieceMediaLoop | null>(null)
+  const deletedLoopIndexRef = useRef(0)
   const [passagePracticeActive, setPassagePracticeActive] = useState(false)
   const [isPending, startTransition] = useTransition()
 
+  const loops = useMemo(() => [...rawLoops].sort((a, b) => {
+    const ai = playlistOrder.indexOf(a.id), bi = playlistOrder.indexOf(b.id)
+    return (ai < 0 ? Infinity : ai) - (bi < 0 ? Infinity : bi) || Number(a.start_seconds) - Number(b.start_seconds) || a.id - b.id
+  }), [rawLoops, playlistOrder])
+  function reorderLoop(id: number, offset: number) {
+    const order = loops.map(loop => loop.id)
+    const index = order.indexOf(id), target = index + offset
+    if (index < 0 || target < 0 || target >= order.length) return
+    ;[order[index], order[target]] = [order[target], order[index]]
+    sessionStorage.setItem(playlistKey, JSON.stringify(order))
+    setPlaylistOrder(order)
+  }
   const activeLoop =
     loops.find((loop) => loop.id === activeLoopId) ?? null
   const hasValidLoop =
-    loopStart !== null && loopEnd !== null && loopEnd > loopStart + 0.2
+    loopStart !== null && loopEnd !== null && loopEnd > loopStart + 0.2 && (duration <= 0 || loopEnd <= duration)
   const activeLoopIndex = activeLoop
     ? loops.findIndex((loop) => loop.id === activeLoop.id)
     : -1
-  const loopPlaybackState: LoopPlaybackState = {
-    currentTime,
-    isPlaying,
-    playbackRate,
-    loopStart,
-    loopEnd,
-    loopEnabled,
-  }
-  const previousLoopWindow = shiftLoopWindow(
-    loopPlaybackState,
-    "previous",
-    duration
-  )
-  const nextLoopWindow = shiftLoopWindow(
-    loopPlaybackState,
-    "next",
-    duration
-  )
-
-  function applyLoopWindow(state: LoopPlaybackState) {
+  const applyLoopWindow = useCallback((state: LoopPlaybackState) => {
     setLoopStart(state.loopStart)
     setLoopEnd(state.loopEnd)
     setLoopEnabled(state.loopEnabled)
-  }
+  }, [])
 
-  function getLiveLoopPlaybackState(): LoopPlaybackState {
+  const getLiveLoopPlaybackState = useCallback((): LoopPlaybackState => {
     return {
       currentTime: getPlayerTime(playerRef.current),
       isPlaying,
@@ -315,7 +320,7 @@ export default function YouTubeLoopPlayer({
       loopEnd,
       loopEnabled,
     }
-  }
+  }, [isPlaying, loopEnabled, loopEnd, loopStart, playbackRate])
 
   const resetPassageState = useCallback(() => {
     setActiveLoopId(null)
@@ -341,7 +346,7 @@ export default function YouTubeLoopPlayer({
 
     if (!container) return
 
-    const restoredSnapshot = readPlaybackSnapshot(playbackStorageKey)
+    const restoredSnapshot = readPlaybackSnapshot(playbackStorageKey, sessionStorage)
     restoredSnapshotRef.current = restoredSnapshot
     setIsReady(false)
     setPlayerError(null)
@@ -364,7 +369,11 @@ export default function YouTubeLoopPlayer({
     loadYouTubeIframeApi().then(() => {
       if (cancelled || !container || !window.YT?.Player) return
 
-      const player = new window.YT.Player(container, {
+      // YouTube replaces its mount node. Keep React's wrapper intact so source
+      // changes and Strict Mode cleanup always have a fresh mount target.
+      const mount = document.createElement("div")
+      container.replaceChildren(mount)
+      const player = new window.YT.Player(mount, {
         videoId,
         playerVars: {
           modestbranding: 1,
@@ -391,12 +400,14 @@ export default function YouTubeLoopPlayer({
             setIsReady(true)
           },
           onStateChange: (event) => {
+            if (cancelled) return
             const playingState = window.YT?.PlayerState?.PLAYING
             setIsPlaying(
               playingState !== undefined && event.data === playingState
             )
           },
           onError: () => {
+            if (cancelled) return
             setIsReady(false)
             setIsPlaying(false)
             setPlayerError("This recording is unavailable in the player.")
@@ -405,6 +416,10 @@ export default function YouTubeLoopPlayer({
       })
 
       playerRef.current = player
+    }).catch((error: unknown) => {
+      if (cancelled) return
+      setIsReady(false)
+      setPlayerError(error instanceof Error ? error.message : "This recording could not be loaded.")
     })
 
     return () => {
@@ -419,8 +434,9 @@ export default function YouTubeLoopPlayer({
       }
 
       playerRef.current = null
+      container.replaceChildren()
     }
-  }, [playbackStorageKey, resetPassageState, videoId])
+  }, [playbackStorageKey, resetPassageState, videoId, sessionStorage])
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -468,7 +484,7 @@ export default function YouTubeLoopPlayer({
       mobileView,
       passagePracticeActive,
     }
-    window.sessionStorage.setItem(
+    sessionStorage.setItem(
       playbackStorageKey,
       JSON.stringify(snapshot)
     )
@@ -484,6 +500,7 @@ export default function YouTubeLoopPlayer({
     passagePracticeActive,
     playbackRate,
     playbackStorageKey,
+    sessionStorage,
   ])
 
   const setPlaybackRate = useCallback((rate: number) => {
@@ -499,16 +516,26 @@ export default function YouTubeLoopPlayer({
     const player = playerRef.current
     if (!player) return
 
-    if (seconds !== undefined) player.seekTo(seconds, true)
+    const current = getPlayerTime(player)
+    const target = seconds ?? loopResumePosition(current, loopStart, loopEnd, loopEnabled && hasValidLoop)
+    if (seconds !== undefined || target !== current) {
+      player.seekTo(target, true)
+      lastPlaybackTimeRef.current = target
+      setCurrentTime(target)
+    }
     player.playVideo()
-  }, [])
+  }, [hasValidLoop, loopEnabled, loopEnd, loopStart])
 
   function selectWholeRecording() {
+    playerRef.current?.pauseVideo?.()
+    setIsPlaying(false)
     resetPassageState()
     setMobileView("sections")
   }
 
-  function selectLoop(loop: UserPieceMediaLoop) {
+  const selectLoop = useCallback((loop: UserPieceMediaLoop, audition = false) => {
+    playerRef.current?.pauseVideo?.()
+    setIsPlaying(false)
     const start = Number(loop.start_seconds)
     const end = Number(loop.end_seconds)
     const rate = Number(loop.playback_rate)
@@ -529,10 +556,88 @@ export default function YouTubeLoopPlayer({
     setSaveMessage(null)
     setSaveError(null)
     setDeletedLoop(null)
+    playerRef.current?.seekTo(start, true)
+    lastPlaybackTimeRef.current = start
+    setCurrentTime(start)
+    if (audition) playerRef.current?.playVideo()
     if (selectedState.playbackRate !== playbackRate) {
       setPlaybackRate(selectedState.playbackRate)
     }
-  }
+  }, [applyLoopWindow, getLiveLoopPlaybackState, playbackRate, setPlaybackRate])
+
+  const stopPlayback = useCallback(() => {
+    const target = loopStart ?? 0
+    playerRef.current?.pauseVideo?.()
+    playerRef.current?.seekTo(target, true)
+    lastPlaybackTimeRef.current = target
+    setCurrentTime(target)
+    setIsPlaying(false)
+  }, [loopStart])
+
+  const seekPlayback = useCallback((seconds: number) => {
+    playerRef.current?.seekTo(seconds, true)
+    lastPlaybackTimeRef.current = seconds
+    setCurrentTime(seconds)
+  }, [])
+
+  const selectPreviousLoop = useCallback(() => {
+    const previous = loops[activeLoopIndex - 1]
+    if (previous) selectLoop(previous)
+  }, [activeLoopIndex, loops, selectLoop])
+
+  const selectNextLoop = useCallback(() => {
+    const next = loops[activeLoopIndex + 1]
+    if (next) selectLoop(next)
+  }, [activeLoopIndex, loops, selectLoop])
+
+  useEffect(() => {
+    function handleTransportKeyDown(event: KeyboardEvent) {
+      if (
+        event.defaultPrevented ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey
+      ) {
+        return
+      }
+
+      const target = event.target as HTMLElement | null
+      const targetName = target?.tagName?.toUpperCase()
+      if (
+        target?.isContentEditable ||
+        targetName === "INPUT" ||
+        targetName === "SELECT" ||
+        targetName === "TEXTAREA" ||
+        targetName === "BUTTON" ||
+        targetName === "A"
+      ) {
+        return
+      }
+
+      if (!isReady) return
+
+      if (event.code === "Space") {
+        event.preventDefault()
+        if (isPlaying) playerRef.current?.pauseVideo?.()
+        else playFrom()
+        return
+      }
+
+      if (event.code === "ArrowLeft" || event.code === "ArrowRight") {
+        event.preventDefault()
+        const direction = event.code === "ArrowLeft" ? -5 : 5
+        const nextTime = Math.min(
+          duration || Number.POSITIVE_INFINITY,
+          Math.max(0, getPlayerTime(playerRef.current) + direction)
+        )
+        seekPlayback(nextTime)
+      }
+    }
+
+    window.addEventListener("keydown", handleTransportKeyDown)
+    return () => window.removeEventListener("keydown", handleTransportKeyDown)
+  }, [duration, isPlaying, isReady, playFrom, seekPlayback])
 
   function startNewSection() {
     const draftState = startNewSectionDraft(getLiveLoopPlaybackState())
@@ -567,11 +672,12 @@ export default function YouTubeLoopPlayer({
     const nextState = setLoopStartAtPlayhead(getLiveLoopPlaybackState())
     applyLoopWindow(nextState)
     setMarkingStage(nextState.loopEnd === null ? "draft" : "ready")
+    if (activeLoop) setIsEditing(true)
     setSaveError(null)
   }
 
   function setDraftLoopEnd() {
-    const result = setLoopEndAtPlayhead(getLiveLoopPlaybackState())
+    const result = setLoopEndAtPlayhead({ ...getLiveLoopPlaybackState(), loopStart: loopStart ?? 0 })
 
     if (!result.ok) {
       setSaveError(result.error)
@@ -586,6 +692,7 @@ export default function YouTubeLoopPlayer({
       )
     }
     setMarkingStage("ready")
+    if (activeLoop) setIsEditing(true)
     setSaveError(null)
   }
 
@@ -610,16 +717,6 @@ export default function YouTubeLoopPlayer({
     applyLoopWindow(
       resizeLoopWindow(getLiveLoopPlaybackState(), "double", duration)
     )
-  }
-
-  function moveLoopWindow(direction: "previous" | "next") {
-    const nextState = shiftLoopWindow(
-      getLiveLoopPlaybackState(),
-      direction,
-      duration
-    )
-
-    if (nextState) applyLoopWindow(nextState)
   }
 
   function clearBoundaries() {
@@ -696,6 +793,7 @@ export default function YouTubeLoopPlayer({
     if (!window.confirm(`Delete section “${activeLoop.label}”?`)) return
 
     const loopToDelete = activeLoop
+    const deletedIndex = loops.findIndex((loop) => loop.id === loopToDelete.id)
 
     const formData = new FormData()
     formData.set("loop_id", String(activeLoop.id))
@@ -704,6 +802,7 @@ export default function YouTubeLoopPlayer({
     setSaveError(null)
 
     startTransition(async () => {
+      try {
       const result = await deleteMediaLoopInPlace(formData)
 
       if (!result.ok) {
@@ -712,9 +811,13 @@ export default function YouTubeLoopPlayer({
       }
 
       setLoops((current) => current.filter((loop) => loop.id !== loopToDelete.id))
+      deletedLoopIndexRef.current = deletedIndex
       setDeletedLoop(loopToDelete)
       resetPassageState()
       setSaveMessage("Passage deleted")
+      } catch {
+        setSaveError("Couldn’t delete this passage. Your playlist is unchanged. Try again.")
+      }
     })
   }
 
@@ -732,6 +835,7 @@ export default function YouTubeLoopPlayer({
     setSaveError(null)
 
     startTransition(async () => {
+      try {
       const result = await createMediaLoopInPlace(formData)
 
       if (!result.ok || !result.loop) {
@@ -739,9 +843,16 @@ export default function YouTubeLoopPlayer({
         return
       }
 
+      const restoredOrder = loops.map((loop) => loop.id)
+      restoredOrder.splice(Math.min(deletedLoopIndexRef.current, restoredOrder.length), 0, result.loop.id)
+      sessionStorage.setItem(playlistKey, JSON.stringify(restoredOrder))
+      setPlaylistOrder(restoredOrder)
       setLoops((current) => sortLoops([...current, result.loop]))
       setDeletedLoop(null)
       setSaveMessage("Passage restored")
+      } catch {
+        setSaveError("Couldn’t restore this passage. Try Undo again.")
+      }
     })
   }
 
@@ -753,21 +864,11 @@ export default function YouTubeLoopPlayer({
     setMobileView("practice")
   }
 
-  const mediaPanelClassName = joinClasses(
-    "order-3 mt-4 md:order-1 md:mt-0",
-    mobileView === "media" ? "block" : "hidden md:block"
-  )
-  const sectionsPanelClassName = joinClasses(
-    mobileView === "sections" ? "block" : "hidden md:block"
-  )
-  const practicePanelClassName = joinClasses(
-    mobileView === "practice" ? "block" : "hidden md:block"
-  )
+  const mediaPanelClassName = "order-3 mt-4"
+  const sectionsPanelClassName = "block"
+  const practicePanelClassName = "block"
 
   const dockModel = useMemo<SessionDockModel>(() => {
-    const availableIndex = availableRates.indexOf(playbackRate)
-    const nextRate =
-      availableRates[(availableIndex + 1) % availableRates.length] ?? 1
     const sectionLabel = activeLoop?.label ?? "Whole recording"
 
     return {
@@ -794,6 +895,36 @@ export default function YouTubeLoopPlayer({
       },
       secondaryActions: [
         {
+          id: "previous",
+          label: "Previous",
+          ariaLabel: "Previous loop",
+          disabled: !isReady || activeLoopIndex <= 0,
+          onInvoke: selectPreviousLoop,
+          tone: "secondary",
+          closeOnInvoke: false,
+        },
+        {
+          id: "stop",
+          label: "Stop",
+          ariaLabel: "Stop recording",
+          disabled: !isReady,
+          onInvoke: stopPlayback,
+          tone: "secondary",
+          closeOnInvoke: false,
+        },
+        {
+          id: "next",
+          label: "Next",
+          ariaLabel: "Next loop",
+          disabled:
+            !isReady ||
+            activeLoopIndex < 0 ||
+            activeLoopIndex >= loops.length - 1,
+          onInvoke: selectNextLoop,
+          tone: "secondary",
+          closeOnInvoke: false,
+        },
+        {
           id: "loop",
           label: loopEnabled ? "Loop on" : "Loop off",
           ariaLabel: loopEnabled ? "Turn loop off" : "Turn loop on",
@@ -801,15 +932,6 @@ export default function YouTubeLoopPlayer({
           pressed: loopEnabled,
           onInvoke: () => setLoopEnabled((current) => !current),
           tone: loopEnabled ? "practice" : "secondary",
-          closeOnInvoke: false,
-        },
-        {
-          id: "speed",
-          label: `${playbackRate}×`,
-          ariaLabel: `Playback speed ${playbackRate}. Change to ${nextRate}.`,
-          disabled: !isReady,
-          onInvoke: () => setPlaybackRate(nextRate),
-          tone: "secondary",
           closeOnInvoke: false,
         },
         {
@@ -850,9 +972,33 @@ export default function YouTubeLoopPlayer({
       expandedContent: {
         title: `${recordingLabel} controls`,
         description:
-          "Playback, loop, speed, saved passages and the metronome stay attached to this recording.",
-        actionIds: ["playback", "loop", "speed", "practice", "section"],
+          "Playback, loop, speed, saved passages and the metronome stay attached to this recording. Space plays or pauses; arrow keys seek five seconds when focus is outside a control.",
+        actionIds: [
+          "previous",
+          "playback",
+          "stop",
+          "next",
+          "loop",
+          "practice",
+          "section",
+        ],
         tools: ["metronome"],
+        showIdentity: false,
+      },
+      transport: {
+        currentTime,
+        duration,
+        disabled: !isReady,
+        unavailableMessage: playerError
+          ? "Player unavailable — open the source or choose another recording."
+          : "Loading provider controls…",
+        onSeek: seekPlayback,
+        speed: {
+          value: playbackRate,
+          options: availableRates,
+          disabled: !isReady,
+          onChange: setPlaybackRate,
+        },
       },
       persistence: {
         shareable: "url",
@@ -867,6 +1013,7 @@ export default function YouTubeLoopPlayer({
     }
   }, [
     activeLoop,
+    activeLoopIndex,
     availableRates,
     currentTime,
     duration,
@@ -874,15 +1021,21 @@ export default function YouTubeLoopPlayer({
     hasValidLoop,
     isPlaying,
     isReady,
+    loops.length,
     loopEnabled,
     passagePracticeActive,
     pieceId,
     playbackRate,
     playbackStorageKey,
+    playerError,
     playFrom,
     recordingLabel,
+    seekPlayback,
+    selectNextLoop,
+    selectPreviousLoop,
     setPlaybackRate,
     startPassagePractice,
+    stopPlayback,
     videoId,
   ])
 
@@ -891,19 +1044,19 @@ export default function YouTubeLoopPlayer({
   return (
     <div
       className={joinClasses(
-        "min-w-0 md:grid md:grid-cols-[minmax(0,0.92fr)_minmax(22rem,1.08fr)] md:items-start md:gap-6",
+        "reference-workbench min-w-0 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,1fr)] md:items-start md:gap-6",
         className
       )}
     >
-      <section className="flex min-w-0 flex-col md:sticky md:top-24">
+      <section className="reference-player flex min-w-0 flex-col md:sticky md:top-6">
         <div className={mediaPanelClassName}>{mediaPanel}</div>
 
-        <div className="order-1 mt-4 md:order-2">
+        <div className="order-1">
           {playerError ? (
             <div className="rounded-2xl border border-border bg-card p-5">
               <p className="font-semibold text-foreground">Recording unavailable</p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                {playerError} Choose another recording above, or open the source
+                {playerError} Choose another recording below, or open the source
                 directly.
               </p>
               <a
@@ -922,27 +1075,15 @@ export default function YouTubeLoopPlayer({
               playerError && "hidden"
             )}
           >
-            <div ref={containerRef} title={title} className="h-full w-full" />
+            <div ref={containerRef} title={title} className="h-full w-full [&_iframe]:h-full [&_iframe]:w-full" />
           </div>
 
-          <div className="mt-3 flex items-center justify-between gap-3 text-sm">
+          <div className="mt-3 text-sm">
             <p className="min-w-0 truncate font-medium text-foreground">
               {recordingLabel}
             </p>
-            <p className="shrink-0 tabular-nums text-muted-foreground">
-              {formatTime(currentTime)}
-              {duration > 0 ? ` / ${formatTime(duration)}` : ""}
-            </p>
           </div>
         </div>
-
-        <MobileViewSwitcher
-          value={mobileView}
-          options={mobileViews}
-          onChange={setMobileView}
-          label="View"
-          className="order-2 mt-3 md:hidden"
-        />
       </section>
 
       <aside className="mt-5 min-w-0 space-y-5 md:mt-0">
@@ -955,14 +1096,11 @@ export default function YouTubeLoopPlayer({
         >
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Passages
-              </p>
               <h2
                 id="saved-sections-heading"
                 className="mt-1 font-serif text-2xl font-bold text-foreground"
               >
-                Saved passages
+                Loop playlist
               </h2>
             </div>
             <button
@@ -971,7 +1109,7 @@ export default function YouTubeLoopPlayer({
               onClick={startNewSection}
               disabled={!isReady}
             >
-              New passage
+              New loop
             </button>
           </div>
 
@@ -1005,51 +1143,21 @@ export default function YouTubeLoopPlayer({
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2" aria-label="Saved passages">
-            <button
-              type="button"
-              onClick={selectWholeRecording}
-              className={joinClasses(
-                "inline-flex min-h-11 items-center gap-2 rounded-pill border px-3 py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
-                activeLoopId === null && markingStage === "idle"
-                  ? "border-action-primary bg-action-primary text-action-primary-foreground"
-                  : "border-hairline bg-surface-paper text-text-muted"
-              )}
-            >
-              <span>Whole recording</span>
-              {activeLoopId === null && markingStage === "idle" ? (
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em]">
-                  Active
-                </span>
-              ) : null}
-            </button>
-
-            {loops.map((loop) => {
-              const isActive = loop.id === activeLoopId
-              return (
-                <button
-                  key={loop.id}
-                  type="button"
-                  onClick={() => selectLoop(loop)}
-                  aria-current={isActive ? "true" : undefined}
-                  className={joinClasses(
-                    "inline-flex min-h-11 max-w-full items-center gap-2 rounded-pill border px-3 py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
-                    isActive
-                      ? "border-action-primary bg-action-primary text-action-primary-foreground"
-                      : "border-hairline bg-surface-paper text-text-muted"
-                  )}
-                >
-                  <span className="max-w-44 truncate font-semibold">{loop.label}</span>
-                  <span className="shrink-0 tabular-nums opacity-80">
-                    {formatTime(
-                      Number(loop.end_seconds) - Number(loop.start_seconds),
-                      true
-                    )}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
+          <label className="mt-4 block text-sm font-semibold">Loop<select aria-label="Select loop" value={activeLoopId ?? ""} className="mt-1 min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3" onChange={event => { const loop = loops.find(item => item.id === Number(event.target.value)); if (loop) selectLoop(loop); else selectWholeRecording() }}><option value="">Whole recording / new loop</option>{loops.map(loop => <option key={loop.id} value={loop.id}>{loop.label}</option>)}</select></label>
+          <ol className="mt-3 divide-y divide-hairline" aria-label="Saved loop playlist">
+            {loops.map((loop, index) => <li key={loop.id} className={`py-2 ${loop.id === activeLoopId ? "border-l-4 border-action-primary pl-2" : "pl-3"}`}>
+              <div className="flex items-center gap-2">
+                <button type="button" aria-current={loop.id === activeLoopId ? "true" : undefined} onClick={() => selectLoop(loop)} className="min-h-11 min-w-0 flex-1 rounded-control text-left focus-visible:outline-2"><span className="block break-words text-sm font-semibold">{index + 1}. {loop.label}</span><span className="block text-xs tabular-nums text-text-muted">{formatTime(Number(loop.start_seconds), true)}–{formatTime(Number(loop.end_seconds), true)}{loop.id === activeLoopId ? isPlaying ? " · Playing" : " · Selected" : ""}</span></button>
+                <button type="button" className={`${buttonStyles.secondary} !px-3`} disabled={!isReady} aria-label={`Audition ${loop.label}`} onClick={() => selectLoop(loop, true)}>▶</button>
+                <details className="relative"><summary className="grid min-h-11 min-w-11 cursor-pointer place-items-center rounded-control border border-hairline" aria-label={`Options for ${loop.label}`}>⋯</summary><div className="absolute right-0 z-10 grid w-48 gap-1 rounded-object border border-hairline bg-surface-paper p-2 shadow-material-floating">
+                  <button type="button" className={buttonStyles.secondary} onClick={() => { selectLoop(loop); setIsEditing(true) }}>Rename / adjust</button>
+                  <button type="button" className={buttonStyles.secondary} disabled={index === 0} onClick={() => reorderLoop(loop.id, -1)}>Move up</button>
+                  <button type="button" className={buttonStyles.secondary} disabled={index === loops.length - 1} onClick={() => reorderLoop(loop.id, 1)}>Move down</button>
+                </div></details>
+              </div>
+            </li>)}
+          </ol>
+          <p className="mt-2 text-xs text-text-muted">Selecting a loop pauses playback. Use ▶ to audition. Order is remembered for this session.</p>
 
           {activeLoop?.notes ? (
             <p className="mt-3 border-l-4 border-state-reference pl-3 text-sm leading-6 text-text-muted">
@@ -1064,33 +1172,7 @@ export default function YouTubeLoopPlayer({
             </p>
           ) : null}
 
-          {activeLoop ? (
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                className={buttonStyles.secondary}
-                disabled={activeLoopIndex <= 0}
-                onClick={() => selectLoop(loops[activeLoopIndex - 1])}
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                className={buttonStyles.secondary}
-                disabled={activeLoopIndex < 0 || activeLoopIndex >= loops.length - 1}
-                onClick={() => selectLoop(loops[activeLoopIndex + 1])}
-              >
-                Next
-              </button>
-              <button
-                type="button"
-                className={buttonStyles.primary}
-                onClick={startPassagePractice}
-              >
-                Practise this passage
-              </button>
-            </div>
-          ) : null}
+
         </section>
 
         <section
@@ -1100,9 +1182,6 @@ export default function YouTubeLoopPlayer({
           )}
           aria-labelledby="practice-controls-heading"
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Practice
-          </p>
           <h2
             id="practice-controls-heading"
             className="mt-1 font-serif text-2xl font-bold text-foreground"
@@ -1136,92 +1215,18 @@ export default function YouTubeLoopPlayer({
             </div>
           ) : null}
 
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-            <button
-              type="button"
-              className={isPlaying ? buttonStyles.secondaryStrong : buttonStyles.primary}
-              onClick={() => {
-                if (isPlaying) playerRef.current?.pauseVideo?.()
-                else playFrom()
-              }}
-              disabled={!isReady}
-            >
-              {isPlaying ? "Pause" : "Play"}
-            </button>
-            <button
-              type="button"
-              className={loopEnabled ? buttonStyles.primary : buttonStyles.secondary}
-              onClick={() => setLoopEnabled((current) => !current)}
-              disabled={!hasValidLoop}
-              aria-pressed={loopEnabled}
-            >
-              {loopEnabled ? "Loop on" : "Loop off"}
-            </button>
-            <button
-              type="button"
-              className={buttonStyles.secondary}
-              onClick={resetPassageState}
-              disabled={!hasValidLoop}
-            >
-              Clear Loop
-            </button>
-            <button
-              type="button"
-              className={buttonStyles.secondaryStrong}
-              onClick={() => playFrom(loopStart ?? 0)}
-              disabled={!isReady || loopStart === null}
-            >
-              Play from start
-            </button>
-            <button
-              type="button"
-              className={buttonStyles.secondary}
-              onClick={() => moveLoopWindow("previous")}
-              disabled={!previousLoopWindow}
-            >
-              Previous section
-            </button>
-            <button
-              type="button"
-              className={buttonStyles.secondary}
-              onClick={() => moveLoopWindow("next")}
-              disabled={!nextLoopWindow}
-            >
-              Next section
-            </button>
-          </div>
-
-          <div className="mt-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Speed
-            </p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {DEFAULT_SPEEDS.map((rate) => (
-                <button
-                  key={rate}
-                  type="button"
-                  className={compactButton(
-                    playbackRate === rate
-                      ? buttonStyles.primary
-                      : buttonStyles.secondary
-                  )}
-                  onClick={() => setPlaybackRate(rate)}
-                  disabled={!isReady || !availableRates.includes(rate)}
-                  aria-pressed={playbackRate === rate}
-                >
-                  {rate}x
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {markingStage === "draft" || markingStage === "ready" ? (
+          {
             <div className="mt-5 border-t border-border pt-5">
               <p className="text-sm leading-6 text-muted-foreground">
-                The loop starts at {formatTime(loopStart, true)}. Keep that
+                The loop starts at {formatTime(loopStart ?? 0, true)}. Keep that
                 start, or replace it at the current playhead before setting the
                 end.
               </p>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <label className="text-sm">Start (seconds)<input type="number" min={0} max={duration || undefined} step="0.1" value={loopStart ?? 0} aria-label="Loop start seconds" onChange={event => { setLoopStart(Math.max(0, Number(event.target.value))); setMarkingStage("draft"); if (activeLoop) setIsEditing(true) }} className="mt-1 min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3" /></label>
+                <label className="text-sm">End (seconds)<input type="number" min={0} max={duration || undefined} step="0.1" value={loopEnd ?? ""} aria-label="Loop end seconds" onChange={event => { setLoopStart(loopStart ?? 0); setLoopEnd(event.target.value === "" ? null : Math.max(0, Number(event.target.value))); setMarkingStage("ready"); if (activeLoop) setIsEditing(true) }} className="mt-1 min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3" /></label>
+              </div>
+              {loopEnd !== null && !hasValidLoop && <p role="alert" className="mt-2 text-sm text-destructive">End must be more than 0.2 seconds after start.</p>}
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -1241,7 +1246,7 @@ export default function YouTubeLoopPlayer({
                 </button>
               </div>
             </div>
-          ) : null}
+          }
 
           {activeLoop && !isEditing && markingStage === "idle" ? (
             <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-5">
@@ -1255,7 +1260,7 @@ export default function YouTubeLoopPlayer({
             </div>
           ) : null}
 
-          {(markingStage === "ready" || isEditing) && hasValidLoop ? (
+          {(markingStage !== "idle" || isEditing || (!activeLoop && hasValidLoop)) ? (
             <form onSubmit={handleSave} className="mt-5 space-y-4 border-t border-border pt-5">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-foreground">

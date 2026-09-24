@@ -6,6 +6,7 @@ import { buttonStyles } from "@/components/ui/buttonStyles"
 
 type RecoveryStateProps = {
   title: string
+  headingAs?: "h1" | "h2" | "h3"
   description: string
   primaryActionHref?: string
   primaryActionLabel: string
@@ -18,6 +19,7 @@ type RecoveryStateProps = {
 
 export default function RecoveryState({
   title,
+  headingAs,
   description,
   primaryActionHref,
   primaryActionLabel,
@@ -30,6 +32,7 @@ export default function RecoveryState({
   return (
     <EmptyState
       title={title}
+      headingAs={headingAs}
       description={description}
       primaryActionHref={onPrimaryAction ? undefined : primaryActionHref}
       primaryActionLabel={primaryActionLabel}

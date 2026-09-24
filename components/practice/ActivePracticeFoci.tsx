@@ -41,28 +41,9 @@ export default function ActivePracticeFoci({
         </span>
       </button>
 
-      <div className="hidden md:block">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Active focus areas
-        </p>
+      <p className="hidden text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground md:block">Active focus areas</p>
+        <ul className={`mt-4 divide-y divide-border md:flex md:flex-wrap md:gap-3 md:divide-y-0 ${isOpen ? "block" : "hidden"}`}>
 
-        <ul className="mt-2 flex flex-wrap gap-2">
-          {foci.map((focus) => (
-            <li key={focus.id}>
-              <Link
-                href={`/review/foci/${focus.id}`}
-                className="inline-flex rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground"
-                title={focus.description ?? undefined}
-              >
-                {focus.title}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {isOpen ? (
-        <ul className="mt-4 divide-y divide-border md:hidden">
           {foci.map((focus) => (
             <li key={focus.id} className="py-3 first:pt-0 last:pb-0">
               <Link
@@ -80,7 +61,6 @@ export default function ActivePracticeFoci({
             </li>
           ))}
         </ul>
-      ) : null}
     </section>
   )
 }

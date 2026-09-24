@@ -41,6 +41,8 @@ type LibraryListProps = {
   selectionMode?: boolean
   selectedPieceIds?: number[]
   onToggleSelection?: (piece: Piece) => void
+  onPreview?: (piece: Piece, trigger: HTMLButtonElement) => void
+  previewPieceId?: number
 }
 
 function buildPieceRedirectTo(redirectTo: string, pieceId: number) {
@@ -129,6 +131,8 @@ export default function LibraryList({
   selectionMode = false,
   selectedPieceIds = [],
   onToggleSelection,
+  onPreview,
+  previewPieceId,
 }: LibraryListProps) {
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
   const [selectedListId, setSelectedListId] = useState("")
@@ -170,7 +174,7 @@ export default function LibraryList({
             </span>
           ) : null}
 
-          {mediaBundle?.effectiveReference ? (
+          {!onPreview && mediaBundle?.effectiveReference ? (
             <TuneMediaLauncher
               pieceId={piece.id}
               title={piece.title}
@@ -196,6 +200,8 @@ export default function LibraryList({
           />
         }
         actions={selectionMode ? null : (
+          <>
+          {onPreview ? <button type="button" aria-label={`Preview ${piece.title}`} aria-pressed={previewPieceId === piece.id} onClick={event => onPreview(piece, event.currentTarget)} className="inline-flex min-h-11 items-center whitespace-nowrap rounded-control border border-hairline px-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Preview</button> : null}
           <LibraryTuneCardActions
             piece={piece}
             activeUserPiece={activeUserPiece}
@@ -209,6 +215,7 @@ export default function LibraryList({
             startLearning={startLearning}
             showState={false}
           />
+          </>
         )}
       />
     )

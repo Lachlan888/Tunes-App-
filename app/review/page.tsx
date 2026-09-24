@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation"
+import { redirectToLogin } from "@/lib/auth/login-redirect"
 import ActivePracticeSection from "@/components/practice/ActivePracticeSection"
 import PracticeStatusMessages from "@/components/practice/PracticeStatusMessages"
 import ReviewQueueSection from "@/components/practice/ReviewQueueSection"
@@ -51,8 +51,8 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     practiceItems,
     dueTodayPieces,
     catchUpQueue,
-    today,
-  } = await loadReviewPageData()
+    today, dueTodayCount, catchUpCount, activeCount, queueTotal, sessionLabel, sessionKey,
+  } = await loadReviewPageData({ lane: practiceLane, listId: Number(resolvedSearchParams?.list_id), focusId: Number(resolvedSearchParams?.focus_id) })
 
   const dueTodayRedirectTo = "/review#review-queue"
   const catchUpRedirectTo = "/review?mode=catch-up#review-queue"
@@ -60,65 +60,17 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     reviewMode === "catch-up" ? catchUpRedirectTo : dueTodayRedirectTo
 
   if (!streakSummary) {
-    redirect("/login")
+    return redirectToLogin()
   }
 
   if (practiceLane) {
-    let queue = practiceLane === "catch-up" ? catchUpQueue : dueTodayPieces
-    let sessionLabel: string | undefined
-    let sessionKey: string | undefined
-
-    if (practiceLane === "list") {
-      const listId = Number(resolvedSearchParams?.list_id)
-      const { createClient } = await import("@/lib/supabase/server")
-      const supabase = await createClient()
-      const { data: list } = await supabase
-        .from("learning_lists")
-        .select("id, name")
-        .eq("id", listId)
-        .maybeSingle()
-      const { data: memberships } = list
-        ? await supabase
-            .from("learning_list_items")
-            .select("piece_id")
-            .eq("learning_list_id", list.id)
-        : { data: [] }
-      const pieceIds = new Set((memberships ?? []).map((item) => item.piece_id))
-
-      queue = list ? practiceItems.filter((item) => pieceIds.has(item.piece_id)) : []
-      sessionLabel = list ? list.name : "List unavailable"
-      sessionKey = list ? `list-${list.id}` : "list-unavailable"
-    }
-
-    if (practiceLane === "focus") {
-      const focusId = Number(resolvedSearchParams?.focus_id)
-      const { createClient } = await import("@/lib/supabase/server")
-      const supabase = await createClient()
-      const { data: authData } = await supabase.auth.getUser()
-      const { data: focus } = await supabase
-        .from("practice_foci")
-        .select("id, title")
-        .eq("id", focusId)
-        .eq("user_id", authData.user?.id ?? "")
-        .eq("status", "active")
-        .maybeSingle()
-      const { data: memberships } = focus
-        ? await supabase
-            .from("practice_focus_tunes")
-            .select("piece_id")
-            .eq("focus_id", focus.id)
-        : { data: [] }
-      const pieceIds = new Set((memberships ?? []).map((item) => item.piece_id))
-
-      queue = focus ? practiceItems.filter((item) => pieceIds.has(item.piece_id)) : []
-      sessionLabel = focus ? focus.title : "Focus unavailable"
-      sessionKey = focus ? `focus-${focus.id}` : "focus-unavailable"
-    }
+    const queue = practiceLane === "catch-up" ? catchUpQueue : practiceLane === "due-today" ? dueTodayPieces : practiceItems
 
     return (
       <FocusedPracticeSession
         lane={practiceLane}
         initialQueue={queue}
+        queueTotal={queueTotal}
         sessionDate={today}
         noteCategories={practiceDiaryEnabled ? noteCategories : []}
         sessionLabel={sessionLabel}
@@ -142,26 +94,22 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
       {(showSection("due_today") || showSection("catch_up")) ? (
         <ReviewQueueSection
-          dueTodayPieces={showSection("due_today") ? dueTodayPieces : []}
-          catchUpQueue={showSection("catch_up") ? catchUpQueue : []}
+          dueTodayCount={dueTodayCount}
+          catchUpCount={catchUpCount}
         />
       ) : null}
 
       {showSection("active_practice") ? (
         <ActivePracticeSection
           practiceItems={practiceItems}
+          totalCount={activeCount}
           redirectTo={redirectTo}
         />
       ) : null}
 
       <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.45fr)]">
         {showSection("practice_nav") ? (
-          <section className="rounded-3xl border border-border bg-card p-5 shadow-sm md:p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Supporting tools
-            </p>
-            <PracticeDiaryNav active="review" />
-          </section>
+          <PracticeDiaryNav active="review" compact />
         ) : null}
 
         {showSection("streaks") ? (

@@ -1,11 +1,13 @@
 "use client"
 
 import { useState } from "react"
+import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import SubmitButton from "@/components/SubmitButton"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import type { Setlist } from "@/lib/types"
 
 type EditSetlistModalProps = {
+  canDelete?: boolean
   setlist: Setlist
   redirectTo: string
   updateSetlist: (formData: FormData) => Promise<void>
@@ -16,6 +18,7 @@ const inputClass =
   "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function EditSetlistModal({
+  canDelete = false,
   setlist,
   redirectTo,
   updateSetlist,
@@ -33,38 +36,16 @@ export default function EditSetlistModal({
         Edit setlist
       </button>
 
-      {isOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/35 px-4 py-8 backdrop-blur-sm">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-xl">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Edit setlist
-                </p>
-                <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight">
-                  Setlist details
-                </h2>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className={buttonStyles.secondary}
-              >
-                Close
-              </button>
-            </div>
-
+      <ResponsiveModal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Edit setlist" mobileMode="sheet" desktopMaxWidth="md:max-w-2xl">
             <form action={updateSetlist} className="mt-6 space-y-4">
               <input type="hidden" name="setlist_id" value={setlist.id} />
               <input type="hidden" name="redirect_to" value={redirectTo} />
+              <input type="hidden" name="expected_version" value={setlist.updated_at ?? setlist.created_at} />
 
               <div>
-                <label className="text-sm font-medium text-foreground">
-                  Name
-                </label>
+                <label htmlFor="EditSetlistModal-name" className="text-sm font-medium text-foreground">Name</label>
                 <input
-                  name="name"
+                  id="EditSetlistModal-name" name="name"
                   required
                   defaultValue={setlist.name}
                   className={`${inputClass} mt-2`}
@@ -72,11 +53,9 @@ export default function EditSetlistModal({
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground">
-                  Description
-                </label>
+                <label htmlFor="EditSetlistModal-description" className="text-sm font-medium text-foreground">Description</label>
                 <textarea
-                  name="description"
+                  id="EditSetlistModal-description" name="description"
                   rows={3}
                   defaultValue={setlist.description ?? ""}
                   className={`${inputClass} mt-2`}
@@ -85,23 +64,19 @@ export default function EditSetlistModal({
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium text-foreground">
-                    Event date
-                  </label>
+                  <label htmlFor="EditSetlistModal-event_date" className="text-sm font-medium text-foreground">Event date</label>
                   <input
                     type="date"
-                    name="event_date"
+                    id="EditSetlistModal-event_date" name="event_date"
                     defaultValue={setlist.event_date ?? ""}
                     className={`${inputClass} mt-2`}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-foreground">
-                    Location
-                  </label>
+                  <label htmlFor="EditSetlistModal-location" className="text-sm font-medium text-foreground">Location</label>
                   <input
-                    name="location"
+                    id="EditSetlistModal-location" name="location"
                     defaultValue={setlist.location ?? ""}
                     className={`${inputClass} mt-2`}
                   />
@@ -115,7 +90,7 @@ export default function EditSetlistModal({
               />
             </form>
 
-            <div className="mt-8 rounded-2xl border border-destructive bg-background/70 p-4">
+            {canDelete ? <div className="mt-8 rounded-2xl border border-destructive bg-background/70 p-4">
               <p className="text-sm font-semibold uppercase tracking-[0.14em] text-destructive">
                 Danger zone
               </p>
@@ -145,10 +120,8 @@ export default function EditSetlistModal({
                   className={buttonStyles.destructive}
                 />
               </form>
-            </div>
-          </div>
-        </div>
-      ) : null}
+            </div> : null}
+      </ResponsiveModal>
     </>
   )
 }

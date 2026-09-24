@@ -1,0 +1,93 @@
+23 September 2026 — scoped ESLint
+
+exit=0
+(node:27519) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/catalogue-workflows.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ filter drafts count prospective matches without mutating applied URL state (1.440917ms)
+✔ catalogue selection is reversible, private, deduplicated, and bounded (0.732416ms)
+✔ duplicate suggestions explain exact titles, aliases, and likely matches (3.303167ms)
+✔ catalogue UI wires staged filters, selection dock, and progressive creation (2.569833ms)
+(node:27520) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/practice-session.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ list practice is a first-class session lane (1.098291ms)
+✔ focus practice is a first-class session lane (0.166917ms)
+✔ Diary period navigation and month outcome labels remain visible (4.069ms)
+✔ practice lane URLs are explicit and invalid lanes recover to entry (0.276041ms)
+✔ Focused Practice preserves existing Stage rules (0.164542ms)
+✔ rating state prevents double submission and permits only pre-save Undo (0.092625ms)
+✔ rating removes exactly one tune and advances without skipping (0.529458ms)
+✔ resume position safely clamps when the server-side queue changes (0.085458ms)
+✔ session summaries count outcomes and make one useful suggestion (0.135417ms)
+✔ Focused Practice uses reduced chrome, persistent ratings, Undo and summary (1.003042ms)
+(node:27521) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/review-bounds.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ review page and session queries bound payloads while preserving full counts and stable order (1.059542ms)
+✔ scoped practice filters membership before limiting, including lists larger than one API page (0.219625ms)
+✔ unavailable contexts do not load a general queue and query errors remain retryable (0.272333ms)
+(node:27522) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/session-dock.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ one typed API supports every planned Session Dock context (3.871208ms)
+✔ the latest mounted context wins and the previous context is restored (1.41575ms)
+✔ the explicit handle distinguishes a tap from an upward full-screen drag (0.176584ms)
+✔ expansion, focus restoration and single-layer suppression are wired (7.749542ms)
+✔ Session Dock and Navigation Dock reserve one combined safe area (2.333333ms)
+✔ route integrations preserve only safe contextual state (5.209833ms)
+(node:27523) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/tune-collections.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ collection URL state is validated, bounded, and shareable (3.667875ms)
+✔ cursor pages remain deterministic when primary sort values are duplicated (0.369833ms)
+✔ previous, final, and empty cursor pages expose correct controls (0.14825ms)
+✔ cursor sort and page-size guards reject stale or oversized requests (0.125042ms)
+✔ PostgREST cursor values escape reserved quote and slash characters (0.067625ms)
+✔ every collection consumer has an explicit permission adapter (0.384125ms)
+✔ shared query helper composes search and facet filters without offsets (0.153458ms)
+✔ catalogue and repertoire routes render bounded rows without per-row forms (9.239833ms)
+(node:27524) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/tune-detail.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tune detail URLs have three stable views and a Practice default (1.699208ms)
+✔ the tune identity, three views and Session Dock keep one action hierarchy (23.656792ms)
+✔ Manage and route recovery expose permission-safe tune actions (6.149458ms)
+✔ view-scoped loading keeps shared identity data stable (4.36075ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 355.033416
+
+Scoped diff check exit 0. Reviewed owned diff: class-only changes, no handler/state/data changes.
+Carry forward P20-b2 CSS compilation from this batch: globals.css and dependency inputs SHA256 unchanged.
+c2e35267ec1a4741bbdac83b017d6cbadbace08bcff12631ca093f3dcb9b0f4f  app/globals.css
+8bb6e210891fbc184e12fb8e8407b556b01eb42dc9cc8e4ef05b04c94d78d0d1  package.json
+42f3a674b0cba3314b2559341ff93ad904be09a0f01044913e870f35881c87e1  package-lock.json
+
+Source SHA256
+a5ae312b0fa835904ee6600a8c10d5362b8b5fa145190130794a56063d0c1f2c  components/library/LibraryResultsHeader.tsx
+e66e5174c19cbadfafd2e0a5a472c3d7a94672bebc31619d205ecf225b492b58  components/library/RequestTuneEditForm.tsx
+7ee20e06b3fc359837403115c1c98aa81efec66d6c8d5ce5e1fa4ee53db17ec2  components/practice/PracticeReviewCard.tsx
+793ee66abf2ac5682e3b57f5dacd485b383ebb9c54c89aa901c40e5d4c141f70  components/practice-diary/PracticeDayCalendarPicker.tsx
+7febc26b3026470b7fe3208e9ea58507086ffb6a92eedddc6c4866bbf5a950c1  components/practice-diary/PracticePeriodHeader.tsx
+3c3b1f4d5edf9ec2d7354f19a409ffbc165c919d837751543c825bd73b66cd52  components/practice-diary/PracticeNoteForm.tsx
+92e36eeeaf054a7f9d7fffcc3984867c3b81f3951f3c010ddc0add0e47cff558  components/practice-diary/PracticeDiaryIndex.tsx
+301f6c345abbc3d4b53b1af7d9658dd3d6dc3402f4134746571376f4424f214b  components/practice-diary/PracticeDayNavigator.tsx
+848990f3d9853cb0067621b37939b46826875c688564c1c8d50a96806657109d  components/practice-diary/DailyReflectionForm.tsx
+e42cad5a33639b5790a9749807e62205070ecddb1f35d573b5ba20b12c3c855a  components/practice-diary/PracticeCategoryManager.tsx
+c3ead96259368958faf6440c2088a8334b01ab4fd89ed7772f9006fea6d7d111  components/practice-diary/PracticeFocusSummaryList.tsx
+f7a2b4caa93c2846294ad0e14c4e3bebfd374ef16c824ca32b433cdafa093115  components/practice-foci/PracticeFocusCreateForm.tsx
+2bdcd2b9d027c5f78ec8bf9839fba6e7816ca108d802e85bcc2e8c084c573a8b  components/practice/AddCategoryInReviewDisclosure.tsx
+538c7ed03a200e3e8748279b89f59e43a3cbb1a26b374e766e7dcac7941e8430  components/practice-foci/PracticeFocusTuneManager.tsx
+9f7edad8c54f6f95709e99ace4058141f45147209eb63388cf39cd9d3438750a  components/practice-diary/PracticeCategorySummaryList.tsx

@@ -73,9 +73,9 @@ export default function ListOrderManager({
               personalState={<TuneStateIndicator isAlreadyInPractice={item.isAlreadyInPractice} isKnown={item.isKnown} stage={item.stage} />}
               actions={
                 <div className="flex flex-wrap items-center gap-2">
-                  <button type="button" disabled={isPending || index === 0} onClick={() => move(item.id, index - 1)} className="min-h-11 rounded-full border border-border bg-card px-4 text-sm font-semibold disabled:opacity-50">Move up</button>
-                  <button type="button" disabled={isPending || index === items.length - 1} onClick={() => move(item.id, index + 1)} className="min-h-11 rounded-full border border-border bg-card px-4 text-sm font-semibold disabled:opacity-50">Move down</button>
-                  <RemoveTuneFromListButton listId={listId} pieceId={item.piece.id} tuneTitle={item.piece.title} redirectTo={redirectTo} className="min-h-11 rounded-full border border-destructive px-4 text-sm font-semibold text-destructive" />
+                  <button type="button" disabled={isPending || index === 0} onClick={() => move(item.id, index - 1)} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-border bg-card px-4 text-sm font-semibold disabled:opacity-50">Move up</button>
+                  <button type="button" disabled={isPending || index === items.length - 1} onClick={() => move(item.id, index + 1)} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-border bg-card px-4 text-sm font-semibold disabled:opacity-50">Move down</button>
+                  <RemoveTuneFromListButton listId={listId} pieceId={item.piece.id} tuneTitle={item.piece.title} redirectTo={redirectTo} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-destructive px-4 text-sm font-semibold text-destructive" />
                 </div>
               }
             />

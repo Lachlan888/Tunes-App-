@@ -1,0 +1,43 @@
+(node:63514) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/list-permissions.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ detail loader returns owner without effects or recipient enumeration (40.914209ms)
+✔ detail loader returns shared_viewer without effects or recipient enumeration (8.919625ms)
+✔ detail loader returns public_viewer without effects or recipient enumeration (8.272792ms)
+✔ private inaccessible detail has the same not-found boundary and no dependent reads (5.477083ms)
+✔ revoked inaccessible detail has the same not-found boundary and no dependent reads (5.172167ms)
+✔ missing inaccessible detail has the same not-found boundary and no dependent reads (4.606125ms)
+✔ signed-out private detail redirects before querying list existence (5.571042ms)
+✔ public loader accepts public link for signed out without effects (9.023542ms)
+✔ public route conceals private list even from signed out (4.229583ms)
+✔ public loader accepts public link for owner without effects (3.697458ms)
+✔ public route conceals private list even from owner (3.565542ms)
+✔ public loader accepts public link for viewer without effects (3.457542ms)
+✔ public route conceals private list even from viewer (5.482125ms)
+✔ signed out cannot invoke updateList on another user's list (47.637125ms)
+✔ signed out cannot invoke removeTuneFromList on another user's list (23.9345ms)
+✔ signed out cannot invoke deleteList on another user's list (21.454875ms)
+✔ signed out cannot invoke revokeLearningListPrivateShare on another user's list (16.15375ms)
+✔ signed out cannot invoke toggleLearningListVisibility on another user's list (16.143083ms)
+✔ signed out cannot invoke reorderListItems on another user's list (16.041667ms)
+✔ recipient cannot invoke updateList on another user's list (19.386959ms)
+✔ recipient cannot invoke removeTuneFromList on another user's list (15.28775ms)
+✔ recipient cannot invoke deleteList on another user's list (14.763334ms)
+✔ recipient cannot invoke revokeLearningListPrivateShare on another user's list (18.683583ms)
+✔ recipient cannot invoke toggleLearningListVisibility on another user's list (13.243834ms)
+✔ recipient cannot invoke reorderListItems on another user's list (13.835959ms)
+✔ viewer cannot invoke updateList on another user's list (20.656666ms)
+✔ viewer cannot invoke removeTuneFromList on another user's list (14.348334ms)
+✔ viewer cannot invoke deleteList on another user's list (13.560333ms)
+✔ viewer cannot invoke revokeLearningListPrivateShare on another user's list (14.090875ms)
+✔ viewer cannot invoke toggleLearningListVisibility on another user's list (14.610584ms)
+✔ viewer cannot invoke reorderListItems on another user's list (14.444709ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 31
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 660.309541

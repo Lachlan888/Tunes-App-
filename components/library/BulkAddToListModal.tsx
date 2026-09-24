@@ -48,7 +48,6 @@ export default function BulkAddToListModal({
       closeOnOverlayClick={!isPending}
       mobileMode="sheet"
       desktopMaxWidth="md:max-w-md"
-      eyebrow="Catalogue selection"
       title="Add selected tunes to List"
       description={`${selectedPieceIds.length} tune${selectedPieceIds.length === 1 ? "" : "s"} selected. Existing memberships will be kept without duplication.`}
       footer={

@@ -47,9 +47,6 @@ export default async function TrendsStylePage({ params }: TrendsStylePageProps) 
       </Link>
 
       <header className="border-b border-border pb-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Style detail
-        </p>
         <h1 className="mt-1 font-serif text-4xl font-bold tracking-tight sm:text-5xl">
           {resolvedStyleName}
         </h1>
@@ -61,9 +58,6 @@ export default async function TrendsStylePage({ params }: TrendsStylePageProps) 
 
       {data.coverageSummary ? (
         <section className="py-8" aria-labelledby="style-coverage-title">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Coverage
-          </p>
           <h2 id="style-coverage-title" className="mt-1 font-serif text-2xl font-bold">
             {data.isAuthenticated
               ? `${personalTotal} of ${data.coverageSummary.catalogueTuneCount} catalogue tunes are in your repertoire`
@@ -101,13 +95,12 @@ export default async function TrendsStylePage({ params }: TrendsStylePageProps) 
         <section className="border-y border-border py-7" aria-labelledby="style-empty-title">
           <h2 id="style-empty-title" className="font-serif text-2xl font-bold">Not enough data yet</h2>
           <p className="mt-2 text-sm text-muted-foreground">Browse the catalogue to find a {resolvedStyleName} tune and start building this view.</p>
-          <Link href={`/library?style=${encodeURIComponent(resolvedStyleName)}`} className="mt-4 inline-flex min-h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground">Explore {resolvedStyleName}</Link>
+          <Link href={`/library?style=${encodeURIComponent(resolvedStyleName)}`} className="mt-4 inline-flex min-h-11 items-center rounded-control bg-primary px-5 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Explore {resolvedStyleName}</Link>
         </section>
       ) : null}
 
       {data.recommendedTunes.length > 0 ? (
         <section className="border-t border-border py-8" aria-labelledby="recommended-title">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Explore a gap</p>
           <h2 id="recommended-title" className="mt-1 font-serif text-2xl font-bold">
             {data.isAuthenticated ? "Popular tunes not in your repertoire" : "Popular starting points"}
           </h2>
@@ -118,7 +111,6 @@ export default async function TrendsStylePage({ params }: TrendsStylePageProps) 
 
       {data.topPracticeTunes.length > 0 ? (
         <section className="border-t border-border py-8" aria-labelledby="practice-title">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Community movement</p>
           <h2 id="practice-title" className="mt-1 font-serif text-2xl font-bold">Most often in active practice</h2>
           <p className="mb-5 mt-2 text-sm text-muted-foreground">Based on visible active Practice memberships in this style.</p>
           <TrendTuneList entries={data.topPracticeTunes} metricLabel="In practice for" userPieces={data.userPieces} userKnownPieces={data.userKnownPieces} learningLists={data.learningLists} learningListItems={data.learningListItems} redirectTo={redirectTo} />
@@ -127,7 +119,6 @@ export default async function TrendsStylePage({ params }: TrendsStylePageProps) 
 
       {data.topPublicLists.length > 0 ? (
         <section className="border-t border-border py-8" aria-labelledby="lists-title">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Public collections</p>
           <h2 id="lists-title" className="mt-1 font-serif text-2xl font-bold">Lists with the strongest overlap</h2>
           <p className="mb-5 mt-2 text-sm text-muted-foreground">Ranked by the number of {resolvedStyleName} tunes in each public list.</p>
           <TrendPublicListSection entries={data.topPublicLists} />

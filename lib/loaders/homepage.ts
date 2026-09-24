@@ -1,4 +1,4 @@
-import { loadRecentFriendActivity } from "@/lib/loaders/friends"
+import { loadFriendActivityPage } from "@/lib/loaders/friends"
 import {
   getBacklogTier,
   getBacklogTierLabel,
@@ -12,13 +12,11 @@ import type {
   BacklogGroupSummary,
   GettingStartedState,
   GettingStartedTask,
-  HomeBadgePreview,
   HomeBadgeSummary,
   HomeLearningQueuePreview,
   HomeListPreview,
   HomeSummaryData,
   HomeTunePreview,
-  StreakSummary,
   UserPiece,
 } from "@/lib/types"
 
@@ -90,20 +88,6 @@ type HomeLearningQueueItemRow = {
     | null
 }
 
-type HomeBadgeRow = {
-  id: number
-  name: string
-  slug: string
-  category: HomeBadgePreview["category"]
-  created_at: string | null
-}
-
-type HomeBadgeAwardRow = {
-  id: number
-  awarded_at: string | null
-  badges: HomeBadgeRow | HomeBadgeRow[] | null
-}
-
 function getJoinedPiece(
   pieces:
     | {
@@ -161,6 +145,7 @@ function getJoinedList(
 
 function toHomeTunePreview(row: HomePracticeSummaryRow): HomeTunePreview {
   return {
+    nextReviewDue: row.next_review_due,
     user_piece_id: row.id,
     piece_id: row.piece_id,
     title: getJoinedPieceTitle(row.pieces),
@@ -407,40 +392,6 @@ function getRepertoireSummaryRow(
   return Array.isArray(rows) ? rows[0] ?? null : rows
 }
 
-function asSingleBadgeRow(
-  value: HomeBadgeRow | HomeBadgeRow[] | null
-): HomeBadgeRow | null {
-  return Array.isArray(value) ? value[0] ?? null : value
-}
-
-function toHomeCreatedBadgePreview(row: HomeBadgeRow): HomeBadgePreview {
-  return {
-    id: row.id,
-    name: row.name,
-    slug: row.slug,
-    category: row.category,
-    created_at: row.created_at,
-  }
-}
-
-function toHomeReceivedBadgePreview(
-  row: HomeBadgeAwardRow
-): HomeBadgePreview | null {
-  const badge = asSingleBadgeRow(row.badges)
-
-  if (!badge) {
-    return null
-  }
-
-  return {
-    id: badge.id,
-    name: badge.name,
-    slug: badge.slug,
-    category: badge.category,
-    awarded_at: row.awarded_at,
-  }
-}
-
 async function loadHomeBadgeSummary({
   supabase,
   userId,
@@ -451,8 +402,6 @@ async function loadHomeBadgeSummary({
   const [
     { count: receivedCount, error: receivedCountError },
     { count: createdCount, error: createdCountError },
-    { data: receivedRows, error: receivedRowsError },
-    { data: createdRows, error: createdRowsError },
   ] = await Promise.all([
     supabase
       .from("badge_awards")
@@ -464,47 +413,17 @@ async function loadHomeBadgeSummary({
       .select("id", { count: "exact", head: true })
       .eq("owner_user_id", userId),
 
-    supabase
-      .from("badge_awards")
-      .select(
-        `
-          id,
-          awarded_at,
-          badges (
-            id,
-            name,
-            slug,
-            category,
-            created_at
-          )
-        `
-      )
-      .eq("recipient_user_id", userId)
-      .order("awarded_at", { ascending: false })
-      .limit(3),
-
-    supabase
-      .from("badges")
-      .select("id, name, slug, category, created_at")
-      .eq("owner_user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(3),
   ])
 
   if (receivedCountError) throw new Error(receivedCountError.message)
   if (createdCountError) throw new Error(createdCountError.message)
-  if (receivedRowsError) throw new Error(receivedRowsError.message)
-  if (createdRowsError) throw new Error(createdRowsError.message)
 
   return {
     receivedCount: receivedCount ?? 0,
     createdCount: createdCount ?? 0,
-    recentReceivedBadges: ((receivedRows ?? []) as HomeBadgeAwardRow[])
-      .map(toHomeReceivedBadgePreview)
-      .filter((badge): badge is HomeBadgePreview => Boolean(badge)),
-    recentCreatedBadges: ((createdRows ?? []) as HomeBadgeRow[]).map(
-      toHomeCreatedBadgePreview
-    ),
+    // The Home streak panel needs counts only; retain the shared summary shape.
+    recentReceivedBadges: [],
+    recentCreatedBadges: [],
   }
 }
 
@@ -710,7 +629,6 @@ export async function loadHomepageData() {
     .slice(0, 3)
     .map((row) => previewRowsById.get(row.id))
     .filter((row): row is HomePracticeSummaryRow => Boolean(row))
-    .sort(sortPracticePreviewRows)
     .map(toHomeTunePreview)
 
   const listPreview: HomeListPreview[] = (listPreviewRows ?? []).map(
@@ -726,10 +644,10 @@ export async function loadHomepageData() {
       row.requester_id === user.id ? row.addressee_id : row.requester_id
     )
 
-  const [recentFriendActivity, reviewEventResult] = await withServerTiming(
+  const [activityPage, reviewEventResult] = await withServerTiming(
     "homepage.activity-and-review",
     () => Promise.all([
-      loadRecentFriendActivity(supabase, acceptedFriendIds, user.id, 5),
+      loadFriendActivityPage(supabase, acceptedFriendIds, user.id),
 
       typedPracticeSummaryRows.length > 0
         ? supabase
@@ -777,7 +695,8 @@ export async function loadHomepageData() {
   return {
     user,
     summary,
-    recentFriendActivity,
+    recentFriendActivity: activityPage.items,
+    activityNextCursor: activityPage.nextCursor,
     streakSummary,
     gettingStartedState,
   }

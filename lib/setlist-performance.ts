@@ -81,3 +81,7 @@ export function setlistMemberInitials(member: SetlistMember) {
     .map((part) => part[0]?.toUpperCase())
     .join("") || "?"
 }
+
+export function resolvePerformanceItem(items: ActiveSetlistPayload["items"], selectedId: number | null) {
+  return items.find(item => item.id === selectedId) ?? items[0] ?? null
+}

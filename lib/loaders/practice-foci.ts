@@ -1,4 +1,5 @@
-import { notFound, redirect } from "next/navigation"
+import { redirectToLogin } from "@/lib/auth/login-redirect"
+import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import type { Piece } from "@/lib/types"
 
@@ -176,7 +177,7 @@ async function requireUser() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    return redirectToLogin()
   }
 
   return {

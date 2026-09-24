@@ -1,0 +1,260 @@
+--- app/learning-lists/[id]/page.tsx
++++ app/learning-lists/[id]/page.tsx
+@@ -138,7 +138,7 @@
+         )}
+ 
+         {activeTuneCount > 0 ? (
+-          <Link href={`/review?session=list&list_id=${typedList.id}`} className="inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
++          <Link href={`/review?session=list&list_id=${typedList.id}`} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
+             Start Practice · {activeTuneCount}
+           </Link>
+         ) : (
+--- app/public-lists/[id]/not-found.tsx
++++ app/public-lists/[id]/not-found.tsx
+@@ -10,7 +10,7 @@
+       <form action="/public-lists" method="get" className="mt-8 flex max-w-xl flex-col gap-3 sm:flex-row">
+         <label htmlFor="public-list-recovery-search" className="sr-only">Search public lists</label>
+         <input id="public-list-recovery-search" name="q" placeholder="Search public lists" className="min-h-11 flex-1 rounded-full border border-border bg-card px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]" />
+-        <button className="min-h-11 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground">Search</button>
++        <button className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control bg-primary px-5 text-sm font-semibold text-primary-foreground">Search</button>
+       </form>
+       <Link href="/public-lists" className="mt-6 inline-flex text-sm font-semibold underline underline-offset-4">Back to Public Lists</Link>
+     </main>
+--- app/public-lists/[id]/page.tsx
++++ app/public-lists/[id]/page.tsx
+@@ -336,7 +336,7 @@
+           {isViewingOwnPublicList && (
+             <Link
+               href={`/learning-lists/${typedList.id}`}
+-              className="inline-flex min-h-10 items-center justify-center rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:hover:-translate-y-0.5"
++              className="inline-flex min-h-11 items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:hover:-translate-y-0.5"
+             >
+               Open editable list
+             </Link>
+@@ -574,7 +574,7 @@
+                   <SubmitButton
+                     label="Copy selected tunes"
+                     pendingLabel="Copying..."
+-                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto md:bg-card"
++                    className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto md:bg-card"
+                   />
+                 </div>
+               </>
+@@ -607,7 +607,7 @@
+                   <SubmitButton
+                     label="Copy list"
+                     pendingLabel="Copying..."
+-                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto"
++                    className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto"
+                   />
+                 </div>
+               </form>
+--- app/public-lists/page.tsx
++++ app/public-lists/page.tsx
+@@ -175,7 +175,7 @@
+             {hasActiveFilters ? (
+               <Link
+                 href="/public-lists"
+-                className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                className="min-h-11 inline-flex items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+               >
+                 Reset view
+               </Link>
+--- app/setlists/page.tsx
++++ app/setlists/page.tsx
+@@ -98,7 +98,7 @@
+                     <SubmitButton
+                       label="Accept"
+                       pendingLabel="Accepting..."
+-                      className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                      className="min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                     />
+                   </form>
+ 
+@@ -112,7 +112,7 @@
+                     <SubmitButton
+                       label="Decline"
+                       pendingLabel="Declining..."
+-                      className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                      className="min-h-11 inline-flex items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                     />
+                   </form>
+                 </div>
+@@ -139,7 +139,7 @@
+ 
+               <Link
+                 href="/library"
+-                className="mt-4 inline-flex rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                className="mt-4 inline-flex min-h-11 items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+               >
+                 Browse tunes
+               </Link>
+--- components/lists/CreateListForm.tsx
++++ components/lists/CreateListForm.tsx
+@@ -55,7 +55,7 @@
+       <SubmitButton
+         label="Create"
+         pendingLabel="Creating..."
+-        className="rounded-full border border-primary bg-primary px-5 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++        className="min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-5 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+       />
+     </form>
+   )
+--- components/lists/ListOrderManager.tsx
++++ components/lists/ListOrderManager.tsx
+@@ -73,9 +73,9 @@
+               personalState={<TuneStateIndicator isAlreadyInPractice={item.isAlreadyInPractice} isKnown={item.isKnown} stage={item.stage} />}
+               actions={
+                 <div className="flex flex-wrap items-center gap-2">
+-                  <button type="button" disabled={isPending || index === 0} onClick={() => move(item.id, index - 1)} className="min-h-11 rounded-full border border-border bg-card px-4 text-sm font-semibold disabled:opacity-50">Move up</button>
+-                  <button type="button" disabled={isPending || index === items.length - 1} onClick={() => move(item.id, index + 1)} className="min-h-11 rounded-full border border-border bg-card px-4 text-sm font-semibold disabled:opacity-50">Move down</button>
+-                  <RemoveTuneFromListButton listId={listId} pieceId={item.piece.id} tuneTitle={item.piece.title} redirectTo={redirectTo} className="min-h-11 rounded-full border border-destructive px-4 text-sm font-semibold text-destructive" />
++                  <button type="button" disabled={isPending || index === 0} onClick={() => move(item.id, index - 1)} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-border bg-card px-4 text-sm font-semibold disabled:opacity-50">Move up</button>
++                  <button type="button" disabled={isPending || index === items.length - 1} onClick={() => move(item.id, index + 1)} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-border bg-card px-4 text-sm font-semibold disabled:opacity-50">Move down</button>
++                  <RemoveTuneFromListButton listId={listId} pieceId={item.piece.id} tuneTitle={item.piece.title} redirectTo={redirectTo} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-destructive px-4 text-sm font-semibold text-destructive" />
+                 </div>
+               }
+             />
+--- components/lists/ListPager.tsx
++++ components/lists/ListPager.tsx
+@@ -15,7 +15,7 @@
+   if (totalPages <= 1) return null
+ 
+   const linkClass =
+-    "inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++    "inline-flex min-h-11 items-center justify-center rounded-control border border-border bg-card px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+ 
+   return (
+     <nav aria-label={`${label} pages`} className="mt-5 flex items-center justify-between gap-3">
+--- components/lists/ListsResultsHeader.tsx
++++ components/lists/ListsResultsHeader.tsx
+@@ -1,3 +1,5 @@
++import Link from "next/link"
++
+ type ListsResultsHeaderProps = {
+   filteredCount: number
+   totalCount: number
+@@ -19,12 +21,12 @@
+       </div>
+ 
+       {hasActiveFilters && (
+-        <a
++        <Link
+           href="/learning-lists"
+-          className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++          className="min-h-11 inline-flex items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+         >
+           Reset view
+-        </a>
++        </Link>
+       )}
+     </section>
+   )
+--- components/setlists/CreateSetlistModal.tsx
++++ components/setlists/CreateSetlistModal.tsx
+@@ -33,7 +33,7 @@
+       <button
+         type="button"
+         onClick={handleOpen}
+-        className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++        className="min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+       >
+         Create setlist
+       </button>
+@@ -96,7 +96,7 @@
+           <SubmitButton
+             label="Create setlist"
+             pendingLabel="Creating..."
+-            className="w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++            className="w-full min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+           />
+         </form>
+       </ResponsiveModal>
+--- components/setlists/EditSetlistItemModal.tsx
++++ components/setlists/EditSetlistItemModal.tsx
+@@ -28,7 +28,7 @@
+       <button
+         type="button"
+         onClick={() => setIsOpen(true)}
+-        className="rounded-full border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++        className="min-h-11 inline-flex items-center justify-center rounded-control border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+       >
+         Edit
+       </button>
+@@ -140,7 +140,7 @@
+               <SubmitButton
+                 label="Save tune details"
+                 pendingLabel="Saving..."
+-                className="w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                className="w-full min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+               />
+             </form>
+           </div>
+--- components/setlists/InviteSetlistCollaboratorForm.tsx
++++ components/setlists/InviteSetlistCollaboratorForm.tsx
+@@ -55,7 +55,7 @@
+           <SubmitButton
+             label="Invite"
+             pendingLabel="Inviting..."
+-            className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++            className="min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+           />
+         </div>
+       )}
+--- components/setlists/SetlistOrderManager.tsx
++++ components/setlists/SetlistOrderManager.tsx
+@@ -110,8 +110,8 @@
+                 supportingContent={<span>{[item.performance_key ? `Performance key ${item.performance_key}` : item.piece.key ? `Key ${item.piece.key}` : "Key not set", item.piece.type ?? item.piece.style, item.notes ? item.notes.slice(0, 100) : null].filter(Boolean).join(" · ")}</span>}
+                 actions={
+                   <>
+-                    <button type="button" aria-label={`Move ${item.piece.title} up`} disabled={isPending || index === 0} onClick={() => move(item.id, index - 1)} className="min-h-11 rounded-full border border-hairline px-3 text-sm font-semibold disabled:opacity-40">Move up</button>
+-                    <button type="button" aria-label={`Move ${item.piece.title} down`} disabled={isPending || index === items.length - 1} onClick={() => move(item.id, index + 1)} className="min-h-11 rounded-full border border-hairline px-3 text-sm font-semibold disabled:opacity-40">Move down</button>
++                    <button type="button" aria-label={`Move ${item.piece.title} up`} disabled={isPending || index === 0} onClick={() => move(item.id, index - 1)} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-hairline px-3 text-sm font-semibold disabled:opacity-40">Move up</button>
++                    <button type="button" aria-label={`Move ${item.piece.title} down`} disabled={isPending || index === items.length - 1} onClick={() => move(item.id, index + 1)} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-hairline px-3 text-sm font-semibold disabled:opacity-40">Move down</button>
+                     <EditSetlistItemModal item={item} redirectTo={redirectTo} updateSetlistItem={updateSetlistItem} />
+                     <form action={removeTuneFromSetlist} onSubmit={(event) => { if (!window.confirm(`Remove "${item.piece?.title}" from this setlist?`)) event.preventDefault() }}>
+                       <input type="hidden" name="setlist_id" value={setlistId} />
+--- components/setlists/SetlistOverviewCard.tsx
++++ components/setlists/SetlistOverviewCard.tsx
+@@ -30,7 +30,7 @@
+         <span><strong>{setlist.readyCount}</strong> Known</span>
+         <span><strong>{setlist.practiceCount}</strong> in Practice</span>
+         <span><strong>{setlist.newToMeCount}</strong> new to you</span>
+-        <Link href={`/setlists/${setlist.id}`} className="inline-flex min-h-11 items-center rounded-full border border-hairline px-4 font-semibold">Open</Link>
++        <Link href={`/setlists/${setlist.id}`} className="inline-flex min-h-11 items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-hairline px-4 font-semibold">Open</Link>
+       </div>
+     </article>
+   )
+--- components/setlists/SetlistReadView.tsx
++++ components/setlists/SetlistReadView.tsx
+@@ -20,7 +20,7 @@
+         <div>
+           <h2 id="running-order-title" className="mt-1 text-xl font-semibold">Tunes in playing order</h2>
+         </div>
+-        <Link href={`?mode=performance`} className="inline-flex min-h-11 items-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground">Performance Mode</Link>
++        <Link href={`?mode=performance`} className="inline-flex min-h-11 items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground">Performance Mode</Link>
+       </div>
+       <ol className="mt-4 divide-y divide-hairline border-y border-hairline">
+         {items.map((item, index) => {
+--- components/shared/SharedListCard.tsx
++++ components/shared/SharedListCard.tsx
+@@ -62,7 +62,7 @@
+               href={listHref}
+               label="Read the list"
+               pendingLabel="Opening..."
+-              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++              className="min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+             />
+           </div>
+     </EditorialListCard>
+--- components/shared/SharedListsMobileList.tsx
++++ components/shared/SharedListsMobileList.tsx
+@@ -79,7 +79,7 @@
+                 href={listHref}
+                 label="Open"
+                 pendingLabel="Opening..."
+-                className="min-h-10 shrink-0 rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                className="min-h-11 shrink-0 inline-flex items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+               />
+             </article>
+           )

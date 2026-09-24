@@ -1,4 +1,5 @@
 import Link from "next/link"
+import BadgeAwardMoment from "@/components/badges/BadgeAwardMoment"
 import BadgeBrowser from "@/components/badges/BadgeBrowser"
 import PageHeader from "@/components/ui/PageHeader"
 import { loadBadgeIndexData } from "@/lib/loaders/badges"
@@ -24,6 +25,7 @@ function getPageMessage({
   if (createStatus === "success") return "Badge created."
   if (deleteStatus === "success") return "Badge deleted."
   if (deleteStatus === "not_found") return "Badge was already gone."
+  if (deleteStatus === "confirmation_required") return "Review and confirm the badge deletion first."
   if (deleteStatus === "error") return "Couldn’t delete badge."
 
   return null
@@ -60,14 +62,14 @@ export default async function BadgesPage({ searchParams }: BadgesPageProps) {
               viewerId ? (
                 <Link
                   href="/badges/new"
-                  className="inline-flex min-h-10 w-full items-center justify-center rounded-full border border-primary bg-primary px-5 py-2 text-center text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-11 md:w-auto md:py-2.5"
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border bg-surface-paper px-5 py-2 text-center text-sm font-medium text-state-social shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-11 md:w-auto md:py-2.5"
                 >
-                  Create Badge
+                  Create badge · workspace
                 </Link>
               ) : (
                 <Link
                   href="/login"
-                  className="inline-flex min-h-10 w-full items-center justify-center rounded-full border border-border px-5 py-2 text-center text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-11 md:w-auto md:py-2.5"
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border px-5 py-2 text-center text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-11 md:w-auto md:py-2.5"
                 >
                   Log in to create badges
                 </Link>
@@ -78,6 +80,8 @@ export default async function BadgesPage({ searchParams }: BadgesPageProps) {
         }
       />
 
+      <p className="max-w-2xl text-sm text-muted-foreground">Small tokens of a musical life: the tunes you carry, the stories you keep, and the company you make.</p>
+      <BadgeAwardMoment badges={badges} viewerId={viewerId} />
       {badges.length > 0 ? (
         showSection("badge_browser") ? (
           <BadgeBrowser badges={badges} viewerId={viewerId} />

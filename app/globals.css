@@ -46,7 +46,7 @@
   --motion-standard: 220ms;
   --motion-deliberate: 260ms;
   --ease-folk: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --focus-ring: rgb(91 67 37 / 0.36);
+  --focus-ring: #5b4325;
   --focus-ring-strong: #5b4325;
 
   /* Fixed shell layers share one reservation so later session controls can add
@@ -203,6 +203,11 @@ html[data-focus-mode="practice"] .app-shell-content {
   html[data-session-dock="active"] .session-dock {
     bottom: 1rem;
   }
+
+  html[data-focus-mode="practice"] .session-dock[data-session-dock-context="setlist-performance"] {
+    left: 1rem;
+    right: 1rem;
+  }
 }
 
 ::selection {
@@ -210,8 +215,8 @@ html[data-focus-mode="practice"] .app-shell-content {
   color: var(--text-primary);
 }
 
-a {
-  color: inherit;
+@layer base {
+  a { color: inherit; }
 }
 
 button,
@@ -297,3 +302,103 @@ textarea::placeholder {
     --focus-ring: var(--focus-ring-strong);
   }
 }
+
+/* Badge inks are family identity, never Rough/Shaky/Solid state colours. */
+:root { --badge-ink-plum: var(--state-social); --badge-ink-timber: #665346; --badge-ink-ink: #38434b; }
+.badge-ink-plum { color: var(--badge-ink-plum); }
+.badge-ink-timber { color: var(--badge-ink-timber); }
+.badge-ink-ink { color: var(--badge-ink-ink); }
+.badge-progress { accent-color: var(--state-social); }
+.badge-progress::-webkit-progress-bar { background: var(--border); border-radius: 1rem; }
+.badge-progress::-webkit-progress-value { background: var(--state-social); border-radius: 1rem; }
+.badge-progress::-moz-progress-bar { background: var(--state-social); border-radius: 1rem; }
+@keyframes badge-arrive { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: no-preference) { .badge-award-moment { animation: badge-arrive 180ms ease-out; } }
+@media (forced-colors: active) { .badge-art { color: CanvasText; } .badge-art path, .badge-art circle { fill: Canvas; } .badge-art path[fill="none"] { fill: none; } }
+
+/* Scoped link contrast for the badge and internal workspace controls. */
+.badge-primary-action,
+.internal-workspace a[aria-current="page"] { color: var(--state-social-foreground); }
+.internal-workspace main { padding-top: 1.25rem; }
+.internal-workspace main h1 { font-family: var(--font-sans); font-size: 1.875rem; }
+
+/* Responsive workspaces share content and state across rail/dock breakpoints. */
+:root { --app-rail-width: 0px; }
+.responsive-panels { display: grid; gap: 1.5rem; align-items: start; }
+.responsive-panels > [data-active="false"] { display: none; }
+.workbench-split, .compare-workbench { display: grid; gap: 1.5rem; align-items: start; }
+.workbench-split > *, .compare-workbench > * { min-width: 0; }
+.workbench-context { min-width: 0; }
+@media (min-width: 768px) {
+  :root { --app-rail-width: 4.75rem; }
+  .responsive-panels > [data-active="false"] { display: block; }
+  .home-workbench .responsive-panels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-workbench [data-workbench-panel="social"] { grid-column: 1 / -1; }
+}
+@media (min-width: 1024px) {
+  .workbench-split { grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.42fr); }
+  .workbench-context { position: sticky; top: 1.5rem; }
+  .friends-workbench .responsive-panels { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .compare-workbench { grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.45fr); }
+  .compare-summary { grid-column: 1 / -1; }
+  .compare-workbench > aside { grid-column: 2; grid-row: 2; }
+  .compare-workbench > section:last-child { grid-column: 1; grid-row: 2; }
+}
+@media (min-width: 1280px) { :root { --app-rail-width: 12rem; } }
+@media (min-width: 1440px) {
+  .home-workbench .responsive-panels { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .home-workbench [data-workbench-panel="social"] { grid-column: auto; }
+}
+/* Short landscape viewports scroll in document order; sticky content stays reachable. */
+@media (max-height: 700px) { .workbench-context { position: static; } }
+.diary-day-workbench { display: grid; gap: 1.5rem; }
+@media (min-width: 1024px) {
+  .tune-practice-workbench > section { grid-column: 2; grid-row: 1; }
+  .tune-practice-workbench > div { grid-column: 1; grid-row: 1; }
+  .tune-practice-workbench dl { grid-template-columns: 1fr; }
+  .diary-day-workbench { grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.45fr); align-items: start; }
+  .diary-day-workbench > * { min-width: 0; grid-column: 2; }
+  .diary-day-workbench > .diary-events { grid-column: 1; grid-row: 1 / span 3; }
+  .diary-month-workbench { max-width: 75rem; }
+}
+
+/* Context can scroll independently without becoming unreachable behind the dock. */
+@media (min-width: 1024px) and (min-height: 701px) {
+  .workbench-context { max-height: calc(100dvh - 9rem); overflow-y: auto; scrollbar-gutter: stable; }
+}
+@media (max-height: 700px) { .reference-player { position: static; } }
+@media (min-width: 1024px) {
+  .catalogue-workbench > .catalogue-preview { grid-column: 2; grid-row: 1; }
+  .catalogue-workbench > .catalogue-results { grid-column: 1; grid-row: 1; }
+  .catalogue-workbench .catalogue-results article { grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
+  .catalogue-workbench .catalogue-results article > [aria-label] { justify-content: flex-start; max-width: none; }
+}
+
+/* Meaningful input boundaries and keyboard focus must survive pale materials. */
+:root {
+  --control-border: #83796c;
+  --state-known-hover: #56613d;
+  --state-practice-hover: #385561;
+  --state-overdue-hover: #914532;
+  --state-social-hover: #624b5f;
+}
+@theme inline {
+  --color-state-known-hover: var(--state-known-hover);
+  --color-state-practice-hover: var(--state-practice-hover);
+  --color-state-overdue-hover: var(--state-overdue-hover);
+  --color-state-social-hover: var(--state-social-hover);
+}
+@layer base {
+  :is(input, select, textarea) { border-color: var(--control-border); }
+  :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--focus-ring-strong);
+    outline-offset: 3px;
+  }
+}
+@media (max-width: 767px) {
+  :is(button, summary, select, input:not([type="checkbox"]):not([type="radio"])) { min-height: 44px; }
+  :is(button, summary) { min-width: 44px; }
+}
+
+/* Compact transport keeps the provider controls reachable on phones. */
+.reference-transport button { width: auto; min-width: 44px; padding-inline: 12px; }

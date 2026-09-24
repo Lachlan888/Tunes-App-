@@ -3,6 +3,8 @@ import { NextResponse, type NextRequest } from "next/server"
 import { withServerTiming } from "@/lib/server-timing"
 
 export async function proxy(request: NextRequest) {
+  // Overwrite incoming values; never trust a caller-supplied return-path header.
+  request.headers.set("x-tunes-return-path", request.nextUrl.pathname + request.nextUrl.search)
   let supabaseResponse = NextResponse.next({
     request,
   })

@@ -23,7 +23,7 @@ export default function FilterSection({
   const titleWithCount =
     typeof count === "number" ? `${title} (${count})` : title
 
-  const content = <div className="mt-3 space-y-2">{children}</div>
+  const content = <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 sm:grid-cols-3 [&>label]:min-w-0">{children}</div>
 
   if (collapsible) {
     return (

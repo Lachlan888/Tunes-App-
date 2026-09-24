@@ -4,10 +4,12 @@ import type { FriendActivityItem } from "@/lib/friend-activity"
 
 type HomeFriendsActivityBoxProps = {
   items: FriendActivityItem[]
+  nextCursor: string | null
 }
 
 export default function HomeFriendsActivityBox({
   items,
+  nextCursor,
 }: HomeFriendsActivityBoxProps) {
   return (
     <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
@@ -20,13 +22,18 @@ export default function HomeFriendsActivityBox({
 
         <Link
           href="/friends"
-          className="rounded-full border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          className="inline-flex min-h-11 rounded-control border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
         >
           View all
         </Link>
       </div>
 
-      <SocialActivityFeed items={items} redirectTo="/" limit={5} />
+      <SocialActivityFeed
+        items={items}
+        initialNextCursor={nextCursor}
+        redirectTo="/"
+        scrollRegionLabel="Friend activity feed"
+      />
     </section>
   )
 }

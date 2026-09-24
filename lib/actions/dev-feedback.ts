@@ -149,6 +149,10 @@ async function sendFeedbackDirectMessage({
 export async function updateBetaFeedbackAdminFields(formData: FormData) {
   const { supabase, user } = await requireAppAdmin()
 
+  if (formData.get("confirm_action") !== "confirmed") {
+    redirect("/dev?dev_feedback=confirmation_required")
+  }
+
   const feedbackId = Number(formData.get("feedback_id"))
   const submittedStatus = String(formData.get("status") ?? "").trim()
   const ownerPriority = String(formData.get("owner_priority") ?? "").trim()

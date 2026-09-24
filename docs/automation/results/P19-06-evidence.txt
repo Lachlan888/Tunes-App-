@@ -1,0 +1,115 @@
+P19-06 fresh evidence 2026-09-23T03:05:36.097953+00:00
+
+COMMAND: Pre-fix playlist lifecycle (expected assertion failure: custom order lost)
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Undo preserves the deleted loop playlist position
++ actual - expected
+
+  [
+-   'C revised',
+    'A',
+    'B',
++   'C revised'
+  ]
+
+    at file:///Users/lachlan.haycox/Desktop/tunes-app/tests/integration/reference-playlist-lifecycle.mjs:129:9 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [ 'A', 'B', 'C revised' ],
+  expected: [ 'C revised', 'A', 'B' ],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.0
+
+COMMAND: node --experimental-strip-types --test tests/reference-media.test.ts tests/session-dock.test.ts
+(node:1973) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/reference-media.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ loop resume returns to start after shortening the end or seeking outside (1.519ms)
+✔ new sections start at zero without changing playback transport (0.09075ms)
+✔ a new section can set its end while retaining the default zero start (0.083ms)
+✔ setting or revising the start does not seek or pause playback (0.086ms)
+✔ saved selection and boundary edits preserve the playhead (0.154916ms)
+✔ only a genuine forward crossing of the active end loops playback (0.067875ms)
+✔ next and previous shift an equal loop window without moving playback (0.418625ms)
+✔ playback continues into an advanced window and loops only at its new end (0.056042ms)
+✔ all tune recordings retain stable ordering and identity (0.796125ms)
+✔ URL selection wins, then the established effective recording, then first (0.17725ms)
+✔ external and missing reference sources retain honest recovery states (0.07ms)
+✔ recording switches use replaceable media URLs with tune identity (0.128375ms)
+✔ full reference returns only to safe review or tune contexts (0.269916ms)
+✔ existing saved sections remain isolated by recording provider identity (0.093791ms)
+✔ the route replaces modal wiring and keeps one persistent player and metronome (4.594583ms)
+✔ Reference Mode has route-level loading and recovery states (1.477375ms)
+✔ recording and section mutations retain owner-scoped permissions (1.349042ms)
+(node:1974) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/session-dock.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ one typed API supports every planned Session Dock context (0.907334ms)
+✔ the latest mounted context wins and the previous context is restored (0.139541ms)
+✔ the explicit handle distinguishes a tap from an upward full-screen drag (0.07275ms)
+✔ expansion, focus restoration and single-layer suppression are wired (3.460542ms)
+✔ Session Dock and Navigation Dock reserve one combined safe area (0.690292ms)
+✔ route integrations preserve only safe contextual state (1.547375ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 231.250042
+
+COMMAND: node --experimental-strip-types --test tests/browser-storage.test.ts
+(node:2017) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/browser-storage.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ optional storage retains the latest value and deletion through quota and access failures (0.426417ms)
+✔ account namespaces isolate selections and logout purges only Tunes session data (0.408667ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 75.475458
+
+COMMAND: RENDERER_ROOT=/private/tmp/tunes-review-lifecycle node tests/integration/reference-playlist-lifecycle.mjs
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+PASS: playlist selection/audition, displayed previous/next, local reorder, rename/adjust, rejected update/delete/Undo, restored order and source payload
+
+COMMAND: RENDERER_ROOT=/private/tmp/tunes-review-lifecycle node tests/integration/reference-transport-lifecycle.mjs
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+PASS: seek/speed, zero-start capture, single draft, boundary/resume, shared dock, duplicate-save guard, update rejection, source/view restoration, provider recovery
+
+COMMAND: npx eslint components/library/YouTubeLoopPlayer.tsx
+
+COMMAND: npx tsc --noEmit
+
+All final checks exit 0. git diff --check on changed player: exit 0.
+Scoped SHA256 inputs:
+d1d603989ffd4f0b81632a82a36a8a0c2fa1681607fb9e00c2bdfc2247b01efb  components/library/YouTubeLoopPlayer.tsx
+db2b3763976dc81a8a1e9ab31197ff5b0623cf8e667690f19243ed586d43765e  components/library/youtube-loop-state.ts
+5982b53e97fece5cc7aae3a813281af1ddd2dfcd643433e9ef972d7d3d2a52b1  components/resilience/PrivateSessionProvider.tsx
+ea376b840326deaebc9cd52863a0deda537f6f34a8c1b30875cf2f64b13440d4  lib/browser-storage.ts
+981b1a6c05a4f55256cce65aa25bc1a92546c7243ee6279f6c2c847fc4b1858e  lib/actions/media-loops.ts
+b6f335a44a161d4b7718acd1ee22cc314f41000b596fedd1e5df9f8beba22ffd  tests/integration/reference-playlist-lifecycle.mjs
+5f471af48275178f9dcf8e9721c8bb86d37a42808d5bd912d22d4314c2e41e5a  tests/integration/reference-transport-lifecycle.mjs
+9ec6c7fdc8ba125c90dabfb07548b3fb1ea624c52c750caacf83a104a1e38c23  tests/reference-media.test.ts
+40d64a38af8b4dcdef020b89aaa618e5fdf17f14f1c0c8a351833fe583be26f9  tests/session-dock.test.ts
+2129c4a8328c4ce21ee77e85fc848076b4c81057e32467eac31f9cfd5967d2ac  tests/browser-storage.test.ts
+8bb6e210891fbc184e12fb8e8407b556b01eb42dc9cc8e4ef05b04c94d78d0d1  package.json
+42f3a674b0cba3314b2559341ff93ad904be09a0f01044913e870f35881c87e1  package-lock.json
+2e641f8b3b8e7aaea424abf9c41533f81b24850e5e14db8cd2f53af9c120fcd4  tsconfig.json

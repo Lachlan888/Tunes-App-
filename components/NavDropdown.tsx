@@ -73,7 +73,7 @@ export default function NavDropdown({
         aria-haspopup="menu"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
-        className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] ${
+        className={`inline-flex items-center min-h-11 rounded-control border px-3 py-1.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] ${
           isActive
             ? "border-primary bg-primary text-primary-foreground shadow-sm"
             : "border-transparent text-foreground hover:border-border hover:bg-muted"
@@ -104,7 +104,7 @@ export default function NavDropdown({
                 disabled={isPending || itemIsActive}
                 aria-current={itemIsActive ? "page" : undefined}
                 onClick={() => handleNavigate(item.href)}
-                className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70 ${
+                className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-control px-3 py-2 text-left text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70 ${
                   itemIsActive
                     ? "bg-primary text-primary-foreground"
                     : "text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"

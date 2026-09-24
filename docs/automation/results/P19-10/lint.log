@@ -1,0 +1,163 @@
+
+> tunes-app@0.1.0 lint
+> eslint
+
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/AddToListModal.tsx
+   82:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/AddToListModal.tsx:82:5
+  80 |
+  81 |   useEffect(() => {
+> 82 |     setLocalLearningLists(learningLists ?? [])
+     |     ^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  83 |   }, [learningLists])
+  84 |
+  85 |   useEffect(() => {                                                                                                          react-hooks/set-state-in-effect
+   93:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/AddToListModal.tsx:93:7
+  91 |       !existingListIds.includes(initialSelectedId)
+  92 |     ) {
+> 93 |       setSelectedListIds([initialSelectedId])
+     |       ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  94 |     } else {
+  95 |       setSelectedListIds([])
+  96 |     }                                                               react-hooks/set-state-in-effect
+  110:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/AddToListModal.tsx:110:5
+  108 |     const createdList = createState.createdList
+  109 |
+> 110 |     setLocalLearningLists((currentLists) => {
+      |     ^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  111 |       const alreadyExists = currentLists.some((list) => list.id === createdList.id)
+  112 |
+  113 |       if (alreadyExists) {  react-hooks/set-state-in-effect
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/feedback/BetaFeedbackModal.tsx
+  43:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/feedback/BetaFeedbackModal.tsx:43:5
+  41 |     if (!isOpen) return
+  42 |
+> 43 |     setPagePath(getCurrentPagePath())
+     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  44 |     setPageUrl(window.location.href)
+  45 |     setBrowser(window.navigator.userAgent)
+  46 |     setViewportWidth(String(window.innerWidth))  react-hooks/set-state-in-effect
+  65:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/feedback/BetaFeedbackModal.tsx:65:7
+  63 |   useEffect(() => {
+  64 |     if (state.status === "error") {
+> 65 |       setIsSubmitting(false)
+     |       ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  66 |     }
+  67 |   }, [state.status])
+  68 |                                                                          react-hooks/set-state-in-effect
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/library/BulkImportKnownTunesModal.tsx
+  22:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/library/BulkImportKnownTunesModal.tsx:22:7
+  20 |
+  21 |     if (searchParams.get("import") === "known") {
+> 22 |       setIsOpen(true)
+     |       ^^^^^^^^^ Avoid calling setState() directly within an effect
+  23 |       setHasHandledAutoOpen(true)
+  24 |     }
+  25 |   }, [hasHandledAutoOpen, searchParams])  react-hooks/set-state-in-effect
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/lists/ListsResultsHeader.tsx
+  22:9  error  Do not use an `<a>` element to navigate to `/learning-lists/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/ui/ResponsiveModal.tsx
+  70:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/ui/ResponsiveModal.tsx:70:5
+  68 |
+  69 |   useEffect(() => {
+> 70 |     setIsMounted(true)
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  71 |   }, [])
+  72 |
+  73 |   useEffect(() => {  react-hooks/set-state-in-effect
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/users/UserSearchPicker.tsx
+  64:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/users/UserSearchPicker.tsx:64:7
+  62 |
+  63 |     if (trimmedQuery.length < 2) {
+> 64 |       setResults([])
+     |       ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  65 |       setResultGroup(null)
+  66 |       setErrorMessage(null)
+  67 |       setHasSearched(false)  react-hooks/set-state-in-effect
+
+/Users/lachlan.haycox/Desktop/tunes-app/lib/loaders/dev.ts
+  11:3   warning  'DevMetricVisualisationRow' is defined but never used  @typescript-eslint/no-unused-vars
+  67:10  warning  'safeNumber' is defined but never used                 @typescript-eslint/no-unused-vars
+
+/Users/lachlan.haycox/Desktop/tunes-app/lib/loaders/homepage.ts
+  21:3  warning  'StreakSummary' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/lachlan.haycox/Desktop/tunes-app/tests/integration/reference-playlist-lifecycle.mjs
+  17:5   warning  'dock' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  45:24  warning  'destroyed' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  47:30  error    Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+
+/Users/lachlan.haycox/Desktop/tunes-app/tests/integration/reference-transport-lifecycle.mjs
+  53:30  error  Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+
+✖ 16 problems (11 errors, 5 warnings)
+

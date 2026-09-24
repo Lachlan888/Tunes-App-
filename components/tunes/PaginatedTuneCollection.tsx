@@ -58,7 +58,7 @@ function CollectionPagination({
   return (
     <nav
       aria-label={`${label} pages`}
-      className="mt-5 flex items-center justify-between gap-3"
+      className="mt-5 flex items-center justify-between gap-3 px-4 pb-4 md:px-5"
     >
       {previousHref ? (
         <Link href={previousHref} rel="prev" className={pageLinkClass}>
@@ -138,7 +138,7 @@ export default function PaginatedTuneCollection(
       aria-label={props.label}
       className={joinClasses("overflow-hidden", props.className)}
     >
-      <p className="mb-2 text-sm text-text-muted" aria-live="polite">
+      <p className="px-4 pt-4 pb-3 text-sm text-text-muted" aria-live="polite">
         Showing {props.itemCount} of {props.totalCount} tune
         {props.totalCount === 1 ? "" : "s"}
       </p>

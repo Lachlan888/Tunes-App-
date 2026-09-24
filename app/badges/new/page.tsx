@@ -1,5 +1,5 @@
+import { redirectToLogin } from "@/lib/auth/login-redirect"
 import Link from "next/link"
-import { redirect } from "next/navigation"
 import CreateBadgeForm from "@/components/badges/CreateBadgeForm"
 import { loadCreateBadgeData } from "@/lib/loaders/badges"
 
@@ -37,7 +37,7 @@ export default async function NewBadgePage({
   try {
     data = await loadCreateBadgeData()
   } catch {
-    redirect("/login")
+    return redirectToLogin()
   }
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined
@@ -45,7 +45,7 @@ export default async function NewBadgePage({
   const message = getCreateBadgeMessage(status)
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
+    <main className="mx-auto max-w-5xl px-4 py-5 md:px-6 text-foreground">
       <div className="mb-5">
         <Link
           href="/badges"
@@ -61,12 +61,8 @@ export default async function NewBadgePage({
         </div>
       ) : null}
 
-      <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Badges
-        </p>
-
-        <h1 className="mt-3 font-serif text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+      <section className="mb-5 border-b border-border pb-5">
+        <h1 className="mt-3 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
           Create Badge
         </h1>
 

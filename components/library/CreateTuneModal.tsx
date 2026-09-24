@@ -51,7 +51,6 @@ export default function CreateTuneModal({
         closeOnEscape={!isSubmitting}
         mobileMode="full-screen"
         desktopMaxWidth="md:max-w-5xl"
-        eyebrow="Catalogue"
         title="Create tune"
         description="Create the basic shared tune record. You can add media, notes, lists and Practice details on the tune page."
         bodyClassName="flex min-h-0 flex-1 p-0"

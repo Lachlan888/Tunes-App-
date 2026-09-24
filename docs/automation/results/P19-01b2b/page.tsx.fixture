@@ -1,0 +1,61 @@
+"use client"
+
+import { SavedSharedView } from "@/components/lists/ListsPageViews"
+import SharedListCard from "@/components/shared/SharedListCard"
+
+const titles = [
+  "Reels",
+  "Old Time Favourites for Friday Sessions",
+  "A Very Long Collection of Favourite Reels and Jigs for the Sunday Afternoon Community Session",
+]
+const summaries = titles.map((name, index) => ({
+  id: -190010 - index,
+  name,
+  description: index === 0 ? null : "Synthetic presentation fixture for title, metadata and action layout.",
+  ownerUserId: "fixture-owner",
+  ownerUsername: "fixture-player",
+  ownerDisplayName: "Fixture Player",
+  ownerLabel: "Fixture Player (@fixture-player)",
+  tuneCount: [1, 12, 123][index],
+}))
+
+export default function CardPresentationFixture() {
+  if (process.env.NODE_ENV !== "development") return null
+
+  return (
+    <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6"
+      onClickCapture={(event) => {
+        if ((event.target as HTMLElement).closest("a,button")) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+      }}
+      onSubmitCapture={(event) => { event.preventDefault(); event.stopPropagation() }}>
+      <h1 className="text-2xl font-bold">Local card presentation fixture</h1>
+      <p>Synthetic data. Navigation and submissions are disabled. Keyboard focus remains available.</p>
+      <section aria-label="Saved and directly shared cards" className="space-y-4">
+        <h2 className="text-xl font-bold">Saved and shared</h2>
+        <SavedSharedView
+          bookmarkedSharedLists={summaries.map((list) => ({ ...list, bookmarkedAt: null }))}
+          directSharedLists={summaries.map((list) => ({ ...list, id: list.id - 10, sharedAt: null }))}
+          unbookmarkPublicList={async () => {}}
+          redirectTo="/dev/card-presentation-fixture"
+        />
+      </section>
+      <section aria-label="Public discovery cards" className="space-y-4">
+        <h2 className="text-xl font-bold">Public discovery</h2>
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {summaries.map((list) => <SharedListCard key={list.id} list={{
+            ...list,
+            id: list.id - 20,
+            userId: list.ownerUserId,
+            stylesPresent: ["Old Time"],
+            dominantStyle: "Old Time",
+            isMixedStyle: false,
+            isOwnedByCurrentUser: false,
+          }} />)}
+        </div>
+      </section>
+    </main>
+  )
+}

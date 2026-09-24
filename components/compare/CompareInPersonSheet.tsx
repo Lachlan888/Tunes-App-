@@ -1,5 +1,7 @@
 "use client"
 
+import { usePrivateSessionStorage } from "@/components/resilience/PrivateSessionProvider"
+
 import Link from "next/link"
 import { useEffect, useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
@@ -55,6 +57,7 @@ export default function CompareInPersonSheet({
   isOpen,
   onClose,
 }: CompareInPersonSheetProps) {
+  const sessionStorage = usePrivateSessionStorage()
   const router = useRouter()
   const [token, setToken] = useState<string | null>(null)
   const [joinPath, setJoinPath] = useState<string | null>(null)
@@ -74,7 +77,7 @@ export default function CompareInPersonSheet({
     if (!isOpen) return
 
     let isCancelled = false
-    const existingToken = window.sessionStorage.getItem(STORED_TOKEN_KEY)
+    const existingToken = sessionStorage.getItem(STORED_TOKEN_KEY)
 
     setSheetState("loading")
     setShareFeedback(null)
@@ -88,14 +91,14 @@ export default function CompareInPersonSheet({
       }
 
       if (result.state === "accepted") {
-        window.sessionStorage.removeItem(STORED_TOKEN_KEY)
+        sessionStorage.removeItem(STORED_TOKEN_KEY)
         setConnectedName(result.connectedName)
         setAcceptedHref(result.compareHref)
         setSheetState("accepted")
         return
       }
 
-      window.sessionStorage.setItem(STORED_TOKEN_KEY, result.token)
+      sessionStorage.setItem(STORED_TOKEN_KEY, result.token)
       setToken(result.token)
       setJoinPath(result.joinPath)
       setExpiresAt(result.expiresAt)
@@ -105,7 +108,7 @@ export default function CompareInPersonSheet({
     return () => {
       isCancelled = true
     }
-  }, [isOpen])
+  }, [isOpen, sessionStorage])
 
   useEffect(() => {
     if (!isOpen || !token || sheetState !== "waiting") return
@@ -122,7 +125,7 @@ export default function CompareInPersonSheet({
         if (isCancelled) return
 
         if (result.state === "accepted") {
-          window.sessionStorage.removeItem(STORED_TOKEN_KEY)
+          sessionStorage.removeItem(STORED_TOKEN_KEY)
           setConnectedName(result.connectedName)
           setAcceptedHref(result.compareHref)
           setSheetState("accepted")
@@ -130,7 +133,7 @@ export default function CompareInPersonSheet({
         }
 
         if (result.state === "expired" || result.state === "revoked") {
-          window.sessionStorage.removeItem(STORED_TOKEN_KEY)
+          sessionStorage.removeItem(STORED_TOKEN_KEY)
           setSheetState(result.state)
         } else if (result.state === "invalid" || result.state === "signed_out") {
           setSheetState("error")
@@ -147,7 +150,7 @@ export default function CompareInPersonSheet({
       isCancelled = true
       window.clearInterval(interval)
     }
-  }, [isOpen, sheetState, token])
+  }, [isOpen, sheetState, token, sessionStorage])
 
   useEffect(() => {
     if (!isOpen || sheetState !== "accepted" || !acceptedHref) return
@@ -176,7 +179,7 @@ export default function CompareInPersonSheet({
 
       if (result.state !== "pending") return
 
-      window.sessionStorage.setItem(STORED_TOKEN_KEY, result.token)
+      sessionStorage.setItem(STORED_TOKEN_KEY, result.token)
       setToken(result.token)
       setJoinPath(result.joinPath)
       setExpiresAt(result.expiresAt)
@@ -217,7 +220,7 @@ export default function CompareInPersonSheet({
 
   async function cancelSession() {
     if (token) await cancelCompareInvite(token)
-    window.sessionStorage.removeItem(STORED_TOKEN_KEY)
+    sessionStorage.removeItem(STORED_TOKEN_KEY)
     setToken(null)
     setSheetState("revoked")
   }
@@ -235,7 +238,6 @@ export default function CompareInPersonSheet({
     <ResponsiveModal
       isOpen={isOpen}
       onClose={onClose}
-      eyebrow="Compare"
       title="Compare in person"
       description="Ask another musician to scan this code with their phone camera."
       desktopMaxWidth="md:max-w-lg"
@@ -289,7 +291,7 @@ export default function CompareInPersonSheet({
             <button
               type="button"
               onClick={shareLink}
-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="inline-flex min-h-11 items-center justify-center rounded-control border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             >
               Share link
             </button>
@@ -297,7 +299,7 @@ export default function CompareInPersonSheet({
               type="button"
               onClick={generateNewCode}
               disabled={isReplacing}
-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-background/70 px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isReplacing ? "Generating…" : "Generate new code"}
             </button>
@@ -332,7 +334,7 @@ export default function CompareInPersonSheet({
             type="button"
             onClick={generateNewCode}
             disabled={isReplacing}
-            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:opacity-60 sm:w-auto"
+            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-control border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:opacity-60 sm:w-auto"
           >
             {isReplacing ? "Generating…" : "Generate new code"}
           </button>
@@ -364,7 +366,7 @@ export default function CompareInPersonSheet({
             type="button"
             onClick={generateNewCode}
             disabled={isReplacing}
-            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:opacity-60 sm:w-auto"
+            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-control border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:opacity-60 sm:w-auto"
           >
             Try again
           </button>
@@ -374,7 +376,7 @@ export default function CompareInPersonSheet({
       {sheetState === "rate_limited" ? (
         <div className="text-center">
           <p className="rounded-2xl border border-warning bg-muted p-4 text-sm text-foreground">Too many new codes were created recently. Wait a little, then start a new comparison.</p>
-          <button type="button" onClick={onClose} className="mt-4 min-h-11 rounded-full border border-border px-4 text-sm font-semibold">Leave</button>
+          <button type="button" onClick={onClose} className="inline-flex mt-4 min-h-11 rounded-control border border-border px-4 text-sm font-semibold items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Leave</button>
         </div>
       ) : null}
     </ResponsiveModal>

@@ -270,10 +270,6 @@ function FocusPickerModal({
         <div className="sticky top-0 z-10 border-b border-border bg-background px-4 py-4 md:px-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Practice focus areas
-              </p>
-
               <h2 className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground">
                 Choose a focus
               </h2>

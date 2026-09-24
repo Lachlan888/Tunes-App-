@@ -21,9 +21,11 @@ type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 
 export async function loadReviewPieceRows(
   supabase: SupabaseServerClient,
-  userId: string
-): Promise<ReviewPieceRow[]> {
-  const { data, error } = await supabase
+  userId: string,
+  options: { today: string; lane?: string | null; scope?: { kind: "list" | "focus"; id: number } | null; limit: number }
+): Promise<{ rows: ReviewPieceRow[]; total: number }> {
+  if (options.scope === null) return { rows: [], total: 0 }
+  let query = supabase
     .from("user_pieces")
     .select(`
       id,
@@ -31,7 +33,7 @@ export async function loadReviewPieceRows(
       status,
       next_review_due,
       stage,
-      pieces (
+      pieces!inner (
         id,
         title,
         key,
@@ -39,17 +41,23 @@ export async function loadReviewPieceRows(
         time_signature,
         composer,
         reference_url
+        ${options.scope?.kind === "list" ? ", learning_list_items!inner(learning_list_id)" : options.scope?.kind === "focus" ? ", practice_focus_tunes!inner(focus_id)" : ""}
       )
-    `)
+    `, { count: "exact" })
     .eq("user_id", userId)
     .eq("status", "learning")
     .not("next_review_due", "is", null)
+  if (options.lane === "due-today") query = query.eq("next_review_due", options.today)
+  if (options.lane === "catch-up") query = query.lt("next_review_due", options.today)
+  if (options.scope?.kind === "list") query = query.eq("pieces.learning_list_items.learning_list_id", options.scope.id)
+  if (options.scope?.kind === "focus") query = query.eq("pieces.practice_focus_tunes.focus_id", options.scope.id).eq("pieces.practice_focus_tunes.user_id", userId)
+  const { data, error, count } = await query.order("next_review_due").order("stage").order("id").limit(options.limit)
 
   if (error) {
     throw new Error(error.message)
   }
 
-  return (data ?? []) as ReviewPieceRow[]
+  return { rows: (data ?? []) as ReviewPieceRow[], total: count ?? 0 }
 }
 
 export function getReviewPieceIds(rows: ReviewPieceRow[]): number[] {

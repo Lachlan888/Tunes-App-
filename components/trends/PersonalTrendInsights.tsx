@@ -43,9 +43,6 @@ export default function PersonalTrendInsights({
   if (!hasPracticeData && insight.stageDistribution.length === 0) {
     return (
       <section className="border-y border-border py-7" aria-labelledby="trends-empty-title">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Your progress
-        </p>
         <h2 id="trends-empty-title" className="mt-2 font-serif text-2xl font-bold">
           Not enough data yet
         </h2>
@@ -55,7 +52,7 @@ export default function PersonalTrendInsights({
         </p>
         <Link
           href="/review?session=due-today"
-          className="mt-4 inline-flex min-h-11 items-center rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
+          className="mt-4 inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
         >
           Start Practice
         </Link>
@@ -68,9 +65,6 @@ export default function PersonalTrendInsights({
       <section className="border-y border-border py-6" aria-labelledby="progress-title">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Your progress
-            </p>
             <h2 id="progress-title" className="mt-1 font-serif text-3xl font-bold tracking-tight">
               {insight.needsAttention.length > 0
                 ? `${insight.needsAttention.length} tunes need attention`
@@ -99,7 +93,7 @@ export default function PersonalTrendInsights({
         </div>
       </section>
 
-      <div className="grid gap-10 xl:grid-cols-[1.5fr_1fr]">
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         {hasPracticeData ? (
           <section aria-labelledby="practice-volume-title">
             <InsightHeader
@@ -172,7 +166,7 @@ export default function PersonalTrendInsights({
                 </li>
               ))}
             </ul>
-            <Link href="/review?session=catch-up" className="mt-4 inline-flex min-h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground">Start catch-up</Link>
+            <Link href="/review?session=catch-up" className="mt-4 inline-flex min-h-11 items-center rounded-control bg-primary px-5 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Start catch-up</Link>
           </section>
         ) : null}
 
@@ -181,7 +175,7 @@ export default function PersonalTrendInsights({
             <InsightHeader eyebrow="Explore a gap" title={`Try ${insight.exploreGap.label}`} takeaway={`Your repertoire has no ${insight.exploreGap.kind} match yet; the catalogue has ${insight.exploreGap.catalogueCount}.`} />
             <Link
               href={`/library?${insight.exploreGap.kind}=${encodeURIComponent(insight.exploreGap.label)}`}
-              className="mt-4 inline-flex min-h-11 items-center rounded-full border border-border px-5 text-sm font-semibold hover:bg-muted"
+              className="mt-4 inline-flex min-h-11 items-center rounded-control border border-border px-5 text-sm font-semibold hover:bg-muted justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
             >
               Explore tunes
             </Link>

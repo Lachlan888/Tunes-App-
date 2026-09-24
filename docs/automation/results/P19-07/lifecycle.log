@@ -1,0 +1,2 @@
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+PASS: phone/tablet/desktop drag, keyboard/bounds, resize, collapse, navigation persistence, one engine, close/reopen and async close/unmount cancellation

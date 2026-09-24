@@ -14,6 +14,9 @@ export default function ComparePageStatusMessages({
 }: ComparePageStatusMessagesProps) {
   return (
     <>
+      {error === "group_too_large" ? (
+        <CompareStatusMessage tone="warning">Compare up to eight musicians including yourself. Start a smaller group below.</CompareStatusMessage>
+      ) : null}
       {friendRequestStatus === "sent" ? (
         <CompareStatusMessage tone="success">
           Friend request sent.

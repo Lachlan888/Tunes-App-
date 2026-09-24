@@ -76,14 +76,10 @@ export default function BetaFeedbackModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-end justify-center bg-foreground/25 px-3 py-4 md:items-center md:px-6">
+    <div className="fixed inset-0 z-[500] flex items-end justify-center bg-foreground/25 px-3 py-4 md:items-center md:px-6">
       <div className="max-h-[92vh] w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-card shadow-2xl">
         <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Beta feedback
-            </p>
-
             <h2 className="mt-1 font-serif text-2xl font-bold">
               Send feedback
             </h2>
@@ -98,7 +94,7 @@ export default function BetaFeedbackModal({
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="rounded-full border border-border px-3 py-1 text-sm font-semibold text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="min-h-11 rounded-control border border-border px-3 py-1 text-sm font-semibold text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             Close
           </button>
@@ -189,7 +185,7 @@ export default function BetaFeedbackModal({
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-11 rounded-control border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               Cancel
             </button>
@@ -198,7 +194,7 @@ export default function BetaFeedbackModal({
               label="Send feedback"
               pendingLabel="Sending…"
               forcePending={isSubmitting}
-              className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="min-h-11 rounded-control bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             />
           </div>
         </form>

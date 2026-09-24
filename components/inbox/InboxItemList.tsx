@@ -72,7 +72,7 @@ export default function InboxItemList({
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2 pl-3 sm:pl-0">
-                <Link href={contextHref(item)} className="inline-flex min-h-11 items-center rounded-full border border-border px-3 text-sm font-semibold hover:bg-muted">Open</Link>
+                <Link href={contextHref(item)} className="inline-flex min-h-11 items-center rounded-control border border-border px-3 text-sm font-semibold hover:bg-muted justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Open</Link>
                 {isUnread ? (
                   <form action={markNotificationRead}>
                     <input type="hidden" name="notification_id" value={item.id} />

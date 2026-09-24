@@ -7,6 +7,7 @@ export default async function HomePage() {
   const {
     summary,
     recentFriendActivity,
+    activityNextCursor,
     streakSummary,
     gettingStartedState,
   } = await loadHomepageData()
@@ -18,6 +19,7 @@ export default async function HomePage() {
       <HomeSummarySection
         summary={summary}
         recentFriendActivity={recentFriendActivity}
+        activityNextCursor={activityNextCursor}
         streakSummary={streakSummary}
       />
 

@@ -148,7 +148,7 @@ export default function CardPager<T>({
           {previousLabel}
         </button>
 
-        <p className="text-sm font-semibold text-text-muted">
+        <p role="status" aria-live="polite" aria-atomic="true" className="text-sm font-semibold text-text-muted">
           {safeIndex + 1} / {items.length}
         </p>
 
@@ -164,17 +164,14 @@ export default function CardPager<T>({
 
       <div className="flex justify-center gap-1.5" aria-hidden="true">
         {items.slice(0, 12).map((item, index) => (
-          <button
+          <span
             key={getKey(item)}
-            type="button"
-            onClick={() => setCurrentIndex(index)}
             className={joinClasses(
               "h-2 rounded-full transition",
               index === safeIndex
                 ? "w-5 bg-state-practice"
-                : "w-2 bg-hairline hover:bg-text-muted"
+                : "w-2 bg-hairline"
             )}
-            tabIndex={-1}
           />
         ))}
 

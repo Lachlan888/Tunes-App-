@@ -298,7 +298,7 @@ export default function TuneSearchSelect({
                 <button
                   type="button"
                   onClick={() => handleRemovePiece(piece.id)}
-                  className="shrink-0 rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className="shrink-0 min-h-11 rounded-control border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                 >
                   Remove
                 </button>

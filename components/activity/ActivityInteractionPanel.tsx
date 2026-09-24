@@ -77,8 +77,8 @@ export default async function ActivityInteractionPanel({
 
                   {canManageReply ? (
                     <div className="flex flex-wrap items-center gap-2">
-                      <details className="rounded-full border border-border bg-background/70 px-3 py-1">
-                        <summary className="cursor-pointer list-none text-xs font-medium text-muted-foreground hover:text-foreground">
+                      <details className="rounded-control border border-border bg-background/70 px-3 py-1">
+                        <summary className="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center rounded-control text-xs font-medium text-muted-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
                           Edit
                         </summary>
 

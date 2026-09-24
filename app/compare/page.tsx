@@ -1,4 +1,3 @@
-import CompareDesktop from "@/components/compare/CompareDesktop"
 import CompareMobile from "@/components/compare/CompareMobile"
 import type { CompareViewProps } from "@/components/compare/compare-view-types"
 import {
@@ -153,6 +152,11 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       page,
     })
 
+  const suggestedPanelIds = new Set([
+    ...compareData.outcomeGroups.playableTogetherIds.slice(0, 20),
+    ...compareData.outcomeGroups.suggestedSetIds,
+  ])
+
   const compareViewProps: CompareViewProps = {
     currentUserId: compareData.currentUserId,
     selectedProfiles,
@@ -173,7 +177,6 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
     canCompare,
     redirectTo,
     compareHeading,
-    mutualPieces,
     filteredPieces,
     availableKeys,
     availableStyles,
@@ -181,7 +184,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
     hasActiveFilters,
     canShowResults,
     outcomeGroups: compareData.outcomeGroups,
-    outcomePieces: compareData.outcomePieces,
+    outcomePieces: compareData.outcomePieces.filter((piece) => suggestedPanelIds.has(piece.id)),
     overlapGroup,
     overlapPage,
     overlapTotal: allFilteredPieces.length,
@@ -194,13 +197,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground sm:px-6 sm:py-8">
-      <div className="md:hidden">
-        <CompareMobile {...compareViewProps} />
-      </div>
-
-      <div className="hidden md:block">
-        <CompareDesktop {...compareViewProps} />
-      </div>
+      <CompareMobile {...compareViewProps} />
     </main>
   )
 }

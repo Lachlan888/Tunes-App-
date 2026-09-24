@@ -23,7 +23,6 @@ export type CompareViewProps = {
   canCompare: boolean
   redirectTo: string
   compareHeading: string
-  mutualPieces: Piece[]
   filteredPieces: Piece[]
   availableKeys: string[]
   availableStyles: string[]

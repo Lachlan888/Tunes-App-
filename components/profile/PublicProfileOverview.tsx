@@ -13,6 +13,7 @@ type PublicProfileOverviewProps = {
   publicLists: PublicProfileList[]
   repertoireSummary: RepertoireSummary | null
   isOwnProfile: boolean
+  listsHref?: string
 }
 
 function pluraliseTuneCount(count: number) {
@@ -25,6 +26,7 @@ export default function PublicProfileOverview({
   publicLists,
   repertoireSummary,
   isOwnProfile,
+  listsHref,
 }: PublicProfileOverviewProps) {
   return (
     <div className="min-w-0 space-y-6">
@@ -83,7 +85,7 @@ export default function PublicProfileOverview({
             <EmptyState
               title="No instruments listed"
               description="Add instruments on your Profile page so other players know what you play."
-              primaryActionHref="/dashboard"
+              primaryActionHref="/dashboard?section=profile"
               primaryActionLabel="Edit Profile"
               className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
             />
@@ -101,12 +103,10 @@ export default function PublicProfileOverview({
         <section className="min-w-0 max-w-full md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Public lists
+              Featured public lists
             </p>
 
-            <span className="shrink-0 text-sm font-medium text-muted-foreground md:rounded-full md:border md:border-border md:bg-background/70 md:px-3 md:py-1">
-              {publicLists.length} list{publicLists.length === 1 ? "" : "s"}
-            </span>
+            <Link href={listsHref ?? `/users/${encodeURIComponent(profile.username)}?tab=lists`} className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-control border border-border bg-background/70 px-3 py-1 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Browse all</Link>
           </div>
 
           {publicLists.length > 0 ? (
@@ -124,7 +124,7 @@ export default function PublicProfileOverview({
                         </h3>
 
                         {list.description ? (
-                          <p className="mt-3 break-words text-sm leading-6 text-muted-foreground">
+                          <p className="mt-3 line-clamp-2 break-words text-sm leading-6 text-muted-foreground">
                             {list.description}
                           </p>
                         ) : null}

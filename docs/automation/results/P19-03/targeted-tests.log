@@ -1,0 +1,61 @@
+(node:92801) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/practice-session.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ list practice is a first-class session lane (0.520916ms)
+✔ focus practice is a first-class session lane (0.08175ms)
+✔ Diary period navigation and month outcome labels remain visible (2.926083ms)
+✔ practice lane URLs are explicit and invalid lanes recover to entry (0.093916ms)
+✔ Focused Practice preserves existing Stage rules (0.117042ms)
+✔ rating state prevents double submission and permits only pre-save Undo (0.073292ms)
+✔ rating removes exactly one tune and advances without skipping (0.469959ms)
+✔ resume position safely clamps when the server-side queue changes (0.07025ms)
+✔ session summaries count outcomes and make one useful suggestion (0.121167ms)
+✔ Focused Practice uses reduced chrome, persistent ratings, Undo and summary (1.180667ms)
+(node:92802) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/reference-media.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ loop resume returns to start after shortening the end or seeking outside (2.555958ms)
+✔ new sections start at zero without changing playback transport (0.309625ms)
+✔ a new section can set its end while retaining the default zero start (0.257292ms)
+✔ setting or revising the start does not seek or pause playback (0.225833ms)
+✔ saved selection and boundary edits preserve the playhead (0.261416ms)
+✔ only a genuine forward crossing of the active end loops playback (0.104792ms)
+✔ next and previous shift an equal loop window without moving playback (1.034792ms)
+✔ playback continues into an advanced window and loops only at its new end (0.194583ms)
+✔ all tune recordings retain stable ordering and identity (0.551334ms)
+✔ URL selection wins, then the established effective recording, then first (0.369709ms)
+✔ external and missing reference sources retain honest recovery states (0.0775ms)
+✔ recording switches use replaceable media URLs with tune identity (0.128458ms)
+✔ full reference returns only to safe review or tune contexts (0.280792ms)
+✔ existing saved sections remain isolated by recording provider identity (0.092458ms)
+✔ the route replaces modal wiring and keeps one persistent player and metronome (2.296708ms)
+✔ Reference Mode has route-level loading and recovery states (1.206542ms)
+✔ recording and section mutations retain owner-scoped permissions (0.683709ms)
+(node:92803) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/session-dock.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ one typed API supports every planned Session Dock context (1.650166ms)
+✔ the latest mounted context wins and the previous context is restored (0.155042ms)
+✔ the explicit handle distinguishes a tap from an upward full-screen drag (0.078083ms)
+✔ expansion, focus restoration and single-layer suppression are wired (1.622ms)
+✔ Session Dock and Navigation Dock reserve one combined safe area (1.555209ms)
+✔ route integrations preserve only safe contextual state (5.682ms)
+(node:92804) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/tune-detail.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tune detail URLs have three stable views and a Practice default (1.014042ms)
+✔ the tune identity, three views and Session Dock keep one action hierarchy (2.840208ms)
+✔ Manage and route recovery expose permission-safe tune actions (2.569208ms)
+✔ view-scoped loading keeps shared identity data stable (0.952625ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 147.745958

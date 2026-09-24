@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useId, useMemo, useState } from "react"
 import BadgeCard from "@/components/badges/BadgeCard"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import type { BadgeWithOwner } from "@/lib/types"
@@ -54,7 +54,7 @@ function getBadgeProgressStatus(
   badge: BadgeWithOwner
 ): Exclude<BadgeProgressFilter, "all"> | "received" {
   if (badge.viewer_award) return "received"
-  if ((badge.viewer_progress?.current ?? 0) > 0) return "in_progress"
+  if (badge.viewer_progress?.isCalculable && (badge.viewer_progress.current ?? 0) > 0) return "in_progress"
   return "not_received"
 }
 
@@ -228,7 +228,7 @@ function BadgeModeSwitcher({
     },
     {
       value: "received",
-      label: "Received",
+      label: "Earned",
       count: receivedCount,
       disabled: !viewerId,
     },
@@ -250,12 +250,13 @@ function BadgeModeSwitcher({
             <button
               key={option.value}
               type="button"
+              aria-pressed={isActive}
               disabled={option.disabled}
               onClick={() => onChangeViewMode(option.value)}
               className={[
                 "rounded-2xl px-3 py-3 text-center text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
                 isActive
-                  ? "bg-primary text-primary-foreground shadow-sm"
+                  ? "bg-state-social text-state-social-foreground shadow-sm"
                   : "bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground",
                 option.disabled ? "cursor-not-allowed opacity-45" : "",
               ].join(" ")}
@@ -307,17 +308,18 @@ function BadgeFilters({
   onChangeProgress,
   onClearFilters,
 }: BadgeFiltersProps) {
+  const idPrefix = useId()
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(9.5rem,1fr))_auto]">
       <div className="space-y-2">
         <label
-          htmlFor="badge-search"
+          htmlFor={`${idPrefix}-search`}
           className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
         >
           Search
         </label>
         <input
-          id="badge-search"
+          id={`${idPrefix}-search`}
           value={query}
           onChange={(event) => onChangeQuery(event.target.value)}
           placeholder="Search badges..."
@@ -327,13 +329,13 @@ function BadgeFilters({
 
       <div className="space-y-2">
         <label
-          htmlFor="badge-category"
+          htmlFor={`${idPrefix}-category`}
           className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
         >
           Type
         </label>
         <select
-          id="badge-category"
+          id={`${idPrefix}-category`}
           value={category}
           onChange={(event) => onChangeCategory(event.target.value)}
           className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
@@ -349,13 +351,13 @@ function BadgeFilters({
 
       <div className="space-y-2">
         <label
-          htmlFor="badge-style"
+          htmlFor={`${idPrefix}-style`}
           className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
         >
           Style
         </label>
         <select
-          id="badge-style"
+          id={`${idPrefix}-style`}
           value={style}
           onChange={(event) => onChangeStyle(event.target.value)}
           className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
@@ -371,13 +373,13 @@ function BadgeFilters({
 
       <div className="space-y-2">
         <label
-          htmlFor="badge-key"
+          htmlFor={`${idPrefix}-key`}
           className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
         >
           Key
         </label>
         <select
-          id="badge-key"
+          id={`${idPrefix}-key`}
           value={badgeKey}
           onChange={(event) => onChangeKey(event.target.value)}
           className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
@@ -393,13 +395,13 @@ function BadgeFilters({
 
       <div className="space-y-2">
         <label
-          htmlFor="badge-progress"
+          htmlFor={`${idPrefix}-progress`}
           className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
         >
           Progress
         </label>
         <select
-          id="badge-progress"
+          id={`${idPrefix}-progress`}
           value={progress}
           onChange={(event) =>
             onChangeProgress(event.target.value as BadgeProgressFilter)
@@ -417,7 +419,7 @@ function BadgeFilters({
           type="button"
           onClick={onClearFilters}
           disabled={!hasActiveFilters}
-          className="w-full rounded-full border border-border bg-background/70 px-4 py-3 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-11 w-full rounded-control border border-border bg-background/70 px-4 py-3 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50 items-center justify-center"
         >
           Clear
         </button>
@@ -464,7 +466,7 @@ export default function BadgeBrowser({
   const [style, setStyle] = useState("")
   const [key, setKey] = useState("")
   const [progress, setProgress] = useState<BadgeProgressFilter>("all")
-  const [mobileIndex, setMobileIndex] = useState(0)
+  const [pagination, setPagination] = useState({ key: "", page: 0 })
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
 
   const badgeFacets = useMemo(() => {
@@ -564,29 +566,14 @@ export default function BadgeBrowser({
     viewMode,
   ])
 
-  useEffect(() => {
-    setMobileIndex(0)
-  }, [category, key, progress, query, style, viewMode])
-
-  useEffect(() => {
-    if (mobileIndex > Math.max(0, filteredBadges.length - 1)) {
-      setMobileIndex(Math.max(0, filteredBadges.length - 1))
-    }
-  }, [filteredBadges.length, mobileIndex])
-
-  useEffect(() => {
-    if (!viewerId && viewMode !== "all") {
-      setViewMode("all")
-    }
-  }, [viewerId, viewMode])
-
   const hasActiveFilters = Boolean(
     query.trim() || category || style || key || progress !== "all"
   )
 
-  const currentMobileBadge = filteredBadges[mobileIndex] ?? null
-  const canGoPrevious = mobileIndex > 0
-  const canGoNext = mobileIndex < filteredBadges.length - 1
+  const pageKey = JSON.stringify([category, key, progress, query, style, viewMode, viewerId])
+  const pageCount = Math.max(1, Math.ceil(filteredBadges.length / 12))
+  const page = pagination.key === pageKey ? Math.min(pagination.page, pageCount - 1) : 0
+  const pageBadges = filteredBadges.slice(page * 12, (page + 1) * 12)
 
   function clearFilters() {
     setQuery("")
@@ -594,17 +581,7 @@ export default function BadgeBrowser({
     setStyle("")
     setKey("")
     setProgress("all")
-    setMobileIndex(0)
-  }
-
-  function showPreviousBadge() {
-    setMobileIndex((current) => Math.max(0, current - 1))
-  }
-
-  function showNextBadge() {
-    setMobileIndex((current) =>
-      Math.min(filteredBadges.length - 1, current + 1)
-    )
+    setPagination({key: "", page: 0})
   }
 
   const filterProps = {
@@ -636,6 +613,7 @@ export default function BadgeBrowser({
         onChangeViewMode={setViewMode}
       />
 
+      <button type="button" onClick={() => setIsMobileFilterOpen(true)} className="min-h-11 rounded-control border border-border px-4 text-sm font-semibold md:hidden">Search and filter · {filteredBadges.length} badges</button>
       <div className="hidden rounded-3xl border border-border bg-card p-5 shadow-sm md:block">
         <BadgeFilters {...filterProps} />
 
@@ -656,64 +634,14 @@ export default function BadgeBrowser({
 
       {filteredBadges.length > 0 ? (
         <>
-          <div className="md:hidden">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Badge {mobileIndex + 1} of {filteredBadges.length}
-              </p>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={showPreviousBadge}
-                  disabled={!canGoPrevious}
-                  className="rounded-full border border-border bg-background/70 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-45"
-                  aria-label="Show previous badge"
-                >
-                  Prev
-                </button>
-
-                <button
-                  type="button"
-                  onClick={showNextBadge}
-                  disabled={!canGoNext}
-                  className="rounded-full border border-border bg-background/70 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-45"
-                  aria-label="Show next badge"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-
-            {currentMobileBadge ? <BadgeCard badge={currentMobileBadge} /> : null}
-
-            <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 shadow-sm">
-              <p className="text-sm text-muted-foreground">
-                Showing{" "}
-                <span className="font-semibold text-foreground">
-                  {filteredBadges.length}
-                </span>{" "}
-                of{" "}
-                <span className="font-semibold text-foreground">
-                  {badges.length}
-                </span>
-              </p>
-
-              <button
-                type="button"
-                onClick={() => setIsMobileFilterOpen(true)}
-                className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-              >
-                {hasActiveFilters ? "Edit filters" : "Search"}
-              </button>
-            </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {pageBadges.map((badge) => <BadgeCard key={badge.id} badge={badge} />)}
           </div>
-
-          <div className="hidden gap-6 md:grid xl:grid-cols-2">
-            {filteredBadges.map((badge) => (
-              <BadgeCard key={badge.id} badge={badge} />
-            ))}
-          </div>
+          <nav aria-label="Badge pages" className="flex items-center justify-between gap-3 text-sm">
+            <button type="button" disabled={page === 0} onClick={() => setPagination({key:pageKey,page:page-1})} className="min-h-11 px-3 underline disabled:opacity-40">Previous</button>
+            <span role="status">Page {page + 1} of {pageCount} · {filteredBadges.length} badges</span>
+            <button type="button" disabled={page + 1 >= pageCount} onClick={() => setPagination({key:pageKey,page:page+1})} className="min-h-11 px-3 underline disabled:opacity-40">Next</button>
+          </nav>
         </>
       ) : (
         <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
@@ -730,7 +658,7 @@ export default function BadgeBrowser({
           <button
             type="button"
             onClick={() => setIsMobileFilterOpen(true)}
-            className="mt-5 rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:hidden"
+            className="inline-flex min-h-11 mt-5 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:hidden items-center justify-center"
           >
             Edit filters
           </button>
@@ -756,7 +684,7 @@ export default function BadgeBrowser({
             <button
               type="button"
               onClick={() => setIsMobileFilterOpen(false)}
-              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
             >
               Show badges
             </button>

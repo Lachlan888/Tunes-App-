@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import type {
   PublicProfileCreatedBadge,
   PublicProfileReceivedBadge,
@@ -21,28 +20,6 @@ function titleCase(value: string) {
     .join(" ")
 }
 
-function clickedInsideInteractiveElement(target: EventTarget | null) {
-  if (!(target instanceof Element)) return false
-
-  return Boolean(
-    target.closest(
-      [
-        "a",
-        "button",
-        "input",
-        "select",
-        "textarea",
-        "label",
-        "summary",
-        "details",
-        "form",
-        "[role='button']",
-        "[data-card-action]",
-      ].join(", ")
-    )
-  )
-}
-
 function BadgeLinkCard({
   href,
   title,
@@ -54,18 +31,11 @@ function BadgeLinkCard({
   meta: React.ReactNode
   description?: string | null
 }) {
-  const router = useRouter()
-
-  function openBadge(event: React.MouseEvent<HTMLElement>) {
-    if (clickedInsideInteractiveElement(event.target)) return
-    router.push(href)
-  }
 
   return (
     <article
-      className="group cursor-pointer rounded-xl bg-card p-4 transition hover:bg-muted focus-within:ring-2 focus-within:ring-[var(--focus-ring)] md:rounded-2xl md:border md:border-border md:bg-background/70 md:hover:-translate-y-0.5 md:hover:shadow-md"
-      onClick={openBadge}
-      aria-label={`Open badge ${title}`}
+      className="group rounded-xl bg-card p-4 transition hover:bg-muted focus-within:ring-2 focus-within:ring-[var(--focus-ring)] md:rounded-2xl md:border md:border-border md:bg-background/70 md:hover:-translate-y-0.5 md:hover:shadow-md"
+
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -128,9 +98,6 @@ export default function PublicProfileBadgesSection({
     <section className="min-w-0 max-w-full md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Badges
-          </p>
           <h2 className="mt-2 break-words font-serif text-2xl font-bold leading-tight tracking-tight text-foreground md:mt-3 md:text-3xl">
             Recognition
           </h2>
@@ -142,7 +109,7 @@ export default function PublicProfileBadgesSection({
 
         <Link
           href="/badges"
-          className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+          className="inline-flex min-h-11 rounded-control border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
         >
           Browse badges
         </Link>

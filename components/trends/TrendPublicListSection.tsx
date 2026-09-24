@@ -40,7 +40,7 @@ export default function TrendPublicListSection({
               href={`/public-lists/${entry.id}`}
               label="View list"
               pendingLabel="Opening..."
-              className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="inline-flex min-h-11 items-center rounded-control border border-border px-4 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] justify-center"
             />
           </div>
         </li>

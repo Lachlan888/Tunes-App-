@@ -21,6 +21,7 @@ function getSingleValue(value: string | string[] | undefined) {
 }
 
 function getStatusMessage(status: string) {
+  if (status === "confirmation_required") return "Review the action and confirm its scope before submitting."
   if (status === "updated") return "Feedback updated."
   if (status === "updated_notified") {
     return "Feedback updated and the submitting user was messaged."

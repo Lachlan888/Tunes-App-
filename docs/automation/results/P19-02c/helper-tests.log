@@ -1,0 +1,31 @@
+is_learning_list_owner: outsider own identity=false; missing=false; supplied other identity=true
+has_direct_learning_list_share: outsider own identity=false; missing=false; supplied other identity=true
+can_view_learning_list: outsider own identity=false; missing=false; supplied other identity=true
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Authenticated outsider must not distinguish private existence by supplying another identity
++ actual - expected
+
++ [
++   'is_learning_list_owner',
++   'has_direct_learning_list_share',
++   'can_view_learning_list'
++ ]
+- []
+
+    at file:///Users/lachlan.haycox/Desktop/tunes-app/tests/integration/list-permission-helpers.mjs:42:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'is_learning_list_owner',
+    'has_direct_learning_list_share',
+    'can_view_learning_list'
+  ],
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.0

@@ -1,6 +1,6 @@
 import { type EmailOtpType } from "@supabase/supabase-js"
 import { NextRequest, NextResponse } from "next/server"
-import { getSafeInternalPath } from "@/lib/auth/redirects"
+import { getAuthReturnPath } from "@/lib/auth/redirects"
 import { getSiteUrl } from "@/lib/site-url"
 import { createClient } from "@/lib/supabase/server"
 
@@ -15,11 +15,11 @@ export async function GET(request: NextRequest) {
   const next = requestUrl.searchParams.get("next") ?? "/"
   const redirectBaseUrl = getRedirectBaseUrl(request)
 
-  const safeNextPath = getSafeInternalPath(next, "/")
+  const safeNextPath = getAuthReturnPath(next, "/")
 
   if (!tokenHash || !type) {
     return NextResponse.redirect(
-      `${redirectBaseUrl}/login?auth=missing-confirmation-token`
+      `${redirectBaseUrl}/login?auth=missing-confirmation-token&next=${encodeURIComponent(safeNextPath)}`
     )
   }
 
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     return NextResponse.redirect(
-      `${redirectBaseUrl}/login?auth=confirmation-error`
+      `${redirectBaseUrl}/login?auth=confirmation-error&next=${encodeURIComponent(safeNextPath)}`
     )
   }
 

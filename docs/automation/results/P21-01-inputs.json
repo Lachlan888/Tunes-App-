@@ -1,0 +1,9 @@
+{
+  "components/home/HomeMobileSummarySwitcher.tsx": "1f62282e109a928309dd887dd1afdf3d5949df859e931445bb6b2f1be3ad9496",
+  "lib/loaders/homepage.ts": "9e2dcf83bfc4e96f3babf59e9e2e964c4773d29973a4964d4262a85f9c8483a8",
+  "tests/home-streak-composition.test.ts": "2b0fcbebd665b385acb9ab39c60392e0727d06579e4a86ed0f50ecc2bc3953bd",
+  "components/practice/StreakSummarySection.tsx": "d62f31ef064a0fb89f420f895cbea2a7c745cb6f12926f4c931b4bd81a3badae",
+  "components/layout/ResponsivePanels.tsx": "ba8a3e3cda7e8c1d2a6767125f74e1002d08d55c6ee65c8bdbe5afb7ce8f4a4d",
+  "lib/streaks.ts": "cd67e424a51bcaa2e8405b708e92298d8d7ea6868677966c74709e82918c5c75",
+  "package-lock.json": "42f3a674b0cba3314b2559341ff93ad904be09a0f01044913e870f35881c87e1"
+}

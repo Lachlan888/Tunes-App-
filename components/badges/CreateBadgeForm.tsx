@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import ConfirmedActionForm from "@/components/ui/ConfirmedActionForm"
 import SubmitButton from "@/components/SubmitButton"
 import TuneSearchSelect from "@/components/TuneSearchSelect"
 import {
@@ -82,13 +83,13 @@ const labelClassName =
   "text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
 
 const panelClassName =
-  "rounded-3xl border border-border bg-card p-6 shadow-sm"
+  "border-b border-border pb-5"
 
 const primaryButtonClassName =
-  "rounded-full border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
 
 const dangerButtonClassName =
-  "rounded-full border border-destructive bg-destructive px-5 py-2.5 text-sm font-medium text-destructive-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "inline-flex min-h-11 rounded-control border border-destructive bg-destructive px-5 py-2.5 text-sm font-medium text-destructive-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
 
 function getBadge(data: CreateBadgeFormProps["data"]): Badge | null {
   if ("badge" in data && data.badge) {
@@ -184,7 +185,7 @@ export default function CreateBadgeForm({
 
   return (
     <>
-      <form action={action} className="space-y-8">
+      <form action={action} className="space-y-5">
         <input
           type="hidden"
           name="redirect_to"
@@ -327,23 +328,26 @@ export default function CreateBadgeForm({
                   list.
                 </p>
 
-                <select
-                  name="source_list_id"
-                  disabled={conditionIsLocked}
-                  defaultValue={
-                    firstCondition?.type === "know_all_tunes_in_list"
-                      ? firstCondition.list_id
-                      : ""
-                  }
-                  className={`${inputClassName} mt-4`}
-                >
-                  <option value="">Choose a public list</option>
-                  {data.publicLists.map((list) => (
-                    <option key={list.id} value={list.id}>
-                      {list.name}
-                    </option>
-                  ))}
-                </select>
+                <label className="grid gap-2 text-sm font-medium text-foreground">
+                  <span>Public list</span>
+                  <select
+                    name="source_list_id"
+                    disabled={conditionIsLocked}
+                    defaultValue={
+                      firstCondition?.type === "know_all_tunes_in_list"
+                        ? firstCondition.list_id
+                        : ""
+                    }
+                    className={`${inputClassName} mt-4`}
+                  >
+                    <option value="">Choose a public list</option>
+                    {data.publicLists.map((list) => (
+                      <option key={list.id} value={list.id}>
+                        {list.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
                 {conditionIsLocked &&
                 firstCondition?.type === "know_all_tunes_in_list" ? (
@@ -366,7 +370,7 @@ export default function CreateBadgeForm({
                   badge.
                 </p>
 
-                <div className="mt-5">
+                <fieldset disabled={conditionIsLocked} className="mt-5">
                   <TuneSearchSelect
                     pieces={data.pieces}
                     inputName="piece_ids"
@@ -378,7 +382,7 @@ export default function CreateBadgeForm({
                     selectedLabel="Tunes required for this badge"
                     emptySelectionLabel="Search for tunes and add them to the badge condition."
                   />
-                </div>
+                </fieldset>
               </div>
             ) : null}
 
@@ -393,19 +397,22 @@ export default function CreateBadgeForm({
                 </p>
 
                 <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                  <input
-                    name="known_tune_count"
-                    type="number"
-                    min={1}
-                    disabled={conditionIsLocked}
-                    defaultValue={
-                      firstCondition?.type === "known_tune_count"
-                        ? firstCondition.count
-                        : ""
-                    }
-                    placeholder="e.g. 20"
-                    className={inputClassName}
-                  />
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>Minimum known tunes</span>
+                    <input
+                      name="known_tune_count"
+                      type="number"
+                      min={1}
+                      disabled={conditionIsLocked}
+                      defaultValue={
+                        firstCondition?.type === "known_tune_count"
+                          ? firstCondition.count
+                          : ""
+                      }
+                      placeholder="e.g. 20"
+                      className={inputClassName}
+                    />
+                  </label>
 
                   {conditionIsLocked &&
                   firstCondition?.type === "known_tune_count" ? (
@@ -416,59 +423,68 @@ export default function CreateBadgeForm({
                     />
                   ) : null}
 
-                  <select
-                    name="filter_key"
-                    disabled={conditionIsLocked}
-                    defaultValue={
-                      firstCondition?.type === "known_tune_count"
-                        ? firstCondition.filters?.key ?? ""
-                        : ""
-                    }
-                    className={inputClassName}
-                  >
-                    <option value="">Any key</option>
-                    {data.keyOptions.map((key) => (
-                      <option key={key} value={key}>
-                        {key}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>Key</span>
+                    <select
+                      name="filter_key"
+                      disabled={conditionIsLocked}
+                      defaultValue={
+                        firstCondition?.type === "known_tune_count"
+                          ? firstCondition.filters?.key ?? ""
+                          : ""
+                      }
+                      className={inputClassName}
+                    >
+                      <option value="">Any key</option>
+                      {data.keyOptions.map((key) => (
+                        <option key={key} value={key}>
+                          {key}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
 
-                  <select
-                    name="filter_style"
-                    disabled={conditionIsLocked}
-                    defaultValue={
-                      firstCondition?.type === "known_tune_count"
-                        ? firstCondition.filters?.style ?? ""
-                        : ""
-                    }
-                    className={inputClassName}
-                  >
-                    <option value="">Any style</option>
-                    {data.styleOptions.map((style) => (
-                      <option key={style.id} value={style.label}>
-                        {style.label}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>Style</span>
+                    <select
+                      name="filter_style"
+                      disabled={conditionIsLocked}
+                      defaultValue={
+                        firstCondition?.type === "known_tune_count"
+                          ? firstCondition.filters?.style ?? ""
+                          : ""
+                      }
+                      className={inputClassName}
+                    >
+                      <option value="">Any style</option>
+                      {data.styleOptions.map((style) => (
+                        <option key={style.id} value={style.label}>
+                          {style.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
 
-                  <select
-                    name="filter_time_signature"
-                    disabled={conditionIsLocked}
-                    defaultValue={
-                      firstCondition?.type === "known_tune_count"
-                        ? firstCondition.filters?.time_signature ?? ""
-                        : ""
-                    }
-                    className={inputClassName}
-                  >
-                    <option value="">Any time signature</option>
-                    {data.timeSignatureOptions.map((timeSignature) => (
-                      <option key={timeSignature} value={timeSignature}>
-                        {timeSignature}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>Time signature</span>
+                    <select
+                      name="filter_time_signature"
+                      disabled={conditionIsLocked}
+                      defaultValue={
+                        firstCondition?.type === "known_tune_count"
+                          ? firstCondition.filters?.time_signature ?? ""
+                          : ""
+                      }
+                      className={inputClassName}
+                    >
+                      <option value="">Any time signature</option>
+                      {data.timeSignatureOptions.map((timeSignature) => (
+                        <option key={timeSignature} value={timeSignature}>
+                          {timeSignature}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
 
                   {conditionIsLocked &&
                   firstCondition?.type === "known_tune_count" ? (
@@ -504,55 +520,64 @@ export default function CreateBadgeForm({
                 </p>
 
                 <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                  <input
-                    name="media_link_count"
-                    type="number"
-                    min={1}
-                    disabled={conditionIsLocked}
-                    defaultValue={
-                      firstCondition?.type === "added_media_links"
-                        ? firstCondition.count
-                        : ""
-                    }
-                    placeholder="e.g. 25"
-                    className={inputClassName}
-                  />
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>Minimum media links</span>
+                    <input
+                      name="media_link_count"
+                      type="number"
+                      min={1}
+                      disabled={conditionIsLocked}
+                      defaultValue={
+                        firstCondition?.type === "added_media_links"
+                          ? firstCondition.count
+                          : ""
+                      }
+                      placeholder="e.g. 25"
+                      className={inputClassName}
+                    />
+                  </label>
 
-                  <select
-                    name="media_style"
-                    disabled={conditionIsLocked}
-                    defaultValue={
-                      firstCondition?.type === "added_media_links"
-                        ? firstCondition.filters?.style ?? ""
-                        : ""
-                    }
-                    className={inputClassName}
-                  >
-                    <option value="">Any style</option>
-                    {data.styleOptions.map((style) => (
-                      <option key={style.id} value={style.label}>
-                        {style.label}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>Style</span>
+                    <select
+                      name="media_style"
+                      disabled={conditionIsLocked}
+                      defaultValue={
+                        firstCondition?.type === "added_media_links"
+                          ? firstCondition.filters?.style ?? ""
+                          : ""
+                      }
+                      className={inputClassName}
+                    >
+                      <option value="">Any style</option>
+                      {data.styleOptions.map((style) => (
+                        <option key={style.id} value={style.label}>
+                          {style.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
 
-                  <select
-                    name="media_list_id"
-                    disabled={conditionIsLocked}
-                    defaultValue={
-                      firstCondition?.type === "added_media_links"
-                        ? firstCondition.filters?.list_id ?? ""
-                        : ""
-                    }
-                    className={inputClassName}
-                  >
-                    <option value="">Any list</option>
-                    {data.publicLists.map((list) => (
-                      <option key={list.id} value={list.id}>
-                        {list.name}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>Public list</span>
+                    <select
+                      name="media_list_id"
+                      disabled={conditionIsLocked}
+                      defaultValue={
+                        firstCondition?.type === "added_media_links"
+                          ? firstCondition.filters?.list_id ?? ""
+                          : ""
+                      }
+                      className={inputClassName}
+                    >
+                      <option value="">Any list</option>
+                      {data.publicLists.map((list) => (
+                        <option key={list.id} value={list.id}>
+                          {list.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
 
                   <label className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">
                     <input
@@ -587,58 +612,67 @@ export default function CreateBadgeForm({
                 </p>
 
                 <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                  <input
-                    name="lore_entry_count"
-                    type="number"
-                    min={1}
-                    disabled={conditionIsLocked}
-                    defaultValue={
-                      firstCondition?.type === "added_lore_entries"
-                        ? firstCondition.count
-                        : ""
-                    }
-                    placeholder="e.g. 10"
-                    className={inputClassName}
-                  />
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>Minimum lore entries</span>
+                    <input
+                      name="lore_entry_count"
+                      type="number"
+                      min={1}
+                      disabled={conditionIsLocked}
+                      defaultValue={
+                        firstCondition?.type === "added_lore_entries"
+                          ? firstCondition.count
+                          : ""
+                      }
+                      placeholder="e.g. 10"
+                      className={inputClassName}
+                    />
+                  </label>
 
-                  <select
-                    name="lore_style"
-                    disabled={conditionIsLocked}
-                    defaultValue={
-                      firstCondition?.type === "added_lore_entries"
-                        ? firstCondition.filters?.style ?? ""
-                        : ""
-                    }
-                    className={inputClassName}
-                  >
-                    <option value="">Any style</option>
-                    {data.styleOptions.map((style) => (
-                      <option key={style.id} value={style.label}>
-                        {style.label}
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>Style</span>
+                    <select
+                      name="lore_style"
+                      disabled={conditionIsLocked}
+                      defaultValue={
+                        firstCondition?.type === "added_lore_entries"
+                          ? firstCondition.filters?.style ?? ""
+                          : ""
+                      }
+                      className={inputClassName}
+                    >
+                      <option value="">Any style</option>
+                      {data.styleOptions.map((style) => (
+                        <option key={style.id} value={style.label}>
+                          {style.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>Lore category</span>
+                    <select
+                      name="lore_category"
+                      disabled={conditionIsLocked}
+                      defaultValue={
+                        firstCondition?.type === "added_lore_entries"
+                          ? firstCondition.filters?.category ?? ""
+                          : ""
+                      }
+                      className={inputClassName}
+                    >
+                      <option value="">Any lore category</option>
+                      <option value="region">Region</option>
+                      <option value="informant">Informant</option>
+                      <option value="collector">Collector</option>
+                      <option value="alternate_title">Alternate title</option>
+                      <option value="tune_family">Tune family</option>
+                      <option value="story_folklore_note">
+                        Story / folklore note
                       </option>
-                    ))}
-                  </select>
-
-                  <select
-                    name="lore_category"
-                    disabled={conditionIsLocked}
-                    defaultValue={
-                      firstCondition?.type === "added_lore_entries"
-                        ? firstCondition.filters?.category ?? ""
-                        : ""
-                    }
-                    className={inputClassName}
-                  >
-                    <option value="">Any lore category</option>
-                    <option value="region">Region</option>
-                    <option value="informant">Informant</option>
-                    <option value="collector">Collector</option>
-                    <option value="alternate_title">Alternate title</option>
-                    <option value="tune_family">Tune family</option>
-                    <option value="story_folklore_note">
-                      Story / folklore note
-                    </option>
-                  </select>
+                    </select>
+                  </label>
                 </div>
               </div>
             ) : null}
@@ -653,54 +687,63 @@ export default function CreateBadgeForm({
                 </p>
 
                 <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                  <input
-                    name="missing_detail_count"
-                    type="number"
-                    min={1}
-                    disabled={conditionIsLocked}
-                    defaultValue={
-                      firstCondition?.type === "added_missing_details"
-                        ? firstCondition.count
-                        : ""
-                    }
-                    placeholder="e.g. 15"
-                    className={inputClassName}
-                  />
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>Minimum completed details</span>
+                    <input
+                      name="missing_detail_count"
+                      type="number"
+                      min={1}
+                      disabled={conditionIsLocked}
+                      defaultValue={
+                        firstCondition?.type === "added_missing_details"
+                          ? firstCondition.count
+                          : ""
+                      }
+                      placeholder="e.g. 15"
+                      className={inputClassName}
+                    />
+                  </label>
 
-                  <select
-                    name="missing_detail_style"
-                    disabled={conditionIsLocked}
-                    defaultValue={
-                      firstCondition?.type === "added_missing_details"
-                        ? firstCondition.filters?.style ?? ""
-                        : ""
-                    }
-                    className={inputClassName}
-                  >
-                    <option value="">Any style</option>
-                    {data.styleOptions.map((style) => (
-                      <option key={style.id} value={style.label}>
-                        {style.label}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>Style</span>
+                    <select
+                      name="missing_detail_style"
+                      disabled={conditionIsLocked}
+                      defaultValue={
+                        firstCondition?.type === "added_missing_details"
+                          ? firstCondition.filters?.style ?? ""
+                          : ""
+                      }
+                      className={inputClassName}
+                    >
+                      <option value="">Any style</option>
+                      {data.styleOptions.map((style) => (
+                        <option key={style.id} value={style.label}>
+                          {style.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
 
-                  <select
-                    name="missing_detail_field"
-                    disabled={conditionIsLocked}
-                    defaultValue={
-                      firstCondition?.type === "added_missing_details"
-                        ? firstCondition.filters?.field_name ?? ""
-                        : ""
-                    }
-                    className={inputClassName}
-                  >
-                    <option value="">Any field</option>
-                    <option value="key">Key</option>
-                    <option value="style">Style</option>
-                    <option value="time_signature">Time signature</option>
-                    <option value="reference_url">Reference URL</option>
-                  </select>
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>Detail field</span>
+                    <select
+                      name="missing_detail_field"
+                      disabled={conditionIsLocked}
+                      defaultValue={
+                        firstCondition?.type === "added_missing_details"
+                          ? firstCondition.filters?.field_name ?? ""
+                          : ""
+                      }
+                      className={inputClassName}
+                    >
+                      <option value="">Any field</option>
+                      <option value="key">Key</option>
+                      <option value="style">Style</option>
+                      <option value="time_signature">Time signature</option>
+                      <option value="reference_url">Reference URL</option>
+                    </select>
+                  </label>
                 </div>
               </div>
             ) : null}
@@ -724,7 +767,7 @@ export default function CreateBadgeForm({
             records, and linked badge notifications.
           </p>
 
-          <form action={deleteBadge} className="mt-5">
+          <ConfirmedActionForm action={deleteBadge} scope={`Permanently delete “${badge.name}”, its recipient records and linked badge notifications. This cannot be undone.`} className="mt-5">
             <input type="hidden" name="badge_id" value={badge.id} />
 
             <SubmitButton
@@ -732,7 +775,7 @@ export default function CreateBadgeForm({
               pendingLabel="Deleting badge..."
               className={dangerButtonClassName}
             />
-          </form>
+          </ConfirmedActionForm>
         </section>
       ) : null}
     </>

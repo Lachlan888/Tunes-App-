@@ -1,0 +1,32 @@
+(node:32193) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/home-streak-composition.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Home places one authoritative streak summary in Repertoire: populated (5.39875ms)
+✔ Home places one authoritative streak summary in Repertoire: new user (1.45325ms)
+✔ Home places one authoritative streak summary in Repertoire: broken streak (1.467959ms)
+✔ Home badge reads retain user filters and exact counts without preview reads (0.532792ms)
+✔ Home badge count failures remain visible (0.270292ms)
+(node:32194) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/navigation-shell.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ phone and desktop consumer navigation expose six first-class destinations (0.792917ms)
+✔ nested routes select their primary destination (0.164583ms)
+✔ signed-out and internal pages do not inherit consumer navigation (0.11125ms)
+✔ nested pages receive concise phone top-bar titles (0.119791ms)
+✔ fixed shell layers reserve safe space and keep 44px navigation targets (1.898042ms)
+✔ secondary navigation overlays and the Home view is persisted (0.453334ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 282.015459
+
+Scoped ESLint: PASS (HomeMobileSummarySwitcher, homepage loader, home-streak-composition test).
+TypeScript: npx tsc --noEmit --incremental false PASS, exit 0.
+Scoped git diff --check: PASS.
+Regression-before: all 5 new tests fail on pre-change sources; current sources restored and all 11 tests pass.

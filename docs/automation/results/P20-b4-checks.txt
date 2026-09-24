@@ -1,0 +1,79 @@
+(node:31787) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/account-actions.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ settings action checks authentication and validation before attempting writes (19.0455ms)
+✔ settings action updates only the current owner and the selected group (6.453208ms)
+✔ notifications use owner-scoped preferences without changing profile privacy (0.183333ms)
+✔ a rejected settings save remains an error and does not invalidate successful content (0.170833ms)
+(node:31788) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/design-system.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ foundation tokens keep the specified semantic values (4.648792ms)
+✔ ordinary text and filled semantic controls meet WCAG AA contrast (0.602667ms)
+✔ accessibility preference fallbacks are defined (0.232333ms)
+(node:31789) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/login-redirect.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ protected route login preserves session/filter context and rejects unsafe return paths (1.824041ms)
+(node:31790) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/navigation-shell.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ phone and desktop consumer navigation expose six first-class destinations (1.015625ms)
+✔ nested routes select their primary destination (0.182583ms)
+✔ signed-out and internal pages do not inherit consumer navigation (0.174625ms)
+✔ nested pages receive concise phone top-bar titles (0.102083ms)
+✔ fixed shell layers reserve safe space and keep 44px navigation targets (2.139833ms)
+✔ secondary navigation overlays and the Home view is persisted (1.192792ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 335.18425
+
+SCOPED LINT baseline findings (identical pre-edit and after):
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/feedback/BetaFeedbackModal.tsx
+  43:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/feedback/BetaFeedbackModal.tsx:43:5
+  41 |     if (!isOpen) return
+  42 |
+> 43 |     setPagePath(getCurrentPagePath())
+     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  44 |     setPageUrl(window.location.href)
+  45 |     setBrowser(window.navigator.userAgent)
+  46 |     setViewportWidth(String(window.innerWidth))  react-hooks/set-state-in-effect
+  65:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/lachlan.haycox/Desktop/tunes-app/components/feedback/BetaFeedbackModal.tsx:65:7
+  63 |   useEffect(() => {
+  64 |     if (state.status === "error") {
+> 65 |       setIsSubmitting(false)
+     |       ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  66 |     }
+  67 |   }, [state.status])
+  68 |                                                                          react-hooks/set-state-in-effect
+
+✖ 2 problems (2 errors, 0 warnings)
+
+
+SCOPED LINT with baseline rule excluded exit 0

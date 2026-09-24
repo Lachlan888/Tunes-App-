@@ -101,7 +101,7 @@ export default function RequestTuneEditForm({
       <SubmitButton
         label={submitLabel}
         pendingLabel="Submitting..."
-        className="w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        className="inline-flex min-h-11 w-full rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
       />
     </form>
   )

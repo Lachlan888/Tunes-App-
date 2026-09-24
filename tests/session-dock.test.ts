@@ -153,6 +153,27 @@ test("Session Dock and Navigation Dock reserve one combined safe area", () => {
   assert.match(dock, /data-session-dock-context=\{model\.context\}/)
 })
 
+test("Reference transport renders seek and speed inside the Session Dock", () => {
+  const dock = readFileSync(
+    new URL("../components/session-dock/SessionDock.tsx", import.meta.url),
+    "utf8"
+  )
+  const player = readFileSync(
+    new URL("../components/library/YouTubeLoopPlayer.tsx", import.meta.url),
+    "utf8"
+  )
+
+  assert.match(dock, /function TransportControls/)
+  assert.match(dock, /aria-label="Seek recording"/)
+  assert.match(dock, /aria-label="Playback speed"/)
+  assert.match(dock, /flex flex-wrap items-center justify-between/)
+  assert.match(player, /showIdentity: false/)
+  assert.match(player, /onSeek: seekPlayback/)
+  assert.match(player, /event\.code === "Space"/)
+  assert.match(player, /event\.code === "ArrowLeft"/)
+  assert.doesNotMatch(player, /className="reference-transport/)
+})
+
 test("route integrations preserve only safe contextual state", () => {
   const practice = readFileSync(
     new URL(
@@ -178,6 +199,6 @@ test("route integrations preserve only safe contextual state", () => {
   assert.match(media, /currentTime/)
   assert.match(media, /loopEnabled/)
   assert.match(media, /activeLoopId/)
-  assert.match(setlist, /session\.v1\.setlist/)
+  assert.match(setlist, /session\.v2\.setlist\.\$\{userId\}/)
   assert.match(setlist, /searchParams\.set\("performance"/)
 })

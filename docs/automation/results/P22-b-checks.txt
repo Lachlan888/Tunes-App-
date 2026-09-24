@@ -1,0 +1,18 @@
+Verified: 2026-09-23T10:04:48Z
+
+$ node --experimental-strip-types --test tests/social-surfaces.test.ts
+PASS 4 tests, 0 failures
+Note: Node emitted the existing MODULE_TYPELESS_PACKAGE_JSON warning.
+
+$ RENDERER_ROOT=/private/tmp/tunes-review-lifecycle node tests/integration/social-feed-lifecycle.mjs
+PASS: direct controls, bounded/deduplicated feed, hidden-page continuation, loading/retry/end, keyboard button fallback, discussion paging guard, newest reset, unauthorized recovery and abort
+Note: react-test-renderer emitted its deprecation warning.
+
+$ npx eslint components/activity/SocialActivityFeed.tsx components/home/HomeFriendsActivityBox.tsx components/home/HomeMobileSummarySwitcher.tsx components/friends/RecentFriendActivitySection.tsx app/friends/page.tsx tests/social-surfaces.test.ts
+PASS (exit 0, no findings)
+
+$ npx tsc --noEmit
+PASS (exit 0, no findings)
+
+$ git diff --check -- components/friends/RecentFriendActivitySection.tsx tests/social-surfaces.test.ts docs/automation/state.json
+PASS (exit 0, no findings)

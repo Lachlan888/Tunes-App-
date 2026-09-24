@@ -15,7 +15,7 @@ test("tune detail URLs have three stable views and a Practice default", () => {
   assert.equal(resolveTuneDetailView("community"), "about")
   assert.equal(resolveTuneDetailView("overview"), "practice")
   assert.equal(resolveTuneDetailView("unexpected"), "practice")
-  assert.equal(getTuneDetailHref(42, "reference"), "/library/42?view=reference")
+  assert.equal(getTuneDetailHref(42, "reference"), "/library/42/reference-media")
 })
 
 test("the tune identity, three views and Session Dock keep one action hierarchy", () => {
@@ -41,7 +41,8 @@ test("the tune identity, three views and Session Dock keep one action hierarchy"
   assert.match(page, /activeView === "reference"/)
   assert.match(page, /activeView === "about"/)
   assert.match(page, /resolveReferenceMediaSource/)
-  assert.match(page, /Open Reference Mode/)
+  assert.match(page, /redirect\(getReferencePracticeHref/)
+  assert.doesNotMatch(page, /function ReferenceView/)
   assert.match(page, /typedReviewHistory/)
   assert.match(page, /Start Practice/)
   assert.match(page, /Already in practice/)

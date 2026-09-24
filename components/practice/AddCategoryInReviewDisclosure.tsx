@@ -18,7 +18,7 @@ export default function AddCategoryInReviewDisclosure({
     <section className="rounded-2xl border border-border bg-background/70 p-4">
       <button
         type="button"
-        className="flex w-full items-center justify-between gap-3 text-left"
+        className="flex min-h-11 w-full items-center justify-between gap-3 rounded-control text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
       >
@@ -32,7 +32,7 @@ export default function AddCategoryInReviewDisclosure({
           </span>
         </span>
 
-        <span className="shrink-0 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-muted-foreground">
+        <span className="inline-flex min-h-11 shrink-0 rounded-control border border-border bg-card px-3 py-1 text-xs font-semibold text-muted-foreground items-center justify-center">
           {isOpen ? "Hide" : "Add"}
         </span>
       </button>

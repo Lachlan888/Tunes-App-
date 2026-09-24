@@ -1,10 +1,12 @@
 "use client"
 
+import { preferenceStorage } from "@/lib/browser-storage"
+
 import Link from "next/link"
 import { useSyncExternalStore } from "react"
 import SocialActivityFeed from "@/components/activity/SocialActivityFeed"
 import StreakSummarySection from "@/components/practice/StreakSummarySection"
-import MobileViewSwitcher from "@/components/ui/MobileViewSwitcher"
+import ResponsivePanels from "@/components/layout/ResponsivePanels"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import type { FriendActivityItem } from "@/lib/friend-activity"
 import type { HomeSummaryData, StreakSummary } from "@/lib/types"
@@ -15,6 +17,7 @@ type HomeDensity = "compact" | "standard" | "spacious"
 type HomeMobileSummarySwitcherProps = {
   summary: HomeSummaryData
   recentFriendActivity: FriendActivityItem[]
+  activityNextCursor: string | null
   streakSummary: StreakSummary
   density: HomeDensity
 }
@@ -27,12 +30,6 @@ type MobileRowProps = {
   actionLabel?: string
 }
 
-const tabs: { id: MobileHomeTab; label: string }[] = [
-  { id: "today", label: "Today" },
-  { id: "repertoire", label: "Repertoire" },
-  { id: "social", label: "Social" },
-]
-
 const HOME_TAB_STORAGE_KEY = "tunes.home.mobile-view"
 const HOME_TAB_CHANGE_EVENT = "tunes:home-view-change"
 
@@ -41,7 +38,7 @@ function isMobileHomeTab(value: string | null): value is MobileHomeTab {
 }
 
 function getStoredHomeTab(): MobileHomeTab {
-  const value = window.localStorage.getItem(HOME_TAB_STORAGE_KEY)
+  const value = preferenceStorage.getItem(HOME_TAB_STORAGE_KEY)
   return isMobileHomeTab(value) ? value : "today"
 }
 
@@ -63,7 +60,7 @@ function subscribeToHomeTab(onStoreChange: () => void) {
 }
 
 function persistHomeTab(tab: MobileHomeTab) {
-  window.localStorage.setItem(HOME_TAB_STORAGE_KEY, tab)
+  preferenceStorage.setItem(HOME_TAB_STORAGE_KEY, tab)
   window.dispatchEvent(new Event(HOME_TAB_CHANGE_EVENT))
 }
 
@@ -154,7 +151,7 @@ function MobileRow({
       </div>
 
       {href ? (
-        <span className="shrink-0 rounded-full border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground">
+        <span className="inline-flex min-h-11 shrink-0 rounded-control border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground items-center justify-center">
           {actionLabel}
         </span>
       ) : null}
@@ -173,29 +170,11 @@ function MobileRow({
   )
 }
 
-function MobileSwitcher({
-  activeTab,
-  onChange,
-}: {
-  activeTab: MobileHomeTab
-  onChange: (tab: MobileHomeTab) => void
-}) {
-  return (
-    <MobileViewSwitcher
-      value={activeTab}
-      options={tabs}
-      onChange={onChange}
-    />
-  )
-}
-
 function TodayPanel({
   summary,
-  streakSummary,
   density,
 }: {
   summary: HomeSummaryData
-  streakSummary: StreakSummary
   density: HomeDensity
 }) {
   const previewLimit = getPreviewLimit(density)
@@ -230,7 +209,6 @@ function TodayPanel({
   return (
     <div className="space-y-4">
       <section className="rounded-object border border-hairline bg-surface-paper p-4 shadow-material-rest">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">Continue</p>
         <h2 className="mt-2 font-serif text-2xl font-bold leading-tight text-text-primary">{continueTitle}</h2>
         <p className="mt-1 text-sm text-text-muted">{continueMeta}</p>
         <Link href={continueHref} className={`${buttonStyles.primary} mt-4`}>
@@ -276,25 +254,17 @@ function TodayPanel({
         ]}
       />
 
-      <StreakSummarySection streakSummary={streakSummary} />
     </div>
   )
 }
 
 function RepertoirePanel({
   summary,
-  density,
+  streakSummary,
 }: {
   summary: HomeSummaryData
-  density: HomeDensity
+  streakSummary: StreakSummary
 }) {
-  const previewLimit = getPreviewLimit(density)
-  const recentTunes = summary.inPracticePreview.slice(0, previewLimit)
-  const recentBadges = [
-    ...summary.badgeSummary.recentReceivedBadges.map((badge) => ({ ...badge, kind: "Badge received" })),
-    ...summary.badgeSummary.recentCreatedBadges.map((badge) => ({ ...badge, kind: "Badge created" })),
-  ].slice(0, Math.max(0, previewLimit - recentTunes.length))
-
   return (
     <div className="space-y-5">
       <MobilePanel>
@@ -328,40 +298,17 @@ function RepertoirePanel({
         </div>
       </MobilePanel>
 
-      <section className="space-y-2">
-        <MobileSectionHeading title="Recent changes" action={<Link href="/library" className={buttonStyles.text}>View tunes</Link>} />
-
-        {recentTunes.length === 0 && recentBadges.length === 0 ? (
-          <MobileEmptyBlock>Your recent repertoire changes will appear here.</MobileEmptyBlock>
-        ) : (
-          <div className="border-y border-border/70">
-            {recentTunes.map((userPiece) => (
-                <MobileRow
-                  key={userPiece.user_piece_id}
-                  href={`/library/${userPiece.piece_id}`}
-                  title={userPiece.title}
-                  meta={`In practice · Stage ${userPiece.stage}`}
-                />
-              ))}
-            {recentBadges.map((badge) => (
-              <MobileRow
-                key={`${badge.kind}-${badge.id}`}
-                href={`/badges/${badge.slug}`}
-                title={badge.name}
-                meta={badge.kind}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+      <StreakSummarySection streakSummary={streakSummary} />
     </div>
   )
 }
 
 function SocialPanel({
   recentFriendActivity,
+  activityNextCursor,
 }: {
   recentFriendActivity: FriendActivityItem[]
+  activityNextCursor: string | null
 }) {
   return (
     <div className="space-y-5">
@@ -378,7 +325,8 @@ function SocialPanel({
         <SocialActivityFeed
           items={recentFriendActivity}
           redirectTo="/"
-          limit={5}
+          initialNextCursor={activityNextCursor}
+          scrollRegionLabel="Friend activity feed"
         />
       </section>
     </div>
@@ -388,6 +336,7 @@ function SocialPanel({
 export default function HomeMobileSummarySwitcher({
   summary,
   recentFriendActivity,
+  activityNextCursor,
   streakSummary,
   density,
 }: HomeMobileSummarySwitcherProps) {
@@ -397,25 +346,15 @@ export default function HomeMobileSummarySwitcher({
     getServerHomeTab
   )
 
-  return (
-    <section className="space-y-4 md:hidden">
-      <MobileSwitcher activeTab={activeTab} onChange={persistHomeTab} />
-
-      {activeTab === "today" ? (
-        <TodayPanel
-          summary={summary}
-          streakSummary={streakSummary}
-          density={density}
-        />
-      ) : null}
-
-      {activeTab === "repertoire" ? (
-        <RepertoirePanel summary={summary} density={density} />
-      ) : null}
-
-      {activeTab === "social" ? (
-        <SocialPanel recentFriendActivity={recentFriendActivity} />
-      ) : null}
-    </section>
-  )
+  return <ResponsivePanels
+    className="home-workbench"
+    label="Home views"
+    active={activeTab}
+    onChange={persistHomeTab}
+    panels={[
+      { id: "today", label: "Today", content: <TodayPanel summary={summary} density={density} /> },
+      { id: "repertoire", label: "Repertoire", content: <RepertoirePanel summary={summary} streakSummary={streakSummary} /> },
+      { id: "social", label: "Social", content: <SocialPanel recentFriendActivity={recentFriendActivity} activityNextCursor={activityNextCursor} /> },
+    ]}
+  />
 }

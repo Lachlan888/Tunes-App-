@@ -36,6 +36,7 @@ export default function DailyReflectionForm({
 
       <textarea
         name="daily_reflection"
+        aria-label="Daily reflection"
         rows={5}
         defaultValue={initialValue}
         placeholder="What happened in practice overall today?"
@@ -48,7 +49,7 @@ export default function DailyReflectionForm({
       <SubmitButton
         label="Save reflection"
         pendingLabel="Saving..."
-        className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
+        className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
       />
     </form>
   )

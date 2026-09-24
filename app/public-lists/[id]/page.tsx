@@ -1,8 +1,8 @@
 import Link from "next/link"
+import { publicListHref, safePublicListReturn } from "@/lib/list-return"
 import type { ReactNode } from "react"
 import TuneMediaLauncher from "@/components/reference-media/TuneMediaLauncher"
 import SubmitButton from "@/components/SubmitButton"
-import TuneCard from "@/components/TuneCard"
 import ListPager from "@/components/lists/ListPager"
 import {
   bookmarkPublicList,
@@ -27,6 +27,7 @@ type PublicListDetailPageProps = {
     imported_list_id?: string
     bookmark_public?: string
     page?: string | string[]
+    return_to?: string | string[]
   }>
 }
 
@@ -106,7 +107,7 @@ function getTuneMetadata(piece: Piece) {
   ].filter(Boolean)
 }
 
-function PublicListMobileTuneRow({
+function PublicListTuneRow({
   piece,
   userIsSignedIn,
   isAlreadyInPractice,
@@ -124,10 +125,10 @@ function PublicListMobileTuneRow({
   mediaBundle: TuneMediaBundle | null
 }) {
   const metadataParts = getTuneMetadata(piece)
-  const checkboxId = `mobile-select-piece-${piece.id}`
+  const checkboxId = `select-piece-${piece.id}`
 
   return (
-    <article className="border-b border-border/70 py-4 last:border-b-0">
+    <article className="grid gap-3 border-b border-border/70 py-4 last:border-b-0 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
       <div className="min-w-0">
         <h3 className="text-lg font-semibold leading-snug text-foreground">
           <Link
@@ -230,7 +231,9 @@ export default async function PublicListDetailPage({
     isBookmarkedByCurrentUser,
   } = await loadPublicListDetailData(id)
   const pagination = paginateListItems(typedItems, requestedPage)
-  const pageHref = `/public-lists/${typedList.id}`
+  const hasListOrigin = resolvedSearchParams?.return_to !== undefined
+  const backHref = hasListOrigin ? safePublicListReturn(resolvedSearchParams.return_to) : "/public-lists"
+  const pageHref = hasListOrigin ? publicListHref(typedList.id, backHref) : `/public-lists/${typedList.id}`
 
   const importedList =
     importedListId > 0
@@ -241,10 +244,10 @@ export default async function PublicListDetailPage({
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       <div className="mb-5">
         <Link
-          href="/public-lists"
+          href={backHref}
           className="text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
         >
-          Back to Public Lists
+          {backHref.split(/[?#]/)[0] === "/public-lists" ? "Back to Public Lists" : "Back to Lists"}
         </Link>
       </div>
 
@@ -252,7 +255,7 @@ export default async function PublicListDetailPage({
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-4">
-              <h1 className="min-w-0 font-serif text-3xl font-bold tracking-tight text-foreground md:text-5xl">
+              <h1 className="min-w-0 break-words font-serif text-3xl font-bold tracking-tight text-foreground md:text-5xl">
                 {typedList.name}
               </h1>
 
@@ -312,6 +315,8 @@ export default async function PublicListDetailPage({
             <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-muted-foreground">
               <span>By {renderOwnerLabel(owner)}</span>
               <span aria-hidden="true">•</span>
+              <span>Public</span>
+              <span aria-hidden="true">•</span>
               <span>
                 {typedItems.length} tune{typedItems.length === 1 ? "" : "s"}
               </span>
@@ -324,7 +329,7 @@ export default async function PublicListDetailPage({
             </div>
 
             {typedList.description ? (
-              <p className="mt-4 max-w-3xl text-sm leading-6 text-foreground md:mt-5 md:text-base md:leading-7">
+              <p className="mt-4 max-w-3xl break-words text-sm leading-6 text-foreground md:mt-5 md:text-base md:leading-7">
                 {typedList.description}
               </p>
             ) : null}
@@ -333,7 +338,7 @@ export default async function PublicListDetailPage({
           {isViewingOwnPublicList && (
             <Link
               href={`/learning-lists/${typedList.id}`}
-              className="inline-flex min-h-10 items-center justify-center rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:hover:-translate-y-0.5"
+              className="inline-flex min-h-11 items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:hover:-translate-y-0.5"
             >
               Open editable list
             </Link>
@@ -489,7 +494,7 @@ export default async function PublicListDetailPage({
             This list has no tunes yet.
           </p>
         ) : (
-          <div className="mt-3 divide-y divide-border/70 border-y border-border/70 md:mt-5 md:divide-y-0 md:border-y-0 md:space-y-4">
+          <ol className="mt-3 divide-y divide-border/70 border-y border-border/70 md:mt-5 md:divide-y-0 md:border-y-0 md:space-y-4">
             {pagination.items.map((item) => {
               const piece = Array.isArray(item.pieces)
                 ? item.pieces[0]
@@ -507,9 +512,9 @@ export default async function PublicListDetailPage({
                 ownedLists.length > 0
 
               return (
-                <div key={item.id}>
-                  <div className="md:hidden">
-                    <PublicListMobileTuneRow
+                <li key={item.id}>
+                  <div>
+                    <PublicListTuneRow
                       piece={piece}
                       userIsSignedIn={Boolean(user)}
                       isAlreadyInPractice={isAlreadyInPractice}
@@ -520,56 +525,10 @@ export default async function PublicListDetailPage({
                     />
                   </div>
 
-                  <div className="relative hidden md:block">
-                    {canSelectForCopy && (
-                      <input
-                        id={`desktop-select-piece-${piece.id}`}
-                        type="checkbox"
-                        name="piece_ids"
-                        value={piece.id}
-                        form="selected-import-form"
-                        aria-label={`Select ${piece.title} to copy`}
-                        className="absolute right-5 top-5 z-10 h-5 w-5 accent-primary"
-                      />
-                    )}
-
-                    <TuneCard
-                      id={piece.id}
-                      title={piece.title}
-                      keyValue={piece.key}
-                      style={piece.style}
-                      timeSignature={piece.time_signature}
-                      referenceUrl={piece.reference_url}
-                      mediaBundle={mediaBundles.get(piece.id) ?? null}
-                      listNames={[]}
-                    >
-                      {!user ? (
-                        <p className="text-sm text-muted-foreground">
-                          Log in to copy tunes into your own lists.
-                        </p>
-                      ) : (
-                        <>
-                          {isAlreadyInPractice ? (
-                            <span className="rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm">
-                              Already in practice
-                            </span>
-                          ) : isKnown ? (
-                            <span className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm">
-                              Known
-                            </span>
-                          ) : (
-                            <span className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm">
-                              New to me
-                            </span>
-                          )}
-                        </>
-                      )}
-                    </TuneCard>
-                  </div>
-                </div>
+                </li>
               )
             })}
-          </div>
+          </ol>
         )}
         <ListPager href={pageHref} page={pagination.page} totalPages={pagination.totalPages} label={`${typedList.name} tunes`} />
       </section>
@@ -617,7 +576,7 @@ export default async function PublicListDetailPage({
                   <SubmitButton
                     label="Copy selected tunes"
                     pendingLabel="Copying..."
-                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto md:bg-card"
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto md:bg-card"
                   />
                 </div>
               </>
@@ -650,7 +609,7 @@ export default async function PublicListDetailPage({
                   <SubmitButton
                     label="Copy list"
                     pendingLabel="Copying..."
-                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto"
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto"
                   />
                 </div>
               </form>

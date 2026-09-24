@@ -69,7 +69,6 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
 
       {tab === "messages" ? (
         <section aria-labelledby="messages-title">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Messages</p>
           <h1 id="messages-title" className="mt-1 font-serif text-3xl font-bold">Conversations</h1>
           <p className="mb-5 mt-2 text-sm text-muted-foreground">Open a person to read the latest messages and reply.</p>
           <DirectMessageThreadList threads={data.messageThreads} />
@@ -79,12 +78,11 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
           <section aria-labelledby="new-title">
             <div className="flex items-end justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-state-social">Activity</p>
                 <h1 id="new-title" className="mt-1 font-serif text-3xl font-bold">New</h1>
               </div>
               {data.unreadNotificationCount > 0 ? (
                 <form action={markAllNotificationsRead}>
-                  <SubmitButton label="Mark all read" pendingLabel="Marking read..." className="inline-flex min-h-11 items-center rounded-full border border-state-social px-4 text-sm font-semibold text-state-social" />
+                  <SubmitButton label="Mark all read" pendingLabel="Marking read..." className="inline-flex min-h-11 items-center rounded-control border border-state-social px-4 text-sm font-semibold text-state-social justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]" />
                 </form>
               ) : null}
             </div>
@@ -94,7 +92,6 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
           </section>
 
           <section aria-labelledby="history-title">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Earlier activity</p>
             <h2 id="history-title" className="mt-1 font-serif text-2xl font-bold">History</h2>
             <div className="mt-4">
               <InboxItemList items={history.items} emptyMessage="No activity history yet." />

@@ -1,0 +1,340 @@
+
+> tunes-app@0.1.0 test
+> node --experimental-strip-types --test tests/*.test.ts
+
+(node:15046) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/account-actions.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ settings action checks authentication and validation before attempting writes (78.813084ms)
+✔ settings action updates only the current owner and the selected group (5.223333ms)
+✔ notifications use owner-scoped preferences without changing profile privacy (0.258584ms)
+✔ a rejected settings save remains an error and does not invalidate successful content (0.212ms)
+(node:15047) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/activity-pagination.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ activity cursor validates input and preserves tied timestamp IDs (0.980667ms)
+✔ feed merge deduplicates page overlap and keeps chronological ID order (12.981083ms)
+✔ activity page retains a continuation after all scanned rows are hidden (2.499833ms)
+✔ multiple friend batches still produce one bounded ordered page (1.37875ms)
+(node:15049) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/admin-email-broadcasts.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ normal users cannot call either admin email send path (2.516875ms)
+✔ All users resolves valid authoritative emails and deduplicates them (1.061125ms)
+✔ Digest subscribers excludes Off users and applies current defaults (0.329791ms)
+✔ test send resolves only the current admin account email (0.382292ms)
+✔ broadcast HTML escapes all user-entered content (1.331875ms)
+✔ unsafe CTA URLs are rejected (28.175833ms)
+✔ one recipient failure does not abort remaining recipients (1.417333ms)
+✔ a claimed broadcast ID cannot execute twice (0.298167ms)
+✔ broadcast result counts include sent, failed, and skipped outcomes (0.164083ms)
+✔ migration stores history and delivery metadata without email bodies (1.914417ms)
+(node:15050) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/badge-workspace.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ all badge categories have text and a coherent motif/shape independent of colour (1.358583ms)
+✔ award announcements are scoped to recipient and award, and exclude old, future or invalid timestamps (0.17625ms)
+✔ internal authoring paths preserve consumer badge index and detail routes (0.1755ms)
+✔ discovery explicitly excludes other creators’ private and unlisted badges (199.938292ms)
+✔ private badge detail stops before criteria, recipients or inventory reads for a non-owner (25.547458ms)
+✔ unlisted direct links retain access; manual and undefined criteria have no invented progress (35.12675ms)
+✔ signed-out create and edit reject before any data query, non-owner edit before form inventory (42.828542ms)
+✔ owner edit remains permitted and retains the awarded-condition lock data (14.944833ms)
+✔ moderator and app-admin access fail closed while keeping their distinct role systems (162.693625ms)
+✔ automatic award service preserves manual/private/existing-award boundaries (49.288375ms)
+✔ a duplicate automatic award returns the stored award without a duplicate notification (6.922833ms)
+✔ internal actions authenticate and reject absent confirmation before data access (110.340584ms)
+(node:15051) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/bounded-read.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ bounded reads recover all rows when the project caps responses below the requested page (1.735125ms)
+✔ oversized, changed and incomplete collections cannot return partial totals (1.093584ms)
+✔ empty reads and database failures preserve their actual outcomes (0.14ms)
+✔ request budget bounds unexpectedly tiny API pages (0.191917ms)
+(node:15052) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/browser-storage.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ optional storage retains the latest value and deletion through quota and access failures (0.565292ms)
+✔ account namespaces isolate selections and logout purges only Tunes session data (6.012042ms)
+(node:15053) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/catalogue-workflows.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ filter drafts count prospective matches without mutating applied URL state (0.646916ms)
+✔ catalogue selection is reversible, private, deduplicated, and bounded (1.191875ms)
+✔ duplicate suggestions explain exact titles, aliases, and likely matches (1.532667ms)
+✔ catalogue UI wires staged filters, selection dock, and progressive creation (3.672541ms)
+(node:15056) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/compare-bounds.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Compare reuses Known/Practice reads and preserves known-only versus practice overlap (142.46525ms)
+✔ Compare retains repertoire beyond API row caps and batches tune details (34.618417ms)
+✔ blocked comparison and oversized groups read no repertoire (39.362334ms)
+(node:15057) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/compare-experience.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ comparison groups describe playable, strong, shaky and teachable outcomes (2.154625ms)
+✔ no-overlap and large-overlap paging remain bounded (0.384834ms)
+✔ in-person codes are strong, readable, short-lived and reconnectable (12.419958ms)
+✔ suggested set conversion preserves order and revalidates overlap (3.232459ms)
+✔ full overlap is URL-filtered and rendered through TuneRow (10.397ms)
+✔ repertoire reads require explicit profile consent (7.082792ms)
+(node:15058) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/compare-invites.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ compare invitation tokens contain at least 32 random bytes and are URL safe (1.207167ms)
+✔ compare invitation tokens are hashed deterministically without retaining raw data (2.380458ms)
+✔ invitation state derives acceptance, revocation, and expiry from timestamps (0.115ms)
+✔ authentication continuation accepts only internal application paths (0.27825ms)
+✔ database acceptance locks the invite and handles required connection states (6.793542ms)
+(node:15059) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/design-system.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ foundation tokens keep the specified semantic values (1.834583ms)
+✔ ordinary text and filled semantic controls meet WCAG AA contrast (0.257042ms)
+✔ accessibility preference fallbacks are defined (0.190625ms)
+(node:15062) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/digest-logic.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ weekly digest is due once in its Sunday UTC week (3.637209ms)
+✔ daily digest is due next day but not twice in one UTC day (0.125875ms)
+✔ off users are never due (0.0615ms)
+✔ due tunes are categorised and capped (9.8895ms)
+✔ friend activity deduplicates repeated friend/tune events and caps (0.12425ms)
+✔ empty digest is skipped while a due tune is useful (0.0885ms)
+✔ TypeScript and migration defaults agree on weekly/all-sections-on (1.816917ms)
+✔ manual test sends bypass cadence and consume no scheduled state (0.118875ms)
+(node:15063) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/list-bounds.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Lists keeps complete queue/counts beyond API caps, with owner scope and bounded stable reads (48.684042ms)
+✔ Lists still tolerates an optional missing bookmarks table without hiding oversized collections (6.941875ms)
+(node:15064) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/list-detail-return.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ owned card title and Read link carry the filtered overview origin (117.120916ms)
+✔ detail Back, modes, and pager retain the overview origin (123.070667ms)
+✔ detail rejects external, unrelated and malformed return destinations (375.300583ms)
+✔ saved and directly shared card links retain overview filters and page (40.541291ms)
+✔ public detail Back and pager retain a safe Lists origin (131.326041ms)
+✔ public detail keeps its default and rejects unsafe return destinations (221.599083ms)
+✔ discovery desktop and mobile entry links carry their filtered origin (13.955ms)
+✔ discovery page supplies filters and the clamped page to both entry layouts (67.659292ms)
+✔ public detail returns to discovery and retains origin in its pager (11.205042ms)
+(node:15065) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/list-origin-scroll.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ anchor list navigation restores the original offset once, after router scroll, and ignores other origins (156.039209ms)
+✔ button list navigation restores the original offset once, after router scroll, and ignores other origins (21.60575ms)
+(node:15066) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/list-page-return.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ my-lists action targets retain filters and the displayed page (80.216041ms)
+✔ learning-queue action targets retain filters and the displayed page (8.6615ms)
+✔ unsorted action targets retain filters and the displayed page (9.071917ms)
+✔ saved-shared action targets retain filters and the displayed page (1.364834ms)
+(node:15067) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/list-permissions.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ detail loader returns owner without effects or recipient enumeration (120.368166ms)
+✔ detail loader returns shared_viewer without effects or recipient enumeration (79.822709ms)
+✔ detail loader returns public_viewer without effects or recipient enumeration (8.538833ms)
+✔ private inaccessible detail has the same not-found boundary and no dependent reads (15.273042ms)
+✔ revoked inaccessible detail has the same not-found boundary and no dependent reads (46.795875ms)
+✔ missing inaccessible detail has the same not-found boundary and no dependent reads (9.370084ms)
+✔ signed-out private detail redirects before querying list existence (13.415333ms)
+✔ public loader accepts public link for signed out without effects (9.062125ms)
+✔ public route conceals private list even from signed out (5.56625ms)
+✔ public loader accepts public link for owner without effects (120.949ms)
+✔ public route conceals private list even from owner (28.370583ms)
+✔ public loader accepts public link for viewer without effects (21.353ms)
+✔ public route conceals private list even from viewer (7.598417ms)
+✔ signed out cannot invoke updateList on another user's list (132.55625ms)
+✔ signed out cannot invoke removeTuneFromList on another user's list (141.0015ms)
+✔ signed out cannot invoke deleteList on another user's list (89.681916ms)
+✔ signed out cannot invoke revokeLearningListPrivateShare on another user's list (33.896333ms)
+✔ signed out cannot invoke toggleLearningListVisibility on another user's list (30.80425ms)
+✔ signed out cannot invoke reorderListItems on another user's list (31.561083ms)
+✔ recipient cannot invoke updateList on another user's list (23.502667ms)
+✔ recipient cannot invoke removeTuneFromList on another user's list (20.898208ms)
+✔ recipient cannot invoke deleteList on another user's list (23.454417ms)
+✔ recipient cannot invoke revokeLearningListPrivateShare on another user's list (26.260375ms)
+✔ recipient cannot invoke toggleLearningListVisibility on another user's list (16.685708ms)
+✔ recipient cannot invoke reorderListItems on another user's list (17.118125ms)
+✔ viewer cannot invoke updateList on another user's list (23.189792ms)
+✔ viewer cannot invoke removeTuneFromList on another user's list (18.731375ms)
+✔ viewer cannot invoke deleteList on another user's list (15.671667ms)
+✔ viewer cannot invoke revokeLearningListPrivateShare on another user's list (15.925833ms)
+✔ viewer cannot invoke toggleLearningListVisibility on another user's list (16.882167ms)
+✔ viewer cannot invoke reorderListItems on another user's list (16.372041ms)
+(node:15068) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/list-view-state.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ list collection pagination is bounded and clamps stale pages (2.234042ms)
+✔ list page links preserve selected URL state (0.245917ms)
+(node:15069) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/login-redirect.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ protected route login preserves session/filter context and rejects unsafe return paths (7.552209ms)
+(node:15070) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/measured-fetch.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ query measurements preserve request/response and omit sensitive request fields (19.227708ms)
+✔ failed network measurements preserve the rejection and auth classification (1.988041ms)
+(node:15071) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/navigation-shell.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ phone and desktop consumer navigation expose six first-class destinations (1.233125ms)
+✔ nested routes select their primary destination (0.639958ms)
+✔ signed-out and internal pages do not inherit consumer navigation (0.582209ms)
+✔ nested pages receive concise phone top-bar titles (0.143125ms)
+✔ fixed shell layers reserve safe space and keep 44px navigation targets (3.30325ms)
+✔ secondary navigation overlays and the Home view is persisted (1.95425ms)
+(node:15072) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/practice-session.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ list practice is a first-class session lane (0.487959ms)
+✔ focus practice is a first-class session lane (0.072291ms)
+✔ Diary period navigation and month outcome labels remain visible (12.458666ms)
+✔ practice lane URLs are explicit and invalid lanes recover to entry (0.27425ms)
+✔ Focused Practice preserves existing Stage rules (0.143334ms)
+✔ rating state prevents double submission and permits only pre-save Undo (0.091ms)
+✔ rating removes exactly one tune and advances without skipping (0.4825ms)
+✔ resume position safely clamps when the server-side queue changes (0.066167ms)
+✔ session summaries count outcomes and make one useful suggestion (0.127084ms)
+✔ Focused Practice uses reduced chrome, persistent ratings, Undo and summary (3.199625ms)
+(node:15073) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/profile-account.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ profile URLs retain tabs, groups and search across pagination (1.509792ms)
+✔ profile publishing requires an owner or an accepted friend with consent; preview fails closed (0.100958ms)
+✔ auth return paths reject external URLs, encoded controls, nesting and redirect loops (0.354333ms)
+✔ settings update only their own group and validate before writing (20.864792ms)
+(node:15076) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/profile-loader.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ signed-out profiles retain the requested tab through login without reading private data (4.5415ms)
+✔ hidden profile fields and inventory never enter visitor or public-preview queries (1.134333ms)
+✔ repertoire queries enforce owner/friend consent before selecting a bounded page (0.697083ms)
+✔ profile lists and badges require explicit public visibility and bounded pagination (0.406958ms)
+✔ Overview shares only a small permitted overlap sample and previews omit it (0.786541ms)
+(node:15077) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/reference-media.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ loop resume returns to start after shortening the end or seeking outside (5.308167ms)
+✔ new sections start at zero without changing playback transport (0.110708ms)
+✔ a new section can set its end while retaining the default zero start (0.092875ms)
+✔ setting or revising the start does not seek or pause playback (0.097042ms)
+✔ saved selection and boundary edits preserve the playhead (0.160208ms)
+✔ only a genuine forward crossing of the active end loops playback (0.061167ms)
+✔ next and previous shift an equal loop window without moving playback (0.453084ms)
+✔ playback continues into an advanced window and loops only at its new end (0.057333ms)
+✔ all tune recordings retain stable ordering and identity (0.221042ms)
+✔ URL selection wins, then the established effective recording, then first (0.161709ms)
+✔ external and missing reference sources retain honest recovery states (0.067209ms)
+✔ recording switches use replaceable media URLs with tune identity (0.11425ms)
+✔ full reference returns only to safe review or tune contexts (0.254375ms)
+✔ existing saved sections remain isolated by recording provider identity (0.0905ms)
+✔ the route replaces modal wiring and keeps one persistent player and metronome (8.466834ms)
+✔ Reference Mode has route-level loading and recovery states (1.521958ms)
+✔ recording and section mutations retain owner-scoped permissions (1.552167ms)
+(node:15078) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/review-bounds.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ review page and session queries bound payloads while preserving full counts and stable order (1.6005ms)
+✔ scoped practice filters membership before limiting, including lists larger than one API page (0.634834ms)
+✔ unavailable contexts do not load a general queue and query errors remain retryable (0.370958ms)
+(node:15083) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/semantic-contrast.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ semantic foregrounds and opaque hover states meet normal-text contrast (0.774083ms)
+✔ control boundaries and keyboard focus meet non-text contrast on all app surfaces (0.1055ms)
+(node:15094) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/session-dock.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ one typed API supports every planned Session Dock context (2.698541ms)
+✔ the latest mounted context wins and the previous context is restored (0.559583ms)
+✔ the explicit handle distinguishes a tap from an upward full-screen drag (0.241041ms)
+✔ expansion, focus restoration and single-layer suppression are wired (4.737208ms)
+✔ Session Dock and Navigation Dock reserve one combined safe area (1.405709ms)
+✔ route integrations preserve only safe contextual state (3.571666ms)
+(node:15095) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/setlist-performance.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ readiness counts only the signed-in musician, including new tunes (1.025584ms)
+✔ active setlist payload preserves ordered essentials and excludes private membership state (0.30175ms)
+✔ performance resumes by item identity after reordered or removed tunes (0.106583ms)
+✔ only explicit Manage and Performance mode values leave Read mode (0.064792ms)
+(node:15096) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/social-surfaces.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Inbox URL state and history pagination are bounded (3.518708ms)
+✔ Home and Friends share direct reactions and progressively loaded discussions (3.896792ms)
+✔ Friends preserves request actions and privacy-safe recovery copy (3.948ms)
+✔ Inbox separates New, History and real Messages without oversized trees (2.518416ms)
+(node:15097) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/trends-insights.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ trend periods are URL-safe and default to eight weeks (6.298ms)
+✔ weekly insights retain sparse and empty weeks (0.230209ms)
+✔ Rough-to-Solid movement requires a later Solid outcome (10.623708ms)
+✔ stage distribution omits zero-value stages (0.294041ms)
+✔ Trends exposes accessible data, actions and bounded server reads (9.776666ms)
+(node:15098) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/tune-collections.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ collection URL state is validated, bounded, and shareable (2.324583ms)
+✔ cursor pages remain deterministic when primary sort values are duplicated (0.3075ms)
+✔ previous, final, and empty cursor pages expose correct controls (0.134166ms)
+✔ cursor sort and page-size guards reject stale or oversized requests (0.118167ms)
+✔ PostgREST cursor values escape reserved quote and slash characters (0.06375ms)
+✔ every collection consumer has an explicit permission adapter (0.386708ms)
+✔ shared query helper composes search and facet filters without offsets (0.13425ms)
+✔ catalogue and repertoire routes render bounded rows without per-row forms (3.5965ms)
+(node:15099) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/tune-detail.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tune detail URLs have three stable views and a Practice default (0.498416ms)
+✔ the tune identity, three views and Session Dock keep one action hierarchy (6.59525ms)
+✔ Manage and route recovery expose permission-safe tune actions (8.05825ms)
+✔ view-scoped loading keeps shared identity data stable (1.72025ms)
+ℹ tests 196
+ℹ suites 0
+ℹ pass 196
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2488.6235

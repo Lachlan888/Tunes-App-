@@ -1,5 +1,7 @@
 "use client"
 
+import { usePrivateSessionStorage } from "@/components/resilience/PrivateSessionProvider"
+
 import {
   createContext,
   useCallback,
@@ -144,6 +146,7 @@ export function useSessionDockPosition(
   itemCount: number,
   preferredPosition?: number
 ) {
+  const sessionStorage = usePrivateSessionStorage()
   const [position, setPositionState] = useState(() =>
     preferredPosition === undefined
       ? 0
@@ -152,17 +155,17 @@ export function useSessionDockPosition(
 
   useEffect(() => {
     if (preferredPosition !== undefined) {
-      window.sessionStorage.setItem(storageKey, String(preferredPosition))
+      sessionStorage.setItem(storageKey, String(preferredPosition))
       return
     }
 
-    const stored = Number(window.sessionStorage.getItem(storageKey))
+    const stored = Number(sessionStorage.getItem(storageKey))
     if (!Number.isInteger(stored) || stored < 0) return
 
     // Hydrate transient task position after mount to keep server markup stable.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPositionState(Math.min(stored, Math.max(0, itemCount - 1)))
-  }, [itemCount, preferredPosition, storageKey])
+  }, [itemCount, preferredPosition, storageKey, sessionStorage])
 
   const setPosition = useCallback(
     (nextPosition: number | ((current: number) => number)) => {
@@ -175,11 +178,11 @@ export function useSessionDockPosition(
           Math.max(0, requested),
           Math.max(0, itemCount - 1)
         )
-        window.sessionStorage.setItem(storageKey, String(next))
+        sessionStorage.setItem(storageKey, String(next))
         return next
       })
     },
-    [itemCount, storageKey]
+    [itemCount, storageKey, sessionStorage]
   )
 
   useEffect(() => {

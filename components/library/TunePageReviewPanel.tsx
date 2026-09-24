@@ -142,10 +142,6 @@ function ReviewNoteModal({
       >
         <div className="flex min-w-0 items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Practice diary
-            </p>
-
             <h3
               id="tune-page-review-note-modal-title"
               className="mt-2 break-words font-serif text-2xl font-bold text-foreground"

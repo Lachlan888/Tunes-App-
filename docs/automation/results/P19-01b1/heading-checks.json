@@ -1,0 +1,38 @@
+[
+  {
+    "width": 390,
+    "headings": [
+      "Lists",
+      "Lists",
+      "My Lists"
+    ],
+    "myLists": 1,
+    "yourLists": 0,
+    "countText": "Showing 16 of 16 lists",
+    "createVisible": true
+  },
+  {
+    "width": 768,
+    "headings": [
+      "Lists",
+      "My Lists",
+      "Brittany Haas - Brittany Haas"
+    ],
+    "myLists": 1,
+    "yourLists": 0,
+    "countText": "Showing 16 of 16 lists",
+    "createVisible": true
+  },
+  {
+    "width": 1440,
+    "headings": [
+      "Lists",
+      "My Lists",
+      "Brittany Haas - Brittany Haas"
+    ],
+    "myLists": 1,
+    "yourLists": 0,
+    "countText": "Showing 16 of 16 lists",
+    "createVisible": true
+  }
+]

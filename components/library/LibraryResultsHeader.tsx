@@ -82,13 +82,13 @@ function getPageItems(currentPage: number, totalPages: number): PageItem[] {
 }
 
 const paginationButtonClass =
-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
 
 const disabledPaginationButtonClass =
-  "rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground opacity-60"
+  "inline-flex min-h-11 rounded-control border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground opacity-60 items-center justify-center"
 
 const activeButtonClass =
-  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
 
 export default function LibraryResultsHeader({
   displayedCount,
@@ -144,10 +144,6 @@ export default function LibraryResultsHeader({
         <div>
           {!isBottom ? (
             <>
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Catalogue
-              </p>
-
               <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
                 All tunes
               </h2>

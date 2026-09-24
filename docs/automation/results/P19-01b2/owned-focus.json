@@ -1,0 +1,92 @@
+[
+  {
+    "active": "Tunes Jim Knows",
+    "focusVisible": true,
+    "outline": "rgb(91, 67, 37) solid 2px",
+    "width": 390
+  },
+  {
+    "active": "Contemporary Australian Tunes",
+    "focusVisible": true,
+    "outline": "rgb(91, 67, 37) solid 2px",
+    "width": 390
+  },
+  {
+    "active": "Bryan Sutton's 'Bluegrass Guitar' Album",
+    "focusVisible": true,
+    "outline": "rgb(91, 67, 37) solid 2px",
+    "width": 390
+  },
+  {
+    "active": "Read the list",
+    "focusVisible": true,
+    "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(244, 239, 228, 0.83) 0px 0px 0px 1.66107px, rgba(91, 67, 37, 0.83) 0px 0px 0px 3.32213px, rgba(37, 35, 31, 0.07) 0px 1px 2px 0px",
+    "width": 390
+  },
+  {
+    "active": "Manage",
+    "focusVisible": true,
+    "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px",
+    "width": 390
+  },
+  {
+    "active": "Tunes Jim Knows",
+    "focusVisible": true,
+    "outline": "rgb(91, 67, 37) solid 2px",
+    "width": 768
+  },
+  {
+    "active": "Contemporary Australian Tunes",
+    "focusVisible": true,
+    "outline": "rgb(91, 67, 37) solid 2px",
+    "width": 768
+  },
+  {
+    "active": "Bryan Sutton's 'Bluegrass Guitar' Album",
+    "focusVisible": true,
+    "outline": "rgb(91, 67, 37) solid 2px",
+    "width": 768
+  },
+  {
+    "active": "Read the list",
+    "focusVisible": true,
+    "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(244, 239, 228, 0.306) 0px 0px 0px 0.614412px, rgba(91, 67, 37, 0.306) 0px 0px 0px 1.22882px, rgba(37, 35, 31, 0.07) 0px 1px 2px 0px",
+    "width": 768
+  },
+  {
+    "active": "Manage",
+    "focusVisible": true,
+    "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(91, 67, 37, 0.03) 0px 0px 0px 0.0644217px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px",
+    "width": 768
+  },
+  {
+    "active": "Tunes Jim Knows",
+    "focusVisible": true,
+    "outline": "rgb(91, 67, 37) solid 2px",
+    "width": 1440
+  },
+  {
+    "active": "Contemporary Australian Tunes",
+    "focusVisible": true,
+    "outline": "rgb(91, 67, 37) solid 2px",
+    "width": 1440
+  },
+  {
+    "active": "Bryan Sutton's 'Bluegrass Guitar' Album",
+    "focusVisible": true,
+    "outline": "rgb(91, 67, 37) solid 2px",
+    "width": 1440
+  },
+  {
+    "active": "Read the list",
+    "focusVisible": true,
+    "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(244, 239, 228, 0.733) 0px 0px 0px 1.46534px, rgba(91, 67, 37, 0.733) 0px 0px 0px 2.93067px, rgba(37, 35, 31, 0.07) 0px 1px 2px 0px",
+    "width": 1440
+  },
+  {
+    "active": "Manage",
+    "focusVisible": true,
+    "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px",
+    "width": 1440
+  }
+]

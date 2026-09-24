@@ -33,6 +33,7 @@ function getSetlistMessage(status: string | undefined): Message | null {
       text: "Setlist created.",
       tone: "success",
     },
+    conflict: { key: "changed", text: "Someone changed this setlist first. Their changes are preserved. Reopen the editor and try again.", tone: "warning" },
     updated: {
       key: "setlist-updated",
       text: "Setlist updated.",
@@ -161,6 +162,7 @@ function getItemMessage(status: string | undefined): Message | null {
       text: "Tune added to setlist.",
       tone: "success",
     },
+    conflict: { key: "changed", text: "Someone changed this setlist first. Their changes are preserved. Reopen the editor and try again.", tone: "warning" },
     updated: {
       key: "item-updated",
       text: "Tune details updated.",
@@ -176,6 +178,7 @@ function getItemMessage(status: string | undefined): Message | null {
       text: "Setlist order updated.",
       tone: "success",
     },
+    limit: { key: "setlist-limit", text: "This setlist has reached its 200-tune limit.", tone: "warning" },
     duplicate: {
       key: "item-duplicate",
       text: "That tune is already in this setlist.",
@@ -236,6 +239,7 @@ export default function SetlistStatusMessages({
       {messages.map((message) => (
         <div
           key={message.key}
+          role="status"
           className={`rounded-2xl border p-4 text-sm font-medium shadow-sm ${toneClassName(
             message.tone
           )}`}

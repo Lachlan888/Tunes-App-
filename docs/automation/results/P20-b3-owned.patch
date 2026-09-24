@@ -1,0 +1,282 @@
+--- a/components/library/LibraryResultsHeader.tsx
++++ b/components/library/LibraryResultsHeader.tsx
+@@ -82,13 +82,13 @@
+ }
+ 
+ const paginationButtonClass =
+-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++  "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+ 
+ const disabledPaginationButtonClass =
+-  "rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground opacity-60"
++  "inline-flex min-h-11 rounded-control border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground opacity-60 items-center justify-center"
+ 
+ const activeButtonClass =
+-  "rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+ 
+ export default function LibraryResultsHeader({
+   displayedCount,
+--- a/components/library/RequestTuneEditForm.tsx
++++ b/components/library/RequestTuneEditForm.tsx
+@@ -101,7 +101,7 @@
+       <SubmitButton
+         label={submitLabel}
+         pendingLabel="Submitting..."
+-        className="w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++        className="inline-flex min-h-11 w-full rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+       />
+     </form>
+   )
+--- a/components/practice/PracticeReviewCard.tsx
++++ b/components/practice/PracticeReviewCard.tsx
+@@ -45,7 +45,7 @@
+           confirmMessage={`Stop Practice for "${title}"? Review scheduling will stop. The tune will remain in any lists, the shared tune will not be deleted, and stopping Practice does not automatically mark it Known.`}
+           label="Stop Practice"
+           pendingLabel="Stopping..."
+-          className="inline-flex min-h-9 items-center justify-center rounded-full border border-destructive/50 bg-background/80 px-3 py-1.5 text-xs font-semibold text-destructive shadow-sm transition hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++          className="inline-flex min-h-11 items-center justify-center rounded-control border border-destructive/50 bg-background/80 px-3 py-1.5 text-xs font-semibold text-destructive shadow-sm transition hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+         />
+       </div>
+ 
+@@ -90,7 +90,7 @@
+             pieceId={userPiece.piece.id}
+             redirectTo={redirectTo}
+             label="Open Reference Media"
+-            className="flex w-full items-center justify-center rounded-full border border-border bg-muted px-4 py-2 text-center text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++            className="min-h-11 flex w-full items-center justify-center rounded-control border border-border bg-muted px-4 py-2 text-center text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+           />
+           <div className="mt-2 text-center">
+             <PendingLinkButton
+--- a/components/practice-diary/PracticeDayCalendarPicker.tsx
++++ b/components/practice-diary/PracticeDayCalendarPicker.tsx
+@@ -229,7 +229,7 @@
+             <button
+               type="button"
+               onClick={() => setVisibleMonth(previousVisibleMonth)}
+-              className="rounded-full border border-border bg-background/70 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++              className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+             >
+               Previous
+             </button>
+@@ -241,7 +241,7 @@
+             <button
+               type="button"
+               onClick={() => setVisibleMonth(nextVisibleMonth)}
+-              className="rounded-full border border-border bg-background/70 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++              className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+             >
+               Next
+             </button>
+@@ -297,7 +297,7 @@
+                   month: parsedToday.month,
+                 })
+               }}
+-              className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++              className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+             >
+               Show this month
+             </button>
+@@ -305,7 +305,7 @@
+             <Link
+               href="/review/diary"
+               onClick={() => setIsOpen(false)}
+-              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++              className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+             >
+               Today
+             </Link>
+--- a/components/practice-diary/PracticePeriodHeader.tsx
++++ b/components/practice-diary/PracticePeriodHeader.tsx
+@@ -28,11 +28,11 @@
+     <section aria-label="Diary period controls" className="border-y border-border py-4 md:py-5">
+       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+         <nav aria-label="Choose period" className="grid grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 sm:flex">
+-          <Link href={href(activeView, previousDate)} aria-label={`Previous ${activeView}`} className="flex min-h-11 items-center justify-center rounded-full border border-border bg-background px-3 font-semibold text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">←</Link>
+-          <Link href={href(activeView, currentDate)} className="flex min-h-11 min-w-0 items-center justify-center rounded-full border border-border bg-background px-4 text-center text-sm font-semibold text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
++          <Link href={href(activeView, previousDate)} aria-label={`Previous ${activeView}`} className="flex min-h-11 min-w-11 items-center justify-center rounded-full border border-border bg-background px-3 font-semibold text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">←</Link>
++          <Link href={href(activeView, currentDate)} className="flex min-h-11 min-w-0 items-center justify-center rounded-control border border-border bg-background px-4 text-center text-sm font-semibold text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
+             <span className="truncate">{label}</span>
+           </Link>
+-          <Link href={href(activeView, nextDate)} aria-label={`Next ${activeView}`} className="flex min-h-11 items-center justify-center rounded-full border border-border bg-background px-3 font-semibold text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">→</Link>
++          <Link href={href(activeView, nextDate)} aria-label={`Next ${activeView}`} className="flex min-h-11 min-w-11 items-center justify-center rounded-full border border-border bg-background px-3 font-semibold text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">→</Link>
+         </nav>
+ 
+         <nav aria-label="Diary view" className="grid grid-cols-3 rounded-full border border-border bg-muted/60 p-1">
+--- a/components/practice-diary/PracticeNoteForm.tsx
++++ b/components/practice-diary/PracticeNoteForm.tsx
+@@ -101,7 +101,7 @@
+         <SubmitButton
+           label="Save note"
+           pendingLabel="Saving..."
+-          className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
++          className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+         />
+ 
+         <span aria-live="polite" className="text-xs text-muted-foreground">{isDirty ? "Unsaved note" : "Ready"}</span>
+--- a/components/practice-diary/PracticeDiaryIndex.tsx
++++ b/components/practice-diary/PracticeDiaryIndex.tsx
+@@ -267,7 +267,7 @@
+       <div>
+         <Link
+           href={`/review/foci/${focus.id}`}
+-          className="inline-flex rounded-full border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++          className="min-h-11 inline-flex rounded-control border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+         >
+           Open focus
+         </Link>
+@@ -325,7 +325,7 @@
+       <div className="flex flex-wrap gap-2">
+         <Link
+           href={getNoteDayHref(note)}
+-          className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++          className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+         >
+           Open day
+         </Link>
+@@ -333,7 +333,7 @@
+         {note.piece ? (
+           <Link
+             href={`/library/${note.piece.id}`}
+-            className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++            className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+           >
+             Open tune
+           </Link>
+@@ -342,7 +342,7 @@
+         {note.focus ? (
+           <Link
+             href={`/review/foci/${note.focus.id}`}
+-            className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++            className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+           >
+             Open focus
+           </Link>
+--- a/components/practice-diary/PracticeDayNavigator.tsx
++++ b/components/practice-diary/PracticeDayNavigator.tsx
+@@ -9,10 +9,10 @@
+ }
+ 
+ const secondaryLinkClassName =
+-  "inline-flex min-h-10 items-center justify-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++  "inline-flex min-h-11 items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+ 
+ const primaryLinkClassName =
+-  "inline-flex min-h-10 items-center justify-center rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++  "inline-flex min-h-11 items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+ 
+ export default function PracticeDayNavigator({
+   selectedDate,
+--- a/components/practice-diary/DailyReflectionForm.tsx
++++ b/components/practice-diary/DailyReflectionForm.tsx
+@@ -49,7 +49,7 @@
+       <SubmitButton
+         label="Save reflection"
+         pendingLabel="Saving..."
+-        className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
++        className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+       />
+     </form>
+   )
+--- a/components/practice-diary/PracticeCategoryManager.tsx
++++ b/components/practice-diary/PracticeCategoryManager.tsx
+@@ -35,7 +35,7 @@
+               <SubmitButton
+                 label="Create starter categories"
+                 pendingLabel="Creating..."
+-                className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
++                className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+               />
+             </form>
+           </div>
+@@ -78,7 +78,7 @@
+                     <SubmitButton
+                       label="Archive"
+                       pendingLabel="Archiving..."
+-                      className="rounded-full border border-border bg-background/70 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-70"
++                      className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+                     />
+                   </form>
+                 </div>
+@@ -123,7 +123,7 @@
+           <SubmitButton
+             label="Add category"
+             pendingLabel="Adding..."
+-            className="rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
++            className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+           />
+         </form>
+       </section>
+--- a/components/practice-diary/PracticeFocusSummaryList.tsx
++++ b/components/practice-diary/PracticeFocusSummaryList.tsx
+@@ -57,7 +57,7 @@
+ 
+           <span
+             aria-hidden="true"
+-            className="shrink-0 rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground transition group-hover:border-primary group-hover:bg-card group-hover:text-primary"
++            className="inline-flex min-h-11 shrink-0 rounded-control border border-border bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground transition group-hover:border-primary group-hover:bg-card group-hover:text-primary items-center justify-center"
+           >
+             Open
+           </span>
+--- a/components/practice-foci/PracticeFocusCreateForm.tsx
++++ b/components/practice-foci/PracticeFocusCreateForm.tsx
+@@ -5,7 +5,7 @@
+ export default function PracticeFocusCreateForm() {
+   return (
+     <details className="rounded-2xl border border-border bg-card p-4 shadow-sm md:rounded-3xl md:p-6 xl:open:block">
+-      <summary className="cursor-pointer list-none">
++      <summary className="min-h-11 cursor-pointer list-none rounded-control focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
+         <div className="flex items-start justify-between gap-3">
+           <div>
+             <h2 className="mt-2 font-serif text-2xl font-bold leading-tight text-foreground">
+@@ -18,7 +18,7 @@
+             </p>
+           </div>
+ 
+-          <span className="rounded-full border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm md:hidden">
++          <span className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm md:hidden items-center justify-center">
+             Show
+           </span>
+         </div>
+--- a/components/practice/AddCategoryInReviewDisclosure.tsx
++++ b/components/practice/AddCategoryInReviewDisclosure.tsx
+@@ -18,7 +18,7 @@
+     <section className="rounded-2xl border border-border bg-background/70 p-4">
+       <button
+         type="button"
+-        className="flex w-full items-center justify-between gap-3 text-left"
++        className="flex min-h-11 w-full items-center justify-between gap-3 rounded-control text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+         aria-expanded={isOpen}
+         onClick={() => setIsOpen((current) => !current)}
+       >
+@@ -32,7 +32,7 @@
+           </span>
+         </span>
+ 
+-        <span className="shrink-0 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-muted-foreground">
++        <span className="inline-flex min-h-11 shrink-0 rounded-control border border-border bg-card px-3 py-1 text-xs font-semibold text-muted-foreground items-center justify-center">
+           {isOpen ? "Hide" : "Add"}
+         </span>
+       </button>
+--- a/components/practice-foci/PracticeFocusTuneManager.tsx
++++ b/components/practice-foci/PracticeFocusTuneManager.tsx
+@@ -379,7 +379,7 @@
+     <>
+       <button
+         type="button"
+-        className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-background/70 text-lg font-semibold leading-none text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-destructive hover:bg-destructive/10 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++        className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-background/70 text-lg font-semibold leading-none text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-destructive hover:bg-destructive/10 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+         onClick={() => setIsConfirming(true)}
+         aria-label={`Remove ${tuneTitle} from this focus`}
+         title={`Remove ${tuneTitle} from this focus`}
+--- a/components/practice-diary/PracticeCategorySummaryList.tsx
++++ b/components/practice-diary/PracticeCategorySummaryList.tsx
+@@ -81,7 +81,7 @@
+ 
+         <Link
+           href={`/review/diary/index/categories/${summary.categoryId}`}
+-          className="shrink-0 rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground transition hover:border-primary hover:bg-card hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
++          className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground transition hover:border-primary hover:bg-card hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+           aria-label={`Open ${summary.categoryName} category`}
+         >
+           {summary.noteCount}

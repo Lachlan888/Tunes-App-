@@ -1,35 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { publicListHref } from "@/lib/list-return"
 import PendingLinkButton from "@/components/PendingLinkButton"
-import { cardStyles } from "@/components/ui/cardStyles"
+import EditorialListCard from "@/components/lists/EditorialListCard"
 import type { SharedList } from "@/lib/loaders/public-lists"
 
 type SharedListCardProps = {
   list: SharedList
-}
-
-function clickedInsideInteractiveElement(target: EventTarget | null) {
-  if (!(target instanceof Element)) return false
-
-  return Boolean(
-    target.closest(
-      [
-        "a",
-        "button",
-        "input",
-        "select",
-        "textarea",
-        "label",
-        "summary",
-        "details",
-        "form",
-        "[role='button']",
-        "[data-card-action]",
-      ].join(", ")
-    )
-  )
+  redirectTo?: string
 }
 
 function styleLabel(list: SharedList) {
@@ -38,47 +17,16 @@ function styleLabel(list: SharedList) {
   return list.dominantStyle
 }
 
-export default function SharedListCard({ list }: SharedListCardProps) {
-  const router = useRouter()
-  const listHref = `/public-lists/${list.id}`
+export default function SharedListCard({ list, redirectTo = "/public-lists" }: SharedListCardProps) {
+  const listHref = publicListHref(list.id, redirectTo)
   const ownerHref = list.ownerUsername
     ? `/users/${encodeURIComponent(list.ownerUsername)}`
     : null
   const displayedStyle = styleLabel(list)
 
-  function openListPage(event: React.MouseEvent<HTMLElement>) {
-    if (clickedInsideInteractiveElement(event.target)) return
-    router.push(listHref)
-  }
-
   return (
-    <article
-      className={`${cardStyles.clickableCard} overflow-hidden p-0`}
-      onClick={openListPage}
-      aria-label={`Open public list ${list.name}`}
-    >
-      <div className="flex h-full flex-col">
-        <div className={`h-24 border-b border-border px-5 py-4 ${list.id % 3 === 0 ? "bg-success/15" : list.id % 3 === 1 ? "bg-primary/15" : "bg-warning/15"}`} aria-hidden="true">
-          <span className="font-serif text-4xl font-bold text-foreground/15">{list.name.slice(0, 1).toUpperCase()}</span>
-        </div>
-        <div className="min-w-0 flex-1 p-5">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <h2 className="font-serif text-2xl font-bold leading-tight text-foreground">
-              <PendingLinkButton
-                href={listHref}
-                label={list.name}
-                pendingLabel="Opening..."
-                className="decoration-primary decoration-2 underline-offset-4 hover:underline"
-              />
-            </h2>
-
-            {list.isOwnedByCurrentUser && (
-              <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-muted-foreground">
-                Your public list
-              </span>
-            )}
-          </div>
-
+    <EditorialListCard id={list.id} title={list.name} href={listHref}>
+          <p className="text-sm font-semibold">{list.isOwnedByCurrentUser ? "Your public list" : "Public list"}</p>
           <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium text-muted-foreground">
             <span>
               By{" "}
@@ -114,11 +62,9 @@ export default function SharedListCard({ list }: SharedListCardProps) {
               href={listHref}
               label="Read the list"
               pendingLabel="Opening..."
-              className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             />
           </div>
-        </div>
-      </div>
-    </article>
+    </EditorialListCard>
   )
 }

@@ -78,9 +78,6 @@ export default function BulkImportKnownTunesModal() {
             >
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Import
-                  </p>
                   <h2 className="mt-2 font-serif text-3xl font-bold text-foreground">
                     Bulk Import Known Tunes
                   </h2>

@@ -1,9 +1,11 @@
 import Link from "next/link"
+import { publicListHref } from "@/lib/list-return"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import type { SharedList } from "@/lib/loaders/public-lists"
 
 type SharedListsMobileListProps = {
   lists: SharedList[]
+  redirectTo?: string
 }
 
 function tuneCountLabel(count: number) {
@@ -12,6 +14,7 @@ function tuneCountLabel(count: number) {
 
 export default function SharedListsMobileList({
   lists,
+  redirectTo = "/public-lists",
 }: SharedListsMobileListProps) {
   return (
     <section className="md:hidden">
@@ -24,7 +27,7 @@ export default function SharedListsMobileList({
           const ownerHref = list.ownerUsername
             ? `/users/${encodeURIComponent(list.ownerUsername)}`
             : null
-          const listHref = `/public-lists/${list.id}`
+          const listHref = publicListHref(list.id, redirectTo)
 
           return (
             <article
@@ -76,7 +79,7 @@ export default function SharedListsMobileList({
                 href={listHref}
                 label="Open"
                 pendingLabel="Opening..."
-                className="min-h-10 shrink-0 rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="min-h-11 shrink-0 inline-flex items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               />
             </article>
           )

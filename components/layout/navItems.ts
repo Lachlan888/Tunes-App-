@@ -33,7 +33,7 @@ export const listNavItems: NavItem[] = [
 ]
 
 export const socialNavItems: NavItem[] = [
-  { href: "/friends", label: "Friends", icon: "social" },
+  { href: "/friends", label: "Social", icon: "social" },
   { href: "/setlists", label: "Setlists", icon: "setlist" },
   { href: "/badges", label: "Badges", icon: "badge" },
   { href: "/trends", label: "Trends", icon: "trend" },
@@ -77,7 +77,7 @@ export function getShellKind(pathname: string, isSignedIn: boolean): ShellKind {
   if (!isSignedIn || pathname === "/login" || pathname === "/update-password") {
     return "signed-out"
   }
-  if (matchesPrefix(pathname, "/dev") || matchesPrefix(pathname, "/moderator")) {
+  if (matchesPrefix(pathname, "/dev") || matchesPrefix(pathname, "/moderator") || pathname === "/badges/new" || /^\/badges\/[^/]+\/edit$/.test(pathname)) {
     return "internal"
   }
 
@@ -94,8 +94,8 @@ export function getPageTitle(pathname: string) {
   if (matchesPrefix(pathname, "/library")) return pathname === "/library" ? "Tunes" : "Tune"
   if (matchesPrefix(pathname, "/repertoire")) return "Repertoire"
   if (matchesPrefix(pathname, "/learning-lists")) return pathname === "/learning-lists" ? "Lists" : "List"
-  if (matchesPrefix(pathname, "/public-lists")) return pathname === "/public-lists" ? "Public lists" : "List"
-  if (matchesPrefix(pathname, "/friends")) return "Friends"
+  if (matchesPrefix(pathname, "/public-lists")) return pathname === "/public-lists" ? "Lists" : "List"
+  if (matchesPrefix(pathname, "/friends")) return "Social"
   if (matchesPrefix(pathname, "/users")) return "Profile"
   if (matchesPrefix(pathname, "/compare")) return "Compare"
   if (matchesPrefix(pathname, "/setlists")) return "Setlists"

@@ -46,9 +46,6 @@ export default function SuggestedSessionSet({
 
   return (
     <section className="border-y border-hairline py-5" aria-labelledby="session-set-title">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">
-        Suggested session
-      </p>
       <h2 id="session-set-title" className="mt-1 text-xl font-semibold text-text-primary">
         A short set to play now
       </h2>
@@ -107,7 +104,7 @@ export default function SuggestedSessionSet({
           label="Save private setlist"
           pendingLabel="Saving setlist…"
           disabled={selectedIds.length === 0}
-          className="inline-flex min-h-11 items-center justify-center rounded-full bg-text-primary px-5 text-sm font-semibold text-surface-paper"
+          className="inline-flex min-h-11 items-center justify-center rounded-control bg-text-primary px-5 text-sm font-semibold text-surface-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
         />
       </form>
     </section>

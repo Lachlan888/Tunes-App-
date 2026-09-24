@@ -1,6 +1,9 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { usePrivateSessionStorage } from "@/components/resilience/PrivateSessionProvider"
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import CataloguePreview from "@/components/library/CataloguePreview"
 import BulkAddToListModal from "@/components/library/BulkAddToListModal"
 import LibraryList from "@/components/library/LibraryList"
 import PieceSearchFilters from "@/components/library/PieceSearchFilters"
@@ -86,39 +89,45 @@ export default function CatalogueWorkspace({
   scrollPieceId,
   activeConstraints,
 }: CatalogueWorkspaceProps) {
+  const sessionStorage = usePrivateSessionStorage()
+  const restoredSelection = useRef(false)
+  const [previewPieceId, setPreviewPieceId] = useState<number | null>(null)
+  const previewTrigger = useRef<HTMLButtonElement | null>(null)
+  const previewPiece = pieces?.find(piece => piece.id === previewPieceId) ?? null
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedPieceIds, setSelectedPieceIds] = useState<number[]>([])
   const [isBulkListOpen, setIsBulkListOpen] = useState(false)
 
   useEffect(() => {
     const restored = parseStoredCatalogueSelection(
-      window.sessionStorage.getItem(CATALOGUE_SELECTION_STORAGE_KEY)
+      sessionStorage.getItem(CATALOGUE_SELECTION_STORAGE_KEY)
     )
-    if (restored.length === 0) return
+    if (restored.length === 0) { restoredSelection.current = true; return }
 
     // Restore private transient selection only after hydration.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedPieceIds(restored)
     setIsSelectionMode(true)
-  }, [])
+  }, [sessionStorage])
 
   useEffect(() => {
+    if (!restoredSelection.current) { restoredSelection.current = true; return }
     if (selectedPieceIds.length === 0) {
-      window.sessionStorage.removeItem(CATALOGUE_SELECTION_STORAGE_KEY)
+      sessionStorage.removeItem(CATALOGUE_SELECTION_STORAGE_KEY)
       return
     }
 
-    window.sessionStorage.setItem(
+    sessionStorage.setItem(
       CATALOGUE_SELECTION_STORAGE_KEY,
       JSON.stringify(selectedPieceIds)
     )
-  }, [selectedPieceIds])
+  }, [selectedPieceIds, sessionStorage])
 
   const clearSelection = useCallback(() => {
     setSelectedPieceIds([])
     setIsSelectionMode(false)
     setIsBulkListOpen(false)
-  }, [])
+  }, [setSelectedPieceIds, setIsBulkListOpen])
 
   const selectionDockModel = useMemo<SessionDockModel | null>(() => {
     if (!isSelectionMode) return null
@@ -161,7 +170,7 @@ export default function CatalogueWorkspace({
       },
       announcement: `${count} tune${count === 1 ? "" : "s"} selected`,
     }
-  }, [clearSelection, isSelectionMode, selectedPieceIds.length])
+  }, [clearSelection, isSelectionMode, selectedPieceIds.length, setIsBulkListOpen])
 
   useSessionDock("catalogue-selection", selectionDockModel)
 
@@ -199,6 +208,12 @@ export default function CatalogueWorkspace({
         }
       />
 
+      <div className={previewPiece ? "catalogue-workbench workbench-split" : ""}>
+      {previewPiece ? <CataloguePreview key={previewPiece.id} piece={previewPiece} mediaBundle={mediaBundles.get(previewPiece.id)} onClose={() => {
+        setPreviewPieceId(null)
+        if (previewTrigger.current?.isConnected) previewTrigger.current.focus()
+      }} /> : null}
+      <div className="catalogue-results min-w-0">
       <LibraryList
         pieces={pieces}
         totalCount={totalCount}
@@ -220,12 +235,20 @@ export default function CatalogueWorkspace({
         activeConstraints={activeConstraints}
         selectionMode={isSelectionMode}
         selectedPieceIds={selectedPieceIds}
+        previewPieceId={previewPiece?.id}
+        onPreview={(piece, trigger) => {
+          previewTrigger.current = trigger
+          setPreviewPieceId(piece.id)
+        }}
         onToggleSelection={(piece) => {
           setSelectedPieceIds((current) =>
             toggleCatalogueSelection(current, piece.id)
           )
         }}
       />
+
+      </div>
+      </div>
 
       {isBulkListOpen && selectedPieceIds.length > 0 ? (
         <BulkAddToListModal

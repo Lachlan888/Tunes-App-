@@ -1,0 +1,210 @@
+{
+  "capturedAt": "2026-09-13T03:47:09.110296+00:00",
+  "method": "CUA Chrome read-only hardening DOM probe; captures exclude loading headings",
+  "widths": [
+    [
+      390,
+      844
+    ],
+    [
+      430,
+      932
+    ],
+    [
+      768,
+      1024
+    ],
+    [
+      1024,
+      768
+    ],
+    [
+      1440,
+      1000
+    ]
+  ],
+  "checks": [
+    "one main",
+    "no horizontal overflow",
+    "unique ids",
+    "no nested controls",
+    "accessible main control names",
+    "phone buttons at least 44px",
+    "no route recovery error"
+  ],
+  "consoleWarningsOrErrors": [],
+  "routes": [
+    {
+      "path": "/review/diary?view=week",
+      "maxNodes": 88,
+      "maxControls": 21,
+      "failures": []
+    },
+    {
+      "path": "/review/diary?view=month",
+      "maxNodes": 118,
+      "maxControls": 50,
+      "failures": []
+    },
+    {
+      "path": "/trends",
+      "maxNodes": 283,
+      "maxControls": 24,
+      "failures": []
+    },
+    {
+      "path": "/friends",
+      "maxNodes": 367,
+      "maxControls": 108,
+      "failures": []
+    },
+    {
+      "path": "/inbox",
+      "maxNodes": 48,
+      "maxControls": 6,
+      "failures": []
+    },
+    {
+      "path": "/inbox?tab=messages",
+      "maxNodes": 66,
+      "maxControls": 4,
+      "failures": []
+    },
+    {
+      "path": "/badges",
+      "maxNodes": 334,
+      "maxControls": 48,
+      "failures": []
+    },
+    {
+      "path": "/trends/old-time",
+      "maxNodes": 290,
+      "maxControls": 54,
+      "failures": []
+    },
+    {
+      "path": "/public-lists/73",
+      "maxNodes": 255,
+      "maxControls": 42,
+      "failures": []
+    },
+    {
+      "path": "/users/lach",
+      "maxNodes": 135,
+      "maxControls": 22,
+      "failures": []
+    },
+    {
+      "path": "/badges/a-modal-support-group",
+      "maxNodes": 53,
+      "maxControls": 5,
+      "failures": []
+    },
+    {
+      "path": "/dashboard",
+      "maxNodes": 32,
+      "maxControls": 6,
+      "failures": []
+    },
+    {
+      "path": "/compare",
+      "maxNodes": 36,
+      "maxControls": 7,
+      "failures": []
+    },
+    {
+      "path": "/compare?user=erin_heycox&include_practice=1",
+      "maxNodes": 316,
+      "maxControls": 53,
+      "failures": []
+    },
+    {
+      "path": "/dashboard?section=profile",
+      "maxNodes": 37,
+      "maxControls": 10,
+      "failures": []
+    },
+    {
+      "path": "/dashboard?section=privacy",
+      "maxNodes": 55,
+      "maxControls": 11,
+      "failures": []
+    },
+    {
+      "path": "/dashboard?section=practice",
+      "maxNodes": 14,
+      "maxControls": 3,
+      "failures": []
+    },
+    {
+      "path": "/dashboard?section=notifications",
+      "maxNodes": 55,
+      "maxControls": 11,
+      "failures": []
+    },
+    {
+      "path": "/dashboard?section=security",
+      "maxNodes": 11,
+      "maxControls": 3,
+      "failures": []
+    },
+    {
+      "path": "/review/foci",
+      "maxNodes": 63,
+      "maxControls": 14,
+      "failures": []
+    },
+    {
+      "path": "/review/diary/index",
+      "maxNodes": 39,
+      "maxControls": 11,
+      "failures": []
+    },
+    {
+      "path": "/users/lach?tab=repertoire",
+      "maxNodes": 177,
+      "maxControls": 31,
+      "failures": []
+    },
+    {
+      "path": "/users/lach?tab=lists",
+      "maxNodes": 80,
+      "maxControls": 21,
+      "failures": []
+    },
+    {
+      "path": "/users/lach?tab=badges",
+      "maxNodes": 191,
+      "maxControls": 35,
+      "failures": []
+    },
+    {
+      "path": "/setlists/3?mode=manage",
+      "maxNodes": 84,
+      "maxControls": 14,
+      "failures": []
+    },
+    {
+      "path": "/learning-lists?view=unsorted",
+      "maxNodes": 166,
+      "maxControls": 48,
+      "failures": []
+    },
+    {
+      "path": "/learning-lists?view=saved",
+      "maxNodes": 271,
+      "maxControls": 56,
+      "failures": []
+    },
+    {
+      "path": "/learning-lists?view=saved-shared",
+      "maxNodes": 52,
+      "maxControls": 9,
+      "failures": []
+    }
+  ],
+  "notes": [
+    "saved is an invalid view that falls back to My Lists; saved-shared is the actual Saved/Shared view",
+    "DOM pass does not imply form submission or workflow acceptance"
+  ]
+}

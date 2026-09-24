@@ -1,4 +1,5 @@
 import Link from "next/link"
+import ConfirmedActionForm from "@/components/ui/ConfirmedActionForm"
 import SubmitButton from "@/components/SubmitButton"
 import { updateBetaFeedbackAdminFields } from "@/lib/actions/dev-feedback"
 import type { BetaFeedbackItem } from "@/lib/types"
@@ -84,7 +85,7 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
                   {safePagePath ? (
                     <Link
                       href={safePagePath}
-                      className="inline-flex w-fit rounded-full border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                      className="inline-flex items-center w-fit min-h-11 rounded-control border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                     >
                       Open page
                     </Link>
@@ -122,7 +123,7 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
               </div>
             ) : null}
 
-            <form action={updateBetaFeedbackAdminFields} className="mt-4 space-y-3">
+            <ConfirmedActionForm scope={`Update feedback #${item.id}. Fixed or Won’t fix archives it. Resolve always sends the reporter a message; Update only sends one when selected below.`} action={updateBetaFeedbackAdminFields} className="mt-4 space-y-3">
               <input type="hidden" name="feedback_id" value={item.id} />
               <input type="hidden" name="redirect_to" value="/dev" />
 
@@ -193,7 +194,7 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
                   value="update"
                   label="Update feedback"
                   pendingLabel="Updating…"
-                  className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className="min-h-11 rounded-control bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                 />
 
                 <SubmitButton
@@ -201,10 +202,10 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
                   value="resolve"
                   label="Resolve, notify, and archive"
                   pendingLabel="Resolving…"
-                  className="rounded-full border border-primary bg-background/70 px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className="min-h-11 rounded-control border border-primary bg-background/70 px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                 />
               </div>
-            </form>
+            </ConfirmedActionForm>
           </article>
         )
       })}

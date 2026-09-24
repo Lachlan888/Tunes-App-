@@ -50,7 +50,7 @@ export default function StreakSummarySection({
   return (
     <section
       className={joinClasses(
-        "md:rounded-2xl md:border md:border-success md:bg-success/15 md:p-5 md:shadow-sm",
+        "md:rounded-2xl md:border md:border-hairline md:bg-surface-paper md:p-5 md:shadow-sm",
         className
       )}
     >

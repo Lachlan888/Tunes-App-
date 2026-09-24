@@ -20,10 +20,10 @@ type PublicProfileActionsProps = {
 }
 
 const primaryButtonClass =
-  "max-w-full rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "inline-flex min-h-11 max-w-full rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
 
 const secondaryButtonClass =
-  "max-w-full rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "inline-flex min-h-11 max-w-full rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
 
 const textareaClassName =
   "max-h-[22rem] min-h-28 w-full resize-none overflow-hidden rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm leading-6 text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
@@ -56,7 +56,7 @@ export default function PublicProfileActions({
 
         <div className="mt-5">
           <PendingLinkButton
-            href="/dashboard"
+            href="/dashboard?section=profile"
             label="Edit profile"
             pendingLabel="Opening..."
             className={primaryButtonClass}
@@ -80,7 +80,7 @@ export default function PublicProfileActions({
 
         <div className="mt-5">
           <PendingLinkButton
-            href="/login"
+            href={`/login?next=${encodeURIComponent(redirectTo)}`}
             label="Log in"
             pendingLabel="Opening..."
             className={primaryButtonClass}

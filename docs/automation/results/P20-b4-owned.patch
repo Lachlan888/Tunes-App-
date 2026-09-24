@@ -1,0 +1,176 @@
+--- a/components/auth/LoginForm.tsx
++++ b/components/auth/LoginForm.tsx
+@@ -16,7 +16,7 @@
+   "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+ 
+ const primaryButtonClassName =
+-  "w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60"
++  "w-full min-h-11 rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60"
+ 
+ const modeButtonClassName =
+   "text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+--- a/components/feedback/BetaFeedbackModal.tsx
++++ b/components/feedback/BetaFeedbackModal.tsx
+@@ -94,7 +94,7 @@
+             type="button"
+             onClick={handleClose}
+             disabled={isSubmitting}
+-            className="rounded-full border border-border px-3 py-1 text-sm font-semibold text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++            className="min-h-11 rounded-control border border-border px-3 py-1 text-sm font-semibold text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+           >
+             Close
+           </button>
+@@ -185,7 +185,7 @@
+               type="button"
+               onClick={handleClose}
+               disabled={isSubmitting}
+-              className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
++              className="min-h-11 rounded-control border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+             >
+               Cancel
+             </button>
+@@ -194,7 +194,7 @@
+               label="Send feedback"
+               pendingLabel="Sending…"
+               forcePending={isSubmitting}
+-              className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++              className="min-h-11 rounded-control bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+             />
+           </div>
+         </form>
+--- a/components/dev/FeedbackInbox.tsx
++++ b/components/dev/FeedbackInbox.tsx
+@@ -85,7 +85,7 @@
+                   {safePagePath ? (
+                     <Link
+                       href={safePagePath}
+-                      className="inline-flex w-fit rounded-full border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                      className="inline-flex items-center w-fit min-h-11 rounded-control border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                     >
+                       Open page
+                     </Link>
+@@ -194,7 +194,7 @@
+                   value="update"
+                   label="Update feedback"
+                   pendingLabel="Updating…"
+-                  className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                  className="min-h-11 rounded-control bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                 />
+ 
+                 <SubmitButton
+@@ -202,7 +202,7 @@
+                   value="resolve"
+                   label="Resolve, notify, and archive"
+                   pendingLabel="Resolving…"
+-                  className="rounded-full border border-primary bg-background/70 px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                  className="min-h-11 rounded-control border border-primary bg-background/70 px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                 />
+               </div>
+             </ConfirmedActionForm>
+--- a/components/NavDropdown.tsx
++++ b/components/NavDropdown.tsx
+@@ -73,7 +73,7 @@
+         aria-haspopup="menu"
+         aria-expanded={isOpen}
+         onClick={() => setIsOpen((current) => !current)}
+-        className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] ${
++        className={`inline-flex items-center min-h-11 rounded-control border px-3 py-1.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] ${
+           isActive
+             ? "border-primary bg-primary text-primary-foreground shadow-sm"
+             : "border-transparent text-foreground hover:border-border hover:bg-muted"
+@@ -104,7 +104,7 @@
+                 disabled={isPending || itemIsActive}
+                 aria-current={itemIsActive ? "page" : undefined}
+                 onClick={() => handleNavigate(item.href)}
+-                className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70 ${
++                className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-control px-3 py-2 text-left text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70 ${
+                   itemIsActive
+                     ? "bg-primary text-primary-foreground"
+                     : "text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+--- a/components/PendingNavLink.tsx
++++ b/components/PendingNavLink.tsx
+@@ -52,7 +52,7 @@
+           router.push(href)
+         })
+       }}
+-      className={`inline-flex shrink-0 items-center rounded-full border font-medium transition disabled:cursor-not-allowed disabled:opacity-70 ${sizeClasses} ${
++      className={`inline-flex shrink-0 items-center min-h-11 rounded-control border font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70 ${sizeClasses} ${
+         isActive
+           ? "border-primary bg-primary text-primary-foreground shadow-sm"
+           : "border-transparent text-foreground hover:border-border hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+--- a/app/moderator/page.tsx
++++ b/app/moderator/page.tsx
+@@ -204,7 +204,7 @@
+                         <SubmitButton
+                           label="Approve request"
+                           pendingLabel="Approving..."
+-                          className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                          className="min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                         />
+                       </ConfirmedActionForm>
+ 
+@@ -228,7 +228,7 @@
+                         <SubmitButton
+                           label="Reject request"
+                           pendingLabel="Rejecting..."
+-                          className="rounded-full border border-destructive bg-background/70 px-4 py-2 text-sm font-medium text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                          className="min-h-11 rounded-control border border-destructive bg-background/70 px-4 py-2 text-sm font-medium text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                         />
+                       </ConfirmedActionForm>
+                     </div>
+@@ -314,7 +314,7 @@
+                       <SubmitButton
+                         label="Hide comment"
+                         pendingLabel="Hiding..."
+-                        className="rounded-full border border-destructive bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                        className="min-h-11 rounded-control border border-destructive bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                       />
+                     </ConfirmedActionForm>
+ 
+@@ -330,7 +330,7 @@
+                       <SubmitButton
+                         label="Dismiss report"
+                         pendingLabel="Dismissing..."
+-                        className="rounded-full border border-primary bg-background/70 px-4 py-2 text-sm font-medium text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                        className="min-h-11 rounded-control border border-primary bg-background/70 px-4 py-2 text-sm font-medium text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                       />
+                     </ConfirmedActionForm>
+                   </div>
+@@ -405,7 +405,7 @@
+                   <div className="mt-5 flex flex-wrap gap-2">
+                     <Link
+                       href={`/library/${report.pieceId}`}
+-                      className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                      className="min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                     >
+                       Open tune to edit lore
+                     </Link>
+@@ -425,7 +425,7 @@
+                       <SubmitButton
+                         label="Mark actioned"
+                         pendingLabel="Saving..."
+-                        className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                        className="min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                       />
+                     </ConfirmedActionForm>
+ 
+@@ -441,7 +441,7 @@
+                       <SubmitButton
+                         label="Dismiss report"
+                         pendingLabel="Dismissing..."
+-                        className="rounded-full border border-primary bg-background/70 px-4 py-2 text-sm font-medium text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                        className="min-h-11 rounded-control border border-primary bg-background/70 px-4 py-2 text-sm font-medium text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                       />
+                     </ConfirmedActionForm>
+                   </div>
+--- a/components/TuneSearchSelect.tsx
++++ b/components/TuneSearchSelect.tsx
+@@ -298,7 +298,7 @@
+                 <button
+                   type="button"
+                   onClick={() => handleRemovePiece(piece.id)}
+-                  className="shrink-0 rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
++                  className="shrink-0 min-h-11 rounded-control border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                 >
+                   Remove
+                 </button>

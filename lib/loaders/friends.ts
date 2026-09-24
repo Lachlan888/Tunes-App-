@@ -1,4 +1,6 @@
-import { redirect } from "next/navigation"
+import { activityCursor, ACTIVITY_PAGE_SIZE, type ActivityCursor } from "@/lib/activity-pagination"
+import { redirectToLogin } from "@/lib/auth/login-redirect"
+import { readBoundedRows } from "@/lib/loaders/bounded-read"
 import { createClient } from "@/lib/supabase/server"
 import {
   searchProfilesForSelection,
@@ -265,30 +267,40 @@ async function loadProfilesByUserId(
   )
 }
 
-export async function loadRecentFriendActivity(
+export async function loadFriendActivityPage(
   supabase: Awaited<ReturnType<typeof createClient>>,
   acceptedFriendIds: string[],
   currentUserId: string,
-  limit = 25
-): Promise<FriendActivityItem[]> {
+  limit = ACTIVITY_PAGE_SIZE,
+  cursor: ActivityCursor | null = null
+): Promise<{ items: FriendActivityItem[]; nextCursor: string | null }> {
   if (acceptedFriendIds.length === 0) {
-    return []
+    return { items: [], nextCursor: null }
   }
+  limit = Math.max(1, Math.min(25, limit))
 
-  const { data: activityRows, error: activityError } = await supabase
+  const activityRows: ActivityEventRow[] = []
+  for (let start = 0; start < acceptedFriendIds.length; start += 200) {
+  let query = supabase
     .from("user_activity_events")
     .select(
       "id, user_id, event_type, piece_id, learning_list_id, comment_id, metadata, created_at"
     )
-    .in("user_id", acceptedFriendIds)
+    .in("user_id", acceptedFriendIds.slice(start, start + 200))
+    .in("event_type", [...MEANINGFUL_ACTIVITY_TYPES])
     .order("created_at", { ascending: false })
-    .limit(Math.min(limit * 3, 75))
+    .order("id", { ascending: false })
+    .limit(limit)
+  if (cursor) query = query.or(`created_at.lt.${cursor.createdAt},and(created_at.eq.${cursor.createdAt},id.lt.${cursor.id})`)
+  const { data, error } = await query
 
-  if (activityError) {
-    throw new Error(activityError.message)
+  if (error) {
+    throw new Error(error.message)
+  }
+  activityRows.push(...(data ?? []) as ActivityEventRow[])
   }
 
-  const typedActivityRows = (activityRows ?? []) as ActivityEventRow[]
+  const typedActivityRows = activityRows.sort((a, b) => b.created_at.localeCompare(a.created_at) || b.id - a.id).slice(0, limit)
 
   const activityUserIds = Array.from(
     new Set(typedActivityRows.map((row) => row.user_id))
@@ -324,15 +336,7 @@ export async function loadRecentFriendActivity(
     )
   }
 
-  const visibleActivityRows = prioritiseMusicalActivity(
-    typedActivityRows.filter((row) =>
-      canShowActivityForProfile(
-        row,
-        activityProfilesById.get(row.user_id) ?? null
-      )
-    ),
-    limit
-  )
+  const visibleActivityRows = typedActivityRows.filter(row => canShowActivityForProfile(row, activityProfilesById.get(row.user_id) ?? null))
 
   const activityIds = visibleActivityRows.map((row) => row.id)
 
@@ -592,7 +596,12 @@ export async function loadRecentFriendActivity(
     })
   }
 
-  return items
+  const last = typedActivityRows.at(-1)
+  return { items, nextCursor: typedActivityRows.length === limit && last ? activityCursor(last) : null }
+}
+
+export async function loadRecentFriendActivity(supabase: Awaited<ReturnType<typeof createClient>>, acceptedFriendIds: string[], currentUserId: string, limit = 25) {
+  return (await loadFriendActivityPage(supabase, acceptedFriendIds, currentUserId, limit)).items
 }
 
 export async function loadFriendsPageData(searchQuery?: string) {
@@ -603,20 +612,16 @@ export async function loadFriendsPageData(searchQuery?: string) {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    return redirectToLogin()
   }
 
   const trimmedQuery = (searchQuery ?? "").trim()
 
-  const { data: connectionRows, error: connectionError } = await supabase
+  const connectionRows = await readBoundedRows((from, to) => supabase
     .from("connections")
-    .select("id, status, created_at, accepted_at, requester_id, addressee_id")
+    .select("id, status, created_at, accepted_at, requester_id, addressee_id", { count: "exact" })
     .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
-    .order("created_at", { ascending: false })
-
-  if (connectionError) {
-    throw new Error(connectionError.message)
-  }
+    .order("created_at", { ascending: false }).order("id").range(from, to))
 
   const typedConnections = (connectionRows ?? []) as ConnectionRow[]
 
@@ -626,25 +631,14 @@ export async function loadFriendsPageData(searchQuery?: string) {
     )
   ).filter((id) => id !== user.id)
 
-  let connectionProfilesById = new Map<string, ProfileSearchRow>()
+  const connectionProfilesById = new Map<string, ProfileSearchRow>()
 
-  if (connectedUserIds.length > 0) {
-    const { data: connectionProfiles, error: connectionProfilesError } =
-      await supabase
+  for (let start = 0; start < connectedUserIds.length; start += 200) {
+    const connectionProfiles = await readBoundedRows((from, to) => supabase
         .from("profiles")
-        .select("id, username, display_name")
-        .in("id", connectedUserIds)
-
-    if (connectionProfilesError) {
-      throw new Error(connectionProfilesError.message)
-    }
-
-    connectionProfilesById = new Map(
-      ((connectionProfiles ?? []) as ProfileSearchRow[]).map((profile) => [
-        profile.id,
-        profile,
-      ])
-    )
+        .select("id, username, display_name", { count: "exact" })
+        .in("id", connectedUserIds.slice(start, start + 200)).order("id").range(from, to))
+    for (const profile of connectionProfiles as ProfileSearchRow[]) connectionProfilesById.set(profile.id, profile)
   }
 
   const pendingIncomingRequests: PendingFriendRequest[] = typedConnections
@@ -691,11 +685,10 @@ export async function loadFriendsPageData(searchQuery?: string) {
 
   const acceptedFriendIds = acceptedFriends.map((friend) => friend.user_id)
 
-  const recentFriendActivity = await loadRecentFriendActivity(
+  const activityPage = await loadFriendActivityPage(
     supabase,
     acceptedFriendIds,
-    user.id,
-    25
+    user.id
   )
 
   return {
@@ -704,6 +697,7 @@ export async function loadFriendsPageData(searchQuery?: string) {
     acceptedFriends,
     searchMatches,
     searchQuery: trimmedQuery,
-    recentFriendActivity,
+    recentFriendActivity: activityPage.items,
+    activityNextCursor: activityPage.nextCursor,
   }
 }

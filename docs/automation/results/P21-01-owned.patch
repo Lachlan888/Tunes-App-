@@ -1,0 +1,226 @@
+--- a/components/home/HomeMobileSummarySwitcher.tsx
++++ b/components/home/HomeMobileSummarySwitcher.tsx
+@@ -172,11 +172,9 @@
+ 
+ function TodayPanel({
+   summary,
+-  streakSummary,
+   density,
+ }: {
+   summary: HomeSummaryData
+-  streakSummary: StreakSummary
+   density: HomeDensity
+ }) {
+   const previewLimit = getPreviewLimit(density)
+@@ -256,25 +254,17 @@
+         ]}
+       />
+ 
+-      <StreakSummarySection streakSummary={streakSummary} />
+     </div>
+   )
+ }
+ 
+ function RepertoirePanel({
+   summary,
+-  density,
++  streakSummary,
+ }: {
+   summary: HomeSummaryData
+-  density: HomeDensity
+-}) {
+-  const previewLimit = getPreviewLimit(density)
+-  const recentTunes = summary.inPracticePreview.slice(0, previewLimit)
+-  const recentBadges = [
+-    ...summary.badgeSummary.recentReceivedBadges.map((badge) => ({ ...badge, kind: "Badge received" })),
+-    ...summary.badgeSummary.recentCreatedBadges.map((badge) => ({ ...badge, kind: "Badge created" })),
+-  ].slice(0, Math.max(0, previewLimit - recentTunes.length))
+-
++  streakSummary: StreakSummary
++}) {
+   return (
+     <div className="space-y-5">
+       <MobilePanel>
+@@ -308,32 +298,7 @@
+         </div>
+       </MobilePanel>
+ 
+-      <section className="space-y-2">
+-        <MobileSectionHeading title="Practice schedule & recognition" action={<Link href="/library" className={buttonStyles.text}>View tunes</Link>} />
+-
+-        {recentTunes.length === 0 && recentBadges.length === 0 ? (
+-          <MobileEmptyBlock>Your next scheduled tunes and recent recognition will appear here.</MobileEmptyBlock>
+-        ) : (
+-          <div className="border-y border-border/70">
+-            {recentTunes.map((userPiece) => (
+-                <MobileRow
+-                  key={userPiece.user_piece_id}
+-                  href={`/library/${userPiece.piece_id}`}
+-                  title={userPiece.title}
+-                  meta={`Stage ${userPiece.stage} · ${userPiece.nextReviewDue ? `Due ${new Date(userPiece.nextReviewDue + (userPiece.nextReviewDue.length === 10 ? "T12:00:00" : "")).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}` : "Not scheduled"}`}
+-                />
+-              ))}
+-            {recentBadges.map((badge) => (
+-              <MobileRow
+-                key={`${badge.kind}-${badge.id}`}
+-                href={`/badges/${badge.slug}`}
+-                title={badge.name}
+-                meta={badge.kind}
+-              />
+-            ))}
+-          </div>
+-        )}
+-      </section>
++      <StreakSummarySection streakSummary={streakSummary} />
+     </div>
+   )
+ }
+@@ -386,8 +351,8 @@
+     active={activeTab}
+     onChange={persistHomeTab}
+     panels={[
+-      { id: "today", label: "Today", content: <TodayPanel summary={summary} streakSummary={streakSummary} density={density} /> },
+-      { id: "repertoire", label: "Repertoire", content: <RepertoirePanel summary={summary} density={density} /> },
++      { id: "today", label: "Today", content: <TodayPanel summary={summary} density={density} /> },
++      { id: "repertoire", label: "Repertoire", content: <RepertoirePanel summary={summary} streakSummary={streakSummary} /> },
+       { id: "social", label: "Social", content: <SocialPanel recentFriendActivity={recentFriendActivity} activityNextCursor={activityNextCursor} /> },
+     ]}
+   />
+--- a/lib/loaders/homepage.ts
++++ b/lib/loaders/homepage.ts
+@@ -12,13 +12,11 @@
+   BacklogGroupSummary,
+   GettingStartedState,
+   GettingStartedTask,
+-  HomeBadgePreview,
+   HomeBadgeSummary,
+   HomeLearningQueuePreview,
+   HomeListPreview,
+   HomeSummaryData,
+   HomeTunePreview,
+-  StreakSummary,
+   UserPiece,
+ } from "@/lib/types"
+ 
+@@ -88,20 +86,6 @@
+         user_id: string
+       }[]
+     | null
+-}
+-
+-type HomeBadgeRow = {
+-  id: number
+-  name: string
+-  slug: string
+-  category: HomeBadgePreview["category"]
+-  created_at: string | null
+-}
+-
+-type HomeBadgeAwardRow = {
+-  id: number
+-  awarded_at: string | null
+-  badges: HomeBadgeRow | HomeBadgeRow[] | null
+ }
+ 
+ function getJoinedPiece(
+@@ -408,40 +392,6 @@
+   return Array.isArray(rows) ? rows[0] ?? null : rows
+ }
+ 
+-function asSingleBadgeRow(
+-  value: HomeBadgeRow | HomeBadgeRow[] | null
+-): HomeBadgeRow | null {
+-  return Array.isArray(value) ? value[0] ?? null : value
+-}
+-
+-function toHomeCreatedBadgePreview(row: HomeBadgeRow): HomeBadgePreview {
+-  return {
+-    id: row.id,
+-    name: row.name,
+-    slug: row.slug,
+-    category: row.category,
+-    created_at: row.created_at,
+-  }
+-}
+-
+-function toHomeReceivedBadgePreview(
+-  row: HomeBadgeAwardRow
+-): HomeBadgePreview | null {
+-  const badge = asSingleBadgeRow(row.badges)
+-
+-  if (!badge) {
+-    return null
+-  }
+-
+-  return {
+-    id: badge.id,
+-    name: badge.name,
+-    slug: badge.slug,
+-    category: badge.category,
+-    awarded_at: row.awarded_at,
+-  }
+-}
+-
+ async function loadHomeBadgeSummary({
+   supabase,
+   userId,
+@@ -452,8 +402,6 @@
+   const [
+     { count: receivedCount, error: receivedCountError },
+     { count: createdCount, error: createdCountError },
+-    { data: receivedRows, error: receivedRowsError },
+-    { data: createdRows, error: createdRowsError },
+   ] = await Promise.all([
+     supabase
+       .from("badge_awards")
+@@ -465,47 +413,17 @@
+       .select("id", { count: "exact", head: true })
+       .eq("owner_user_id", userId),
+ 
+-    supabase
+-      .from("badge_awards")
+-      .select(
+-        `
+-          id,
+-          awarded_at,
+-          badges (
+-            id,
+-            name,
+-            slug,
+-            category,
+-            created_at
+-          )
+-        `
+-      )
+-      .eq("recipient_user_id", userId)
+-      .order("awarded_at", { ascending: false })
+-      .limit(3),
+-
+-    supabase
+-      .from("badges")
+-      .select("id, name, slug, category, created_at")
+-      .eq("owner_user_id", userId)
+-      .order("created_at", { ascending: false })
+-      .limit(3),
+   ])
+ 
+   if (receivedCountError) throw new Error(receivedCountError.message)
+   if (createdCountError) throw new Error(createdCountError.message)
+-  if (receivedRowsError) throw new Error(receivedRowsError.message)
+-  if (createdRowsError) throw new Error(createdRowsError.message)
+ 
+   return {
+     receivedCount: receivedCount ?? 0,
+     createdCount: createdCount ?? 0,
+-    recentReceivedBadges: ((receivedRows ?? []) as HomeBadgeAwardRow[])
+-      .map(toHomeReceivedBadgePreview)
+-      .filter((badge): badge is HomeBadgePreview => Boolean(badge)),
+-    recentCreatedBadges: ((createdRows ?? []) as HomeBadgeRow[]).map(
+-      toHomeCreatedBadgePreview
+-    ),
++    // The Home streak panel needs counts only; retain the shared summary shape.
++    recentReceivedBadges: [],
++    recentCreatedBadges: [],
+   }
+ }
+ 

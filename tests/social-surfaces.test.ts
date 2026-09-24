@@ -24,14 +24,20 @@ test("Inbox URL state and history pagination are bounded", () => {
   })
 })
 
-test("Home and Friends share one collapsed social interaction model", () => {
+test("Home and Friends share direct reactions and progressively loaded discussions", () => {
   const sharedFeed = source("../components/activity/SocialActivityFeed.tsx")
   const home = source("../components/home/HomeMobileSummarySwitcher.tsx")
   const friends = source("../components/friends/RecentFriendActivitySection.tsx")
 
   assert.match(home, /SocialActivityFeed/)
   assert.match(friends, /SocialActivityFeed/)
-  assert.match(sharedFeed, /Open discussion/)
+  assert.match(sharedFeed, /Comment \(\{commentCount\}\)/)
+  assert.match(sharedFeed, /Load more activity/)
+  assert.match(sharedFeed, /root: scrollRegionLabel \? scrollRegion\.current : null/)
+  assert.match(sharedFeed, /overscroll-contain/)
+  assert.match(home, /scrollRegionLabel="Friend activity feed"/)
+  assert.match(friends, /scrollRegionLabel="Friend activity feed"/)
+  assert.doesNotMatch(sharedFeed, /Open context/)
   assert.match(sharedFeed, /selectedItem \? \(/)
   assert.doesNotMatch(friends, /ActivityReplyForm/)
 })
@@ -63,7 +69,7 @@ test("Inbox separates New, History and real Messages without oversized trees", (
 
   assert.match(page, />New</)
   assert.match(page, />History</)
-  assert.match(page, />Messages/)
+  assert.match(page, /Messages \{data.unreadMessageCount/)
   assert.match(page, /You’re caught up\. New activity will appear here/)
   assert.match(loader, /messages: thread\.messages\.slice\(-10\)/)
   assert.match(loader, /\.slice\(0, 20\)/)

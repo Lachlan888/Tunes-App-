@@ -1,0 +1,20 @@
+{
+  "current_prompt": 27,
+  "current_chunk": "P27-a",
+  "status": "awaiting_input",
+  "last_completed_chunk": "P26-b",
+  "next_action": "After explicit approval, apply the reviewed P27-a migration, run disposable database permission/concurrency fixtures, verify remote migration/schema/advisors, then connect actions in P27-b.",
+  "base_head": "40870766c4c8d6fa00adc31b582783b4119ffd08",
+  "branch": "automation/final-chunked-runner",
+  "owned_files": [
+    "docs/automation/results/P27-a.md",
+    "docs/automation/state.json",
+    "lib/pieces/contribution-policy.ts",
+    "lib/services/piece-contributions.ts",
+    "supabase/migrations/20260923150759_enforce_piece_contributions.sql",
+    "tests/piece-contributions.test.ts"
+  ],
+  "resume_point": "P27-a local checkpoint: field matrix, generated enforcement/attribution migration, contribution policy/service, and 6-test suite are present. Fresh 6/6 tests, scoped lint, typecheck and diff checks pass. Remote apply was denied; read-only verification confirms no migration, attribution table or trigger exists remotely. Do not retry without explicit approval.",
+  "blocker": "Explicit production-safety approval is required to apply supabase/migrations/20260923150759_enforce_piece_contributions.sql. Approval gate denied the apply because the persistent trigger affects all shared tune updates; no remote mutation occurred.",
+  "updated_at": "2026-09-24T01:15:32+10:00"
+}

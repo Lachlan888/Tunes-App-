@@ -37,14 +37,23 @@ export default function SetlistOrderManager({
   const router = useRouter()
   const [items, setItems] = useState(initialItems)
   const [version, setVersion] = useState(initialVersion)
+  const [serverVersion, setServerVersion] = useState(initialVersion)
   const [draggedId, setDraggedId] = useState<number | null>(null)
   const [message, setMessage] = useState("Drag a row, or use the Move buttons.")
   const [isPending, startTransition] = useTransition()
+
+  if (serverVersion !== initialVersion) {
+    setServerVersion(initialVersion)
+    setVersion(initialVersion)
+    setItems(initialItems)
+    setMessage("Latest running order loaded.")
+  }
 
   function save(nextItems: SetlistItemWithCoverage[], previousItems: SetlistItemWithCoverage[]) {
     setItems(nextItems)
     setMessage("Saving order…")
     startTransition(async () => {
+      try {
       const result = await reorderSetlistItems({
         setlistId,
         orderedItemIds: nextItems.map((item) => item.id),
@@ -58,6 +67,11 @@ export default function SetlistOrderManager({
       }
       setItems(previousItems)
       if (result.status === "conflict") router.refresh()
+      } catch {
+        setItems(previousItems)
+        setMessage("Connection interrupted. Previous order restored; refresh before retrying.")
+        router.refresh()
+      }
     })
   }
 
@@ -96,8 +110,8 @@ export default function SetlistOrderManager({
                 supportingContent={<span>{[item.performance_key ? `Performance key ${item.performance_key}` : item.piece.key ? `Key ${item.piece.key}` : "Key not set", item.piece.type ?? item.piece.style, item.notes ? item.notes.slice(0, 100) : null].filter(Boolean).join(" · ")}</span>}
                 actions={
                   <>
-                    <button type="button" disabled={isPending || index === 0} onClick={() => move(item.id, index - 1)} className="min-h-11 rounded-full border border-hairline px-3 text-sm font-semibold disabled:opacity-40">Move up</button>
-                    <button type="button" disabled={isPending || index === items.length - 1} onClick={() => move(item.id, index + 1)} className="min-h-11 rounded-full border border-hairline px-3 text-sm font-semibold disabled:opacity-40">Move down</button>
+                    <button type="button" aria-label={`Move ${item.piece.title} up`} disabled={isPending || index === 0} onClick={() => move(item.id, index - 1)} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-hairline px-3 text-sm font-semibold disabled:opacity-40">Move up</button>
+                    <button type="button" aria-label={`Move ${item.piece.title} down`} disabled={isPending || index === items.length - 1} onClick={() => move(item.id, index + 1)} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-hairline px-3 text-sm font-semibold disabled:opacity-40">Move down</button>
                     <EditSetlistItemModal item={item} redirectTo={redirectTo} updateSetlistItem={updateSetlistItem} />
                     <form action={removeTuneFromSetlist} onSubmit={(event) => { if (!window.confirm(`Remove "${item.piece?.title}" from this setlist?`)) event.preventDefault() }}>
                       <input type="hidden" name="setlist_id" value={setlistId} />

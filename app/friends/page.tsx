@@ -14,6 +14,7 @@ import {
   sendFriendRequest,
 } from "@/lib/actions/friends"
 import { loadFriendsPageData } from "@/lib/loaders/friends"
+import { paginateListItems, parseListPage } from "@/lib/list-view-state"
 
 type FriendsPageProps = {
   searchParams?: Promise<{
@@ -21,6 +22,8 @@ type FriendsPageProps = {
     friend_request?: string
     friend_accept?: string
     friend_decline?: string
+    friend_page?: string | string[]
+    request_page?: string | string[]
   }>
 }
 
@@ -86,9 +89,6 @@ function SearchResultsSection({
   return (
     <section className="mb-7 md:mb-8 md:rounded-2xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
       <div className="mb-4 md:mb-5">
-        <p className="hidden text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground md:block">
-          Search
-        </p>
         <h2 className="text-xl font-semibold tracking-tight text-foreground md:mt-2 md:font-serif md:text-3xl md:font-bold">
           Find friends
         </h2>
@@ -165,9 +165,6 @@ function IncomingRequestsSection({
   return (
     <section className="mb-7 md:mb-8 md:rounded-2xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
       <div className="mb-4 md:mb-5">
-        <p className="hidden text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground md:block">
-          Requests
-        </p>
         <h2 className="text-xl font-semibold tracking-tight text-foreground md:mt-2 md:font-serif md:text-3xl md:font-bold">
           <span className="md:hidden">Requests</span>
           <span className="hidden md:inline">Incoming requests</span>
@@ -258,7 +255,24 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
     acceptedFriends,
     searchMatches,
     recentFriendActivity,
+    activityNextCursor,
   } = await loadFriendsPageData(searchQuery)
+  const friendsPage = paginateListItems(acceptedFriends, parseListPage(resolvedSearchParams?.friend_page))
+  const requestsPage = paginateListItems(pendingIncomingRequests, parseListPage(resolvedSearchParams?.request_page))
+  function pages(label: string, key: "friend_page" | "request_page", page: typeof friendsPage | typeof requestsPage) {
+    if (page.totalPages <= 1) return null
+    const href = (value: number) => {
+      const params = new URLSearchParams({ friend_page: String(friendsPage.page), request_page: String(requestsPage.page) })
+      if (searchQuery) params.set("q", searchQuery)
+      params.set(key, String(value))
+      return `/friends?${params}`
+    }
+    return <nav aria-label={`${label} pages`} className="mb-7 flex flex-wrap items-center gap-3">
+      <span className="text-sm text-text-muted">{label}: page {page.page} of {page.totalPages} · {page.totalCount} total</span>
+      {page.hasPreviousPage ? <Link href={href(page.page - 1)} className={buttonStyles.secondary}>Previous {label.toLowerCase()}</Link> : null}
+      {page.hasNextPage ? <Link href={href(page.page + 1)} className={buttonStyles.secondary}>Next {label.toLowerCase()}</Link> : null}
+    </nav>
+  }
 
   const addFriendsContent = (
     <>
@@ -268,20 +282,22 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
       />
 
       <IncomingRequestsSection
-        pendingIncomingRequests={pendingIncomingRequests}
+        pendingIncomingRequests={requestsPage.items}
       />
+      {pages("Requests", "request_page", requestsPage)}
 
-      <FriendsListSection friends={acceptedFriends} />
+      <FriendsListSection key={friendsPage.page} friends={friendsPage.items} />
+      {pages("Friends", "friend_page", friendsPage)}
     </>
   )
 
   const activityContent = (
-    <RecentFriendActivitySection items={recentFriendActivity} />
+    <RecentFriendActivitySection items={recentFriendActivity} nextCursor={activityNextCursor} />
   )
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      <PageHeader title="Friends" />
+      <PageHeader title="Social" />
 
       {friendRequestStatus === "sent" && (
         <StatusBanner tone="success">Friend request sent.</StatusBanner>
@@ -373,12 +389,6 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
         activityContent={activityContent}
       />
 
-      <div className="hidden gap-6 md:grid lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-        <div className="min-w-0">{addFriendsContent}</div>
-        <div className="min-w-0 self-start lg:sticky lg:top-24">
-          {activityContent}
-        </div>
-      </div>
     </main>
   )
 }

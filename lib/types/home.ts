@@ -34,6 +34,7 @@ export type GettingStartedState = {
 }
 
 export type HomeTunePreview = {
+  nextReviewDue?: string | null
   user_piece_id: number
   piece_id: number
   title: string

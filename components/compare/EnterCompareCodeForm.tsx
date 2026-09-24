@@ -26,7 +26,7 @@ export default function EnterCompareCodeForm() {
         <input value={code} onChange={(event) => setCode(event.target.value)} autoComplete="off" spellCheck={false} placeholder="Paste or type the full code" className="mt-2 min-h-12 w-full rounded-control border border-hairline bg-surface-paper px-3 font-mono text-sm" />
       </label>
       {error ? <p className="mt-2 text-sm text-destructive" role="alert">{error}</p> : null}
-      <button type="submit" className="mt-3 min-h-11 rounded-full border border-hairline px-4 text-sm font-semibold">Enter code</button>
+      <button type="submit" className="inline-flex mt-3 min-h-11 rounded-control border border-hairline px-4 text-sm font-semibold items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Enter code</button>
     </form>
   )
 }

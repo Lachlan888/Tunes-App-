@@ -1,0 +1,23 @@
+{
+  "verified_at": "2026-09-23T05:05:57.481238+00:00",
+  "scope": "fixture lint changes, dependency/config and carried permission evidence; not a whole-repository fingerprint",
+  "sha256": {
+    "lib/actions/lists.ts": "737e90e45f8dcc1342c3174bc32d97981c808b962a830ee0f33da08494281bfd",
+    "lib/loaders/list-detail.ts": "0395accba9d88333c6860b28700f28d6204ce78322a6481abd9bd90364fd164e",
+    "lib/loaders/public-list-detail.ts": "ee897d2a7256222857d29709eabe9032f0b8eb1a3750840d8f298417798e3c05",
+    "lib/loaders/public-lists.ts": "9e889e0571f9babb0b4a4a00d67a936477924c2977cc1033a5b884e654b907a1",
+    "lib/tune-media.ts": "d11bf833e7a5b81d483fd9e873d590c369b6f4422971c5efc960b35eb6258725",
+    "package-lock.json": "42f3a674b0cba3314b2559341ff93ad904be09a0f01044913e870f35881c87e1",
+    "package.json": "8bb6e210891fbc184e12fb8e8407b556b01eb42dc9cc8e4ef05b04c94d78d0d1",
+    "supabase/migrations/20260623002000_fix_learning_list_share_rls_recursion.sql": "76994cd54acaadf1737fad3aa0dc9943d55bc5b625a1f5af098f44dd0700a8de",
+    "supabase/migrations/20260922131057_bind_learning_list_helpers_to_caller.sql": "14e24b34fab60f11258a6d3a4f7efcd14a23bcb1b290ddf8e3233a6370f62c53",
+    "supabase/migrations/20260923010503_allow_anonymous_public_list_reads.sql": "416d179a1f7e7d460c4be3ca8586cb1a4f6ff6267bb2b8aa03c675e1c1f3f38a",
+    "tests/integration/anonymous-public-lists-remote.mjs": "b441b8c11a71fa1389eadeb16a202c7c217d8e7ea7f63c847f7e0be80d980151",
+    "tests/integration/anonymous-public-lists.mjs": "114769305ca7651aa624a280d2231fa4c3af1b61aa0036d1be41272ea181112e",
+    "tests/integration/list-permission-helpers.mjs": "7502da34ca7373737032704af2d7171052d3b00342f00a43b2aad7c600d2589f",
+    "tests/integration/reference-playlist-lifecycle.mjs": "ffedab7b1588180e49539769846d8a9d48b565d32b84b0225117feeec7f3fe5c",
+    "tests/integration/reference-transport-lifecycle.mjs": "017d3f4075a5a79c58a70cf5975bf79fdf07c291a55fafb056f919a0eea6c0e4",
+    "tests/list-permissions.test.ts": "57aeeddfa8bb88d11f240090f8254f4857d252ce83e06e30f636cbb14ce6a0b6",
+    "tsconfig.json": "2e641f8b3b8e7aaea424abf9c41533f81b24850e5e14db8cd2f53af9c120fcd4"
+  }
+}

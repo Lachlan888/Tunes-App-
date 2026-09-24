@@ -86,6 +86,10 @@ async function notifyPieceEditRequester({
 export async function approvePieceEditRequest(formData: FormData) {
   const { supabase, user } = await requireModerator()
 
+  if (formData.get("confirm_action") !== "confirmed") {
+    redirect("/moderator?moderation=confirmation_required")
+  }
+
   const requestId = Number(formData.get("request_id"))
   const moderatorComment = getCleanString(formData, "moderator_comment")
   const redirectTo = getCleanString(formData, "redirect_to") || "/moderator"
@@ -231,6 +235,10 @@ export async function approvePieceEditRequest(formData: FormData) {
 export async function rejectPieceEditRequest(formData: FormData) {
   const { supabase, user } = await requireModerator()
 
+  if (formData.get("confirm_action") !== "confirmed") {
+    redirect("/moderator?moderation=confirmation_required")
+  }
+
   const requestId = Number(formData.get("request_id"))
   const moderatorComment = getCleanString(formData, "moderator_comment")
   const redirectTo = getCleanString(formData, "redirect_to") || "/moderator"
@@ -282,6 +290,10 @@ export async function rejectPieceEditRequest(formData: FormData) {
 
 export async function hideReportedComment(formData: FormData) {
   const { supabase, user } = await requireModerator()
+
+  if (formData.get("confirm_action") !== "confirmed") {
+    redirect("/moderator?moderation=confirmation_required")
+  }
 
   const reportId = Number(formData.get("report_id"))
   const commentId = Number(formData.get("comment_id"))
@@ -345,6 +357,10 @@ export async function hideReportedComment(formData: FormData) {
 export async function dismissCommentReport(formData: FormData) {
   const { supabase, user } = await requireModerator()
 
+  if (formData.get("confirm_action") !== "confirmed") {
+    redirect("/moderator?moderation=confirmation_required")
+  }
+
   const reportId = Number(formData.get("report_id"))
   const moderatorNote = getCleanString(formData, "moderator_note")
   const redirectTo = getCleanString(formData, "redirect_to") || "/moderator"
@@ -375,6 +391,10 @@ export async function dismissCommentReport(formData: FormData) {
 
 export async function actionLoreReport(formData: FormData) {
   const { supabase, user } = await requireModerator()
+
+  if (formData.get("confirm_action") !== "confirmed") {
+    redirect("/moderator?moderation=confirmation_required")
+  }
 
   const reportId = Number(formData.get("report_id"))
   const pieceId = Number(formData.get("piece_id"))
@@ -412,6 +432,10 @@ export async function actionLoreReport(formData: FormData) {
 
 export async function dismissLoreReport(formData: FormData) {
   const { supabase, user } = await requireModerator()
+
+  if (formData.get("confirm_action") !== "confirmed") {
+    redirect("/moderator?moderation=confirmation_required")
+  }
 
   const reportId = Number(formData.get("report_id"))
   const moderatorNote = getCleanString(formData, "moderator_note")

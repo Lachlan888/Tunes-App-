@@ -16,8 +16,8 @@ export default function PracticeDayView({ data }: PracticeDayViewProps) {
 
   return (
     <div className="space-y-5 md:space-y-6">
-      <section className="space-y-6">
-        <section className="border-b border-border pb-6">
+      <section className="diary-day-workbench">
+        <section className="diary-reflection border-b border-border pb-6">
           <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
             Session summary
           </h2>
@@ -61,12 +61,15 @@ export default function PracticeDayView({ data }: PracticeDayViewProps) {
           </div>
         </section>
 
+        <div className="diary-events min-w-0">
         <PracticeEventList
           events={data.events}
           categories={data.categories}
           practiceDate={data.selectedDate}
           redirectTo={redirectTo}
         />
+
+        </div>
 
         <PracticeCategoryManagerModal
           categories={data.categories}

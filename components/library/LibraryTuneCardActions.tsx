@@ -2,15 +2,14 @@
 
 import TuneCollectionActionButton from "@/components/tunes/TuneCollectionActionButton"
 import TuneStateIndicator from "@/components/tunes/TuneStateIndicator"
-import { buttonStyles } from "@/components/ui/buttonStyles"
 import { markAsKnown } from "@/lib/actions/known-pieces"
 import type { Piece, UserPiece } from "@/lib/types"
 
 const compactSecondaryAction =
-  "inline-flex min-h-11 items-center justify-center rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm font-semibold text-text-primary shadow-material-rest transition-colors hover:border-action-primary/45 hover:bg-surface-note focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm font-semibold text-text-primary shadow-material-rest transition-colors hover:border-action-primary/45 hover:bg-surface-note focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 const compactPracticeAction =
-  "inline-flex min-h-11 items-center justify-center rounded-control border border-state-practice bg-state-practice px-3 py-2 text-sm font-semibold text-state-practice-foreground shadow-material-rest transition-colors hover:bg-state-practice/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-control border border-state-practice bg-state-practice px-3 py-2 text-sm font-semibold text-state-practice-foreground shadow-material-rest transition-colors hover:bg-state-practice/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 type LibraryTuneCardActionsProps = {
   piece: Piece
@@ -34,7 +33,7 @@ export default function LibraryTuneCardActions({
   showState = true,
 }: LibraryTuneCardActionsProps) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className={showState ? "flex flex-wrap items-center gap-2" : "contents"}>
       {showState ? (
         <TuneStateIndicator
           isAlreadyInPractice={isAlreadyInPractice}
@@ -67,7 +66,7 @@ export default function LibraryTuneCardActions({
             fields={{ piece_id: piece.id, redirect_to: redirectTo }}
             label="Mark Known"
             pendingLabel="Saving..."
-            className={buttonStyles.text}
+            className={compactSecondaryAction}
           />
         </>
       ) : null}

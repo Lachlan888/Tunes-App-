@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation"
+import { getOptionalUserContext } from "@/lib/auth/session"
 import LoginForm from "@/components/auth/LoginForm"
-import { getSafeInternalPath } from "@/lib/auth/redirects"
+import { getAuthReturnPath } from "@/lib/auth/redirects"
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -14,7 +16,8 @@ function getSingleValue(value: string | string[] | undefined) {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams
-  const nextPath = getSafeInternalPath(getSingleValue(params?.next), "/")
+  const nextPath = getAuthReturnPath(getSingleValue(params?.next), "/")
+  if (await getOptionalUserContext()) redirect(getAuthReturnPath(getSingleValue(params?.next), "/dashboard"))
   const initialMode =
     getSingleValue(params?.mode) === "signup" ? "signup" : "login"
 

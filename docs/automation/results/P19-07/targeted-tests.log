@@ -1,0 +1,32 @@
+(node:7514) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/practice-session.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ list practice is a first-class session lane (1.197542ms)
+✔ focus practice is a first-class session lane (0.097833ms)
+✔ Diary period navigation and month outcome labels remain visible (2.493708ms)
+✔ practice lane URLs are explicit and invalid lanes recover to entry (0.072333ms)
+✔ Focused Practice preserves existing Stage rules (0.123667ms)
+✔ rating state prevents double submission and permits only pre-save Undo (0.115083ms)
+✔ rating removes exactly one tune and advances without skipping (0.524625ms)
+✔ resume position safely clamps when the server-side queue changes (0.080083ms)
+✔ session summaries count outcomes and make one useful suggestion (0.132084ms)
+✔ Focused Practice uses reduced chrome, persistent ratings, Undo and summary (2.760375ms)
+(node:7515) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/session-dock.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ one typed API supports every planned Session Dock context (1.106625ms)
+✔ the latest mounted context wins and the previous context is restored (0.318541ms)
+✔ the explicit handle distinguishes a tap from an upward full-screen drag (0.091875ms)
+✔ expansion, focus restoration and single-layer suppression are wired (2.047042ms)
+✔ Session Dock and Navigation Dock reserve one combined safe area (1.233334ms)
+✔ route integrations preserve only safe contextual state (4.561791ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 117.27975

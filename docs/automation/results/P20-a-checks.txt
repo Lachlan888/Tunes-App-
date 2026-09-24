@@ -1,0 +1,40 @@
+23 September 2026
+
+Scoped eslint: exit 0 (no findings).
+
+Actual Tailwind/PostCSS compilation passed. Control radius = 0.75rem (12px at 16px root); min-h-11 = 2.75rem (44px).
+No browser/manual visual acceptance claimed.
+
+(node:21372) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/list-detail-return.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ owned card title and Read link carry the filtered overview origin (41.835417ms)
+✔ detail Back, modes, and pager retain the overview origin (43.057917ms)
+✔ detail rejects external, unrelated and malformed return destinations (100.655042ms)
+✔ saved and directly shared card links retain overview filters and page (10.754417ms)
+✔ public detail Back and pager retain a safe Lists origin (11.720291ms)
+✔ public detail keeps its default and rejects unsafe return destinations (48.5605ms)
+✔ discovery desktop and mobile entry links carry their filtered origin (7.290125ms)
+✔ discovery page supplies filters and the clamped page to both entry layouts (25.476666ms)
+✔ public detail returns to discovery and retains origin in its pager (24.004458ms)
+(node:21373) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/list-view-state.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ list collection pagination is bounded and clamps stale pages (1.151709ms)
+✔ list page links preserve selected URL state (0.142083ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 533.8335
+
+SHA256 current inputs:
+8c7eb5285a0c9c208668d1f46f379e31b99213b0e7e2f5fe410b53d4322ceea7 components/ui/buttonStyles.ts
+82bdbb69aeaa4bc6a197da49799d953e5b461cb82d945045b341a4339da8d19f components/lists/ListOverviewCard.tsx
+c2e35267ec1a4741bbdac83b017d6cbadbace08bcff12631ca093f3dcb9b0f4f app/globals.css
+42f3a674b0cba3314b2559341ff93ad904be09a0f01044913e870f35881c87e1 package-lock.json

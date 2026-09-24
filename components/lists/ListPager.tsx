@@ -15,7 +15,7 @@ export default function ListPager({
   if (totalPages <= 1) return null
 
   const linkClass =
-    "inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+    "inline-flex min-h-11 items-center justify-center rounded-control border border-border bg-card px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
   return (
     <nav aria-label={`${label} pages`} className="mt-5 flex items-center justify-between gap-3">

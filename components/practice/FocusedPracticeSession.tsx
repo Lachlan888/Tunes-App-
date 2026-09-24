@@ -1,6 +1,12 @@
 "use client"
 
+import { usePrivateSessionStorage } from "@/components/resilience/PrivateSessionProvider"
+
+import { useOnlineStatus } from "@/hooks/useOnlineStatus"
 import Link from "next/link"
+import { usePathname, useSearchParams } from "next/navigation"
+import InlineReferencePlayer from "@/components/reference-media/InlineReferencePlayer"
+import { getReferencePracticeHref } from "@/lib/reference-media-routing"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import FocusModeShell from "@/components/practice/FocusModeShell"
 import PracticeProgress from "@/components/practice/PracticeProgress"
@@ -42,7 +48,7 @@ type PendingRating = {
 
 function isEditableTarget(target: EventTarget | null) {
   return target instanceof HTMLElement && Boolean(
-    target.closest("input, textarea, select, button, a, [contenteditable='true']")
+    target.closest("input, textarea, select, button, a, iframe, [data-reference-player], [contenteditable='true']")
   )
 }
 
@@ -123,6 +129,7 @@ function SessionSummary({
 export default function FocusedPracticeSession({
   lane,
   initialQueue,
+  queueTotal,
   sessionDate,
   noteCategories,
   sessionLabel,
@@ -130,11 +137,19 @@ export default function FocusedPracticeSession({
 }: {
   lane: PracticeLane
   initialQueue: ReviewQueueItem[]
+  queueTotal: number
   sessionDate: string
   noteCategories: PracticeNoteCategory[]
   sessionLabel?: string
   sessionKey?: string
 }) {
+  const sessionStorage = usePrivateSessionStorage()
+  const online = useOnlineStatus()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const [referencePieceId, setReferencePieceId] = useState<number | null>(null)
+  const referenceRegion = useRef<HTMLDivElement>(null)
+  const failedSubmission = useRef<{ pending: PendingRating; formData: FormData } | null>(null)
   const [queue, setQueue] = useState(initialQueue)
   const [results, setResults] = useState<PracticeSessionResult[]>([])
   const [pendingRating, setPendingRating] = useState<PendingRating | null>(null)
@@ -152,33 +167,64 @@ export default function FocusedPracticeSession({
     queue.length
   )
   const currentItem = queue[currentIndex] ?? null
+  const draftKey = `${storagePrefix}.draft.${currentItem?.id ?? "none"}`
+  useEffect(() => {
+    let draft: { body?: string; category?: string; focus?: string; add?: boolean } = {}
+    try { draft = JSON.parse(sessionStorage.getItem(draftKey) ?? "{}") ?? {} } catch { /* An invalid draft starts empty. */ }
+    // Hydrate account-scoped browser storage after the server render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNoteBody(typeof draft.body === "string" ? draft.body : "")
+    setCategoryId(typeof draft.category === "string" ? draft.category : "")
+    setFocusId(typeof draft.focus === "string" ? draft.focus : "")
+    setAddTuneToFocus(draft.add === true)
+  }, [draftKey, sessionStorage])
+  function saveDraft(patch: { body?: string; category?: string; focus?: string; add?: boolean }) {
+    sessionStorage.setItem(draftKey, JSON.stringify({ body: noteBody, category: categoryId, focus: focusId, add: addTuneToFocus, ...patch }))
+  }
+  const revealReference = useCallback(() => {
+    if (!currentItem) return
+    setReferencePieceId(currentItem.id)
+    window.requestAnimationFrame(() => { referenceRegion.current?.focus(); referenceRegion.current?.scrollIntoView({ block: "nearest", behavior: "smooth" }) })
+  }, [currentItem])
   const ratingState = isSubmitting
     ? "submitting"
     : pendingRating
       ? "undo-window"
       : "idle"
-  const isBusy = !canBeginPracticeRating(ratingState)
+  const isBusy = !canBeginPracticeRating(ratingState) || !online || Boolean(errorMessage)
+  const hasUnsavedWork = Boolean(noteBody.trim() || pendingRating || isSubmitting || errorMessage)
+  useEffect(() => {
+    if (!hasUnsavedWork) return
+    const unload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = "" }
+    const leave = (event: MouseEvent) => {
+      const link = event.target instanceof Element ? event.target.closest("a[href]") : null
+      if (link?.hasAttribute("data-preserve-review") && !pendingRating && !isSubmitting && !errorMessage) return
+      if (link && !link.getAttribute("href")?.startsWith("#") && !window.confirm("Leave this session? Unsaved notes or an unconfirmed rating may be lost.")) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+    }
+    window.addEventListener("beforeunload", unload)
+    document.addEventListener("click", leave, true)
+    return () => { window.removeEventListener("beforeunload", unload); document.removeEventListener("click", leave, true) }
+  }, [hasUnsavedWork, pendingRating, isSubmitting, errorMessage])
   const laneLabel =
     sessionLabel ?? (lane === "catch-up" ? "Catch-up" : lane === "list" ? "List practice" : lane === "focus" ? "Focus practice" : "Due today")
 
   useEffect(() => {
     try {
       const stored = JSON.parse(
-        window.sessionStorage.getItem(`${storagePrefix}.results`) ?? "[]"
+        sessionStorage.getItem(`${storagePrefix}.results`) ?? "[]"
       ) as PracticeSessionResult[]
       if (Array.isArray(stored)) {
         // Restore only display-safe session history; the server remains authoritative.
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setResults(stored.slice(-50))
+        setResults(stored.filter((item) => item && Number.isInteger(item.userPieceId) && typeof item.title === "string" && ["failed", "shaky", "solid"].includes(item.outcome) && Number.isFinite(item.previousStage) && Number.isFinite(item.resultingStage)).slice(-50))
       }
     } catch {
-      window.sessionStorage.removeItem(`${storagePrefix}.results`)
+      sessionStorage.removeItem(`${storagePrefix}.results`)
     }
-  }, [storagePrefix])
-
-  useEffect(() => {
-    window.sessionStorage.setItem(`${storagePrefix}.results`, JSON.stringify(results))
-  }, [results, storagePrefix])
+  }, [storagePrefix, sessionStorage])
 
   useEffect(() => () => {
     if (undoTimerRef.current !== null) window.clearTimeout(undoTimerRef.current)
@@ -188,7 +234,8 @@ export default function FocusedPracticeSession({
     setIsSubmitting(true)
     setErrorMessage(null)
 
-    const formData = new FormData()
+    const formData = failedSubmission.current?.formData ?? new FormData()
+    if (!failedSubmission.current) {
     formData.set("userPieceId", String(pending.item.id))
     formData.set("reviewSubmissionKey", pending.submissionKey)
     formData.set("outcome", pending.outcome)
@@ -196,6 +243,9 @@ export default function FocusedPracticeSession({
     if (categoryId) formData.set("category_id", categoryId)
     if (focusId) formData.set("focus_id", focusId)
     if (focusId && addTuneToFocus) formData.set("add_tune_to_focus", "on")
+
+    }
+    failedSubmission.current = { pending, formData }
 
     let result
     try {
@@ -214,6 +264,8 @@ export default function FocusedPracticeSession({
       return
     }
 
+    failedSubmission.current = null
+    sessionStorage.removeItem(`${storagePrefix}.draft.${pending.item.id}`)
     const presentation = ratingPresentation[pending.outcome]
     const resultingStage = getResultingPracticeStage(
       pending.item.stage,
@@ -229,7 +281,9 @@ export default function FocusedPracticeSession({
       movedToKnown: result.movedToKnown,
     }
 
-    setResults((current) => [...current, sessionResult])
+    const nextResults = [...results, sessionResult]
+    setResults(nextResults)
+    sessionStorage.setItem(`${storagePrefix}.results`, JSON.stringify(nextResults.slice(-50)))
     const next = removeRatedPracticeItem(queue, pending.item.id, currentIndex)
     setQueue(next.queue)
     setCurrentIndex(next.index)
@@ -238,14 +292,14 @@ export default function FocusedPracticeSession({
     setCategoryId("")
     setFocusId("")
     setAddTuneToFocus(false)
-    window.sessionStorage.setItem(
+    sessionStorage.setItem(
       `${storagePrefix}.announcement`,
       `${presentation.label} recorded for ${sessionResult.title}`
     )
-  }, [addTuneToFocus, categoryId, currentIndex, focusId, noteBody, queue, setCurrentIndex, storagePrefix])
+  }, [addTuneToFocus, categoryId, currentIndex, focusId, noteBody, queue, setCurrentIndex, storagePrefix, sessionStorage, results])
 
   const rate = useCallback((outcome: PracticeRating) => {
-    if (!currentItem || !canBeginPracticeRating(ratingState)) return
+    if (!currentItem || !online || failedSubmission.current || !canBeginPracticeRating(ratingState)) return
 
     const pending: PendingRating = {
       item: currentItem,
@@ -258,7 +312,7 @@ export default function FocusedPracticeSession({
       undoTimerRef.current = null
       void commitRating(pending)
     }, RATING_UNDO_WINDOW_MS)
-  }, [commitRating, currentItem, ratingState])
+  }, [commitRating, currentItem, ratingState, online])
 
   const undoRating = useCallback(() => {
     if (!pendingRating || !canUndoPracticeRating(ratingState)) return
@@ -292,14 +346,6 @@ export default function FocusedPracticeSession({
       onInvoke: () => rate(outcome),
       closeOnInvoke: false,
     }))
-    if (currentItem.media_bundle.effectiveReference && currentItem.piece) {
-      ratingActions.push({
-        id: "reference",
-        label: "Reference",
-        href: `/library/${currentItem.piece.id}/reference-media`,
-        tone: "secondary",
-      })
-    }
 
     return {
       id: `focused-practice:${lane}:${currentItem.id}`,
@@ -307,7 +353,7 @@ export default function FocusedPracticeSession({
       identity: {
         eyebrow: pendingRating ? "Rating selected" : laneLabel,
         title,
-        detail: pendingRating
+        detail: isSubmitting ? "Saving rating…" : pendingRating
           ? `${ratingPresentation[pendingRating.outcome].label} · Undo available`
           : `Stage ${currentItem.stage}`,
       },
@@ -318,7 +364,15 @@ export default function FocusedPracticeSession({
         onInvoke: () => setEnded(true),
         tone: "secondary",
       },
-      secondaryActions: ratingActions,
+      secondaryActions: currentItem.media_bundle.effectiveReference && currentItem.piece
+        ? [...ratingActions, {
+            id: "reference",
+            label: "Reference",
+            onInvoke: revealReference,
+            closeOnInvoke: true,
+            tone: "secondary",
+          }]
+        : ratingActions,
       progress: {
         label: "Queue progress",
         current: results.length + 1,
@@ -338,11 +392,11 @@ export default function FocusedPracticeSession({
         tools: ["metronome"],
       },
       persistence: { shareable: "url", transient: "session", key: storagePrefix },
-      announcement: pendingRating
+      announcement: isSubmitting ? "Saving rating. Please keep this page open." : pendingRating
         ? `${ratingPresentation[pendingRating.outcome].label} selected for ${title}. Undo before it is saved.`
         : `${title}. Stage ${currentItem.stage}. Tune ${results.length + 1} of ${results.length + queue.length}.`,
     }
-  }, [currentItem, ended, isBusy, isSubmitting, lane, laneLabel, pendingRating, queue.length, rate, results.length, storagePrefix])
+  }, [currentItem, ended, isBusy, isSubmitting, lane, laneLabel, pendingRating, queue.length, rate, revealReference, results.length, storagePrefix])
 
   useSessionDock(`focused-practice:${lane}`, dockModel)
 
@@ -364,8 +418,9 @@ export default function FocusedPracticeSession({
       title="Focused Practice"
       detail={`Tune ${results.length + 1} of ${results.length + queue.length}`}
       onEnd={() => setEnded(true)}
-      endDisabled={isBusy}
+      endDisabled={isSubmitting || Boolean(pendingRating) || Boolean(errorMessage)}
     >
+      {queueTotal > initialQueue.length && <p className="mt-4 text-sm text-text-muted">This session contains the next {initialQueue.length} of {queueTotal} tunes. Return to Practice after this batch to load the next tunes.</p>}
       <article className="mx-auto mt-6 max-w-3xl md:mt-10 md:rounded-object md:border md:border-hairline md:bg-surface-paper md:p-8 md:shadow-material-rest">
         <div className="flex items-center justify-between gap-4 text-sm text-text-muted">
           <span className={joinClasses(
@@ -402,50 +457,47 @@ export default function FocusedPracticeSession({
         {pendingRating ? (
           <div className="mt-7 flex flex-wrap items-center justify-between gap-3 border-y border-hairline bg-surface-note px-4 py-4" role="status" aria-live="assertive">
             <p className="font-semibold">
-              {ratingPresentation[pendingRating.outcome].label} selected. Saving shortly…
+              {isSubmitting ? "Saving rating…" : `${ratingPresentation[pendingRating.outcome].label} selected. Saving shortly…`}
             </p>
-            <button type="button" onClick={undoRating} className={buttonStyles.secondaryStrong}>
+            <button type="button" onClick={undoRating} disabled={isSubmitting} className={buttonStyles.secondaryStrong}>
               Undo rating
             </button>
           </div>
         ) : null}
 
         {errorMessage ? (
-          <p className="mt-6 border-l-4 border-action-destructive bg-action-destructive/10 px-4 py-3 text-sm font-medium text-action-destructive" role="alert">
-            {errorMessage}
-          </p>
+          <div className="mt-6 border-l-4 border-action-destructive bg-action-destructive/10 px-4 py-3 text-sm font-medium text-action-destructive" role="alert">
+            <p>{errorMessage}</p>
+            {errorMessage && <button type="button" disabled={!online || isSubmitting} className={joinClasses(buttonStyles.secondary, "mt-3")} onClick={() => { if (failedSubmission.current) void commitRating(failedSubmission.current.pending) }}>Retry same rating</button>}
+            <p className="mt-2">Keep this page open. Retrying the same rating will not record it twice.</p>
+          </div>
         ) : null}
 
         <div className="mt-7 grid gap-3 sm:grid-cols-2">
-          {currentItem.media_bundle.effectiveReference && currentItem.piece ? (
-            <details className="border-y border-hairline py-3 sm:col-span-2">
-              <summary className="cursor-pointer font-semibold text-text-muted">Reveal reference</summary>
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-text-muted">{currentItem.media_bundle.effectiveReference.label}</p>
-                <Link href={`/library/${currentItem.piece.id}/reference-media`} className={buttonStyles.secondary}>
-                  Open Reference Mode
-                </Link>
-              </div>
-            </details>
+          {currentItem.piece ? (
+            <div ref={referenceRegion} tabIndex={-1} className="py-3 sm:col-span-2 focus:outline-none">
+              <button type="button" aria-expanded={referencePieceId === currentItem.id} aria-controls="review-reference" className={buttonStyles.secondary} onClick={() => referencePieceId === currentItem.id ? setReferencePieceId(null) : revealReference()}>{referencePieceId === currentItem.id ? "Hide reference" : "Reveal reference"}</button>
+              {referencePieceId === currentItem.id && <div id="review-reference" className="mt-3"><InlineReferencePlayer key={currentItem.id} source={currentItem.media_bundle.effectiveReference} fullHref={getReferencePracticeHref(currentItem.piece.id, currentItem.media_bundle.effectiveReference?.id, `${pathname}?${searchParams}`)} /></div>}
+            </div>
           ) : null}
 
-          <details className="border-y border-hairline py-3 sm:col-span-2">
+          <details className="border-t border-hairline pt-3 sm:col-span-2">
             <summary className="cursor-pointer font-semibold text-text-muted">Add an optional review note</summary>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <select aria-label="Practice note category" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} className="rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm">
+              <select aria-label="Practice note category" value={categoryId} onChange={(event) => { setCategoryId(event.target.value); saveDraft({ category: event.target.value }) }} className="rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm">
                 <option value="">No category</option>
                 {noteCategories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
               </select>
-              <select aria-label="Practice focus" value={focusId} onChange={(event) => { setFocusId(event.target.value); setAddTuneToFocus(false) }} className="rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm">
+              <select aria-label="Practice focus" value={focusId} onChange={(event) => { setFocusId(event.target.value); setAddTuneToFocus(false); saveDraft({ focus: event.target.value, add: false }) }} className="rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm">
                 <option value="">No focus area</option>
                 {currentItem.practice_focus_options.map((focus) => <option key={focus.id} value={focus.id}>{focus.title}</option>)}
               </select>
               {focusId && !currentItem.active_practice_foci.some((focus) => String(focus.id) === focusId) ? (
                 <label className="flex items-center gap-2 text-sm text-text-muted sm:col-span-2">
-                  <input type="checkbox" checked={addTuneToFocus} onChange={(event) => setAddTuneToFocus(event.target.checked)} /> Add this tune to the selected focus area
+                  <input type="checkbox" checked={addTuneToFocus} onChange={(event) => { setAddTuneToFocus(event.target.checked); saveDraft({ add: event.target.checked }) }} /> Add this tune to the selected focus area
                 </label>
               ) : null}
-              <textarea value={noteBody} onChange={(event) => setNoteBody(event.target.value)} rows={3} placeholder="What happened with this tune today?" className="rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm sm:col-span-2" />
+              <textarea aria-label="Review note" value={noteBody} onChange={(event) => { setNoteBody(event.target.value); saveDraft({ body: event.target.value }) }} rows={3} placeholder="What happened with this tune today?" className="rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm sm:col-span-2" />
             </div>
           </details>
         </div>

@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 import EmptyState from "@/components/EmptyState"
 
@@ -20,52 +19,22 @@ type FriendsListSectionProps = {
 const DEFAULT_VISIBLE_COUNT = 4
 
 const secondaryButtonClass =
-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
-
-function clickedInsideInteractiveElement(target: EventTarget | null) {
-  if (!(target instanceof Element)) return false
-
-  return Boolean(
-    target.closest(
-      [
-        "a",
-        "button",
-        "input",
-        "select",
-        "textarea",
-        "label",
-        "summary",
-        "details",
-        "form",
-        "[role='button']",
-        "[data-card-action]",
-      ].join(", ")
-    )
-  )
-}
+  "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
 
 function FriendCard({ friend }: { friend: AcceptedFriend }) {
-  const router = useRouter()
   const label = friend.display_name || friend.username || "Unnamed player"
   const profileHref = friend.username
     ? `/users/${encodeURIComponent(friend.username)}`
     : null
 
-  function openProfile(event: React.MouseEvent<HTMLElement>) {
-    if (!profileHref) return
-    if (clickedInsideInteractiveElement(event.target)) return
-    router.push(profileHref)
-  }
-
   return (
     <article
       className={
         profileHref
-          ? "cursor-pointer py-4 transition hover:text-foreground focus-within:ring-2 focus-within:ring-[var(--focus-ring)] md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm md:hover:-translate-y-0.5 md:hover:bg-muted/70 md:hover:shadow-md"
+          ? "py-4 transition hover:text-foreground focus-within:ring-2 focus-within:ring-[var(--focus-ring)] md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm md:hover:-translate-y-0.5 md:hover:bg-muted/70 md:hover:shadow-md"
           : "py-4 transition hover:text-foreground md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm md:hover:bg-muted/70"
       }
-      onClick={openProfile}
-      aria-label={profileHref ? `Open profile for ${label}` : undefined}
+
     >
       <p className="font-medium text-foreground">
         {profileHref ? (
@@ -107,9 +76,6 @@ export default function FriendsListSection({ friends }: FriendsListSectionProps)
     <section className="mb-7 md:mb-8 md:rounded-2xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
       <div className="mb-4 flex items-start justify-between gap-4 md:mb-5">
         <div>
-          <p className="hidden text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground md:block">
-            Connections
-          </p>
           <h2 className="text-xl font-semibold tracking-tight text-foreground md:mt-2 md:font-serif md:text-3xl md:font-bold">
             Friends
           </h2>

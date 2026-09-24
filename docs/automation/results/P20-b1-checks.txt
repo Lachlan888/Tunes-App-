@@ -1,0 +1,112 @@
+Run 2026-09-23T06:07:31.937902+00:00
+
+Scoped ESLint of 17 changed TSX files: exit 0. Final app/setlists/page.tsx alignment follow-up lint: exit 0.
+Scoped git diff --check: exit 0.
+
+node --experimental-strip-types --test tests/{list-view-state,list-detail-return,list-page-return,list-bounds,list-permissions,setlist-performance}.test.ts
+(node:21588) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/list-bounds.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Lists keeps complete queue/counts beyond API caps, with owner scope and bounded stable reads (29.613708ms)
+✔ Lists still tolerates an optional missing bookmarks table without hiding oversized collections (15.545459ms)
+(node:21589) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/list-detail-return.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ owned card title and Read link carry the filtered overview origin (59.264666ms)
+✔ detail Back, modes, and pager retain the overview origin (99.682917ms)
+✔ detail rejects external, unrelated and malformed return destinations (128.467458ms)
+✔ saved and directly shared card links retain overview filters and page (13.735625ms)
+✔ public detail Back and pager retain a safe Lists origin (14.087708ms)
+✔ public detail keeps its default and rejects unsafe return destinations (67.257542ms)
+✔ discovery desktop and mobile entry links carry their filtered origin (8.73275ms)
+✔ discovery page supplies filters and the clamped page to both entry layouts (40.122833ms)
+✔ public detail returns to discovery and retains origin in its pager (11.237459ms)
+(node:21590) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/list-page-return.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ my-lists action targets retain filters and the displayed page (15.927875ms)
+✔ learning-queue action targets retain filters and the displayed page (1.854833ms)
+✔ unsorted action targets retain filters and the displayed page (1.239334ms)
+✔ saved-shared action targets retain filters and the displayed page (1.265708ms)
+(node:21591) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/list-permissions.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ detail loader returns owner without effects or recipient enumeration (82.606042ms)
+✔ detail loader returns shared_viewer without effects or recipient enumeration (38.414708ms)
+✔ detail loader returns public_viewer without effects or recipient enumeration (13.86225ms)
+✔ private inaccessible detail has the same not-found boundary and no dependent reads (7.10975ms)
+✔ revoked inaccessible detail has the same not-found boundary and no dependent reads (7.446209ms)
+✔ missing inaccessible detail has the same not-found boundary and no dependent reads (8.930791ms)
+✔ signed-out private detail redirects before querying list existence (6.932167ms)
+✔ public loader accepts public link for signed out without effects (6.777292ms)
+✔ public route conceals private list even from signed out (4.916334ms)
+✔ public loader accepts public link for owner without effects (7.967667ms)
+✔ public route conceals private list even from owner (7.46125ms)
+✔ public loader accepts public link for viewer without effects (4.0635ms)
+✔ public route conceals private list even from viewer (3.520417ms)
+✔ signed out cannot invoke updateList on another user's list (55.400666ms)
+✔ signed out cannot invoke removeTuneFromList on another user's list (33.594125ms)
+✔ signed out cannot invoke deleteList on another user's list (28.409166ms)
+✔ signed out cannot invoke revokeLearningListPrivateShare on another user's list (17.806583ms)
+✔ signed out cannot invoke toggleLearningListVisibility on another user's list (26.061666ms)
+✔ signed out cannot invoke reorderListItems on another user's list (17.196667ms)
+✔ recipient cannot invoke updateList on another user's list (20.130791ms)
+✔ recipient cannot invoke removeTuneFromList on another user's list (19.15575ms)
+✔ recipient cannot invoke deleteList on another user's list (22.554583ms)
+✔ recipient cannot invoke revokeLearningListPrivateShare on another user's list (16.80625ms)
+✔ recipient cannot invoke toggleLearningListVisibility on another user's list (20.488209ms)
+✔ recipient cannot invoke reorderListItems on another user's list (15.575917ms)
+✔ viewer cannot invoke updateList on another user's list (15.110125ms)
+✔ viewer cannot invoke removeTuneFromList on another user's list (15.266084ms)
+✔ viewer cannot invoke deleteList on another user's list (20.230292ms)
+✔ viewer cannot invoke revokeLearningListPrivateShare on another user's list (14.388417ms)
+✔ viewer cannot invoke toggleLearningListVisibility on another user's list (14.784833ms)
+✔ viewer cannot invoke reorderListItems on another user's list (15.685125ms)
+(node:21592) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/list-view-state.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ list collection pagination is bounded and clamps stale pages (2.254708ms)
+✔ list page links preserve selected URL state (2.09675ms)
+(node:21593) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/setlist-performance.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ readiness counts only the signed-in musician, including new tunes (1.749791ms)
+✔ active setlist payload preserves ordered essentials and excludes private membership state (0.819166ms)
+✔ performance resumes by item identity after reordered or removed tunes (0.309708ms)
+✔ only explicit Manage and Performance mode values leave Read mode (0.172916ms)
+ℹ tests 52
+ℹ suites 0
+ℹ pass 52
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 953.446084
+
+Input SHA256:
+a83d4f939c549eef8ef45dc325b017d755327ecf9b5505f42e68a0915092d1bf app/learning-lists/[id]/page.tsx
+87a06deeab361e7a77912da85e1ca262cc99e44702ea83a618c7c82f20d6c812 app/public-lists/[id]/not-found.tsx
+d03fe8581bdd487497e8561cc57b3a5ab25a45ea6a162cf203fc7d67e2e67a37 app/public-lists/[id]/page.tsx
+f4c54957789eeeafc365d4beb6f958226d9b0a98de74a9ffb5c7c691b5b3b127 app/public-lists/page.tsx
+77c911196b36f85acc7ac152614917e98f1cacd72a4d40cbd0a0047c4ae40717 app/setlists/page.tsx
+03e41339a11b1c7fb74b8d25eab8c545adc388d01ba77de892640afb26ccf98e components/lists/CreateListForm.tsx
+181c6dc33bee3642dde73c18ec59e482e5f7d3a1d0ace6fa04a643d9579dfd91 components/lists/ListOrderManager.tsx
+eb80585db1607c799813b92a30916c4fdd28aa778e0e1edd1d0b26f9cbe4a148 components/lists/ListPager.tsx
+a23f2a9ad6872952be18da47537b3d083894114f5f580e74d4e044f7393f2746 components/lists/ListsResultsHeader.tsx
+ca6cb1568ae24207445dd6913faf8cdcc9e9f716872d33899d4ccdc4f33cc067 components/setlists/CreateSetlistModal.tsx
+31771546cd2b61d1013e299b113bb5cbaadcb2ae49824e5cd4e50648b3a5d284 components/setlists/EditSetlistItemModal.tsx
+fec58f609fd040a3f8e02d8fc6d6e1407526984ee0109dbd0834eaaf94bedadb components/setlists/InviteSetlistCollaboratorForm.tsx
+51c9a1577a0f12905f5c6fef0f9f0554d49b19b118abc98c40c8e6ee7bc28e9b components/setlists/SetlistOrderManager.tsx
+cec93faf6adca77c9fffbd751c9b0ee21d19c2d7ffb4cb1312e704fd938a5854 components/setlists/SetlistOverviewCard.tsx
+209dc1f7af1dc928cdccf0f33e51e10b5c6e6e2b45771792763cd1addc266a75 components/setlists/SetlistReadView.tsx
+0eb97197ec47d4689a571e4cd539cf62278a818f435c2c2ddaea9b51b9c9d749 components/shared/SharedListCard.tsx
+d292d11861e7028c5eb26453e2df41dfa82034ec144686c93132ea69b7498aa6 components/shared/SharedListsMobileList.tsx
+c2e35267ec1a4741bbdac83b017d6cbadbace08bcff12631ca093f3dcb9b0f4f app/globals.css
+8c7eb5285a0c9c208668d1f46f379e31b99213b0e7e2f5fe410b53d4322ceea7 components/ui/buttonStyles.ts
+42f3a674b0cba3314b2559341ff93ad904be09a0f01044913e870f35881c87e1 package-lock.json

@@ -28,7 +28,7 @@ export default function EditSetlistItemModal({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="rounded-full border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        className="min-h-11 inline-flex items-center justify-center rounded-control border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
       >
         Edit
       </button>
@@ -38,9 +38,6 @@ export default function EditSetlistItemModal({
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Setlist tune
-                </p>
                 <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight">
                   {title}
                 </h2>
@@ -67,6 +64,7 @@ export default function EditSetlistItemModal({
                 value={item.id}
               />
               <input type="hidden" name="redirect_to" value={redirectTo} />
+              <input type="hidden" name="expected_version" value={item.updated_at ?? item.created_at} />
 
               <KeyPickerField
                 name="performance_key"
@@ -142,7 +140,7 @@ export default function EditSetlistItemModal({
               <SubmitButton
                 label="Save tune details"
                 pendingLabel="Saving..."
-                className="w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="w-full min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               />
             </form>
           </div>

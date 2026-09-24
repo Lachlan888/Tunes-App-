@@ -1,243 +1,50 @@
-import ProfileEditor from "@/components/profile/ProfileEditor"
-import PageHeader from "@/components/ui/PageHeader"
-import { loadOwnProfileData } from "@/lib/loaders/profile"
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { loadOwnProfileData } from '@/lib/loaders/profile'
+import { getOptionalUserContext } from '@/lib/auth/session'
+import { getSafeInternalPath } from '@/lib/auth/redirects'
+import { SETTINGS_SECTIONS, PRIVACY_OPTIONS, NOTIFICATION_OPTIONS } from '@/lib/account-settings'
+import { saveAccountSettings } from '@/lib/actions/account-settings'
+import SettingsForm from '@/components/settings/SettingsForm'
+import InstrumentSettings from '@/components/settings/InstrumentSettings'
+import LogoutButton from '@/components/LogoutButton'
 
-type DashboardPageProps = {
-  searchParams?: Promise<{
-    saved?: string | string[]
-    error?: string | string[]
-    instrument_error?: string | string[]
-    instrument_saved?: string | string[]
-    instrument_removed?: string | string[]
-    username?: string | string[]
-    display_name?: string | string[]
-    bio?: string | string[]
-    show_identity?: string | string[]
-    show_instruments?: string | string[]
-    show_public_lists_on_profile?: string | string[]
-    show_composed_tunes_on_profile?: string | string[]
-    show_repertoire_summary?: string | string[]
-    show_repertoire_to_friends?: string | string[]
-    show_comment_activity?: string | string[]
-    show_compare_discoverability?: string | string[]
-    compare_requires_friend?: string | string[]
-    practice_diary_enabled?: string | string[]
-    communication_settings?: string | string[]
-    next?: string | string[]
-  }>
-}
-
-function getSingleValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] ?? "" : value ?? ""
-}
-
-function getBooleanDraftValue(
-  value: string | string[] | undefined,
-  fallback: boolean
-) {
-  const resolved = getSingleValue(value)
-
-  if (resolved === "true") {
-    return true
-  }
-
-  if (resolved === "false") {
-    return false
-  }
-
-  return fallback
-}
-
-function getProfileErrorMessage(error: string) {
-  if (error === "invalid_username") {
-    return "Username must be 3–30 characters and can only contain letters, numbers, and underscores."
-  }
-
-  if (error === "username_taken") {
-    return "That username is already taken."
-  }
-
-  if (error === "save_failed") {
-    return "Couldn’t save profile. Please try again."
-  }
-
-  return null
-}
-
-function getInstrumentErrorMessage(error: string) {
-  if (error === "blank") {
-    return "Add an instrument name before saving."
-  }
-
-  if (error === "duplicate") {
-    return "That instrument is already on your profile."
-  }
-
-  if (error === "missing") {
-    return "Couldn’t tell which instrument to remove."
-  }
-
-  if (error === "delete_failed") {
-    return "Couldn’t remove instrument. Please try again."
-  }
-
-  if (error === "save_failed") {
-    return "Couldn’t save instrument. Please try again."
-  }
-
-  return null
-}
-
-function getCommunicationSettingsMessage(status: string) {
-  if (status === "saved") {
-    return {
-      tone: "success" as const,
-      text: "Communication settings saved.",
-    }
-  }
-
-  if (status === "invalid_digest") {
-    return {
-      tone: "warning" as const,
-      text: "Choose a valid digest frequency.",
-    }
-  }
-
-  if (status === "error") {
-    return {
-      tone: "error" as const,
-      text: "Couldn’t save communication settings.",
-    }
-  }
-
-  return null
-}
-
-export default async function DashboardPage({
-  searchParams,
-}: DashboardPageProps) {
-  const resolvedSearchParams = await searchParams
-  const showSection = (sectionId: string) => {
-    void sectionId
-    return true
-  }
-
-  const { user, profile, notificationPreferences, instruments } =
-    await loadOwnProfileData()
-
-  const saved = getSingleValue(resolvedSearchParams?.saved) === "1"
-  const instrumentSaved =
-    getSingleValue(resolvedSearchParams?.instrument_saved) === "1"
-  const instrumentRemoved =
-    getSingleValue(resolvedSearchParams?.instrument_removed) === "1"
-
-  const errorMessage = getProfileErrorMessage(
-    getSingleValue(resolvedSearchParams?.error)
-  )
-
-  const instrumentErrorMessage = getInstrumentErrorMessage(
-    getSingleValue(resolvedSearchParams?.instrument_error)
-  )
-
-  const communicationSettingsMessage = getCommunicationSettingsMessage(
-    getSingleValue(resolvedSearchParams?.communication_settings)
-  )
-
-  const nextPath = getSingleValue(resolvedSearchParams?.next)
-
-  const initialUsername =
-    getSingleValue(resolvedSearchParams?.username) || profile?.username || ""
-
-  const initialDisplayName =
-    getSingleValue(resolvedSearchParams?.display_name) ||
-    profile?.display_name ||
-    ""
-
-  const initialBio =
-    getSingleValue(resolvedSearchParams?.bio) || profile?.bio || ""
-
-  const initialShowIdentity = getBooleanDraftValue(
-    resolvedSearchParams?.show_identity,
-    profile?.show_identity ?? true
-  )
-
-  const initialShowInstruments = getBooleanDraftValue(
-    resolvedSearchParams?.show_instruments,
-    profile?.show_instruments ?? true
-  )
-
-  const initialShowPublicListsOnProfile = getBooleanDraftValue(
-    resolvedSearchParams?.show_public_lists_on_profile,
-    profile?.show_public_lists_on_profile ?? true
-  )
-
-  const initialShowComposedTunesOnProfile = getBooleanDraftValue(
-    resolvedSearchParams?.show_composed_tunes_on_profile,
-    profile?.show_composed_tunes_on_profile ?? true
-  )
-
-  const initialShowRepertoireSummary = getBooleanDraftValue(
-    resolvedSearchParams?.show_repertoire_summary,
-    profile?.show_repertoire_summary ?? false
-  )
-
-  const initialShowRepertoireToFriends = getBooleanDraftValue(
-    resolvedSearchParams?.show_repertoire_to_friends,
-    profile?.show_repertoire_to_friends ?? false
-  )
-
-  const initialShowCommentActivity = getBooleanDraftValue(
-    resolvedSearchParams?.show_comment_activity,
-    profile?.show_comment_activity ?? true
-  )
-
-  const initialShowCompareDiscoverability = getBooleanDraftValue(
-    resolvedSearchParams?.show_compare_discoverability,
-    profile?.show_compare_discoverability ?? true
-  )
-
-  const initialCompareRequiresFriend = getBooleanDraftValue(
-    resolvedSearchParams?.compare_requires_friend,
-    profile?.compare_requires_friend ?? false
-  )
-
-  const initialPracticeDiaryEnabled = getBooleanDraftValue(
-    resolvedSearchParams?.practice_diary_enabled,
-    profile?.practice_diary_enabled ?? false
-  )
-
-  return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
-      <PageHeader title="Profile" />
-
-      {showSection("profile_editor") ? (
-        <ProfileEditor
-          nextPath={nextPath}
-          email={user.email}
-          profile={profile}
-          notificationPreferences={notificationPreferences}
-          communicationSettingsMessage={communicationSettingsMessage}
-          instruments={instruments}
-          errorMessage={errorMessage}
-          saved={saved}
-          instrumentErrorMessage={instrumentErrorMessage}
-          instrumentSaved={instrumentSaved}
-          instrumentRemoved={instrumentRemoved}
-          initialUsername={initialUsername}
-          initialDisplayName={initialDisplayName}
-          initialBio={initialBio}
-          initialShowIdentity={initialShowIdentity}
-          initialShowInstruments={initialShowInstruments}
-          initialShowPublicListsOnProfile={initialShowPublicListsOnProfile}
-          initialShowComposedTunesOnProfile={initialShowComposedTunesOnProfile}
-          initialShowRepertoireSummary={initialShowRepertoireSummary}
-          initialShowRepertoireToFriends={initialShowRepertoireToFriends}
-          initialShowCommentActivity={initialShowCommentActivity}
-          initialShowCompareDiscoverability={initialShowCompareDiscoverability}
-          initialCompareRequiresFriend={initialCompareRequiresFriend}
-          initialPracticeDiaryEnabled={initialPracticeDiaryEnabled}
-        />
-      ) : null}
-    </main>
-  )
+export default async function DashboardPage({searchParams}: {searchParams?:Promise<Record<string,string | string[] | undefined>>}) {
+  const params = await searchParams ?? {}
+  const section = SETTINGS_SECTIONS.find(item => item.id === params.section)
+  const nextPath = getSafeInternalPath(typeof params.next === 'string' ? params.next : '', '')
+  const context = await getOptionalUserContext()
+  if (!context) redirect(`/login?next=${encodeURIComponent(`/dashboard${section ? `?section=${section.id}` : ''}`)}`)
+  const {user,profile,notificationPreferences,instruments} = await loadOwnProfileData()
+  const input = 'mt-1 block w-full rounded-xl border border-border bg-surface px-3 py-3'
+  return <main className="mx-auto max-w-3xl space-y-6 px-4 py-6 sm:px-6">
+    {section && <Link className="inline-block min-h-11 text-sm underline" href="/dashboard">← Account & settings</Link>}
+    <header><h1 className="font-serif text-3xl font-bold">{section?.title ?? 'Account & settings'}</h1><p className="mt-2 text-sm text-text-muted">{section?.description ?? 'Your musical identity, preferences and account.'}</p></header>
+    {!section ? <>
+      <div className="rounded-2xl bg-card p-4"><p className="font-semibold">{profile?.display_name || profile?.username || 'Welcome to your tunebook'}</p>{profile?.username && <Link className="mt-2 inline-block min-h-11 py-2 text-sm underline" href={`/users/${encodeURIComponent(profile.username)}`}>View my profile</Link>}</div>
+      <nav aria-label="Settings groups" className="divide-y divide-border">{SETTINGS_SECTIONS.map(item => <Link key={item.id} href={`/dashboard?section=${item.id}`} className="flex items-center justify-between gap-4 py-5"><span><span className="block font-semibold">{item.title}</span><span className="block text-sm text-text-muted">{item.description}</span></span><span aria-hidden="true">→</span></Link>)}</nav>
+    </> : section.id === 'security' ? <>
+      <p className="break-words text-sm">Signed in as {user.email}</p>
+      <Link className="inline-block min-h-11 py-2 underline" href="/update-password">Change password</Link>
+      <section className="border-t border-border pt-5"><h2 className="font-semibold">Sign out or switch account</h2><p className="mb-3 mt-2 text-sm text-text-muted">Sign out, then sign in with the account you want to use.</p><LogoutButton /></section>
+    </> : <>
+      {!profile && section.id !== 'profile' ? <p>Create your <Link className="underline" href="/dashboard?section=profile">profile</Link> first.</p> : <SettingsForm key={`${section.id}:${profile?.username ?? ''}`} action={saveAccountSettings}>
+        <input type="hidden" name="section" value={section.id} />
+        {section.id === 'profile' && <>
+          <label className="block text-sm font-medium">Username<input className={input} name="username" required pattern="[a-zA-Z0-9_]{3,30}" maxLength={30} defaultValue={profile?.username ?? ''} aria-describedby="username-help" /><span id="username-help" className="mt-1 block text-sm font-normal text-text-muted">3–30 letters, numbers or underscores. This is your profile address.</span></label>
+          <label className="block text-sm font-medium">Display name<input className={input} name="display_name" maxLength={80} defaultValue={profile?.display_name ?? ''} /></label>
+          <label className="block text-sm font-medium">Musical bio<textarea className={input} rows={4} name="bio" maxLength={500} defaultValue={profile?.bio ?? ''} aria-describedby="bio-help" /><span id="bio-help" className="mt-1 block font-normal text-text-muted">Up to 500 characters. Share favourite styles, traditions or location only if you want them public. Visibility is controlled in Privacy and sharing.</span></label>
+        </>}
+        {section.id === 'privacy' && PRIVACY_OPTIONS.map(([name,title,description]) => <label key={name} className="flex min-h-11 items-start gap-3 border-b border-border py-3"><input type="checkbox" name={name} defaultChecked={profile?.[name] ?? false} aria-describedby={`${name}-help`} className="mt-1 size-5 shrink-0" /><span><span className="block font-medium">{title}</span><span id={`${name}-help`} className="block text-sm text-text-muted">{description}</span></span></label>)}
+        {section.id === 'practice' && <label className="flex gap-3"><input className="size-5 shrink-0" type="checkbox" name="practice_diary_enabled" defaultChecked={profile?.practice_diary_enabled ?? false} aria-describedby="diary-help" /><span>Enable Practice Diary<span id="diary-help" className="mt-1 block text-sm text-text-muted">Keep dated practice notes. This preference does not change Stage, due dates or review scheduling.</span></span></label>}
+        {section.id === 'notifications' && <>
+          {NOTIFICATION_OPTIONS.map(([name,title,description]) => <label key={name} className="flex gap-3 border-b border-border py-3"><input className="mt-1 size-5 shrink-0" type="checkbox" name={name} defaultChecked={notificationPreferences[name]} aria-describedby={`${name}-help`} /><span><span className="block font-medium">{title}</span><span id={`${name}-help`} className="block text-sm text-text-muted">{description}</span></span></label>)}
+          <label className="block text-sm">Digest frequency<select name="digest_frequency" className={input} defaultValue={notificationPreferences.digest_frequency}><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="never">Off</option></select></label>
+        </>}
+      </SettingsForm>}
+      {section.id === 'profile' && <InstrumentSettings instruments={instruments} />}
+      {section.id === 'profile' && profile?.username && <Link className="block min-h-11 py-2 text-sm underline" href={`/users/${encodeURIComponent(profile.username)}?preview=public`}>Preview public profile</Link>}
+      {nextPath && <Link className="block underline" href={nextPath}>Continue to your tunebook</Link>}
+    </>}
+  </main>
 }

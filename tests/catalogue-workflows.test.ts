@@ -133,6 +133,10 @@ test("catalogue UI wires staged filters, selection dock, and progressive creatio
     new URL("../components/library/LibraryList.tsx", import.meta.url),
     "utf8"
   )
+  const cataloguePreview = readFileSync(
+    new URL("../components/library/CataloguePreview.tsx", import.meta.url),
+    "utf8"
+  )
   const createTune = readFileSync(
     new URL("../components/library/CreateTuneForm.tsx", import.meta.url),
     "utf8"
@@ -150,6 +154,14 @@ test("catalogue UI wires staged filters, selection dock, and progressive creatio
   assert.match(workspace, /sessionStorage/)
   assert.match(workspace, /Add to List/)
   assert.doesNotMatch(libraryList, /CardPager/)
+  assert.match(cataloguePreview, /grid grid-cols-2/)
+  assert.match(cataloguePreview, /max-w-80/)
+  assert.match(cataloguePreview, /key=\{piece\.id\}/)
+  assert.match(cataloguePreview, /event\.key === "Escape"/)
+  assert.ok(
+    cataloguePreview.indexOf("Open Tune Detail") <
+      cataloguePreview.indexOf("<dl className=")
+  )
   assert.match(createTune, /"identity" \| "details"/)
   assert.match(createTune, /duplicate-suggestions/)
   assert.match(createTune, /I checked these matches/)

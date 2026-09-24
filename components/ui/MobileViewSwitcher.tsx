@@ -6,6 +6,7 @@ import { segmentedControlStyles } from "@/components/ui/segmentedControlStyles"
 type MobileViewOption<T extends string> = {
   id: T
   label: string
+  controls?: string
 }
 
 type MobileViewSwitcherProps<T extends string> = {
@@ -51,6 +52,19 @@ export default function MobileViewSwitcher<T extends string>({
               type="button"
               role="tab"
               aria-selected={isActive}
+              aria-controls={option.controls}
+              tabIndex={isActive ? 0 : -1}
+              onKeyDown={event => {
+                const index = options.findIndex(item => item.id === option.id)
+                const next = event.key === "ArrowRight" ? (index + 1) % options.length
+                  : event.key === "ArrowLeft" ? (index + options.length - 1) % options.length
+                  : event.key === "Home" ? 0 : event.key === "End" ? options.length - 1 : -1
+                if (next < 0) return
+                event.preventDefault()
+                onChange(options[next].id)
+                const buttons = event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+                buttons?.[next]?.focus()
+              }}
               onClick={() => onChange(option.id)}
               className={joinClasses(
                 segmentedControlStyles.item,

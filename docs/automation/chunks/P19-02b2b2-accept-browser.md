@@ -1,0 +1,4 @@
+# P19-02b2b2-accept-browser — Five-view side-effect browser acceptance
+Dependency: P19-02b2b2-accept-coverage. Parent: P19-02b2b2-accept. Prompt 19 items 6–7.
+Carry forward prior navigation evidence and 22 September audit/fixture setup checks; consult coverage result for exact fixture expectations. Start a NEW `node tests/integration/list-side-effect-harness.mjs --serve` on 4320. Exercise My Lists, Learning Queue, Unsorted, Saved and Shared through actual navigation. Compare fresh /fixture-audit before/after snapshots and require zero write/database-attempt events plus no client console errors. A blocked attempt fails acceptance. Immutable fixture equality alone is not persistence proof. No production mutations. Record focused browser evidence and limitations; targeted checks only for fixes. Passing completes P19-02b2b2-accept and P19-02b2b2.
+Next: P19-02c.

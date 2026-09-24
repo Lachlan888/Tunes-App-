@@ -1,7 +1,6 @@
 import Link from "next/link"
 import Icon from "@/components/ui/Icon"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
-import type { ReviewQueueItem } from "@/lib/loaders/review"
 import { getPracticeSessionHref, type PracticeLane } from "@/lib/practice-session"
 
 function LaneLink({
@@ -48,16 +47,16 @@ function LaneLink({
 }
 
 export default function ReviewQueueSection({
-  dueTodayPieces,
-  catchUpQueue,
+  dueTodayCount,
+  catchUpCount,
 }: {
-  dueTodayPieces: ReviewQueueItem[]
-  catchUpQueue: ReviewQueueItem[]
+  dueTodayCount: number
+  catchUpCount: number
 }) {
   const recommendedLane: PracticeLane | null =
-    dueTodayPieces.length > 0
+    dueTodayCount > 0
       ? "due-today"
-      : catchUpQueue.length > 0
+      : catchUpCount > 0
         ? "catch-up"
         : null
 
@@ -65,7 +64,6 @@ export default function ReviewQueueSection({
     <section id="review-queue" className="mt-4 scroll-mt-4 md:mt-6 md:scroll-mt-6">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-hairline pb-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">Choose a lane</p>
           <h2 className="mt-1 font-serif text-2xl font-bold">Practise what needs attention</h2>
         </div>
         {recommendedLane ? (
@@ -78,14 +76,14 @@ export default function ReviewQueueSection({
       <div className="mt-2 grid md:grid-cols-2 md:gap-3">
         <LaneLink
           lane="due-today"
-          count={dueTodayPieces.length}
+          count={dueTodayCount}
           title="Due today"
           detail="Scheduled reviews ready now"
           recommended={recommendedLane === "due-today"}
         />
         <LaneLink
           lane="catch-up"
-          count={catchUpQueue.length}
+          count={catchUpCount}
           title="Catch-up"
           detail="Oldest overdue tunes first"
           recommended={recommendedLane === "catch-up"}
@@ -103,8 +101,8 @@ export default function ReviewQueueSection({
         <Link href="/learning-lists?view=learning-queue" className="min-h-14 border-y border-hairline px-2 py-3 font-semibold text-text-muted hover:text-text-primary md:rounded-control md:border md:bg-surface-paper">
           From learning queue
         </Link>
-        <Link href="/review/foci" className="min-h-14 border-y border-hairline px-2 py-3 font-semibold text-text-muted hover:text-text-primary md:rounded-control md:border md:bg-surface-paper">
-          From focus areas
+        <Link href="/library/practice" className="min-h-14 border-y border-hairline px-2 py-3 font-semibold text-text-muted hover:text-text-primary md:rounded-control md:border md:bg-surface-paper">
+          Currently in practice
         </Link>
       </div>
     </section>

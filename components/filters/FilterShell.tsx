@@ -55,7 +55,7 @@ export default function FilterShell({
       className={joinClasses(
         "relative mb-5 transition-opacity md:mb-8",
         sticky &&
-          "sticky top-14 z-[300] -mx-4 border-b border-hairline bg-surface-canvas/95 px-4 pb-3 pt-3 shadow-material-rest backdrop-blur md:top-0 md:mx-0 md:rounded-object md:border md:bg-surface-paper/95 md:px-5 md:py-4",
+          "sticky top-14 z-20 -mx-4 border-b border-hairline bg-surface-canvas/95 px-4 pb-3 pt-3 shadow-material-rest backdrop-blur md:top-0 md:mx-0 md:rounded-object md:border md:bg-surface-paper/95 md:px-5 md:py-4",
         isPending ? "opacity-80" : "opacity-100",
         className
       )}

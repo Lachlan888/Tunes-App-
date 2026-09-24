@@ -1,0 +1,2 @@
+# P19-02b2b1fix-b2b-b-accept-remaining-other-rest-pagers-fixtures-browser
+Split before implementation into P19-02b2b1fix-b2b-b-accept-remaining-other-rest-pagers-fixtures-browser-setup → P19-02b2b1fix-b2b-b-accept-remaining-other-rest-pagers-fixtures-browser-accept → P19-02b2b2. Original remaining acceptance retained in P19-02b2b1fix-b2b-b-accept-remaining-other-rest-pagers-fixtures-browser-accept.

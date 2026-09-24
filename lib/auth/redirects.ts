@@ -15,7 +15,9 @@ export function isSafeInternalPath(value: string | null | undefined) {
     if (
       !decodedValue.startsWith("/") ||
       decodedValue.startsWith("//") ||
-      decodedValue.includes("\\")
+      decodedValue.includes("\\") ||
+      /[\u0000-\u001f\u007f]/.test(decodedValue) ||
+      /%(?:2f|5c|00|0a|0d)/i.test(decodedValue)
     ) {
       return false
     }
@@ -31,4 +33,14 @@ export function getSafeInternalPath(
   fallback = "/"
 ) {
   return isSafeInternalPath(value) ? value! : fallback
+}
+
+/** Authentication endpoints cannot themselves become a post-login destination. */
+export function getAuthReturnPath(value: string | null | undefined, fallback = '/') {
+  const safe = getSafeInternalPath(value, fallback)
+  try {
+    const pathname = decodeURIComponent(new URL(safe, INTERNAL_BASE_URL).pathname).replace(/\/+$/, '')
+    if (/^\/(?:login|auth)(?:\/|$)/i.test(pathname)) return fallback
+    return safe
+  } catch { return fallback }
 }

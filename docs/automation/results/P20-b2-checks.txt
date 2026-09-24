@@ -1,0 +1,142 @@
+23 September 2026 — scoped ESLint
+
+exit=0
+(node:27208) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/activity-pagination.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ activity cursor validates input and preserves tied timestamp IDs (0.936125ms)
+✔ feed merge deduplicates page overlap and keeps chronological ID order (14.469833ms)
+✔ activity page retains a continuation after all scanned rows are hidden (1.811042ms)
+✔ multiple friend batches still produce one bounded ordered page (4.125833ms)
+(node:27209) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/badge-workspace.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ all badge categories have text and a coherent motif/shape independent of colour (1.063333ms)
+✔ award announcements are scoped to recipient and award, and exclude old, future or invalid timestamps (0.285042ms)
+✔ internal authoring paths preserve consumer badge index and detail routes (0.314458ms)
+✔ discovery explicitly excludes other creators’ private and unlisted badges (98.550583ms)
+✔ private badge detail stops before criteria, recipients or inventory reads for a non-owner (20.958041ms)
+✔ unlisted direct links retain access; manual and undefined criteria have no invented progress (27.853459ms)
+✔ signed-out create and edit reject before any data query, non-owner edit before form inventory (24.755542ms)
+✔ owner edit remains permitted and retains the awarded-condition lock data (8.961917ms)
+✔ moderator and app-admin access fail closed while keeping their distinct role systems (43.581333ms)
+✔ automatic award service preserves manual/private/existing-award boundaries (13.174709ms)
+✔ a duplicate automatic award returns the stored award without a duplicate notification (1.90075ms)
+✔ internal actions authenticate and reject absent confirmation before data access (36.062416ms)
+(node:27210) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/compare-bounds.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Compare reuses Known/Practice reads and preserves known-only versus practice overlap (101.230042ms)
+✔ Compare retains repertoire beyond API row caps and batches tune details (26.279667ms)
+✔ blocked comparison and oversized groups read no repertoire (19.0165ms)
+(node:27211) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/compare-experience.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ comparison groups describe playable, strong, shaky and teachable outcomes (3.335375ms)
+✔ no-overlap and large-overlap paging remain bounded (0.615542ms)
+✔ in-person codes are strong, readable, short-lived and reconnectable (3.818208ms)
+✔ suggested set conversion preserves order and revalidates overlap (2.480209ms)
+✔ full overlap is URL-filtered and rendered through TuneRow (10.288416ms)
+✔ repertoire reads require explicit profile consent (1.257041ms)
+(node:27212) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/compare-invites.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ compare invitation tokens contain at least 32 random bytes and are URL safe (1.533666ms)
+✔ compare invitation tokens are hashed deterministically without retaining raw data (8.180083ms)
+✔ invitation state derives acceptance, revocation, and expiry from timestamps (0.140833ms)
+✔ authentication continuation accepts only internal application paths (0.52125ms)
+✔ database acceptance locks the invite and handles required connection states (1.724542ms)
+(node:27213) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/profile-account.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ profile URLs retain tabs, groups and search across pagination (6.098042ms)
+✔ profile publishing requires an owner or an accepted friend with consent; preview fails closed (0.186208ms)
+✔ auth return paths reject external URLs, encoded controls, nesting and redirect loops (0.604041ms)
+✔ settings update only their own group and validate before writing (47.116333ms)
+(node:27214) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/profile-loader.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ signed-out profiles retain the requested tab through login without reading private data (1.47975ms)
+✔ hidden profile fields and inventory never enter visitor or public-preview queries (1.195708ms)
+✔ repertoire queries enforce owner/friend consent before selecting a bounded page (4.267125ms)
+✔ profile lists and badges require explicit public visibility and bounded pagination (0.641583ms)
+✔ Overview shares only a small permitted overlap sample and previews omit it (2.678916ms)
+(node:27215) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/trends-insights.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ trend periods are URL-safe and default to eight weeks (9.504083ms)
+✔ weekly insights retain sparse and empty weeks (0.272708ms)
+✔ Rough-to-Solid movement requires a later Solid outcome (23.924708ms)
+✔ stage distribution omits zero-value stages (0.186292ms)
+✔ Trends exposes accessible data, actions and bounded server reads (2.4915ms)
+ℹ tests 44
+ℹ suites 0
+ℹ pass 44
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 676.883417
+
+Final disclosure min-width ESLint: exit 0. Scoped git diff --check: exit 0.
+Fresh Tailwind/PostCSS compilation verified: rounded-control resolves --shape-radius-control = 0.75rem; min-h-11 uses 11 × 0.25rem. At 16px root: 12px radius, 44px minimum height. Initial evidence assertion expected intermediate --radius-control, corrected after inspecting emitted inline token. No application CSS defect.
+
+Input SHA256
+46969a03c7666af607edf13c4e0e0a27a53ab665dc92dbcdc589a78eb5c87fd3  components/home/HomeBadgesPanel.tsx
+cd46ec70371a18a00c90dbe950d2e1a9aac901373501f1044d74c7b7284ff929  components/home/HomeFriendsActivityBox.tsx
+f39fdb9257a8581178adfdc725b0dfb9d6a16f6a942dbba948f71583c9bbcbb4  components/home/GettingStartedSection.tsx
+6883ed3e0269887b569182182ef6731eafeffa1a8358c1e3ce51060133c542d3  components/home/HomeMobileSummarySwitcher.tsx
+bd4c3b8bc6cb40e4376c16f1d543986f20917411d3ba4abff07bd72bcbb212ae  components/badges/CreateBadgeForm.tsx
+7ba4952b1e9c5e1d005f32c5d3f858c20dd15e030ccb04ca1a451d80b35bfbef  components/badges/BadgeBrowser.tsx
+3bb3de12278bed170aed4434b980ea18845d0fce925251ab69983eac5a0d8d18  components/compare/CompareBlockedSection.tsx
+1d21374bb720eba41f203a782776f656abfcdf120ae848cb1bf13991e3d7b826  components/compare/CompareInPersonLauncher.tsx
+efa13796e35166f4211df519fe5e6a14e7f4e7ed1de824df8981f86e997f2031  components/compare/EnterCompareCodeForm.tsx
+9d16b4a9b6262f58d84675b29e0a5a9ab759c92aa0760f8cbb4a2650b7039952  components/compare/SuggestedSessionSet.tsx
+a3f6258e109849307d18f390c64e5467ffdf70f205ff4d485245456325c66970  components/compare/CompareSearchForm.tsx
+5e903f964379c7c1c8332879b30b443dfa789ce6f7f74bf2c36e6b75dc7ec139  components/compare/ConnectAndCompareButton.tsx
+6b12f91015a29b543f7e596e68ab267e5d2c031cbb144c353708d3cc800610b9  components/compare/CurrentCompareGroupSection.tsx
+8786d84d28473564b7d8259f96bc46bd1b2a999b0eb420b31edacc29402c0084  components/compare/CompareSuggestionsSection.tsx
+d46c5b7f1259f4a767379d3cbbb2e0abe49d71a75cc03da5f31247bb213031c5  components/compare/CompareInPersonSheet.tsx
+7b5304490a7c6cca37f293d3c0e827deb30688ad6b65fee7c8b95bbdb2b8f8d3  components/compare/MobileCompareAddPersonSheet.tsx
+ce325c6d974ea18deb4ee7d41cb65abfed755d4c28514062e2fb1543c3f0bfac  components/compare/CompareCandidateListSection.tsx
+692f14de21337c2af6968430739208cdc70901556647c008909b0713ac6c5af0  components/compare/CompareMobile.tsx
+ba50bc01505797ad4c990b4622a4e0b8dcc3ffeee2cc56a5aa4dd1f4d7a2d76c  components/friends/FriendSearchForm.tsx
+1b010c4a6282a3b49470a3e8130e07ee787c674a3c4a6b7763274667d9bf0923  components/friends/FriendsListSection.tsx
+abb5e21004526dd088dfd84528129a63ca1118fe964699c619a3a8b7e4a258ad  components/inbox/DirectMessageThreadList.tsx
+a919afcb7391247f1465bca444c32a2a44f1fc9b0fe76f6993682678f84e91e9  components/inbox/InboxItemList.tsx
+4aaa42052b4f65e4db70ad827cf9dcf18c59263a70067f50893ec69794f0b671  components/profile/PublicProfileActions.tsx
+303b3652e4c541bfa44d04408991800e87e95efce885bdae6432a01934024630  components/profile/PublicProfileRepertoireSection.tsx
+09a32a5ff25bad1fb0f990320d18a41c13feff8ab17876a2ddad220357923c7a  components/profile/PublicProfileBadgesSection.tsx
+8dce3e419ea159805c1585f80a3b1803f026c078ed62966d5b2a1e6d23a623b5  components/profile/UserInstrumentsSection.tsx
+0a528debbdf0fa2feb134436d1d9ec9134edb6866d819e9f86f5a25997fc26a5  components/profile/ProfileDetailsSection.tsx
+e2cf3dc562bbd25c96a34db587def346393a79e6c9c106401c245a926b08f6ad  components/trends/PersonalTrendInsights.tsx
+ed5ba35bcdff8f40c870316863b78f141279341351a7bbf0958c1dda65bc0c1f  components/trends/TrendFriendPatternsSection.tsx
+127db169f6b4db8083fa44ed5ded59eea4c16b57cae3c9cb4276ee98240437ab  components/trends/TrendPublicListSection.tsx
+dc2ded05552651d05e857ef812edc06a8172445cc75ab88195bf71207bb5186f  components/trends/TrendTuneList.tsx
+9aa1b2f2b75e5c59b9ea4afb11cc2fbf7e83e58ee2341b76d11da6a03ee90c13  app/badges/page.tsx
+6a4223d6eb798c2b7e389821e075c0111069ae65aee9353f9047b14650e64aca  app/badges/[slug]/page.tsx
+4d95878731e0f7eff70d819c98b5e3677f9c66d813d8ddeda81f01a4afc09045  app/compare/join/[token]/page.tsx
+4c8ecf831585418757eeef6c1bc8a99aa0866b1e14be1c65600729d8a397c6bf  app/inbox/page.tsx
+fd2f02a4fbac34a5e204c493284e7ef6e14c7ab63c1294606d13339780e9a0f0  app/trends/page.tsx
+b1e1f2c317e1a6cf4d3c8a83ab630efd0efa3b95e5131c895c9a4e1cbbcf99ea  app/trends/[style]/page.tsx
+5a00a17b9b3233652ce19f1d321b6a17fa2d4656a769b3c9de3cc2dd26aa6cbc  components/activity/ActivityInteractionPanel.tsx
+a2a02e14701fb0550da524ea31bf6384fb2a2e7c2d72beca7cc625ef9629a3d0  components/profile/PublicProfileOverview.tsx
+c2e35267ec1a4741bbdac83b017d6cbadbace08bcff12631ca093f3dcb9b0f4f  app/globals.css
+8bb6e210891fbc184e12fb8e8407b556b01eb42dc9cc8e4ef05b04c94d78d0d1  package.json
+42f3a674b0cba3314b2559341ff93ad904be09a0f01044913e870f35881c87e1  package-lock.json
+0dda37dea5c1e665306723590d3e290dab4578a279e675036e49aed34afbb73f  tests/compare-invites.test.ts
+3388cfed3fcc8e323a536bd6ef832dd726b21cd01e0b45a8fff0d429d3f126fe  tests/compare-experience.test.ts
+7cc899650125adbb3b2f4e4e3a554c13d4dea982d448cbee227ce73e415214bb  tests/compare-bounds.test.ts
+61b462613a1075c2a0496830785a55c75e442bd76191a5bdb87dd2f19ecdb794  tests/badge-workspace.test.ts
+8d4fdc0e40dd3c00a61fb1664bcda3412c75bba49b3f390311dc7ba4842854da  tests/profile-loader.test.ts
+71eb56faafcfa2d7f1691162e6883566414b2ac5bf6339c40ec23e762b09bd15  tests/profile-account.test.ts
+5b89163b1b545dd408be58e4d610e8fde610106456491128d0e31796f8e0108b  tests/activity-pagination.test.ts
+4487effbd53f69c6a3a7d92aa50279ef45cbd303b72e9e6480b3e3185fd55fed  tests/trends-insights.test.ts

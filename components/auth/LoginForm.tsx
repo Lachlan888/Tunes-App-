@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import LoadingSpinner from "@/components/ui/LoadingSpinner"
+import { getAuthReturnPath } from "@/lib/auth/redirects"
 import { getSiteUrl } from "@/lib/site-url"
 import { createClient } from "@/lib/supabase/client"
 
@@ -15,7 +16,7 @@ const inputClassName =
   "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 const primaryButtonClassName =
-  "w-full rounded-full border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60"
+  "w-full min-h-11 rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60"
 
 const modeButtonClassName =
   "text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
@@ -66,7 +67,7 @@ export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
     }
 
     setIsRedirecting(true)
-    window.location.href = nextPath
+    window.location.href = getAuthReturnPath(nextPath)
   }
 
   async function handleSignup() {
@@ -100,7 +101,7 @@ export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
 
     if (data.session) {
       setIsRedirecting(true)
-      window.location.href = nextPath
+      window.location.href = getAuthReturnPath(nextPath)
       return
     }
 
@@ -157,6 +158,8 @@ export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
           {isReset && "Reset password"}
         </h1>
 
+        {!isReset && <p className="mt-3 text-sm leading-6 text-muted-foreground">Your living tunebook for remembering, practising and sharing traditional music.</p>}
+
         {isReset ? (
           <p className="mt-3 text-sm leading-6 text-muted-foreground md:text-base">
             Enter your email and we’ll send you a link to set a new password.
@@ -172,18 +175,26 @@ export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
         )}
 
         {message && (
-          <div className="mt-5 rounded-2xl border border-success bg-background/70 p-4 text-sm text-success shadow-sm">
+          <div role="status" className="mt-5 rounded-2xl border border-success bg-background/70 p-4 text-sm text-success shadow-sm">
             {message}
           </div>
         )}
 
         {errorMessage && (
-          <div className="mt-5 rounded-2xl border border-destructive bg-background/70 p-4 text-sm text-destructive shadow-sm">
+          <div role="alert" className="mt-5 rounded-2xl border border-destructive bg-background/70 p-4 text-sm text-destructive shadow-sm">
             {errorMessage}
           </div>
         )}
 
-        <div className="mt-6 space-y-4">
+        <form className="mt-6 space-y-4" onSubmit={async (event) => {
+          event.preventDefault()
+          if (isBusy) return
+          try {
+            if (isLogin) await handleLogin()
+            else if (isSignup) await handleSignup()
+            else await handlePasswordReset()
+          } catch { setIsSubmitting(false); setErrorMessage("Connection problem. Please try again.") }
+        }}>
           <div>
             <label
               htmlFor="email"
@@ -195,6 +206,7 @@ export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
               id="email"
               className={inputClassName}
               type="email"
+              required
               autoComplete="email"
               placeholder="you@example.com"
               value={email}
@@ -215,6 +227,8 @@ export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
                 id="password"
                 className={inputClassName}
                 type="password"
+                required
+                minLength={isSignup ? 6 : undefined}
                 autoComplete={isSignup ? "new-password" : "current-password"}
                 placeholder="Password"
                 value={password}
@@ -226,9 +240,8 @@ export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
 
           {isLogin && (
             <button
-              type="button"
+              type="submit"
               disabled={isBusy}
-              onClick={handleLogin}
               className={primaryButtonClassName}
             >
               {isRedirecting ? (
@@ -243,9 +256,8 @@ export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
 
           {isSignup && (
             <button
-              type="button"
+              type="submit"
               disabled={isBusy}
-              onClick={handleSignup}
               className={primaryButtonClassName}
             >
               {isRedirecting ? (
@@ -260,9 +272,8 @@ export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
 
           {isReset && (
             <button
-              type="button"
+              type="submit"
               disabled={isBusy}
-              onClick={handlePasswordReset}
               className={primaryButtonClassName}
             >
               {isSubmitting ? (
@@ -272,7 +283,7 @@ export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
               )}
             </button>
           )}
-        </div>
+        </form>
 
         <div className="mt-6 flex flex-col items-start gap-3 border-t border-border pt-5">
           {!isLogin && (

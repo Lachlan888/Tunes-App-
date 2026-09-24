@@ -1,8 +1,7 @@
 import Link from "next/link"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import type { ReactNode } from "react"
 import AddToListAction from "@/components/AddToListAction"
-import EmptyState from "@/components/EmptyState"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import RemoveTuneButton from "@/components/RemoveTuneButton"
 import PieceCommentsSection from "@/components/library/PieceCommentsSection"
@@ -33,11 +32,8 @@ import {
   isOverdue,
 } from "@/lib/review"
 import {
-  getLoopsForSource,
-  getReferenceMediaSources,
   getReferencePracticeHref,
   resolveReferenceMediaSource,
-  type TuneMediaSource,
 } from "@/lib/tune-media"
 import {
   getSingleSearchParamValue,
@@ -52,6 +48,8 @@ import {
 type PiecePageProps = {
   params: Promise<{ id: string }>
   searchParams?: Promise<{
+    media?: TuneDetailSearchParam
+    return_to?: TuneDetailSearchParam
     view?: TuneDetailSearchParam
     edit_request?: TuneDetailSearchParam
     comment_report?: TuneDetailSearchParam
@@ -244,8 +242,8 @@ function PracticeView({ data, redirectTo }: { data: TuneDetailLoadedData; redire
   const personalState = getPersonalState(data)
 
   return (
-    <div className="space-y-5">
-      <section className={panelClassName}>
+    <div className="workbench-split tune-practice-workbench">
+      <section className={`${panelClassName} workbench-context`}>
         <SectionHeader title="Practice" description="Your current stage, schedule and latest result for this tune." actions={<StatusMark tone={personalState.tone}>{personalState.label}</StatusMark>} />
         <dl className="grid gap-x-6 md:grid-cols-3">
           <DetailValue label="Stage">{data.typedUserPiece ? `Stage ${data.typedUserPiece.stage}` : "No active stage"}</DetailValue>
@@ -263,45 +261,11 @@ function PracticeView({ data, redirectTo }: { data: TuneDetailLoadedData; redire
           <p className="mt-5 text-sm leading-6 text-text-muted">Use <strong className="text-text-primary">Start Practice</strong> in the session dock to create a review schedule. If it is already active, the dock says <strong className="text-text-primary">Already in practice</strong>.</p>
         )}
       </section>
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="min-w-0 space-y-5">
         <TunePrivateNotesSection pieceId={data.pieceId} redirectTo={redirectTo} userPieceMetadata={data.typedUserPieceMetadata} upsertUserPieceNotes={upsertUserPieceNotes} />
         <TunePracticeHistorySection notes={data.typedPracticeNotes} reviews={data.typedReviewHistory} />
       </div>
     </div>
-  )
-}
-
-function getReferenceScope(source: TuneMediaSource, userId: string) {
-  if (source.sourceType === "personal-preferred-reference") return "Personal preference"
-  if (source.sourceType === "canonical-reference") return "Shared catalogue source"
-  return source.createdBy === userId ? "Personal source" : "Community source"
-}
-
-function ReferenceView({ data }: { data: TuneDetailLoadedData }) {
-  const sources = getReferenceMediaSources(data.tuneMediaBundle)
-  const reference = resolveReferenceMediaSource(data.tuneMediaBundle)
-  const loops = getLoopsForSource(data.tuneMediaBundle, reference)
-  const referenceHref = getReferencePracticeHref(data.pieceId, reference?.id)
-
-  return (
-    <section className={panelClassName}>
-      <SectionHeader title="Reference" description="The strongest saved source is previewed here; focused playback stays in Reference Mode." />
-      {reference ? (
-        <div className="rounded-object bg-surface-note p-5">
-          <div className="flex flex-wrap items-center gap-2"><StatusMark tone="neutral">{reference.mediaType.replaceAll("-", " ")}</StatusMark><StatusMark tone="social">{getReferenceScope(reference, data.user.id)}</StatusMark></div>
-          <h3 className="mt-4 break-words font-serif text-2xl font-semibold text-text-primary">{reference.label}</h3>
-          <p className="mt-2 break-words text-sm leading-6 text-text-muted">{reference.notes || (reference.isYouTube ? "Playable video reference" : "Saved external reference")}</p>
-          <dl className="mt-5 grid gap-x-6 border-t border-hairline pt-2 sm:grid-cols-3">
-            <DetailValue label="Saved passages">{loops.length} {loops.length === 1 ? "passage" : "passages"}</DetailValue>
-            <DetailValue label="Reference sources">{sources.length} {sources.length === 1 ? "source" : "sources"}</DetailValue>
-            <DetailValue label="Sheet music">{data.tuneMediaBundle.sheetMusic.length} saved</DetailValue>
-          </dl>
-          <PendingLinkButton href={referenceHref} label="Open Reference Mode" pendingLabel="Opening Reference Mode..." className={`${buttonStyles.primary} mt-5`} />
-        </div>
-      ) : (
-        <EmptyState title="No reference media yet" description="Reference Mode opens with a constructive path to add a recording, video, lesson or source link." primaryActionHref={referenceHref} primaryActionLabel="Open Reference Mode" icon="book" />
-      )}
-    </section>
   )
 }
 
@@ -368,6 +332,8 @@ export default async function PiecePage({ params, searchParams }: PiecePageProps
   if (tuneDetail.status === "not_found") notFound()
   if (tuneDetail.status === "load_error") throw new Error(`Could not load tune ${tuneDetail.pieceId}`)
 
+  if (activeView === "reference") redirect(getReferencePracticeHref(tuneDetail.pieceId, getSingleSearchParamValue(resolvedSearchParams?.media), getSingleSearchParamValue(resolvedSearchParams?.return_to)))
+
   const redirectTo = getTuneDetailHref(tuneDetail.pieceId, activeView)
   const aliases = getAliases(tuneDetail)
   const reference = resolveReferenceMediaSource(tuneDetail.tuneMediaBundle)
@@ -386,7 +352,6 @@ export default async function PiecePage({ params, searchParams }: PiecePageProps
       <div className="mt-4"><TuneDetailViewNav pieceId={tuneDetail.pieceId} activeView={activeView} /></div>
       <div className="mt-5 min-w-0">
         {activeView === "practice" ? <PracticeView data={tuneDetail} redirectTo={redirectTo} /> : null}
-        {activeView === "reference" ? <ReferenceView data={tuneDetail} /> : null}
         {activeView === "about" ? <AboutView data={tuneDetail} aliases={aliases} /> : null}
       </div>
     </main>

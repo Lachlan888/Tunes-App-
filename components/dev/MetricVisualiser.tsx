@@ -60,9 +60,6 @@ export default function MetricVisualiser({
       <div className="border-b border-border bg-card-strong/70 p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Metric visualiser
-            </p>
             <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight">
               {selectedVisualisation.label}
             </h2>

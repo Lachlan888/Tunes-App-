@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.next-qa/
 /out/
 
 # production
@@ -39,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Lean runner local controls
+docs/automation/lock.json
+docs/automation/.control.guard
+docs/automation/retry.json
+docs/automation/__pycache__/

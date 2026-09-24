@@ -6,9 +6,11 @@ import {
   getReferencePracticeHref,
   groupReferenceSectionsByMediaId,
   listReferenceMediaSources,
+  safeReferenceReturn,
 } from "../lib/reference-media-routing.ts"
 import {
   crossedLoopEnd,
+  loopResumePosition,
   nudgeLoopBoundary,
   resizeLoopWindow,
   selectSavedLoopWindow,
@@ -23,6 +25,16 @@ const canonical = {
   id: "canonical-42",
   url: "https://www.youtube.com/watch?v=canonical",
 }
+
+test("loop resume returns to start after shortening the end or seeking outside", () => {
+  assert.equal(loopResumePosition(26, 0, 8.5, true), 0)
+  assert.equal(loopResumePosition(8.5, 0, 8.5, true), 0)
+  assert.equal(loopResumePosition(2, 5, 8.5, true), 5)
+  assert.equal(loopResumePosition(6, 5, 8.5, true), 6)
+  assert.equal(loopResumePosition(26, 0, 8.5, false), 26)
+  assert.equal(loopResumePosition(26, 0, null, true), 26)
+  assert.equal(loopResumePosition(26, 5, 4, true), 26)
+})
 const additional = [
   { id: "media-7", url: "https://www.youtube.com/watch?v=first" },
   { id: "media-8", url: "https://www.youtube.com/watch?v=second" },
@@ -201,6 +213,18 @@ test("recording switches use replaceable media URLs with tune identity", () => {
   )
 })
 
+test("full reference returns only to safe review or tune contexts", () => {
+  const context = "/review?lane=catch-up&focus=12#review-reference"
+  assert.equal(safeReferenceReturn(context), context)
+  const href = new URL(getReferencePracticeHref(42, "media-8", context), "https://tunes.invalid")
+  assert.equal(href.searchParams.get("return_to"), context)
+  assert.equal(href.searchParams.get("media"), "media-8")
+  for (const unsafe of ["//evil.example", "https://evil.example", "/\\evil.example", "/library/42?view=reference", "/library/42/reference-media", "/login", "/review\n"]) {
+    assert.equal(safeReferenceReturn(unsafe), null, unsafe)
+    assert.equal(getReferencePracticeHref(42, null, unsafe), "/library/42/reference-media")
+  }
+})
+
 test("existing saved sections remain isolated by recording provider identity", () => {
   const sections = groupReferenceSectionsByMediaId([
     { id: 1, youtube_video_id: "first", notes: "Slow this phrase" },
@@ -237,17 +261,19 @@ test("the route replaces modal wiring and keeps one persistent player and metron
   assert.doesNotMatch(launcher, /ReferenceMediaModal/)
   assert.match(workspace, /Set loop start/)
   assert.match(workspace, /Set loop end/)
-  assert.match(workspace, /Play from start/)
+  assert.match(workspace, /transport:\s*\{/)
+  assert.match(workspace, /actionIds:\s*\[[\s\S]*"previous"[\s\S]*"playback"[\s\S]*"stop"[\s\S]*"next"[\s\S]*"loop"/)
+  assert.doesNotMatch(workspace, /aria-label="Playback transport"/)
   assert.match(
     workspace,
     /crossedLoopEnd\(previousTime, nextTime, loopEnd\)[\s\S]*player\.seekTo\(loopStart, true\)[\s\S]*player\.playVideo\(\)/
   )
-  assert.match(workspace, /MobileViewSwitcher/)
+  assert.match(workspace, /Saved loop playlist/)
   assert.equal((layout.match(/<PracticeMetronome/g) ?? []).length, 0)
   assert.equal((shell.match(/<PracticeMetronome variant="hidden"/g) ?? []).length, 1)
   assert.match(workspace, /context: "reference-media"/)
   assert.match(workspace, /passagePracticeActive/)
-  assert.match(workspace, /Practise this passage/)
+  assert.match(workspace, /Audition/)
   assert.match(workspace, /does not[\s\S]*change this tune&apos;s Stage/)
   assert.match(workspace, /Passage deleted/)
   assert.match(workspace, /Undo/)

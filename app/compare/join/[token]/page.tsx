@@ -94,13 +94,13 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
                 <>
                   <Link
                     href={signupHref}
-                    className="inline-flex min-h-12 items-center justify-center rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                    className="inline-flex min-h-12 items-center justify-center rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                   >
                     Sign up to compare
                   </Link>
                   <Link
                     href={loginHref}
-                    className="inline-flex min-h-12 items-center justify-center rounded-full border border-border bg-background/70 px-5 py-3 text-sm font-medium text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                    className="inline-flex min-h-12 items-center justify-center rounded-control border border-border bg-background/70 px-5 py-3 text-sm font-medium text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                   >
                     Log in
                   </Link>
@@ -109,7 +109,7 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
 
               <Link
                 href="/"
-                className="inline-flex min-h-12 items-center justify-center rounded-full px-5 py-3 text-sm font-medium text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="inline-flex min-h-12 items-center justify-center rounded-control px-5 py-3 text-sm font-medium text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               >
                 Not now
               </Link>
@@ -129,7 +129,7 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
               <ConnectAndCompareButton token={token} label="Compare now" />
               <Link
                 href="/"
-                className="inline-flex min-h-12 items-center justify-center rounded-full px-5 py-3 text-sm font-medium text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="inline-flex min-h-12 items-center justify-center rounded-control px-5 py-3 text-sm font-medium text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               >
                 Not now
               </Link>
@@ -147,7 +147,7 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
             </p>
             <Link
               href={preview.compareHref}
-              className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] sm:w-auto"
+              className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] sm:w-auto"
             >
               Compare now
             </Link>
@@ -157,7 +157,7 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
         {preview.state === "invalid" || preview.state === "expired" || preview.state === "revoked" || preview.state === "consumed" ? (
           <div className="mt-6 border-t border-border pt-5">
             <div className="flex flex-wrap gap-3">
-              <Link href="/compare" className="inline-flex min-h-11 items-center rounded-full border border-primary bg-primary px-4 text-sm font-semibold text-primary-foreground">Start a new comparison</Link>
+              <Link href="/compare" className="inline-flex min-h-11 items-center rounded-control border border-primary bg-primary px-4 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Start a new comparison</Link>
             </div>
             <EnterCompareCodeForm />
           </div>

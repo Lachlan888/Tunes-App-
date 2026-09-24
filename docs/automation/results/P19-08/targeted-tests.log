@@ -1,0 +1,34 @@
+(node:7686) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/activity-pagination.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ activity cursor validates input and preserves tied timestamp IDs (0.879792ms)
+✔ feed merge deduplicates page overlap and keeps chronological ID order (7.986125ms)
+✔ activity page retains a continuation after all scanned rows are hidden (1.484042ms)
+✔ multiple friend batches still produce one bounded ordered page (1.055125ms)
+(node:7687) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/navigation-shell.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ phone and desktop consumer navigation expose six first-class destinations (2.073959ms)
+✔ nested routes select their primary destination (0.284375ms)
+✔ signed-out and internal pages do not inherit consumer navigation (0.14525ms)
+✔ nested pages receive concise phone top-bar titles (0.097833ms)
+✔ fixed shell layers reserve safe space and keep 44px navigation targets (8.645042ms)
+✔ secondary navigation overlays and the Home view is persisted (1.722958ms)
+(node:7688) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/social-surfaces.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Inbox URL state and history pagination are bounded (0.864875ms)
+✔ Home and Friends share direct reactions and progressively loaded discussions (2.653042ms)
+✔ Friends preserves request actions and privacy-safe recovery copy (1.949708ms)
+✔ Inbox separates New, History and real Messages without oversized trees (1.543625ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 383.408084

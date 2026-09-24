@@ -590,6 +590,8 @@ export async function deleteBadge(formData: FormData) {
     redirect("/login")
   }
 
+  if (formData.get("confirm_action") !== "confirmed") redirect("/badges?delete_badge=confirmation_required")
+
   const badgeId = asPositiveInteger(formData.get("badge_id"))
 
   if (!badgeId) {

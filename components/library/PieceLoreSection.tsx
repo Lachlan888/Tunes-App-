@@ -104,9 +104,6 @@ function ModalShell({
       <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Sources &amp; Lore
-            </p>
             <h3 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
               {title}
             </h3>
@@ -182,7 +179,7 @@ export default function PieceLoreSection({
         </select>
 
         <textarea
-          name="entry_text"
+          name="entry_text" aria-label="Tune lore"
           rows={4}
           placeholder="Add a source, alternate title, regional note, tune-family link, or bit of folklore"
           className={inputClassName}
@@ -342,7 +339,7 @@ export default function PieceLoreSection({
             </select>
 
             <textarea
-              name="entry_text"
+              name="entry_text" aria-label="Tune lore"
               rows={6}
               defaultValue={modalMode.entry.entry_text}
               className={inputClassName}

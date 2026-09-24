@@ -101,7 +101,7 @@ export default function PracticeNoteForm({
         <SubmitButton
           label="Save note"
           pendingLabel="Saving..."
-          className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
+          className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
         />
 
         <span aria-live="polite" className="text-xs text-muted-foreground">{isDirty ? "Unsaved note" : "Ready"}</span>

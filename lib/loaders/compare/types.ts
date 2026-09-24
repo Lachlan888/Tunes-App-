@@ -23,6 +23,7 @@ export type CompareSuggestion = {
 }
 
 export type CompareError =
+  | "group_too_large"
   | "missing_search"
   | "self_compare"
   | "user_not_found"

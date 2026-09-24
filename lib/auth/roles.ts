@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import {
   getCurrentUserRole,
   requireUserContext,
@@ -67,7 +67,7 @@ export async function requireModerator(): Promise<{
   const context = await requireUserContext()
 
   if (!canModerate(context.role)) {
-    redirect("/")
+    notFound()
   }
 
   return {
@@ -89,7 +89,7 @@ export async function requireAppAdmin(): Promise<{
   const adminRole = await getAppAdminRole(context.supabase, context.user.id)
 
   if (!adminRole) {
-    redirect("/")
+    notFound()
   }
 
   return {

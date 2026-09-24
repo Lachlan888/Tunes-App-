@@ -1,0 +1,47 @@
+(node:93000) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/catalogue-workflows.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ filter drafts count prospective matches without mutating applied URL state (0.573292ms)
+✔ catalogue selection is reversible, private, deduplicated, and bounded (0.49475ms)
+✔ duplicate suggestions explain exact titles, aliases, and likely matches (1.76875ms)
+✔ catalogue UI wires staged filters, selection dock, and progressive creation (1.68125ms)
+(node:93001) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/navigation-shell.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ phone and desktop consumer navigation expose six first-class destinations (0.979292ms)
+✔ nested routes select their primary destination (0.465833ms)
+✔ signed-out and internal pages do not inherit consumer navigation (0.2805ms)
+✔ nested pages receive concise phone top-bar titles (0.241834ms)
+✔ fixed shell layers reserve safe space and keep 44px navigation targets (3.981125ms)
+✔ secondary navigation overlays and the Home view is persisted (1.520625ms)
+(node:93002) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/lachlan.haycox/Desktop/tunes-app/tests/reference-media.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/lachlan.haycox/Desktop/tunes-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ loop resume returns to start after shortening the end or seeking outside (1.084625ms)
+✔ new sections start at zero without changing playback transport (0.098166ms)
+✔ a new section can set its end while retaining the default zero start (0.08925ms)
+✔ setting or revising the start does not seek or pause playback (0.091166ms)
+✔ saved selection and boundary edits preserve the playhead (0.165125ms)
+✔ only a genuine forward crossing of the active end loops playback (0.059542ms)
+✔ next and previous shift an equal loop window without moving playback (0.430708ms)
+✔ playback continues into an advanced window and loops only at its new end (0.061792ms)
+✔ all tune recordings retain stable ordering and identity (0.218834ms)
+✔ URL selection wins, then the established effective recording, then first (0.15925ms)
+✔ external and missing reference sources retain honest recovery states (0.066917ms)
+✔ recording switches use replaceable media URLs with tune identity (0.103917ms)
+✔ full reference returns only to safe review or tune contexts (0.248375ms)
+✔ existing saved sections remain isolated by recording provider identity (0.086083ms)
+✔ the route replaces modal wiring and keeps one persistent player and metronome (3.3355ms)
+✔ Reference Mode has route-level loading and recovery states (0.965708ms)
+✔ recording and section mutations retain owner-scoped permissions (1.095208ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 122.68375

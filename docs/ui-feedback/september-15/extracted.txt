@@ -1,0 +1,35 @@
+0: Home
+2:  [IMAGE media/image10.png]
+3: This section is not needed, i think we get rid of it and put streaks here instead
+4:  [IMAGE media/image15.png]
+5: Friend activity is mor elike a long item than a feed, I think embed it so it can scroll without the page rmoving 
+7: Practuce
+9:  [IMAGE media/image12.png]
+10: Supporting tools box is a bit ugly its boxes in boxes asynterical and lots of wasted space
+12:  [IMAGE media/image3.png]
+13: Get rid of from focus areas and replace it with currently in practice 
+14:  [IMAGE media/image8.png]
+15: Get rid of teh double line below reveal reference
+16: Tunes
+17:  [IMAGE media/image2.png]
+18: Teh four buttons shouldn’t nee dto wraop look how much negative space there is in the middle of teh tune card 
+19:  [IMAGE media/image13.png]
+20: The next button is shoved right to teh edge of the box 
+21: tune preview on a normal laptop screen at 100 precent is too big becaus eit forces a scroll, its juts a preview so it shoudl be small enough that it fits, for example maybe metadata is in two rows liek style and time are one row for example [IMAGE media/image14.png]
+23: Reference Mode
+24:  [IMAGE media/image6.png]
+25: Transport should replace the shared reference persistent content on teh floating bar 
+26:  [IMAGE media/image5.png]
+27: I reckon editing tune details should be seamless like any user can contribute missing info without menu diving just by clicking typing and saving then it becomes protected an dneeds moderator to change, I also think we should have attribution for who created a tune and who contributed data nothing huge an dclunky buut just a wya of kind of seeing who is doing stuff and the attribution could link to their profile too. This include sthe about section not just sources and lore. 
+29:  [IMAGE media/image4.png]
+30: I think in hierarchy we nee dto make more of public lists which is kidn fo hidden as discover its an important feature and should be weighted in some way. Unsorted should be called unsorted tunes. 
+31:  [IMAGE media/image9.png]
+32: Buttons are different shapes this should be fixed across teh whole app, I like teh shape o freda the list here not teh pill shaped on for manage so resolve that across the whole thing.
+33:  [IMAGE media/image16.png]
+35: Within a list the formatting is a bit ugly i dont like teh line across teh top bumping into both boxes and also teh whole column dedicate dt just teh title vbox is a bit dumb just put teh titel an dinfo at teh top as a heading and subtitle also we dont really need position in teh lost to be visible here 
+37:  [IMAGE media/image7.png]
+38: Find friends should suggest users algorhyhtmically people who have liek genres or tunes or mutual friends 
+39: Recent activity shoudl mirror teh feed from home which once revise dhsoudl behave much more like a feed than a static object
+40: in compare the suggested friends bit when you click ad dit just opens the add to compare modal clicking add ther ehsould directly commence compar eiwth that user  [IMAGE media/image1.png]
+41:  [IMAGE media/image11.png]
+42: Join codes should be nonsense words not a long string we’re not really concerned with airtight sceuirty here its just some names of fiddle tunes, maybe teh words should be themed like Monroe, Mastertone, Lore, D28 etc.

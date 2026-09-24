@@ -1,7 +1,7 @@
-import { notFound, redirect } from "next/navigation"
+import { redirectToLogin } from "@/lib/auth/login-redirect"
+import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import type {
-  Piece,
   Setlist,
   SetlistInviteOption,
   SetlistItemWithCoverage,
@@ -155,7 +155,7 @@ export async function loadSetlistDetailData(rawSetlistId: string) {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    return redirectToLogin()
   }
 
   const { data: currentMembership, error: currentMembershipError } =
@@ -194,7 +194,6 @@ export async function loadSetlistDetailData(rawSetlistId: string) {
   const [
     { data: memberRows, error: memberRowsError },
     { data: itemRows, error: itemRowsError },
-    { data: allPieces, error: allPiecesError },
     { data: connectionRows, error: connectionRowsError },
   ] = await Promise.all([
     supabase
@@ -225,6 +224,7 @@ export async function loadSetlistDetailData(rawSetlistId: string) {
         pieces (
           id,
           title,
+          type,
           key,
           style,
           time_signature,
@@ -242,13 +242,8 @@ export async function loadSetlistDetailData(rawSetlistId: string) {
       `
       )
       .eq("setlist_id", setlistId)
-      .order("position", { ascending: true }),
-
-    supabase
-      .from("pieces")
-      .select("id, title, key, style, time_signature, composer, reference_url")
-      .order("title", { ascending: true })
-      .limit(500),
+      .order("position", { ascending: true })
+      .order("id", { ascending: true }),
 
     supabase
       .from("connections")
@@ -263,10 +258,6 @@ export async function loadSetlistDetailData(rawSetlistId: string) {
 
   if (itemRowsError) {
     throw new Error(itemRowsError.message)
-  }
-
-  if (allPiecesError) {
-    throw new Error(allPiecesError.message)
   }
 
   if (connectionRowsError) {
@@ -406,7 +397,6 @@ export async function loadSetlistDetailData(rawSetlistId: string) {
     pendingMembers,
     inviteOptions,
     items,
-    allPieces: (allPieces ?? []) as Piece[],
     redirectTo: `/setlists/${setlistId}`,
     summary: {
       tuneCount: items.length,

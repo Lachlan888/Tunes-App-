@@ -78,13 +78,21 @@ export function groupReferenceSectionsByMediaId<
   return grouped
 }
 
-export function getReferencePracticeHref(
-  pieceId: number,
-  sourceId?: string | null
-) {
-  const pathname = `/library/${pieceId}/reference-media`
+/** Only known internal destinations can be used to return from the workspace. */
+export function safeReferenceReturn(value?: string | null): string | null {
+  if (!value || !value.startsWith("/") || value.startsWith("//") || /[\\\r\n]/.test(value)) return null
+  try {
+    const url = new URL(value, "https://tunes.invalid")
+    if (url.origin !== "https://tunes.invalid" || !/^\/(review|library)(\/\d+)?$/.test(url.pathname)) return null
+    if (url.searchParams.get("view") === "reference") return null
+    return `${url.pathname}${url.search}${url.hash}`
+  } catch { return null }
+}
 
-  return sourceId
-    ? `${pathname}?media=${encodeURIComponent(sourceId)}`
-    : pathname
+export function getReferencePracticeHref(pieceId: number, sourceId?: string | null, returnTo?: string | null) {
+  const params = new URLSearchParams()
+  if (sourceId) params.set("media", sourceId)
+  const safeReturn = safeReferenceReturn(returnTo)
+  if (safeReturn) params.set("return_to", safeReturn)
+  return `/library/${pieceId}/reference-media${params.size ? `?${params}` : ""}`
 }

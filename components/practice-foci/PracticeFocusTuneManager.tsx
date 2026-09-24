@@ -155,10 +155,6 @@ function MobileTunePickerSheet({
         <div className="border-b border-border px-4 py-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Add tune
-              </p>
-
               <h3
                 id="add-focus-tune-title"
                 className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground"
@@ -316,10 +312,6 @@ function RemoveTuneFromFocusModal({
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-destructive">
-              Remove from focus
-            </p>
-
             <h3
               id="remove-focus-tune-title"
               className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground"
@@ -387,7 +379,7 @@ function FocusTuneRemoveButton({
     <>
       <button
         type="button"
-        className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-background/70 text-lg font-semibold leading-none text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-destructive hover:bg-destructive/10 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-background/70 text-lg font-semibold leading-none text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-destructive hover:bg-destructive/10 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
         onClick={() => setIsConfirming(true)}
         aria-label={`Remove ${tuneTitle} from this focus`}
         title={`Remove ${tuneTitle} from this focus`}

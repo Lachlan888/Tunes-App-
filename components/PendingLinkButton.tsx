@@ -25,6 +25,7 @@ export default function PendingLinkButton({
   return (
     <button
       type="button"
+      data-navigation-href={href}
       disabled={isPending}
       onClick={() => {
         startTransition(() => {
@@ -34,7 +35,7 @@ export default function PendingLinkButton({
           }
         })
       }}
-      className={`${className} disabled:cursor-not-allowed disabled:opacity-60`}
+      className={`inline-block min-h-11 ${className} disabled:cursor-not-allowed disabled:opacity-60`}
     >
       {isPending ? (
         <span className="inline-flex items-center justify-center gap-2">

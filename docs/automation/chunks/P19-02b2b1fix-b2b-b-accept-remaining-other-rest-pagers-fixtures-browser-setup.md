@@ -1,0 +1,4 @@
+# P19-02b2b1fix-b2b-b-accept-remaining-other-rest-pagers-fixtures-browser-setup — Disposable overview harness setup
+Depends P19-02b2b1fix-b2b-b-accept-remaining-other-rest-pagers-fixtures-data. Next P19-02b2b1fix-b2b-b-accept-remaining-other-rest-pagers-fixtures-browser-accept. Prompt 19 item 6.
+Carry forward typed saved/shared fixture evidence from 2026-09-16; no fixture re-audit needed.
+Create a reproducible disposable local Next harness that copies the real overview route/components, injects existing saved/shared loader fixtures, excludes credentials and live auth, rejects database calls and HTTP writes. Verify HTTP rendering of both groups on page two and rejection of writes. No production route changes. Detail routes and browser lifecycle acceptance are explicitly deferred to the successor.

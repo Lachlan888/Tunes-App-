@@ -1,0 +1,20 @@
+Verified 2026-09-23T09:07:09Z
+
+node --experimental-strip-types --test tests/social-surfaces.test.ts
+PASS: 4 tests, 0 failures
+
+node --experimental-strip-types --test tests/home-streak-composition.test.ts tests/activity-pagination.test.ts
+PASS: 9 tests, 0 failures
+
+RENDERER_ROOT=/private/tmp/tunes-review-lifecycle node tests/integration/social-feed-lifecycle.mjs
+PASS: contained observer root; keyboard/touch container semantics; multi-page merge/windowing; retry, empty-page continuation and end state; long comment disclosure; no duplicate reaction controls; newest reset; unauthorized recovery; request abort.
+Note: react-test-renderer printed its upstream deprecation warning.
+
+npx eslint components/activity/SocialActivityFeed.tsx components/home/HomeFriendsActivityBox.tsx components/home/HomeMobileSummarySwitcher.tsx tests/social-surfaces.test.ts tests/integration/social-feed-lifecycle.mjs
+PASS: exit 0, no findings
+
+npx tsc --noEmit
+PASS: exit 0, no findings
+
+git diff --check
+PASS: exit 0, no findings

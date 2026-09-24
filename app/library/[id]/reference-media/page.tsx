@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { safeReferenceReturn } from "@/lib/reference-media-routing"
 import ReferencePracticeWorkspace from "@/components/reference-media/ReferencePracticeWorkspace"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { loadTuneDetailData } from "@/lib/loaders/tune-detail"
@@ -6,7 +7,7 @@ import { resolveReferenceMediaSource } from "@/lib/tune-media"
 
 type ReferenceMediaPageProps = {
   params: Promise<{ id: string }>
-  searchParams?: Promise<{ media?: string | string[] }>
+  searchParams?: Promise<{ media?: string | string[]; return_to?: string | string[] }>
 }
 
 function singleValue(value: string | string[] | undefined) {
@@ -19,6 +20,7 @@ export default async function ReferenceMediaPage({
 }: ReferenceMediaPageProps) {
   const { id } = await params
   const resolvedSearchParams = searchParams ? await searchParams : undefined
+  const returnTo = safeReferenceReturn(singleValue(resolvedSearchParams?.return_to))
   const requestedSourceId = singleValue(resolvedSearchParams?.media)
   const tuneDetail = await loadTuneDetailData(id, "reference")
 
@@ -48,14 +50,11 @@ export default async function ReferenceMediaPage({
     <main className="mx-auto w-full max-w-[1500px] px-4 py-5 text-foreground sm:px-6 sm:py-8">
       <header className="mb-6 min-w-0">
         <Link
-          href={`/library/${tuneDetail.pieceId}`}
+          href={returnTo ?? `/library/${tuneDetail.pieceId}`}
           className="text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
         >
-          Back to tune
+          {returnTo?.startsWith("/review") ? "Back to Practice" : "Back to tune"}
         </Link>
-        <p className="mt-5 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Reference practice
-        </p>
         <div className="mt-1 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <h1 className="break-words font-serif text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">

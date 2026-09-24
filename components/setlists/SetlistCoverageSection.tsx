@@ -24,7 +24,6 @@ export default function SetlistCoverageSection({
   setlistId,
   acceptedMembers,
   items,
-  allPieces,
   canEdit,
   redirectTo,
   addTuneToSetlist,
@@ -54,7 +53,6 @@ export default function SetlistCoverageSection({
         {canEdit ? (
           <AddTuneToSetlistModal
             setlistId={setlistId}
-            pieces={allPieces}
             existingPieceIds={existingPieceIds}
             redirectTo={redirectTo}
             addTuneToSetlist={addTuneToSetlist}
