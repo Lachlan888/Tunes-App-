@@ -9,9 +9,14 @@ import {
 import { contributeMissingPieceDetails } from "../lib/services/piece-contributions.ts"
 
 const migrationUrl = new URL(
-  "../supabase/migrations/20260923150759_enforce_piece_contributions.sql",
+  "../supabase/migrations/20260924020823_enforce_piece_contributions.sql",
   import.meta.url
 )
+const contributionActionUrls = [
+  new URL("../lib/actions/pieces.ts", import.meta.url),
+  new URL("../lib/actions/piece-metadata.ts", import.meta.url),
+  new URL("../lib/actions/reference-media.ts", import.meta.url),
+]
 
 test("field policy exposes only fill-once canonical details", () => {
   assert.deepEqual(PIECE_CONTRIBUTION_FIELDS, [
@@ -81,6 +86,18 @@ test("migration enforces attribution and role checks in the database", async () 
   assert.match(sql, /revoke all on table public\.piece_field_contributions from anon, authenticated/)
 })
 
+test("canonical contribution actions share the atomic persistence service", async () => {
+  const sources = await Promise.all(
+    contributionActionUrls.map((url) => readFile(url, "utf8"))
+  )
+
+  for (const source of sources) {
+    assert.match(source, /contributeMissingPieceDetails\(supabase, pieceId,/)
+  }
+
+  assert.doesNotMatch(sources[2], /\.is\("reference_url", null\)/)
+})
+
 test("service reports saved, rejected, and empty contribution outcomes", async () => {
   function clientFor(result: { data: unknown; error: { message: string } | null }) {
     return {
@@ -120,4 +137,19 @@ test("service reports saved, rejected, and empty contribution outcomes", async (
     { composer: " " }
   )
   assert.deepEqual(empty, { status: "empty", fields: [] })
+
+  const invalid = await contributeMissingPieceDetails(
+    {
+      from: () => {
+        throw new Error("Persistence must not run for invalid input")
+      },
+    } as never,
+    7,
+    { reference_url: "javascript:alert(1)" }
+  )
+  assert.deepEqual(invalid, {
+    status: "rejected",
+    fields: ["reference_url"],
+    message: "Invalid reference URL",
+  })
 })

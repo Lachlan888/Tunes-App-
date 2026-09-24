@@ -1,20 +1,21 @@
 {
-  "current_prompt": 27,
-  "current_chunk": "P27-a",
-  "status": "awaiting_input",
-  "last_completed_chunk": "P26-b",
-  "next_action": "After explicit approval, apply the reviewed P27-a migration, run disposable database permission/concurrency fixtures, verify remote migration/schema/advisors, then connect actions in P27-b.",
-  "base_head": "40870766c4c8d6fa00adc31b582783b4119ffd08",
+  "current_prompt": 28,
+  "current_chunk": "P28-a",
+  "status": "ready",
+  "last_completed_chunk": "P27-b",
+  "next_action": "Implement P28-a inline field editing on the accepted fill-once contribution service while preserving moderator correction paths.",
+  "base_head": "d6469c0129fb7d54a3d1c76e1adf678bb6f51cc3",
   "branch": "automation/final-chunked-runner",
   "owned_files": [
-    "docs/automation/results/P27-a.md",
+    "docs/automation/results/P27-b.md",
     "docs/automation/state.json",
-    "lib/pieces/contribution-policy.ts",
+    "lib/actions/piece-metadata.ts",
+    "lib/actions/pieces.ts",
+    "lib/actions/reference-media.ts",
     "lib/services/piece-contributions.ts",
-    "supabase/migrations/20260923150759_enforce_piece_contributions.sql",
     "tests/piece-contributions.test.ts"
   ],
-  "resume_point": "P27-a local checkpoint: field matrix, generated enforcement/attribution migration, contribution policy/service, and 6-test suite are present. Fresh 6/6 tests, scoped lint, typecheck and diff checks pass. Remote apply was denied; read-only verification confirms no migration, attribution table or trigger exists remotely. Do not retry without explicit approval.",
-  "blocker": "Explicit production-safety approval is required to apply supabase/migrations/20260923150759_enforce_piece_contributions.sql. Approval gate denied the apply because the persistent trigger affects all shared tune updates; no remote mutation occurred.",
-  "updated_at": "2026-09-24T01:15:32+10:00"
+  "resume_point": "P27-a and P27-b accepted. Remote enforcement/attribution migrations are applied and verified; canonical contribution actions now share the atomic service. Fresh 7/7 tests, scoped lint, typecheck and diff checks pass; manual/visual acceptance remains user-owned.",
+  "blocker": null,
+  "updated_at": "2026-09-24T12:20:26+10:00"
 }

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { recordPieceDetailsAddedEvent } from "@/lib/services/activity-events"
+import { contributeMissingPieceDetails } from "@/lib/services/piece-contributions"
 import { createClient } from "@/lib/supabase/server"
 import { isYouTubeUrl } from "@/lib/youtube"
 
@@ -64,30 +65,18 @@ export async function addReferenceUrlToPiece(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "reference_url", "not_youtube"))
   }
 
-  const { data: existingPiece, error: existingPieceError } = await supabase
-    .from("pieces")
-    .select("id, reference_url")
-    .eq("id", pieceId)
-    .maybeSingle()
+  const result = await contributeMissingPieceDetails(supabase, pieceId, {
+    reference_url: referenceUrl,
+  })
 
-  if (existingPieceError || !existingPiece) {
-    redirect(appendQueryParam(redirectTo, "reference_url", "error"))
-  }
-
-  if (existingPiece.reference_url) {
-    redirect(appendQueryParam(redirectTo, "reference_url", "already_present"))
-  }
-
-  const { error: updateError } = await supabase
-    .from("pieces")
-    .update({
-      reference_url: referenceUrl,
-    })
-    .eq("id", pieceId)
-    .is("reference_url", null)
-
-  if (updateError) {
-    redirect(appendQueryParam(redirectTo, "reference_url", "error"))
+  if (result.status !== "saved") {
+    const outcome =
+      result.status === "rejected" &&
+      (result.message.includes("already filled") ||
+        result.message.includes("already contributed"))
+        ? "already_present"
+        : "error"
+    redirect(appendQueryParam(redirectTo, "reference_url", outcome))
   }
 
   await recordPieceDetailsAddedEvent(user.id, pieceId, ["reference_url"])

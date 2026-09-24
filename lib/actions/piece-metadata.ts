@@ -1,9 +1,9 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { recordPieceDetailsAddedEvent } from "@/lib/services/activity-events"
+import { contributeMissingPieceDetails } from "@/lib/services/piece-contributions"
 import { createClient } from "@/lib/supabase/server"
-import { normaliseKey } from "@/lib/music/keys"
-import { isValidOptionalTimeSignature } from "@/lib/music/time-signatures"
 
 export async function upsertUserPieceNotes(formData: FormData) {
   const supabase = await createClient()
@@ -112,17 +112,6 @@ export async function updateMissingPieceDetails(formData: FormData) {
     return
   }
 
-  const { data: existingPiece, error: existingPieceError } = await supabase
-    .from("pieces")
-    .select("id, key, style, time_signature, composer, reference_url")
-    .eq("id", pieceId)
-    .maybeSingle()
-
-  if (existingPieceError || !existingPiece) {
-    console.error("Error loading piece for canonical update:", existingPieceError)
-    return
-  }
-
   const rawKey = formData.get("key")?.toString().trim() || ""
   const rawTimeSignature =
     formData.get("time_signature")?.toString().trim() || ""
@@ -131,25 +120,9 @@ export async function updateMissingPieceDetails(formData: FormData) {
     formData.get("reference_url")?.toString().trim() || ""
   const rawStyleId = Number(formData.get("style_id"))
 
-  const updates: {
-    key?: string | null
-    style?: string | null
-    time_signature?: string | null
-    composer?: string | null
-    reference_url?: string | null
-  } = {}
+  let style: string | undefined
 
-  if (!existingPiece.key && rawKey) {
-    const normalised = normaliseKey(rawKey)
-
-    if (!normalised) {
-      return
-    }
-
-    updates.key = normalised
-  }
-
-  if (!existingPiece.style && Number.isInteger(rawStyleId) && rawStyleId > 0) {
+  if (Number.isInteger(rawStyleId) && rawStyleId > 0) {
     const { data: styleRow, error: styleError } = await supabase
       .from("styles")
       .select("id, label")
@@ -162,43 +135,22 @@ export async function updateMissingPieceDetails(formData: FormData) {
       return
     }
 
-    updates.style = styleRow.label
+    style = styleRow.label
   }
 
-  if (!existingPiece.time_signature && rawTimeSignature) {
-    if (!isValidOptionalTimeSignature(rawTimeSignature)) {
-      return
-    }
+  const result = await contributeMissingPieceDetails(supabase, pieceId, {
+    key: rawKey,
+    style,
+    time_signature: rawTimeSignature,
+    composer: rawComposer,
+    reference_url: rawReferenceUrl,
+  })
 
-    updates.time_signature = rawTimeSignature
-  }
-
-  if (!existingPiece.composer && rawComposer) {
-    updates.composer = rawComposer
-  }
-
-  if (!existingPiece.reference_url && rawReferenceUrl) {
-    try {
-      new URL(rawReferenceUrl)
-      updates.reference_url = rawReferenceUrl
-    } catch {
-      return
-    }
-  }
-
-  if (Object.keys(updates).length === 0) {
+  if (result.status !== "saved") {
     return
   }
 
-  const { error: updateError } = await supabase
-    .from("pieces")
-    .update(updates)
-    .eq("id", pieceId)
-
-  if (updateError) {
-    console.error("Error updating missing piece details:", updateError)
-    return
-  }
+  await recordPieceDetailsAddedEvent(user.id, pieceId, result.fields)
 
   revalidatePath(`/library/${pieceId}`)
   revalidatePath(redirectTo)
