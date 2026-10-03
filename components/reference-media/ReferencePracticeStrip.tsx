@@ -116,7 +116,7 @@ export default function ReferencePracticeStrip({
               pieceId={piece.id}
               redirectTo={redirectTo}
               startLearning={startLearning}
-              label="Start practice"
+              label="Add to Practice"
               className={buttonStyles.practice}
             />
           )}

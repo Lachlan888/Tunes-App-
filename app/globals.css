@@ -422,3 +422,81 @@ textarea::placeholder {
 
 /* Compact transport keeps the provider controls reachable on phones. */
 .reference-transport button { width: auto; min-width: 44px; padding-inline: 12px; }
+
+/* A quiet entry and a continuous, instrument-friendly practice session. */
+:root[data-focus-mode="practice"] [data-floating-feedback] { display: none; }
+.practice-entry, .practice-finish {
+  display: flex;
+  min-height: min(72dvh, 46rem);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+.practice-entry-symbol {
+  display: grid;
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-bottom: 1.75rem;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--state-practice) 20%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--state-practice) 7%, var(--surface-canvas));
+  color: var(--state-practice);
+}
+.practice-start-button {
+  display: inline-flex;
+  min-height: 3.5rem;
+  min-width: 12rem;
+  align-items: center;
+  justify-content: center;
+  gap: .8rem;
+  margin-top: 2rem;
+  padding: .875rem 1.75rem;
+  border-radius: 1rem;
+  background: var(--state-practice);
+  color: var(--state-practice-foreground);
+  font-size: 1rem;
+  font-weight: 650;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--state-practice) 15%, transparent);
+  transition: background-color 150ms, transform 150ms;
+}
+.practice-start-button:hover { background: var(--state-practice-hover); transform: translateY(-1px); }
+.practice-start-button:disabled { opacity: .65; }
+.practice-start-button:focus-visible, .practice-rating:focus-visible, .practice-player-controls button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 4px;
+}
+.practice-session-content { max-width: 42rem; margin: 0 auto; padding: 2.5rem 0 11rem; }
+.practice-tune-heading { margin-bottom: 1.75rem; text-align: center; overflow-wrap: anywhere; }
+.practice-reference { min-width: 0; }
+.practice-reference-workbench .aspect-video { min-height: 200px; }
+.practice-player-controls { display: flex; align-items: center; gap: .5rem; padding: .875rem 0; }
+.practice-player-controls button { min-height: 2.75rem; border-radius: .75rem; font-size: .875rem; font-weight: 600; }
+.practice-player-play { min-width: 5.5rem; padding: .5rem 1rem; color: var(--state-practice-foreground); background: var(--state-practice); }
+.practice-player-controls button:disabled { opacity: .5; }
+.practice-loop-status { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem; color: var(--text-muted); }
+.practice-loop-status span { display: block; width: .45rem; height: .45rem; border-radius: 50%; }
+.practice-pedal-trigger { display: inline-flex; align-items: center; gap: .5rem; margin-left: auto; padding: .5rem .75rem; border: 1px solid var(--hairline); color: var(--text-primary); background: var(--surface-paper); }
+.practice-reference-empty { display: flex; min-height: 15rem; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; border-radius: 1.5rem; background: color-mix(in srgb, var(--surface-paper) 70%, transparent); text-align: center; }
+.practice-rating-bar { position: fixed; right: 0; bottom: 0; left: 0; z-index: 300; padding: 1rem max(1rem, env(safe-area-inset-right)) max(1.25rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); border-top: 1px solid var(--hairline); background: var(--surface-canvas); }
+.practice-rating { display: flex; min-height: 3.5rem; min-width: 0; align-items: center; justify-content: center; gap: .625rem; padding: .75rem 1rem; border: 1px solid var(--hairline); border-radius: .875rem; background: var(--surface-paper); font-size: .9375rem; font-weight: 650; transition: background-color 150ms, border-color 150ms; }
+.practice-rating-failed { color: var(--state-overdue); }
+.practice-rating-shaky { color: var(--text-primary); }
+.practice-rating-solid { color: var(--state-known); }
+.practice-rating:hover:not(:disabled) { border-color: currentColor; background: var(--surface-note); }
+.practice-rating:disabled { opacity: .45; }
+@media (max-width: 639px) {
+  .practice-session-content { padding-top: 2rem; }
+  .practice-tune-heading { margin-bottom: 1.5rem; }
+  .practice-player-controls { gap: .25rem; }
+  .practice-player-play { min-width: 4rem; padding-inline: .75rem; }
+  .practice-player-controls button { font-size: .8125rem; }
+  .practice-pedal-trigger { padding-inline: .5rem; }
+  .practice-rating { gap: .4rem; padding-inline: .5rem; }
+  .practice-entry, .practice-finish { min-height: 65dvh; padding-inline: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .practice-start-button, .practice-rating { transition: none; transform: none; }
+}

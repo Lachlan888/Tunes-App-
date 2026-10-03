@@ -24,6 +24,7 @@ type ResponsiveModalProps = {
   footer?: ReactNode
   mobileMode?: ResponsiveModalMode
   tone?: ResponsiveModalTone
+  desktopPlacement?: "center" | "side"
   desktopMaxWidth?: string
   bodyClassName?: string
   panelClassName?: string
@@ -48,6 +49,7 @@ export default function ResponsiveModal({
   footer,
   mobileMode = "sheet",
   tone = "default",
+  desktopPlacement = "center",
   desktopMaxWidth = "md:max-w-xl",
   bodyClassName = "min-h-0 min-w-0 flex-1 overflow-y-auto p-4 md:p-6",
   panelClassName = "",
@@ -76,7 +78,8 @@ export default function ResponsiveModal({
     if (!isOpen || closeDisabled || !closeOnEscape) return
 
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && document.querySelectorAll('[role="dialog"]').item(document.querySelectorAll('[role="dialog"]').length - 1) === dialogRef.current) {
+        event.preventDefault()
         onClose()
       }
     }
@@ -98,10 +101,12 @@ export default function ResponsiveModal({
     const focusableSelector =
       'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
     const firstFocusable = dialog.querySelector<HTMLElement>(focusableSelector)
-    ;(firstFocusable ?? dialog).focus()
+    if (!dialog.contains(document.activeElement)) (firstFocusable ?? dialog).focus({ preventScroll: true })
 
     function keepFocusInside(event: KeyboardEvent) {
       if (event.key !== "Tab") return
+      const dialogs = document.querySelectorAll('[role="dialog"]')
+      if (dialogs.item(dialogs.length - 1) !== dialog) return
 
       const focusable = Array.from(
         dialog!.querySelectorAll<HTMLElement>(focusableSelector)
@@ -129,7 +134,17 @@ export default function ResponsiveModal({
 
     return () => {
       document.removeEventListener("keydown", keepFocusInside)
-      previouslyFocused?.focus()
+      // Wait for the remaining dialog and its controls to finish updating.
+      queueMicrotask(() => {
+        if (previouslyFocused?.isConnected && previouslyFocused !== document.body && !previouslyFocused.matches(":disabled")) {
+          previouslyFocused.focus({ preventScroll: true })
+          return
+        }
+        const dialogs = document.querySelectorAll<HTMLElement>('[role="dialog"]')
+        const remaining = dialogs.item(dialogs.length - 1)
+        const target = remaining?.querySelector<HTMLElement>(focusableSelector) ?? remaining
+        target?.focus({ preventScroll: true })
+      })
     }
   }, [isMounted, isOpen])
 
@@ -150,7 +165,7 @@ export default function ResponsiveModal({
 
   const modalContent = (
     <div
-      className="modal-scrim fixed inset-0 z-[1000] flex min-w-0 items-end justify-center overflow-hidden p-0 md:items-center md:p-4"
+      className={joinClasses("modal-scrim fixed inset-0 z-[1000] flex min-w-0 items-end justify-center overflow-hidden p-0", desktopPlacement === "side" ? "md:items-stretch md:justify-end" : "md:items-center md:p-4")}
       onClick={(event) => {
         if (event.target !== event.currentTarget) return
 
@@ -168,6 +183,7 @@ export default function ResponsiveModal({
         aria-describedby={descriptionId}
         className={joinClasses(
           "flex min-h-0 min-w-0 flex-col overflow-hidden border bg-surface-paper shadow-material-floating transition-transform [transition-duration:var(--motion-deliberate)] [transition-timing-function:var(--ease-folk)] md:max-h-[90vh] md:w-full md:rounded-sheet",
+          desktopPlacement === "side" && "md:!h-dvh md:!max-h-none md:!rounded-r-none",
           desktopMaxWidth,
           mobilePanelClass,
           toneClasses,

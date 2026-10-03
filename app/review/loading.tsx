@@ -1,14 +1,3 @@
-import RouteLoadingShell from "@/components/RouteLoadingShell"
-
 export default function ReviewLoading() {
-  return (
-    <RouteLoadingShell
-      label="Practice"
-      title="Loading today’s practice"
-      description="Checking due tunes, catch-up work, active practice items, and streaks."
-      primarySectionTitle="Due next"
-      secondarySectionTitle="Practice status"
-      mode="split"
-    />
-  )
+  return <main className="mx-auto flex min-h-[65dvh] max-w-5xl items-center justify-center px-5" aria-busy="true"><p role="status" className="text-sm text-text-muted">Getting your practice ready…</p></main>
 }

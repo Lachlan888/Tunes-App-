@@ -56,14 +56,15 @@ const NativeFormData=globalThis.FormData
 globalThis.FormData=class extends NativeFormData {constructor(){super()}}
 let provider, options, destroyed=0
 class Provider {
-  constructor(_mount,config){options=config;this.time=0;this.rate=1;this.state=2}
+  constructor(_mount,config){options=config;this.time=0;this.rate=1;this.state=-1}
   getCurrentTime(){return this.time}
   getDuration(){return 120}
   getAvailablePlaybackRates(){return [0.5,0.75,1]}
   getPlaybackRate(){return this.rate}
   getPlayerState(){return this.state}
   setPlaybackRate(rate){this.rate=rate}
-  seekTo(time){this.time=time}
+  seekTo(time){this.time=time;if(this.state!==2)this.state=1}
+  cueVideoById({startSeconds}){this.time=startSeconds;this.rate=1;this.state=5}
   playVideo(){this.state=1;options.events.onStateChange({target:this,data:1})}
   pauseVideo(){this.state=2;options.events.onStateChange({target:this,data:2})}
   destroy(){destroyed++}
@@ -135,7 +136,7 @@ try {
   await mount(props)
   assert.equal(provider.time,6)
   assert.equal(provider.rate,0.75)
-  assert.equal(provider.state,2,'restoration never autoplays')
+  assert.notEqual(provider.state,1,'restoration never autoplays')
   assert.equal(labelled('Adjust loop out point').props.value,8.5)
   assert.equal(JSON.parse(storage.get('tunes.session.v1.reference.42.recording-a')).mobileView,before.mobileView)
   await act(async()=>tree.update(React.createElement(Player,{...props,videoId:'recording-b'})))
@@ -153,7 +154,7 @@ try {
   await mount({...props,videoId:'recording-c',savedLoops:orderedLoops})
   await act(async()=>labelled('Select loop bank A: First').props.onClick())
   assert.equal(provider.time,10)
-  assert.equal(provider.state,2,'selecting a loop does not autoplay')
+  assert.notEqual(provider.state,1,'selecting a loop does not autoplay')
   await act(async()=>dock.secondaryActions.find(action=>action.id==='next').onInvoke())
   assert.equal(provider.time,30,'next follows playlist order')
   assert.equal(provider.state,2,'next selection remains paused')
@@ -199,6 +200,34 @@ try {
   assert.equal(sectionButton('Next section').props.disabled,true)
   assert.equal(provider.rate,0.75)
   console.log('PASS: section buttons, same-length shifts, speed preservation, start clamp, end limits, resize and clear')
+  await act(async()=>tree.unmount())
+  let controlsOpen = false
+  await mount({...props,videoId:'session-recording',savedLoops:orderedLoops,presentation:'session',onControlsOpenChange:open=>{controlsOpen=open}})
+  assert.equal(dock,null,'session owns its rating bar without a competing reference dock')
+  const sessionProvider=provider
+  const destroyBefore=destroyed
+  assert.notEqual(provider.state,1,'entering practice never autoplays')
+  assert.equal(tree.root.findAllByType('button').find(button=>button.props.className==='practice-loop-status').props['aria-pressed'],true,'valid saved loop starts enabled')
+  provider.time=0 // A cued YouTube player can report zero before first playback.
+  await key('ArrowRight')
+  assert.equal(provider.time,15,'keyboard seeking starts from the intended cued position')
+  await act(async()=>labelled('Play reference').props.onClick())
+  provider.time=15
+  await tick()
+  await act(async()=>tree.root.findByProps({className:'practice-pedal-trigger'}).props.onClick())
+  assert.equal(controlsOpen,true)
+  await act(async()=>labelled('Decrease Speed').props.onClick())
+  assert.equal(provider.rate,0.75)
+  await act(async()=>tree.root.findAllByType(Modal).find(modal=>modal.props.title==='Loop pedal').props.onClose())
+  assert.equal(controlsOpen,false)
+  assert.equal(provider,sessionProvider,'opening and closing pedal never creates another player')
+  assert.equal(destroyed,destroyBefore)
+  assert.equal(provider.time,15,'playhead stays in place')
+  assert.equal(provider.state,1,'playback continues across panel changes')
+  assert.equal(provider.rate,0.75,'speed stays in place')
+  provider.time=20.1;await tick()
+  assert.equal(provider.time,10,'loop still repeats after closing the pedal')
+  console.log('PASS: session player persists across pedal open/close, loop defaults on, speed and transport preserved')
   assert.ok(destroyed>=2)
   console.log('PASS: dock seek/speed, keyboard, pause/stop, loop order, zero-start capture, boundary/resume, persistence, source replacement, provider recovery')
 } finally {if(tree)await act(async()=>tree.unmount());globalThis.FormData=NativeFormData}

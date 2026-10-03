@@ -125,7 +125,7 @@ test("expansion, focus restoration and single-layer suppression are wired", () =
     provider,
     /if \(!model\) \{[\s\S]*registry\.unregister\(ownerId\)/
   )
-  assert.match(modal, /previouslyFocused\?\.focus\(\)/)
+  assert.match(modal, /previouslyFocused\.focus\(\{ preventScroll: true \}\)/)
   assert.match(modal, /role="dialog"/)
   assert.match(modal, /aria-modal="true"/)
 })
@@ -194,7 +194,7 @@ test("route integrations preserve only safe contextual state", () => {
     "utf8"
   )
 
-  assert.match(practice, /session\.v1\.practice/)
+  assert.match(practice, /session\.v2\.practice/)
   assert.match(media, /session\.v1\.reference/)
   assert.match(media, /currentTime/)
   assert.match(media, /loopEnabled/)

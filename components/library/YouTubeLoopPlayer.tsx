@@ -43,6 +43,7 @@ export type YouTubePlayer = {
   getAvailablePlaybackRates?: () => number[]
   getPlaybackRate?: () => number
   setPlaybackRate: (rate: number) => void
+  cueVideoById?: (options: { videoId: string; startSeconds: number }) => void
   seekTo: (seconds: number, allowSeekAhead: boolean) => void
   playVideo: () => void
   pauseVideo?: () => void
@@ -86,6 +87,8 @@ type YouTubeLoopPlayerProps = {
   savedLoops?: UserPieceMediaLoop[]
   mediaPanel: ReactNode
   className?: string
+  presentation?: "workspace" | "session"
+  onControlsOpenChange?: (open: boolean) => void
 }
 
 export type YouTubePlaybackSnapshot = {
@@ -243,11 +246,16 @@ export default function YouTubeLoopPlayer({
   savedLoops = [],
   mediaPanel,
   className,
+  presentation = "workspace",
+  onControlsOpenChange,
 }: YouTubeLoopPlayerProps) {
+  const [pedalOpen, setPedalOpen] = useState(false)
   const sessionStorage = usePrivateSessionStorage()
   const playbackStorageKey = `tunes.session.v1.reference.${pieceId}.${videoId}`
   const containerRef = useRef<HTMLDivElement | null>(null)
   const playerRef = useRef<YouTubePlayer | null>(null)
+  const cuedTimeRef = useRef<number | null>(null)
+  const requestedRateRef = useRef(1)
   const restoredSnapshotRef = useRef<YouTubePlaybackSnapshot | null>(null)
   const saveInFlightRef = useRef(false)
   const lastPlaybackTimeRef = useRef(0)
@@ -282,6 +290,12 @@ export default function YouTubeLoopPlayer({
   const [passagePracticeActive, setPassagePracticeActive] = useState(false)
   const [isPending, startTransition] = useTransition()
 
+  useEffect(() => {
+    onControlsOpenChange?.(pedalOpen || isSaveModalOpen || loadingBankIndex !== null)
+  }, [pedalOpen, isSaveModalOpen, loadingBankIndex, onControlsOpenChange])
+
+  useEffect(() => () => onControlsOpenChange?.(false), [onControlsOpenChange])
+
   const loops = useMemo(() => sortLoops(rawLoops), [rawLoops])
   const activeBank = loopBanks[activeBankIndex]
   const activeLoop =
@@ -297,9 +311,21 @@ export default function YouTubeLoopPlayer({
     setLoopEnabled(state.loopEnabled)
   }, [])
 
+  const preparePlayback = useCallback((player: YouTubePlayer | null, seconds: number) => {
+    if (!player) return
+    // seekTo starts an unstarted/cued YouTube player. Cue it instead until Play.
+    if (player.getPlayerState?.() === 2) {
+      cuedTimeRef.current = null
+      player.seekTo(seconds, true)
+    } else {
+      cuedTimeRef.current = seconds
+      player.cueVideoById?.({ videoId, startSeconds: seconds })
+    }
+  }, [videoId])
+
   const getLiveLoopPlaybackState = useCallback((): LoopPlaybackState => {
     return {
-      currentTime: getPlayerTime(playerRef.current),
+      currentTime: cuedTimeRef.current ?? getPlayerTime(playerRef.current),
       isPlaying,
       playbackRate,
       loopStart,
@@ -362,6 +388,8 @@ export default function YouTubeLoopPlayer({
 
     const restoredSnapshot = readPlaybackSnapshot(playbackStorageKey, sessionStorage)
     restoredSnapshotRef.current = restoredSnapshot
+    cuedTimeRef.current = null
+    requestedRateRef.current = restoredSnapshot?.playbackRate ?? 1
     setIsReady(false)
     setPlayerError(null)
     setCurrentTime(restoredSnapshot?.currentTime ?? 0)
@@ -405,7 +433,7 @@ export default function YouTubeLoopPlayer({
             setDuration(getPlayerDuration(event.target))
             setAvailableRates(getAvailableRates(event.target))
             if (restored) {
-              event.target.seekTo(restored.currentTime, true)
+              preparePlayback(event.target, restored.currentTime)
               try {
                 event.target.setPlaybackRate(restored.playbackRate)
               } catch {
@@ -416,7 +444,13 @@ export default function YouTubeLoopPlayer({
           },
           onStateChange: (event) => {
             if (cancelled) return
+            const readyDuration = getPlayerDuration(event.target)
+            if (readyDuration > 0) setDuration(readyDuration)
             const playingState = window.YT?.PlayerState?.PLAYING
+            if (event.data === playingState) {
+              cuedTimeRef.current = null
+              try { event.target.setPlaybackRate(requestedRateRef.current) } catch { /* Provider keeps its supported rate. */ }
+            }
             setIsPlaying(
               playingState !== undefined && event.data === playingState
             )
@@ -451,12 +485,12 @@ export default function YouTubeLoopPlayer({
       playerRef.current = null
       container.replaceChildren()
     }
-  }, [playbackStorageKey, resetPassageState, videoId, sessionStorage])
+  }, [playbackStorageKey, preparePlayback, resetPassageState, videoId, sessionStorage])
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
       const player = playerRef.current
-      const nextTime = getPlayerTime(player)
+      const nextTime = cuedTimeRef.current ?? getPlayerTime(player)
       const previousTime = lastPlaybackTimeRef.current
       lastPlaybackTimeRef.current = nextTime
       setCurrentTime(nextTime)
@@ -520,6 +554,7 @@ export default function YouTubeLoopPlayer({
 
   const setPlaybackRate = useCallback((rate: number) => {
     try {
+      requestedRateRef.current = rate
       playerRef.current?.setPlaybackRate(rate)
       setPlaybackRateState(rate)
     } catch {
@@ -565,7 +600,6 @@ export default function YouTubeLoopPlayer({
     setLoopStart(bank.startSeconds)
     setLoopEnd(bank.endSeconds)
     setLoopEnabled(hasWindow)
-    setPlaybackRate(bank.playbackRate)
     setDraftLabel(bank.savedLoopId ? bank.name : "")
     setDraftNotes(
       rawLoops.find((loop) => loop.id === bank.savedLoopId)?.notes ?? ""
@@ -573,19 +607,22 @@ export default function YouTubeLoopPlayer({
     setMarkingStage(bank.savedLoopId ? "idle" : hasWindow ? "ready" : "draft")
 
     if (bank.startSeconds !== null) {
-      playerRef.current?.seekTo(bank.startSeconds, true)
+      preparePlayback(playerRef.current, bank.startSeconds)
       lastPlaybackTimeRef.current = bank.startSeconds
       setCurrentTime(bank.startSeconds)
     }
-  }, [isReady, rawLoops, savedLoops, setPlaybackRate, videoId])
+    setPlaybackRate(bank.playbackRate)
+  }, [isReady, preparePlayback, rawLoops, savedLoops, setPlaybackRate, videoId])
 
   const playFrom = useCallback((seconds?: number) => {
     const player = playerRef.current
     if (!player) return
 
-    const current = getPlayerTime(player)
+    const current = cuedTimeRef.current ?? getPlayerTime(player)
+    const wasCued = cuedTimeRef.current !== null
+    cuedTimeRef.current = null
     const target = seconds ?? loopResumePosition(current, loopStart, loopEnd, loopEnabled && hasValidLoop)
-    if (seconds !== undefined || target !== current) {
+    if (wasCued || seconds !== undefined || target !== current) {
       player.seekTo(target, true)
       lastPlaybackTimeRef.current = target
       setCurrentTime(target)
@@ -624,29 +661,28 @@ export default function YouTubeLoopPlayer({
     setSaveMessage(null)
     setSaveError(null)
     setDeletedLoop(null)
-    playerRef.current?.seekTo(start, true)
+    preparePlayback(playerRef.current, start)
     lastPlaybackTimeRef.current = start
     setCurrentTime(start)
     if (audition) playerRef.current?.playVideo()
-    if (selectedState.playbackRate !== playbackRate) {
-      setPlaybackRate(selectedState.playbackRate)
-    }
-  }, [activeBankIndex, applyLoopWindow, getLiveLoopPlaybackState, loopBanks, playbackRate, setPlaybackRate])
+    setPlaybackRate(selectedState.playbackRate)
+  }, [activeBankIndex, applyLoopWindow, getLiveLoopPlaybackState, loopBanks, preparePlayback, setPlaybackRate])
 
   const stopPlayback = useCallback(() => {
     const target = loopStart ?? 0
     playerRef.current?.pauseVideo?.()
-    playerRef.current?.seekTo(target, true)
+    preparePlayback(playerRef.current, target)
     lastPlaybackTimeRef.current = target
     setCurrentTime(target)
     setIsPlaying(false)
-  }, [loopStart])
+  }, [loopStart, preparePlayback])
 
   const seekPlayback = useCallback((seconds: number) => {
-    playerRef.current?.seekTo(seconds, true)
+    if (isPlaying) playerRef.current?.seekTo(seconds, true)
+    else preparePlayback(playerRef.current, seconds)
     lastPlaybackTimeRef.current = seconds
     setCurrentTime(seconds)
-  }, [])
+  }, [isPlaying, preparePlayback])
 
   const selectPreviousLoop = useCallback(() => {
     const previous = loops[activeLoopIndex - 1]
@@ -697,7 +733,7 @@ export default function YouTubeLoopPlayer({
         const direction = event.code === "ArrowLeft" ? -5 : 5
         const nextTime = Math.min(
           duration || Number.POSITIVE_INFINITY,
-          Math.max(0, getPlayerTime(playerRef.current) + direction)
+          Math.max(0, (cuedTimeRef.current ?? getPlayerTime(playerRef.current)) + direction)
         )
         seekPlayback(nextTime)
       }
@@ -735,14 +771,14 @@ export default function YouTubeLoopPlayer({
       loopEnabled: hasWindow,
       playbackRate: bank.playbackRate,
     })
-    setPlaybackRate(bank.playbackRate)
     setMarkingStage(bank.savedLoopId ? "idle" : hasWindow ? "ready" : "draft")
 
     if (bank.startSeconds !== null) {
-      playerRef.current?.seekTo(bank.startSeconds, true)
+      preparePlayback(playerRef.current, bank.startSeconds)
       lastPlaybackTimeRef.current = bank.startSeconds
       setCurrentTime(bank.startSeconds)
     }
+    setPlaybackRate(bank.playbackRate)
   }
 
   function loadLoopIntoBank(loop: UserPieceMediaLoop) {
@@ -1213,7 +1249,7 @@ export default function YouTubeLoopPlayer({
     videoId,
   ])
 
-  useSessionDock(`reference-media:${pieceId}`, dockModel)
+  useSessionDock(`reference-media:${pieceId}`, presentation === "session" ? null : dockModel)
 
   const loopStartPercent =
     duration > 0 && loopStart !== null ? (loopStart / duration) * 100 : 0
@@ -1249,32 +1285,7 @@ export default function YouTubeLoopPlayer({
     setPlaybackRate(orderedRates[nextIndex])
   }
 
-  return (
-    <>
-      <div
-        className={joinClasses(
-          "reference-workbench min-w-0 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,1fr)] md:items-start md:gap-6",
-          className
-        )}
-      >
-        <section className="reference-player flex min-w-0 flex-col md:sticky md:top-6">
-          {playerError ? (
-            <div className="rounded-2xl border border-border bg-card p-5">
-              <p className="font-semibold text-foreground">Recording unavailable</p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                {playerError} Choose another recording below, or open the source directly.
-              </p>
-              <a href={`https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`} target="_blank" rel="noopener noreferrer" className={`${buttonStyles.secondary} mt-4`}>
-                Open on YouTube
-              </a>
-            </div>
-          ) : null}
-          <div className={joinClasses("aspect-video w-full overflow-hidden rounded-2xl border border-border bg-foreground/10 shadow-sm", playerError && "hidden")}>
-            <div ref={containerRef} title={title} className="h-full w-full [&_iframe]:h-full [&_iframe]:w-full" />
-          </div>
-        </section>
-
-        <aside className="mt-5 min-w-0 space-y-4 md:mt-0">
+  const pedal = (
           <section aria-labelledby="loop-pedal-heading" className="min-h-[42rem] overflow-hidden rounded-[1.75rem] border-2 border-[#4f5349] bg-[#2a2d28] p-4 text-[#f6f0df] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_10px_28px_rgba(25,22,17,0.28)] sm:p-5">
             <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
               <h2 id="loop-pedal-heading" className="font-mono text-xl font-black uppercase tracking-[0.08em]">Loop pedal</h2>
@@ -1395,10 +1406,53 @@ export default function YouTubeLoopPlayer({
               </div>
             ) : null}
           </section>
+  )
+
+  return (
+    <>
+      <div
+        className={joinClasses(
+          presentation === "session" ? "practice-reference-workbench" : "reference-workbench min-w-0 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,1fr)] md:items-start md:gap-6",
+          className
+        )}
+      >
+        <section className="reference-player flex min-w-0 flex-col md:sticky md:top-6">
+          {playerError ? (
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <p className="font-semibold text-foreground">Recording unavailable</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                {playerError} {presentation === "session" ? mediaPanel ? "Open Loop pedal to choose another recording, or open the source directly." : "You can open the source directly or continue practising." : "Choose another recording below, or open the source directly."}
+              </p>
+              <a href={`https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`} target="_blank" rel="noopener noreferrer" className={`${buttonStyles.secondary} mt-4`}>
+                Open on YouTube
+              </a>
+            </div>
+          ) : null}
+          <div className={joinClasses("aspect-video w-full overflow-hidden rounded-2xl border border-border bg-foreground/10 shadow-sm", playerError && "hidden")}>
+            <div ref={containerRef} title={title} className="h-full w-full [&_iframe]:h-full [&_iframe]:w-full" />
+          </div>
+        </section>
+
+        {presentation === "workspace" ? <aside className="mt-5 min-w-0 space-y-4 md:mt-0">
+          {pedal}
 
           {mediaPanel}
-        </aside>
+        </aside> : null}
       </div>
+
+      {presentation === "session" ? (
+        <>
+          <div className="practice-player-controls">
+            <button type="button" aria-label={isPlaying ? "Pause reference" : "Play reference"} disabled={!isReady || Boolean(playerError)} aria-pressed={isPlaying} onClick={() => isPlaying ? playerRef.current?.pauseVideo?.() : playFrom()} className="practice-player-play">{isPlaying ? "Pause" : "Play"}</button>
+            <button type="button" disabled={!hasValidLoop || Boolean(playerError)} aria-pressed={hasValidLoop && loopEnabled} onClick={() => setLoopEnabled(value => !value)} className="practice-loop-status"><span aria-hidden="true" className={hasValidLoop && loopEnabled ? "bg-state-known" : "bg-text-muted/40"} />{hasValidLoop ? loopEnabled ? "Loop on" : "Loop off" : "No loop set"}</button>
+            <button type="button" aria-haspopup="dialog" onClick={() => setPedalOpen(true)} className="practice-pedal-trigger">Loop pedal <span aria-hidden="true">↗</span></button>
+          </div>
+          <ResponsiveModal isOpen={pedalOpen} onClose={() => setPedalOpen(false)} title="Loop pedal" desktopPlacement="side" desktopMaxWidth="md:max-w-2xl" closeLabel="Done" closeDisabled={isSaveModalOpen || loadingBankIndex !== null}>
+            {pedal}
+            {mediaPanel ? <div className="mt-5">{mediaPanel}</div> : null}
+          </ResponsiveModal>
+        </>
+      ) : null}
 
       <ResponsiveModal
         isOpen={loadingBankIndex !== null}

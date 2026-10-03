@@ -51,7 +51,7 @@ export default function PersonalTrendInsights({
           outcomes and movement.
         </p>
         <Link
-          href="/review?session=due-today"
+          href="/review"
           className="mt-4 inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
         >
           Start Practice
@@ -166,7 +166,7 @@ export default function PersonalTrendInsights({
                 </li>
               ))}
             </ul>
-            <Link href="/review?session=catch-up" className="mt-4 inline-flex min-h-11 items-center rounded-control bg-primary px-5 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Start catch-up</Link>
+            <Link href="/review" className="mt-4 inline-flex min-h-11 items-center rounded-control bg-primary px-5 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Start practice</Link>
           </section>
         ) : null}
 

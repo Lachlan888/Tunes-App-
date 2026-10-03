@@ -126,38 +126,21 @@ test("session summaries count outcomes and make one useful suggestion", () => {
   assert.match(getPracticeSessionSuggestion(results), /Rough tunes/)
 })
 
-test("Focused Practice uses reduced chrome, persistent ratings, Undo and summary", () => {
-  const shell = readFileSync(new URL("../components/practice/FocusModeShell.tsx", import.meta.url), "utf8")
+test("Focused Practice keeps reference, ratings and session boundaries visible", () => {
   const session = readFileSync(new URL("../components/practice/FocusedPracticeSession.tsx", import.meta.url), "utf8")
-  const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8")
-
-  assert.match(shell, /dataset\.focusMode = "practice"/)
-  assert.match(css, /data-focus-mode="practice"/)
+  const summary = readFileSync(new URL("../components/practice/PracticeSessionSummary.tsx", import.meta.url), "utf8")
+  assert.match(session, /<PracticeReferencePlayer/)
+  assert.match(session, /practice-rating-bar/)
   assert.match(session, /RATING_UNDO_WINDOW_MS/)
-  assert.match(session, /Undo rating/)
   assert.match(session, /completeFormalReviewInPlace/)
-  assert.match(session, /crypto\.randomUUID/)
-  assert.match(session, /End session/)
-  assert.match(session, /Practice complete/)
-  assert.match(session, /Continue with catch-up/)
-  assert.match(session, /Reflect on this session/)
-  assert.match(session, /Add reflection/)
-  assert.match(session, /Not now/)
-  assert.match(session, /ACTIVE_PRACTICE_SESSION_KEY/)
-  assert.match(session, /Keyboard: 1 Rough · 2 Shaky · 3 Solid/)
+  assert.match(session, /loadNextPracticeBatch/)
+  assert.match(summary, /practiceDiaryEnabled && count > 0 && !diaryDismissed/)
+  assert.match(summary, /Add a diary entry/)
+  assert.doesNotMatch(session, /Reveal reference|Hide reference|<textarea|PracticeDiaryNav/)
 })
-
-test("Practice root shows the general Practice view with a lane chooser", () => {
+test("Practice scopes and runs reset session state with their server queue", () => {
   const page = readFileSync(new URL("../app/review/page.tsx", import.meta.url), "utf8")
-  assert.match(page, /<PageHeader title="Practice"/)
-  assert.match(page, /<ReviewQueueSection/)
-  assert.match(page, /<PracticeDiaryNav/)
-  assert.doesNotMatch(page, /<PracticeEntryResolver/)
-})
-
-test("changing Practice lanes starts with that lane's server queue", () => {
-  const page = readFileSync(new URL("../app/review/page.tsx", import.meta.url), "utf8")
-  assert.match(page, /<FocusedPracticeSession[\s\S]*?key=\{`\$\{today\}:\$\{practiceLane\}:\$\{sessionKey \?\? ""\}`\}/)
+  assert.match(page, /key=\{`\$\{data.today\}:\$\{practiceLane\}:\$\{data.sessionKey \?\? ""\}:\$\{params\?\.run \?\? ""\}`\}/)
 })
 
 test("the diary accepts a session handoff with a safe optional return", () => {
@@ -169,15 +152,9 @@ test("the diary accepts a session handoff with a safe optional return", () => {
   assert.match(page, /sessionReturnTo=\{fromSession \? returnTo : undefined\}/)
 })
 
-test("Focused Practice uses one separator after reference and preserves note drafts", () => {
-  const session = readFileSync(
-    new URL("../components/practice/FocusedPracticeSession.tsx", import.meta.url),
-    "utf8"
-  )
-
-  assert.match(session, /ref=\{referenceRegion\}[\s\S]*?className="py-3 sm:col-span-2 focus:outline-none"/)
-  assert.match(session, /<details className="border-t border-hairline pt-3 sm:col-span-2">/)
-  assert.doesNotMatch(session, /referenceRegion[^\n]*border-y/)
-  assert.match(session, /sessionStorage\.setItem\(draftKey/)
-  assert.match(session, /value=\{noteBody\}[\s\S]*?saveDraft\(\{ body: event\.target\.value \}\)/)
+test('automatic practice can resume its exact run without choosing a tune', () => {
+  assert.equal(parsePracticeLane('ready'), 'ready')
+  assert.equal(getPracticeSessionHref('ready'), '/review?session=ready')
+  const href = '/review?session=ready&run=practice-123'
+  assert.equal(getResumablePracticeHref(JSON.stringify({href, lane: 'ready', sessionDate: '2026-10-03'}), '2026-10-03'), href)
 })

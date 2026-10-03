@@ -170,7 +170,7 @@ function MyStatusDropdown({
               <input type="hidden" name="piece_id" value={item.piece_id} />
               <input type="hidden" name="redirect_to" value={redirectTo} />
               <SubmitButton
-                label="Start Practice"
+                label="Add to Practice"
                 pendingLabel="Starting..."
                 className={buttonStyles.menuItem}
               />

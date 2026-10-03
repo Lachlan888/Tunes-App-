@@ -46,3 +46,18 @@ test('unavailable contexts do not load a general queue and query errors remain r
   assert.equal(f.calls.length, 0)
   await assert.rejects(loaded.exports.loadReviewPieceRows(fixture({message: 'connection failed'}).db, 'owner', {limit: 20}), /connection failed/)
 })
+
+test('ready practice includes overdue and due today in one bounded owner-scoped query', async () => {
+  const f = fixture()
+  await loaded.exports.loadReviewPieceRows(f.db, 'owner', {today: '2026-10-03', lane: 'ready', limit: 50})
+  assert.ok(f.calls.some(c => c[0] === 'lte' && c[1] === 'next_review_due' && c[2] === '2026-10-03'))
+  assert.ok(!f.calls.some(c => ['eq', 'lt'].includes(c[0]) && c[1] === 'next_review_due'))
+})
+
+test('scoped refill uses a stable owner-scoped cursor instead of rescheduled due dates', async () => {
+  const f = fixture()
+  await loaded.exports.loadReviewPieceRows(f.db, 'owner', {today: '2026-10-03', lane: 'list', scope: {kind: 'list', id: 7}, afterId: 500, limit: 50})
+  assert.ok(f.calls.some(c => c[0] === 'gt' && c[1] === 'id' && c[2] === 500))
+  assert.deepEqual(f.calls.filter(c => c[0] === 'order').map(c => c[1]), ['id'])
+  assert.ok(f.calls.some(c => c[0] === 'eq' && c[1] === 'user_id' && c[2] === 'owner'))
+})

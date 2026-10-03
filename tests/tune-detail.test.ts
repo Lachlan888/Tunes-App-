@@ -44,7 +44,7 @@ test("the tune identity, three views and Session Dock keep one action hierarchy"
   assert.match(page, /redirect\(getReferencePracticeHref/)
   assert.doesNotMatch(page, /function ReferenceView/)
   assert.match(page, /typedReviewHistory/)
-  assert.match(page, /Start Practice/)
+  assert.match(page, /Add to Practice/)
   assert.match(page, /Already in practice/)
   assert.doesNotMatch(navigation, /label: "Overview"/)
   assert.doesNotMatch(navigation, /label: "Community"/)
@@ -52,8 +52,8 @@ test("the tune identity, three views and Session Dock keep one action hierarchy"
   assert.match(navigation, /label: "Reference"/)
   assert.match(navigation, /label: "About"/)
   assert.match(sessionDock, /isInPractice/)
-  assert.match(sessionDock, /label: "Already in practice"/)
-  assert.match(sessionDock, /label: "Start Practice"/)
+  assert.match(sessionDock, /label: "Open Practice"/)
+  assert.match(sessionDock, /label: "Add to Practice"/)
 })
 
 test("Manage and route recovery expose permission-safe tune actions", () => {

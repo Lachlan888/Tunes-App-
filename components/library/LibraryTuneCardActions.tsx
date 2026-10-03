@@ -58,11 +58,11 @@ export default function LibraryTuneCardActions({
           <TuneCollectionActionButton
             action={startLearning}
             fields={{ piece_id: piece.id, redirect_to: redirectTo }}
-            label="Start Practice"
+            label="Add to Practice"
             mobileLabel="Practice"
             pendingLabel="Starting..."
             mobilePendingLabel="Starting"
-            ariaLabel={`Start Practice for ${piece.title}`}
+            ariaLabel={`Add to Practice for ${piece.title}`}
             className={compactPracticeAction}
           />
 
@@ -83,7 +83,7 @@ export default function LibraryTuneCardActions({
             type="button"
             className={`${compactPracticeAction} md:hidden`}
             disabled
-            aria-label={`Start Practice for ${piece.title} — ${isAlreadyInPractice ? "already in practice" : "already known"}`}
+            aria-label={`Add to Practice for ${piece.title} — ${isAlreadyInPractice ? "already in practice" : "already known"}`}
           >
             Practice
           </button>

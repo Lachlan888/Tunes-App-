@@ -182,16 +182,16 @@ function TodayPanel({
   const continueTune = summary.dueTodayPreview[0] ?? summary.inPracticePreview[0]
   const queuedTune = summary.learningQueuePreview[0]
   const continueHref = summary.dueTodayCount > 0
-    ? "/review?session=due-today"
+    ? "/review"
     : summary.needsAttentionCount > 0
-      ? "/review?session=catch-up"
+      ? "/review"
       : continueTune
         ? `/library/${continueTune.piece_id}`
         : queuedTune
           ? `/library/${queuedTune.piece_id}`
           : "/review"
   const continueTitle = summary.needsAttentionCount > 0 && summary.dueTodayCount === 0
-    ? "Continue catch-up"
+    ? "Continue practice"
     : continueTune?.title ?? queuedTune?.title ?? "Open today’s practice"
   const continueMeta = summary.needsAttentionCount > 0 && summary.dueTodayCount === 0
     ? `${summary.needsAttentionCount} overdue tune${summary.needsAttentionCount === 1 ? "" : "s"} · oldest first`
@@ -250,8 +250,8 @@ function TodayPanel({
 
       <MobileStatGrid
         items={[
-          { label: "Due today", value: summary.dueTodayCount, href: "/review?session=due-today" },
-          { label: "Needs attention", value: summary.needsAttentionCount, href: "/review?session=catch-up" },
+          { label: "Due today", value: summary.dueTodayCount, href: "/review" },
+          { label: "Needs attention", value: summary.needsAttentionCount, href: "/review" },
         ]}
       />
 

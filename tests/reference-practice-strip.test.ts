@@ -28,7 +28,7 @@ test("reference playback dock is removed at every viewport size", () => {
 test("desktop reference strip exposes tune-focused practice actions", () => {
   for (const label of [
     "Mark practised",
-    "Start practice",
+    "Add to Practice",
     "Add to list",
     "Back to tune",
     "Rough",

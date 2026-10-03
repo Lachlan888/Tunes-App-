@@ -11,6 +11,7 @@ export default function FocusModeShell({
   onEnd,
   exitHref = "/review",
   endDisabled = false,
+  showExit = true,
   children,
 }: {
   eyebrow: string
@@ -19,6 +20,7 @@ export default function FocusModeShell({
   exitHref?: string
   onEnd?: () => void
   endDisabled?: boolean
+  showExit?: boolean
   children: ReactNode
 }) {
   useLayoutEffect(() => {
@@ -32,13 +34,13 @@ export default function FocusModeShell({
     <main className="mx-auto min-h-screen max-w-5xl px-4 py-4 text-text-primary sm:px-6 md:py-6">
       <header className="flex items-center justify-between gap-4 border-b border-hairline pb-4">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">
+          {eyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">
             {eyebrow}
-          </p>
-          <h1 className="truncate font-serif text-xl font-bold sm:text-2xl">{title}</h1>
-          <p className="mt-1 text-sm text-text-muted">{detail}</p>
+          </p> : null}
+          <p className="truncate font-serif text-xl font-bold sm:text-2xl">{title}</p>
+          {detail ? <p className="mt-1 text-sm text-text-muted">{detail}</p> : null}
         </div>
-        {onEnd ? (
+        {!showExit ? null : onEnd ? (
           <button
             type="button"
             onClick={onEnd}

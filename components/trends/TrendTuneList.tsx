@@ -163,7 +163,7 @@ export default function TrendTuneList({
                       <input type="hidden" name="piece_id" value={piece.id} />
                       <input type="hidden" name="redirect_to" value={redirectTo} />
                       <SubmitButton
-                        label="Start Practice"
+                        label="Add to Practice"
                         pendingLabel="Starting..."
                         className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
                       />

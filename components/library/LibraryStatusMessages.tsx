@@ -364,7 +364,7 @@ export default function LibraryStatusMessages({
             </Link>
 
             <Link href="/library" className={buttonStyles.secondary}>
-              Start Practice
+              Add to Practice
             </Link>
           </div>
         </div>

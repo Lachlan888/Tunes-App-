@@ -41,15 +41,15 @@ export default function TuneDetailSessionDock({
     const primaryAction = isInPractice
       ? {
           id: "practice",
-          label: "Already in practice",
+          label: "Open Practice",
           ariaLabel: `Open Practice for ${title}${practiceStage ? `, currently Stage ${practiceStage}` : ""}`,
-          href: "/review#review-queue",
+          href: "/review",
           tone: "practice" as const,
         }
       : {
           id: "practice",
-          label: "Start Practice",
-          ariaLabel: `Start Practice for ${title}`,
+          label: "Add to Practice",
+          ariaLabel: `Add to Practice for ${title}`,
           onInvoke: start,
           tone: "practice" as const,
         }
@@ -126,7 +126,7 @@ export default function TuneDetailSessionDock({
       <input type="hidden" name="piece_id" value={pieceId} />
       <input type="hidden" name="redirect_to" value={redirectTo} />
       <button type="submit" tabIndex={-1}>
-        Start Practice
+        Add to Practice
       </button>
     </form>
   )

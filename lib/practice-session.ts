@@ -4,7 +4,7 @@ import {
   getNextStageForSolid,
 } from "./review.ts"
 
-export type PracticeLane = "due-today" | "catch-up" | "list" | "focus"
+export type PracticeLane = "ready" | "due-today" | "catch-up" | "list" | "focus"
 export type PracticeRating = "failed" | "shaky" | "solid"
 export type PracticeRatingState = "idle" | "undo-window" | "submitting"
 
@@ -57,7 +57,7 @@ export function getSafePracticeReturnHref(value: string | undefined) {
 }
 
 export function parsePracticeLane(value: string | undefined): PracticeLane | null {
-  return value === "due-today" || value === "catch-up" || value === "list" || value === "focus"
+  return value === "ready" || value === "due-today" || value === "catch-up" || value === "list" || value === "focus"
     ? value
     : null
 }

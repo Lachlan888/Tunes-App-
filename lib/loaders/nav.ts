@@ -132,7 +132,7 @@ export async function loadNavContext(
       .eq("user_id", userId)
       .eq("status", "learning")
       .not("next_review_due", "is", null)
-      .lt("next_review_due", getToday()),
+      .lte("next_review_due", getToday()),
 
     userCanModerate ? loadPendingModerationCount(supabase) : Promise.resolve(0),
   ]))

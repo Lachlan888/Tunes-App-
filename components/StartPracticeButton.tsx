@@ -13,8 +13,8 @@ export default function StartPracticeButton({
   pieceId,
   redirectTo,
   startLearning,
-  label = "Start Practice",
-  pendingLabel = "Starting...",
+  label = "Add to Practice",
+  pendingLabel = "Adding...",
   className = "w-full border px-3 py-2 text-sm",
 }: StartPracticeButtonProps) {
   return (

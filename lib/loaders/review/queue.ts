@@ -22,7 +22,7 @@ type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 export async function loadReviewPieceRows(
   supabase: SupabaseServerClient,
   userId: string,
-  options: { today: string; lane?: string | null; scope?: { kind: "list" | "focus"; id: number } | null; limit: number }
+  options: { today: string; lane?: string | null; scope?: { kind: "list" | "focus"; id: number } | null; afterId?: number; limit: number }
 ): Promise<{ rows: ReviewPieceRow[]; total: number }> {
   if (options.scope === null) return { rows: [], total: 0 }
   let query = supabase
@@ -49,9 +49,14 @@ export async function loadReviewPieceRows(
     .not("next_review_due", "is", null)
   if (options.lane === "due-today") query = query.eq("next_review_due", options.today)
   if (options.lane === "catch-up") query = query.lt("next_review_due", options.today)
+  if (options.lane === "ready") query = query.lte("next_review_due", options.today)
   if (options.scope?.kind === "list") query = query.eq("pieces.learning_list_items.learning_list_id", options.scope.id)
   if (options.scope?.kind === "focus") query = query.eq("pieces.practice_focus_tunes.focus_id", options.scope.id).eq("pieces.practice_focus_tunes.user_id", userId)
-  const { data, error, count } = await query.order("next_review_due").order("stage").order("id").limit(options.limit)
+  // Scoped sessions include future tunes too. A stable ID cursor prevents a
+  // freshly rescheduled tune from entering a later batch again.
+  if (options.scope) query = query.gt("id", options.afterId ?? 0).order("id")
+  else query = query.order("next_review_due").order("stage").order("id")
+  const { data, error, count } = await query.limit(options.limit)
 
   if (error) {
     throw new Error(error.message)

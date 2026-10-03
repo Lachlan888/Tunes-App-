@@ -65,7 +65,7 @@ test("Trends exposes accessible data, actions and bounded server reads", () => {
 
   assert.match(component, /aria-label="Practice events by week"/)
   assert.match(component, /<table/)
-  assert.match(component, /Start catch-up/)
+  assert.match(component, /Start practice/)
   assert.match(component, /Explore tunes/)
   assert.match(loader, /TREND_EVENT_LIMIT/)
   assert.match(loader, /\.limit\(TREND_CATALOGUE_LIMIT\)/)

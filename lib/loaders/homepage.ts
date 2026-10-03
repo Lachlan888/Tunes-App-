@@ -331,11 +331,11 @@ function buildGettingStartedState(options: {
     {
       id: "start_practice",
       group: "Practice setup",
-      label: "Start Practice on a tune",
+      label: "Add a tune to Practice",
       description:
         "Put one tune into practice so reviews can begin.",
       href: "/library",
-      actionLabel: "Start Practice",
+      actionLabel: "Find tunes",
       pendingLabel: "Opening Tunes...",
       isComplete: hasPracticeTunes,
     },

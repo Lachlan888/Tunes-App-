@@ -43,7 +43,7 @@ test("mobile catalogue uses one contained four-action row with touch targets", (
   assert.match(libraryActions, /min-h-11 min-w-0 w-full/)
   assert.match(libraryList, /aria-label=\{`Preview \$\{piece\.title\}`\}/)
   assert.match(libraryActions, /aria-label=\{`Add \$\{piece\.title\} to List`\}/)
-  assert.match(libraryActions, /ariaLabel=\{`Start Practice for \$\{piece\.title\}`\}/)
+  assert.match(libraryActions, /ariaLabel=\{`Add to Practice for \$\{piece\.title\}`\}/)
   assert.match(libraryActions, /ariaLabel=\{`Mark \$\{piece\.title\} Known`\}/)
 })
 

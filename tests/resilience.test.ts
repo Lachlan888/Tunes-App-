@@ -23,9 +23,9 @@ test("offline status is honest about retained local work and rejected writes", (
 
   assert.match(connectionStatus, /Offline\. Keep this page open/)
   assert.match(connectionStatus, /Changes are not synced; reconnect before saving/)
-  assert.match(practice, /!online \|\| Boolean\(errorMessage\)/)
-  assert.match(practice, /disabled=\{!online \|\| isSubmitting\}/)
-  assert.match(practice, /The rating could not be saved\. Check your connection and try again\./)
+  assert.match(practice, /!online \|\| busy/)
+  assert.match(practice, /disabled=\{!online \|\| saving \|\| loading\}/)
+  assert.match(practice, /Couldn’t save that rating\. Please try again\./)
 })
 
 test("logout and account replacement purge Tunes session state before navigation", () => {
@@ -44,8 +44,8 @@ test("practice retry reuses one submission key and the database returns the prio
   const foundationMigration = source("../supabase/migrations/20260607000000_complete_formal_review_rpc.sql")
   const migration = source("../supabase/migrations/20260607010000_fix_complete_formal_review_piece_id_ambiguity.sql")
 
-  assert.match(practice, /failedSubmission\.current\?\.formData \?\? new FormData\(\)/)
-  assert.match(practice, /failedSubmission\.current = \{ pending, formData \}/)
+  assert.match(practice, /submission\.current \? void commitRating\(submission\.current\)/)
+  assert.match(practice, /submission\.current = pending/)
   assert.match(practice, /reviewSubmissionKey", pending\.submissionKey/)
   assert.match(action, /p_submission_key: submissionKey/)
   assert.match(foundationMigration, /unique \(user_id, submission_key\)/)

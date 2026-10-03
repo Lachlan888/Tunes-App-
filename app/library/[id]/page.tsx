@@ -305,10 +305,10 @@ function PracticeView({ data, redirectTo }: { data: TuneDetailLoadedData; redire
         {data.typedUserPiece ? (
           <>
             <PracticeProgress stage={data.typedUserPiece.stage} className="mt-5 rounded-object bg-surface-note p-4" />
-            <PendingLinkButton href="/review#review-queue" label="Open Practice queue" pendingLabel="Opening Practice..." className={`${buttonStyles.practice} mt-5`} />
+            <PendingLinkButton href="/review" label="Open Practice queue" pendingLabel="Opening Practice..." className={`${buttonStyles.practice} mt-5`} />
           </>
         ) : (
-          <p className="mt-5 text-sm leading-6 text-text-muted">Use <strong className="text-text-primary">Start Practice</strong> in the session dock to create a review schedule. If it is already active, the dock says <strong className="text-text-primary">Already in practice</strong>.</p>
+          <p className="mt-5 text-sm leading-6 text-text-muted">Use <strong className="text-text-primary">Add to Practice</strong> to include this tune in your schedule. Once added, <strong className="text-text-primary">Open Practice</strong> takes you to your session.</p>
         )}
       </section>
       <div className="min-w-0 space-y-5">

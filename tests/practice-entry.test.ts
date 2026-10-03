@@ -2,36 +2,23 @@ import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import test from "node:test"
 
-const reviewPage = readFileSync("app/review/page.tsx", "utf8")
-const reviewQueue = readFileSync(
-  "components/practice/ReviewQueueSection.tsx",
-  "utf8"
-)
-const practiceNav = readFileSync(
-  "components/practice-diary/PracticeDiaryNav.tsx",
-  "utf8"
-)
-
-test("Practice entry uses the real collection and keeps the learning queue", () => {
-  assert.match(reviewQueue, /href="\/learning-lists\?view=learning-queue"/)
-  assert.match(reviewQueue, /href="\/library\/practice"/)
-  assert.match(reviewQueue, />\s*Currently in practice\s*</)
-  assert.doesNotMatch(reviewQueue, /From focus areas/)
+const read = (path: string) => readFileSync(path, "utf8")
+test("Practice entry has one start/resume action and no competing administration", () => {
+  const page = read("app/review/page.tsx")
+  const entry = read("components/practice/PracticeEntryResolver.tsx")
+  assert.match(page, /<PracticeEntryResolver/)
+  assert.doesNotMatch(page, /ReviewQueueSection|ActivePracticeSection|PracticeDiaryNav|Streak/)
+  assert.match(entry, /Resume practice/)
+  assert.match(entry, /Start practice/)
+  assert.match(entry, /session=ready&run=/)
+  assert.match(entry, /getResumablePracticeHref/)
 })
-
-test("general Practice view keeps the sidebar and deep Practice navigation", () => {
-  for (const href of [
-    "/review",
-    "/review/diary",
-    "/review/diary/index",
-    "/review/foci",
-  ]) {
-    assert.match(practiceNav, new RegExp(`href: "${href}"`))
-  }
-
-  assert.match(reviewPage, /<PracticeDiaryNav active="review" compact \/>/)
-  assert.match(reviewPage, /<ReviewQueueSection/)
-  assert.match(reviewPage, /<ActivePracticeSection/)
-  assert.doesNotMatch(reviewPage, /Supporting tools/)
-  assert.match(practiceNav, /inline-flex w-fit max-w-full/)
+test("diary, focus and history remain available through account tools", () => {
+  const menu = read("components/layout/AccountMenu.tsx")
+  for (const href of ["/review/diary", "/review/foci", "/review/diary/index"]) assert.ok(menu.includes(href))
+  assert.match(menu, /Practice tools/)
+})
+test("entry counts and the navigation badge include all ready tunes", () => {
+  assert.match(read("app/review/page.tsx"), /readyCount=\{data.dueTodayCount \+ data.catchUpCount\}/)
+  assert.match(read("lib/loaders/nav.ts"), /\.lte\("next_review_due", getToday\(\)\)/)
 })

@@ -216,7 +216,7 @@ export function LearningQueueView({
                 <input type="hidden" name="redirect_to" value={redirectTo} />
 
                 <SubmitButton
-                  label="Start Practice"
+                  label="Add to Practice"
                   pendingLabel="Starting..."
                   className={buttonStyles.primary}
                 />
