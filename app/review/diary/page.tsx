@@ -11,6 +11,8 @@ import {
   requirePracticeDiaryEnabled,
 } from "@/lib/loaders/practice-diary"
 import { getToday } from "@/lib/review"
+import { getSafePracticeReturnHref } from "@/lib/practice-session"
+import Link from "next/link"
 
 type PracticeDiaryView = "day" | "week" | "month"
 
@@ -20,6 +22,8 @@ type PracticeDiaryPageProps = {
     view?: string
     tab?: string
     diary?: string
+    from?: string
+    return_to?: string
   }>
 }
 
@@ -61,6 +65,8 @@ export default async function PracticeDiaryPage({
   const activeView = getDiaryView(resolvedSearchParams?.view)
   const activeTab = resolvedSearchParams?.tab
   const statusMessage = getDiaryStatus(resolvedSearchParams?.diary)
+  const fromSession = resolvedSearchParams?.from === "session"
+  const returnTo = getSafePracticeReturnHref(resolvedSearchParams?.return_to)
 
   const diaryData =
     activeView === "day"
@@ -102,6 +108,15 @@ export default async function PracticeDiaryPage({
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       <PageHeader title="Practice Diary" />
 
+      {fromSession ? (
+        <section className="mb-5 border-l-4 border-state-practice bg-surface-note px-4 py-4" aria-labelledby="session-reflection-prompt">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">Practice complete</p>
+          <h2 id="session-reflection-prompt" className="mt-1 font-serif text-2xl font-bold">Add an optional reflection</h2>
+          <p className="mt-2 text-sm leading-6 text-text-muted">Use today’s Session summary below, or return without writing a note. Your review results are already saved.</p>
+          <Link href={returnTo} className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">Return without a reflection</Link>
+        </section>
+      ) : null}
+
       <section className="mb-5 space-y-5 md:mb-6">
         <PracticeDiaryNav active="diary" />
         <PracticePeriodHeader activeView={activeView} selectedDate={selectedDate} {...period} />
@@ -115,7 +130,7 @@ export default async function PracticeDiaryPage({
 
       {activeView === "day" ? (
         diaryData ? (
-          <PracticeDayView data={diaryData} />
+          <PracticeDayView data={diaryData} sessionReturnTo={fromSession ? returnTo : undefined} />
         ) : null
       ) : activeView === "week" ? (
         weekData ? (

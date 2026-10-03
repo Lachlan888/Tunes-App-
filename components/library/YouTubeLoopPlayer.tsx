@@ -13,6 +13,7 @@ import {
   useTransition,
 } from "react"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
+import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { useSessionDock } from "@/components/session-dock/SessionDockProvider"
 import type { SessionDockModel } from "@/components/session-dock/sessionDockModel"
 import {
@@ -23,13 +24,15 @@ import {
 import type { UserPieceMediaLoop } from "@/lib/types"
 import {
   crossedLoopEnd,
+  createLoopBanks,
+  loadSavedLoopIntoBank,
   loopResumePosition,
   nudgeLoopBoundary,
   resizeLoopWindow,
+  shiftLoopWindow,
   selectSavedLoopWindow,
   setLoopEndAtPlayhead,
   setLoopStartAtPlayhead,
-  startNewSectionDraft,
   type LoopPlaybackState,
 } from "@/components/library/youtube-loop-state"
 
@@ -195,10 +198,6 @@ function sortLoops(loops: UserPieceMediaLoop[]) {
   )
 }
 
-function compactButton(className: string) {
-  return joinClasses(className, "px-3 py-2 text-xs sm:px-4 sm:text-sm")
-}
-
 function readPlaybackSnapshot(storageKey: string, sessionStorage: import("@/lib/browser-storage").BrowserStorage) {
   try {
     const parsed = JSON.parse(
@@ -252,18 +251,15 @@ export default function YouTubeLoopPlayer({
   const restoredSnapshotRef = useRef<YouTubePlaybackSnapshot | null>(null)
   const saveInFlightRef = useRef(false)
   const lastPlaybackTimeRef = useRef(0)
+  const defaultBankVideoRef = useRef<string | null>(null)
   const [mobileView, setMobileView] =
     useState<ReferencePracticeView>("media")
-  const [playlistOrder, setPlaylistOrder] = useState<number[]>([])
-  const playlistKey = `tunes.reference.playlist.${pieceId}.${videoId}`
-  useEffect(() => {
-    try {
-      const stored = JSON.parse(sessionStorage.getItem(playlistKey) ?? "[]")
-      setPlaylistOrder(Array.isArray(stored) ? stored.filter(Number.isInteger) : [])
-    } catch { /* Start with chronological order. */ }
-  }, [playlistKey, sessionStorage])
   const [rawLoops, setLoops] = useState(() => sortLoops(savedLoops))
-  const [activeLoopId, setActiveLoopId] = useState<number | null>(null)
+  const [loopBanks, setLoopBanks] = useState(() => createLoopBanks(sortLoops(savedLoops)))
+  const [activeBankIndex, setActiveBankIndex] = useState(0)
+  const [activeLoopId, setActiveLoopId] = useState<number | null>(
+    () => sortLoops(savedLoops)[0]?.id ?? null
+  )
   const [isReady, setIsReady] = useState(false)
   const [playerError, setPlayerError] = useState<string | null>(null)
   const [currentTime, setCurrentTime] = useState(0)
@@ -275,29 +271,19 @@ export default function YouTubeLoopPlayer({
   const [playbackRate, setPlaybackRateState] = useState(1)
   const [availableRates, setAvailableRates] = useState<number[]>(DEFAULT_SPEEDS)
   const [markingStage, setMarkingStage] = useState<MarkingStage>("idle")
-  const [isEditing, setIsEditing] = useState(false)
   const [nudgeAmount, setNudgeAmount] = useState<NudgeAmount>(0.5)
   const [draftLabel, setDraftLabel] = useState("")
   const [draftNotes, setDraftNotes] = useState("")
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false)
+  const [loadingBankIndex, setLoadingBankIndex] = useState<number | null>(null)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [deletedLoop, setDeletedLoop] = useState<UserPieceMediaLoop | null>(null)
-  const deletedLoopIndexRef = useRef(0)
   const [passagePracticeActive, setPassagePracticeActive] = useState(false)
   const [isPending, startTransition] = useTransition()
 
-  const loops = useMemo(() => [...rawLoops].sort((a, b) => {
-    const ai = playlistOrder.indexOf(a.id), bi = playlistOrder.indexOf(b.id)
-    return (ai < 0 ? Infinity : ai) - (bi < 0 ? Infinity : bi) || Number(a.start_seconds) - Number(b.start_seconds) || a.id - b.id
-  }), [rawLoops, playlistOrder])
-  function reorderLoop(id: number, offset: number) {
-    const order = loops.map(loop => loop.id)
-    const index = order.indexOf(id), target = index + offset
-    if (index < 0 || target < 0 || target >= order.length) return
-    ;[order[index], order[target]] = [order[target], order[index]]
-    sessionStorage.setItem(playlistKey, JSON.stringify(order))
-    setPlaylistOrder(order)
-  }
+  const loops = useMemo(() => sortLoops(rawLoops), [rawLoops])
+  const activeBank = loopBanks[activeBankIndex]
   const activeLoop =
     loops.find((loop) => loop.id === activeLoopId) ?? null
   const hasValidLoop =
@@ -328,7 +314,6 @@ export default function YouTubeLoopPlayer({
     setLoopEnd(null)
     setLoopEnabled(false)
     setMarkingStage("idle")
-    setIsEditing(false)
     setDraftLabel("")
     setDraftNotes("")
     setSaveMessage(null)
@@ -338,7 +323,36 @@ export default function YouTubeLoopPlayer({
 
   useEffect(() => {
     setLoops(sortLoops(savedLoops))
+    setLoopBanks(createLoopBanks(sortLoops(savedLoops)))
+    setActiveBankIndex(0)
+    setActiveLoopId(sortLoops(savedLoops)[0]?.id ?? null)
   }, [savedLoops, videoId])
+
+  useEffect(() => {
+    if (!isReady) return
+
+    setLoopBanks((current) =>
+      current.map((bank, index) => {
+        if (index !== activeBankIndex) return bank
+        const saved = rawLoops.find((loop) => loop.id === bank.savedLoopId)
+        const hasDraft = loopStart !== null || loopEnd !== null
+        const dirty = saved
+          ? Math.abs(Number(saved.start_seconds) - (loopStart ?? 0)) > 0.005 ||
+            Math.abs(Number(saved.end_seconds) - (loopEnd ?? 0)) > 0.005 ||
+            Math.abs(Number(saved.playback_rate) - playbackRate) > 0.005
+          : hasDraft
+
+        return {
+          ...bank,
+          name: saved?.label ?? (hasDraft ? "Unsaved" : "Empty"),
+          startSeconds: loopStart,
+          endSeconds: loopEnd,
+          playbackRate,
+          dirty,
+        }
+      })
+    )
+  }, [activeBankIndex, isReady, loopEnd, loopStart, playbackRate, rawLoops])
 
   useEffect(() => {
     let cancelled = false
@@ -356,6 +370,7 @@ export default function YouTubeLoopPlayer({
     setIsPlaying(false)
     setPlaybackRateState(restoredSnapshot?.playbackRate ?? 1)
     setAvailableRates(DEFAULT_SPEEDS)
+    defaultBankVideoRef.current = null
     resetPassageState()
     if (restoredSnapshot) {
       setMobileView(restoredSnapshot.mobileView)
@@ -512,6 +527,58 @@ export default function YouTubeLoopPlayer({
     }
   }, [])
 
+  useEffect(() => {
+    if (!isReady || defaultBankVideoRef.current === videoId) return
+
+    const restored = restoredSnapshotRef.current
+    const initialBanks = createLoopBanks(sortLoops(savedLoops))
+    const restoredBankIndex = restored?.activeLoopId
+      ? initialBanks.findIndex((bank) => bank.savedLoopId === restored.activeLoopId)
+      : -1
+    const bankIndex = restoredBankIndex >= 0 ? restoredBankIndex : 0
+    const bank = initialBanks[bankIndex]
+    const hasWindow =
+      bank.startSeconds !== null &&
+      bank.endSeconds !== null &&
+      bank.endSeconds > bank.startSeconds + 0.2
+
+    defaultBankVideoRef.current = videoId
+    setLoopBanks(initialBanks)
+    setActiveBankIndex(bankIndex)
+
+    if (restored) {
+      setDraftLabel(bank.savedLoopId ? bank.name : "")
+      setDraftNotes(
+        rawLoops.find((loop) => loop.id === bank.savedLoopId)?.notes ?? ""
+      )
+      setMarkingStage(
+        bank.savedLoopId
+          ? "idle"
+          : restored.loopStart !== null && restored.loopEnd !== null
+            ? "ready"
+            : "draft"
+      )
+      return
+    }
+
+    setActiveLoopId(bank.savedLoopId)
+    setLoopStart(bank.startSeconds)
+    setLoopEnd(bank.endSeconds)
+    setLoopEnabled(hasWindow)
+    setPlaybackRate(bank.playbackRate)
+    setDraftLabel(bank.savedLoopId ? bank.name : "")
+    setDraftNotes(
+      rawLoops.find((loop) => loop.id === bank.savedLoopId)?.notes ?? ""
+    )
+    setMarkingStage(bank.savedLoopId ? "idle" : hasWindow ? "ready" : "draft")
+
+    if (bank.startSeconds !== null) {
+      playerRef.current?.seekTo(bank.startSeconds, true)
+      lastPlaybackTimeRef.current = bank.startSeconds
+      setCurrentTime(bank.startSeconds)
+    }
+  }, [isReady, rawLoops, savedLoops, setPlaybackRate, videoId])
+
   const playFrom = useCallback((seconds?: number) => {
     const player = playerRef.current
     if (!player) return
@@ -525,13 +592,6 @@ export default function YouTubeLoopPlayer({
     }
     player.playVideo()
   }, [hasValidLoop, loopEnabled, loopEnd, loopStart])
-
-  function selectWholeRecording() {
-    playerRef.current?.pauseVideo?.()
-    setIsPlaying(false)
-    resetPassageState()
-    setMobileView("sections")
-  }
 
   const selectLoop = useCallback((loop: UserPieceMediaLoop, audition = false) => {
     playerRef.current?.pauseVideo?.()
@@ -547,10 +607,18 @@ export default function YouTubeLoopPlayer({
 
     if (!selectedState) return
 
+    const matchingBankIndex = loopBanks.findIndex(
+      (bank) => bank.savedLoopId === loop.id
+    )
+    const targetBankIndex =
+      matchingBankIndex >= 0 ? matchingBankIndex : activeBankIndex
+    setActiveBankIndex(targetBankIndex)
+    setLoopBanks((current) =>
+      loadSavedLoopIntoBank(current, targetBankIndex, loop)
+    )
     setActiveLoopId(loop.id)
     applyLoopWindow(selectedState)
     setMarkingStage("idle")
-    setIsEditing(false)
     setDraftLabel(loop.label)
     setDraftNotes(loop.notes ?? "")
     setSaveMessage(null)
@@ -563,7 +631,7 @@ export default function YouTubeLoopPlayer({
     if (selectedState.playbackRate !== playbackRate) {
       setPlaybackRate(selectedState.playbackRate)
     }
-  }, [applyLoopWindow, getLiveLoopPlaybackState, playbackRate, setPlaybackRate])
+  }, [activeBankIndex, applyLoopWindow, getLiveLoopPlaybackState, loopBanks, playbackRate, setPlaybackRate])
 
   const stopPlayback = useCallback(() => {
     const target = loopStart ?? 0
@@ -639,20 +707,64 @@ export default function YouTubeLoopPlayer({
     return () => window.removeEventListener("keydown", handleTransportKeyDown)
   }, [duration, isPlaying, isReady, playFrom, seekPlayback])
 
-  function startNewSection() {
-    const draftState = startNewSectionDraft(getLiveLoopPlaybackState())
+  function selectLoopBank(index: number) {
+    const bank = loopBanks[index]
+    if (!bank || index === activeBankIndex) return
 
-    setActiveLoopId(null)
-    applyLoopWindow(draftState)
-    setMarkingStage("draft")
-    setIsEditing(false)
-    setDraftLabel("")
-    setDraftNotes("")
+    playerRef.current?.pauseVideo?.()
+    setIsPlaying(false)
+    setActiveBankIndex(index)
+    setActiveLoopId(bank.savedLoopId)
+    setDraftLabel(bank.savedLoopId ? bank.name : "")
+    setDraftNotes(
+      rawLoops.find((loop) => loop.id === bank.savedLoopId)?.notes ?? ""
+    )
     setSaveMessage(null)
     setSaveError(null)
     setDeletedLoop(null)
-    setMobileView("practice")
+
+    const hasWindow =
+      bank.startSeconds !== null &&
+      bank.endSeconds !== null &&
+      bank.endSeconds > bank.startSeconds + 0.2
+
+    applyLoopWindow({
+      ...getLiveLoopPlaybackState(),
+      loopStart: bank.startSeconds,
+      loopEnd: bank.endSeconds,
+      loopEnabled: hasWindow,
+      playbackRate: bank.playbackRate,
+    })
+    setPlaybackRate(bank.playbackRate)
+    setMarkingStage(bank.savedLoopId ? "idle" : hasWindow ? "ready" : "draft")
+
+    if (bank.startSeconds !== null) {
+      playerRef.current?.seekTo(bank.startSeconds, true)
+      lastPlaybackTimeRef.current = bank.startSeconds
+      setCurrentTime(bank.startSeconds)
+    }
   }
+
+  function loadLoopIntoBank(loop: UserPieceMediaLoop) {
+    if (loadingBankIndex === null) return
+
+    const bankIndex = loadingBankIndex
+    setLoopBanks((current) => loadSavedLoopIntoBank(current, bankIndex, loop))
+    setLoadingBankIndex(null)
+
+    playerRef.current?.pauseVideo?.()
+    setIsPlaying(false)
+    setActiveBankIndex(bankIndex)
+    selectLoop(loop)
+  }
+
+  const openSaveModal = useCallback(() => {
+    if (!hasValidLoop) return
+    setDraftLabel(activeLoop?.label ?? "")
+    setDraftNotes(activeLoop?.notes ?? "")
+    setSaveError(null)
+    setIsSaveModalOpen(true)
+  }, [activeLoop, hasValidLoop])
 
   const startPassagePractice = useCallback(() => {
     if (!activeLoop || !hasValidLoop) return
@@ -668,15 +780,14 @@ export default function YouTubeLoopPlayer({
     playerRef.current?.pauseVideo?.()
   }, [])
 
-  function setDraftLoopStart() {
+  const setDraftLoopStart = useCallback(() => {
     const nextState = setLoopStartAtPlayhead(getLiveLoopPlaybackState())
     applyLoopWindow(nextState)
     setMarkingStage(nextState.loopEnd === null ? "draft" : "ready")
-    if (activeLoop) setIsEditing(true)
     setSaveError(null)
-  }
+  }, [applyLoopWindow, getLiveLoopPlaybackState])
 
-  function setDraftLoopEnd() {
+  const setDraftLoopEnd = useCallback(() => {
     const result = setLoopEndAtPlayhead({ ...getLiveLoopPlaybackState(), loopStart: loopStart ?? 0 })
 
     if (!result.ok) {
@@ -692,9 +803,8 @@ export default function YouTubeLoopPlayer({
       )
     }
     setMarkingStage("ready")
-    if (activeLoop) setIsEditing(true)
     setSaveError(null)
-  }
+  }, [applyLoopWindow, getLiveLoopPlaybackState, loopStart])
 
   function adjustBoundary(boundary: "start" | "end", amount: number) {
     applyLoopWindow(
@@ -717,6 +827,15 @@ export default function YouTubeLoopPlayer({
     applyLoopWindow(
       resizeLoopWindow(getLiveLoopPlaybackState(), "double", duration)
     )
+  }
+
+  const sectionState = { currentTime, isPlaying, playbackRate, loopStart, loopEnd, loopEnabled }
+  const canShiftPrevious = shiftLoopWindow(sectionState, "previous", duration) !== null
+  const canShiftNext = shiftLoopWindow(sectionState, "next", duration) !== null
+
+  function shiftSection(direction: "previous" | "next") {
+    const nextState = shiftLoopWindow(getLiveLoopPlaybackState(), direction, duration)
+    if (nextState) applyLoopWindow(nextState)
   }
 
   function clearBoundaries() {
@@ -776,10 +895,25 @@ export default function YouTubeLoopPlayer({
           ])
         )
         setActiveLoopId(savedLoop.id)
+        setLoopBanks((current) =>
+          current.map((bank, index) =>
+            index === activeBankIndex
+              ? {
+                  ...bank,
+                  savedLoopId: savedLoop.id,
+                  name: savedLoop.label,
+                  startSeconds: Number(savedLoop.start_seconds),
+                  endSeconds: Number(savedLoop.end_seconds),
+                  playbackRate: Number(savedLoop.playback_rate),
+                  dirty: false,
+                }
+              : bank
+          )
+        )
         setMarkingStage("idle")
-        setIsEditing(false)
         setDeletedLoop(null)
-        setSaveMessage(activeLoop ? "Section updated" : "Section saved")
+        setIsSaveModalOpen(false)
+        setSaveMessage(activeLoop ? "Loop updated" : "Loop saved")
       } catch {
         setSaveError("Couldn’t save this section. Try again.")
       } finally {
@@ -793,8 +927,6 @@ export default function YouTubeLoopPlayer({
     if (!window.confirm(`Delete section “${activeLoop.label}”?`)) return
 
     const loopToDelete = activeLoop
-    const deletedIndex = loops.findIndex((loop) => loop.id === loopToDelete.id)
-
     const formData = new FormData()
     formData.set("loop_id", String(activeLoop.id))
     formData.set("piece_id", String(pieceId))
@@ -811,10 +943,25 @@ export default function YouTubeLoopPlayer({
       }
 
       setLoops((current) => current.filter((loop) => loop.id !== loopToDelete.id))
-      deletedLoopIndexRef.current = deletedIndex
+      setLoopBanks((current) =>
+        current.map((bank, index) =>
+          index === activeBankIndex
+            ? {
+                ...bank,
+                savedLoopId: null,
+                name: "Empty",
+                startSeconds: null,
+                endSeconds: null,
+                playbackRate: 1,
+                dirty: false,
+              }
+            : bank
+        )
+      )
       setDeletedLoop(loopToDelete)
       resetPassageState()
-      setSaveMessage("Passage deleted")
+      setIsSaveModalOpen(false)
+      setSaveMessage("Loop deleted")
       } catch {
         setSaveError("Couldn’t delete this passage. Your playlist is unchanged. Try again.")
       }
@@ -843,11 +990,19 @@ export default function YouTubeLoopPlayer({
         return
       }
 
-      const restoredOrder = loops.map((loop) => loop.id)
-      restoredOrder.splice(Math.min(deletedLoopIndexRef.current, restoredOrder.length), 0, result.loop.id)
-      sessionStorage.setItem(playlistKey, JSON.stringify(restoredOrder))
-      setPlaylistOrder(restoredOrder)
-      setLoops((current) => sortLoops([...current, result.loop]))
+      const restoredLoop = result.loop
+      setLoops((current) => sortLoops([...current, restoredLoop]))
+      setLoopBanks((current) =>
+        loadSavedLoopIntoBank(current, activeBankIndex, restoredLoop)
+      )
+      setActiveLoopId(restoredLoop.id)
+      setLoopStart(Number(restoredLoop.start_seconds))
+      setLoopEnd(Number(restoredLoop.end_seconds))
+      setLoopEnabled(true)
+      setPlaybackRate(Number(restoredLoop.playback_rate) || 1)
+      setDraftLabel(restoredLoop.label)
+      setDraftNotes(restoredLoop.notes ?? "")
+      setMarkingStage("idle")
       setDeletedLoop(null)
       setSaveMessage("Passage restored")
       } catch {
@@ -856,26 +1011,13 @@ export default function YouTubeLoopPlayer({
     })
   }
 
-  function openEditor() {
-    if (!activeLoop) return
-    setDraftLabel(activeLoop.label)
-    setDraftNotes(activeLoop.notes ?? "")
-    setIsEditing(true)
-    setMobileView("practice")
-  }
-
-  const mediaPanelClassName = "order-3 mt-4"
-  const sectionsPanelClassName = "block"
-  const practicePanelClassName = "block"
-
   const dockModel = useMemo<SessionDockModel>(() => {
-    const sectionLabel = activeLoop?.label ?? "Whole recording"
+    const sectionLabel = `${activeBank.key} · ${activeBank.name}${activeBank.dirty && activeBank.savedLoopId ? " · Edited" : ""}`
 
     return {
       id: `reference-media:${pieceId}:${videoId}`,
       context: "reference-media",
       identity: {
-        eyebrow: passagePracticeActive ? "Passage practice" : "Reference",
         title: recordingLabel,
         detail: sectionLabel,
       },
@@ -894,6 +1036,33 @@ export default function YouTubeLoopPlayer({
         closeOnInvoke: false,
       },
       secondaryActions: [
+        {
+          id: "loop-in",
+          label: "Loop In",
+          ariaLabel: `Set loop ${activeBank.key} start`,
+          disabled: !isReady,
+          onInvoke: setDraftLoopStart,
+          tone: "secondary",
+          closeOnInvoke: false,
+        },
+        {
+          id: "loop-out",
+          label: "Loop Out",
+          ariaLabel: `Set loop ${activeBank.key} end`,
+          disabled: !isReady,
+          onInvoke: setDraftLoopEnd,
+          tone: "practice",
+          closeOnInvoke: false,
+        },
+        {
+          id: "save-loop",
+          label: "Save Loop",
+          ariaLabel: `Save loop ${activeBank.key}`,
+          disabled: !hasValidLoop,
+          onInvoke: openSaveModal,
+          tone: "primary",
+          closeOnInvoke: false,
+        },
         {
           id: "previous",
           label: "Previous",
@@ -966,7 +1135,7 @@ export default function YouTubeLoopPlayer({
         tone: "practice",
       },
       collapsedContent: {
-        actionIds: ["playback", "loop"],
+        actionIds: ["playback", "loop-in", "loop-out", "save-loop"],
         showProgress: true,
       },
       expandedContent: {
@@ -974,10 +1143,11 @@ export default function YouTubeLoopPlayer({
         description:
           "Playback, loop, speed, saved passages and the metronome stay attached to this recording. Space plays or pauses; arrow keys seek five seconds when focus is outside a control.",
         actionIds: [
-          "previous",
           "playback",
           "stop",
-          "next",
+          "loop-in",
+          "loop-out",
+          "save-loop",
           "loop",
           "practice",
           "section",
@@ -1013,6 +1183,7 @@ export default function YouTubeLoopPlayer({
     }
   }, [
     activeLoop,
+    activeBank,
     activeLoopIndex,
     availableRates,
     currentTime,
@@ -1023,6 +1194,7 @@ export default function YouTubeLoopPlayer({
     isReady,
     loops.length,
     loopEnabled,
+    openSaveModal,
     passagePracticeActive,
     pieceId,
     playbackRate,
@@ -1034,6 +1206,8 @@ export default function YouTubeLoopPlayer({
     selectNextLoop,
     selectPreviousLoop,
     setPlaybackRate,
+    setDraftLoopEnd,
+    setDraftLoopStart,
     startPassagePractice,
     stopPlayback,
     videoId,
@@ -1041,362 +1215,236 @@ export default function YouTubeLoopPlayer({
 
   useSessionDock(`reference-media:${pieceId}`, dockModel)
 
-  return (
-    <div
-      className={joinClasses(
-        "reference-workbench min-w-0 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,1fr)] md:items-start md:gap-6",
-        className
-      )}
-    >
-      <section className="reference-player flex min-w-0 flex-col md:sticky md:top-6">
-        <div className={mediaPanelClassName}>{mediaPanel}</div>
+  const loopStartPercent =
+    duration > 0 && loopStart !== null ? (loopStart / duration) * 100 : 0
+  const loopWidthPercent =
+    duration > 0 && loopStart !== null && loopEnd !== null
+      ? ((loopEnd - loopStart) / duration) * 100
+      : 0
+  const pedalButton =
+    "group relative min-h-16 rounded-xl border border-white/15 bg-[#151714] px-3 py-3 text-center text-base font-semibold text-[#f6f0df] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_4px_0_#090a08] transition active:translate-y-1 active:shadow-none disabled:cursor-not-allowed disabled:opacity-40"
 
-        <div className="order-1">
+  function stepPlaybackRate(direction: -1 | 1) {
+    if (availableRates.length === 0) return
+
+    const orderedRates = [...availableRates].sort((left, right) => left - right)
+    const exactIndex = orderedRates.findIndex(
+      (rate) => Math.abs(rate - playbackRate) < 0.001
+    )
+    const currentIndex =
+      exactIndex >= 0
+        ? exactIndex
+        : orderedRates.reduce(
+            (closest, rate, index) =>
+              Math.abs(rate - playbackRate) <
+              Math.abs(orderedRates[closest] - playbackRate)
+                ? index
+                : closest,
+            0
+          )
+    const nextIndex = Math.min(
+      orderedRates.length - 1,
+      Math.max(0, currentIndex + direction)
+    )
+    setPlaybackRate(orderedRates[nextIndex])
+  }
+
+  return (
+    <>
+      <div
+        className={joinClasses(
+          "reference-workbench min-w-0 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,1fr)] md:items-start md:gap-6",
+          className
+        )}
+      >
+        <section className="reference-player flex min-w-0 flex-col md:sticky md:top-6">
           {playerError ? (
             <div className="rounded-2xl border border-border bg-card p-5">
               <p className="font-semibold text-foreground">Recording unavailable</p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                {playerError} Choose another recording below, or open the source
-                directly.
+                {playerError} Choose another recording below, or open the source directly.
               </p>
-              <a
-                href={`https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${buttonStyles.secondary} mt-4`}
-              >
+              <a href={`https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`} target="_blank" rel="noopener noreferrer" className={`${buttonStyles.secondary} mt-4`}>
                 Open on YouTube
               </a>
             </div>
           ) : null}
-          <div
-            className={joinClasses(
-              "aspect-video w-full overflow-hidden rounded-2xl border border-border bg-foreground/10 shadow-sm",
-              playerError && "hidden"
-            )}
-          >
+          <div className={joinClasses("aspect-video w-full overflow-hidden rounded-2xl border border-border bg-foreground/10 shadow-sm", playerError && "hidden")}>
             <div ref={containerRef} title={title} className="h-full w-full [&_iframe]:h-full [&_iframe]:w-full" />
           </div>
-
-          <div className="mt-3 text-sm">
-            <p className="min-w-0 truncate font-medium text-foreground">
-              {recordingLabel}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <aside className="mt-5 min-w-0 space-y-5 md:mt-0">
-        <section
-          className={joinClasses(
-            "min-w-0 border-y border-border/70 py-4 md:rounded-3xl md:border md:bg-card md:p-5 md:shadow-sm",
-            sectionsPanelClassName
-          )}
-          aria-labelledby="saved-sections-heading"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2
-                id="saved-sections-heading"
-                className="mt-1 font-serif text-2xl font-bold text-foreground"
-              >
-                Loop playlist
-              </h2>
-            </div>
-            <button
-              type="button"
-              className={buttonStyles.primary}
-              onClick={startNewSection}
-              disabled={!isReady}
-            >
-              New loop
-            </button>
-          </div>
-
-          <p className="sr-only">
-            {duration > 0
-              ? `${loops.length} saved passage${loops.length === 1 ? "" : "s"} across ${formatTime(duration)} of reliable provider timing.`
-              : "Passage timing will appear when the provider reports a reliable duration."}
-          </p>
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-background/80" aria-hidden="true">
-            <div className="relative h-full">
-              {duration > 0
-                ? loops.map((loop) => {
-                    const start = (Number(loop.start_seconds) / duration) * 100
-                    const width =
-                      ((Number(loop.end_seconds) - Number(loop.start_seconds)) /
-                        duration) *
-                      100
-
-                    return (
-                      <span
-                        key={loop.id}
-                        className={joinClasses(
-                          "absolute h-full min-w-1 rounded-full",
-                          loop.id === activeLoopId ? "bg-primary" : "bg-border"
-                        )}
-                        style={{ left: `${start}%`, width: `${Math.max(width, 1)}%` }}
-                      />
-                    )
-                  })
-                : null}
-            </div>
-          </div>
-
-          <label className="mt-4 block text-sm font-semibold">Loop<select aria-label="Select loop" value={activeLoopId ?? ""} className="mt-1 min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3" onChange={event => { const loop = loops.find(item => item.id === Number(event.target.value)); if (loop) selectLoop(loop); else selectWholeRecording() }}><option value="">Whole recording / new loop</option>{loops.map(loop => <option key={loop.id} value={loop.id}>{loop.label}</option>)}</select></label>
-          <ol className="mt-3 divide-y divide-hairline" aria-label="Saved loop playlist">
-            {loops.map((loop, index) => <li key={loop.id} className={`py-2 ${loop.id === activeLoopId ? "border-l-4 border-action-primary pl-2" : "pl-3"}`}>
-              <div className="flex items-center gap-2">
-                <button type="button" aria-current={loop.id === activeLoopId ? "true" : undefined} onClick={() => selectLoop(loop)} className="min-h-11 min-w-0 flex-1 rounded-control text-left focus-visible:outline-2"><span className="block break-words text-sm font-semibold">{index + 1}. {loop.label}</span><span className="block text-xs tabular-nums text-text-muted">{formatTime(Number(loop.start_seconds), true)}–{formatTime(Number(loop.end_seconds), true)}{loop.id === activeLoopId ? isPlaying ? " · Playing" : " · Selected" : ""}</span></button>
-                <button type="button" className={`${buttonStyles.secondary} !px-3`} disabled={!isReady} aria-label={`Audition ${loop.label}`} onClick={() => selectLoop(loop, true)}>▶</button>
-                <details className="relative"><summary className="grid min-h-11 min-w-11 cursor-pointer place-items-center rounded-control border border-hairline" aria-label={`Options for ${loop.label}`}>⋯</summary><div className="absolute right-0 z-10 grid w-48 gap-1 rounded-object border border-hairline bg-surface-paper p-2 shadow-material-floating">
-                  <button type="button" className={buttonStyles.secondary} onClick={() => { selectLoop(loop); setIsEditing(true) }}>Rename / adjust</button>
-                  <button type="button" className={buttonStyles.secondary} disabled={index === 0} onClick={() => reorderLoop(loop.id, -1)}>Move up</button>
-                  <button type="button" className={buttonStyles.secondary} disabled={index === loops.length - 1} onClick={() => reorderLoop(loop.id, 1)}>Move down</button>
-                </div></details>
-              </div>
-            </li>)}
-          </ol>
-          <p className="mt-2 text-xs text-text-muted">Selecting a loop pauses playback. Use ▶ to audition. Order is remembered for this session.</p>
-
-          {activeLoop?.notes ? (
-            <p className="mt-3 border-l-4 border-state-reference pl-3 text-sm leading-6 text-text-muted">
-              {activeLoop.notes}
-            </p>
-          ) : null}
-
-          {loops.length === 0 ? (
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              No saved passages for this recording yet. Mark a passage to make
-              focused practice quicker next time.
-            </p>
-          ) : null}
-
-
         </section>
 
-        <section
-          className={joinClasses(
-            "min-w-0 border-y border-border/70 py-4 md:rounded-3xl md:border md:bg-card md:p-5 md:shadow-sm",
-            practicePanelClassName
-          )}
-          aria-labelledby="practice-controls-heading"
-        >
-          <h2
-            id="practice-controls-heading"
-            className="mt-1 font-serif text-2xl font-bold text-foreground"
-          >
-            {markingStage !== "idle"
-              ? "New passage"
-              : activeLoop?.label ?? "Whole recording"}
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {hasValidLoop
-              ? `${formatTime(loopStart, true)}–${formatTime(loopEnd, true)}`
-              : markingStage === "draft"
-                ? `Start ${formatTime(loopStart, true)} · End not set`
-                : "No section boundaries active"}
-          </p>
+        <aside className="mt-5 min-w-0 space-y-4 md:mt-0">
+          <section aria-labelledby="loop-pedal-heading" className="min-h-[42rem] overflow-hidden rounded-[1.75rem] border-2 border-[#4f5349] bg-[#2a2d28] p-4 text-[#f6f0df] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_10px_28px_rgba(25,22,17,0.28)] sm:p-5">
+            <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
+              <h2 id="loop-pedal-heading" className="font-mono text-xl font-black uppercase tracking-[0.08em]">Loop pedal</h2>
+              <div className="rounded-md border border-[#778169] bg-[#131611] px-3 py-2 font-mono text-xs text-[#c7e58e] shadow-inner">
+                {formatTime(currentTime, true)} · {playbackRate}×
+              </div>
+            </div>
 
-          {passagePracticeActive && activeLoop ? (
-            <div className="mt-4 border-l-4 border-state-reference bg-surface-note px-4 py-3">
-              <p className="font-semibold text-text-primary">Passage practice active</p>
-              <p className="mt-1 text-sm leading-6 text-text-muted">
-                This loops “{activeLoop.label}” for focused repetition. It does not
-                change this tune&apos;s Stage or complete a review.
-              </p>
-              <button
-                type="button"
-                className={`${buttonStyles.text} mt-2`}
-                onClick={endPassagePractice}
-              >
-                End passage practice
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4" role="group" aria-label="Loop pedal controls">
+              <button type="button" aria-pressed={isPlaying} className={pedalButton} disabled={!isReady} onClick={() => isPlaying ? playerRef.current?.pauseVideo?.() : playFrom()}>
+                <span className="block">{isPlaying ? "Pause" : "Play"}</span>
+                <span aria-hidden="true" className={joinClasses("mx-auto mt-2 block h-2.5 w-2.5 rounded-full", isPlaying ? "bg-[#bfe879] shadow-[0_0_10px_#bfe879]" : "bg-[#53584e]")} />
+              </button>
+              <button type="button" className={pedalButton} disabled={!isReady} onClick={setDraftLoopStart}>
+                <span className="block">Loop In</span>
+                <span aria-hidden="true" className="mx-auto mt-2 block h-2.5 w-2.5 rounded-full bg-[#d9a75e]" />
+              </button>
+              <button type="button" className={pedalButton} disabled={!isReady} onClick={setDraftLoopEnd}>
+                <span className="block">Loop Out</span>
+                <span aria-hidden="true" className={joinClasses("mx-auto mt-2 block h-2.5 w-2.5 rounded-full", hasValidLoop ? "bg-[#ef765f] shadow-[0_0_10px_#ef765f]" : "bg-[#70453d]")} />
+              </button>
+              <button type="button" className={pedalButton} disabled={!hasValidLoop} onClick={openSaveModal}>
+                <span className="block">Save Loop</span>
+                <span aria-hidden="true" className="mx-auto mt-2 block h-2.5 w-2.5 rounded-full bg-[#79a8c6]" />
               </button>
             </div>
-          ) : null}
 
-          {
-            <div className="mt-5 border-t border-border pt-5">
-              <p className="text-sm leading-6 text-muted-foreground">
-                The loop starts at {formatTime(loopStart ?? 0, true)}. Keep that
-                start, or replace it at the current playhead before setting the
-                end.
-              </p>
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                <label className="text-sm">Start (seconds)<input type="number" min={0} max={duration || undefined} step="0.1" value={loopStart ?? 0} aria-label="Loop start seconds" onChange={event => { setLoopStart(Math.max(0, Number(event.target.value))); setMarkingStage("draft"); if (activeLoop) setIsEditing(true) }} className="mt-1 min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3" /></label>
-                <label className="text-sm">End (seconds)<input type="number" min={0} max={duration || undefined} step="0.1" value={loopEnd ?? ""} aria-label="Loop end seconds" onChange={event => { setLoopStart(loopStart ?? 0); setLoopEnd(event.target.value === "" ? null : Math.max(0, Number(event.target.value))); setMarkingStage("ready"); if (activeLoop) setIsEditing(true) }} className="mt-1 min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3" /></label>
-              </div>
-              {loopEnd !== null && !hasValidLoop && <p role="alert" className="mt-2 text-sm text-destructive">End must be more than 0.2 seconds after start.</p>}
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  className={buttonStyles.secondaryStrong}
-                  onClick={setDraftLoopStart}
-                  disabled={!isReady}
-                >
-                  Set loop start
-                </button>
-                <button
-                  type="button"
-                  className={buttonStyles.primary}
-                  onClick={setDraftLoopEnd}
-                  disabled={!isReady}
-                >
-                  Set loop end
-                </button>
-              </div>
-            </div>
-          }
-
-          {activeLoop && !isEditing && markingStage === "idle" ? (
-            <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-5">
-              <button
-                type="button"
-                className={buttonStyles.secondaryStrong}
-                onClick={openEditor}
-              >
-                Manage passage
-              </button>
-            </div>
-          ) : null}
-
-          {(markingStage !== "idle" || isEditing || (!activeLoop && hasValidLoop)) ? (
-            <form onSubmit={handleSave} className="mt-5 space-y-4 border-t border-border pt-5">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold text-foreground">
-                  {isEditing ? "Edit passage" : "Name this passage"}
-                </p>
-                <button
-                  type="button"
-                  className={buttonStyles.text}
-                  onClick={() => setIsEditing((current) => !current)}
-                  aria-expanded={isEditing}
-                >
-                  {isEditing ? "Hide adjustment" : "Adjust section"}
-                </button>
-              </div>
-
-              {isEditing ? (
-                <div className="space-y-4 rounded-2xl border border-border bg-background/45 p-3">
-                  <div className="flex flex-wrap gap-2">
-                    {NUDGE_AMOUNTS.map((amount) => (
-                      <button
-                        key={amount}
-                        type="button"
-                        className={compactButton(
-                          nudgeAmount === amount
-                            ? buttonStyles.primary
-                            : buttonStyles.secondary
-                        )}
-                        onClick={() => setNudgeAmount(amount)}
-                      >
-                        {amount}s
+            <fieldset className="mt-5">
+              <legend className="text-sm font-semibold text-[#d7d3c7]">Banks</legend>
+              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {loopBanks.map((bank, index) => (
+                  <div
+                    key={bank.key}
+                    className={joinClasses(
+                      "min-h-16 min-w-0 rounded-lg border px-2 py-2 transition focus-within:ring-2 focus-within:ring-[#c7e58e]",
+                      index === activeBankIndex
+                        ? "border-[#c7e58e] bg-[#11140f] shadow-[0_0_0_1px_#c7e58e,0_0_16px_rgba(199,229,142,0.18)]"
+                        : "border-white/15 bg-[#20231f] hover:bg-[#181a17]"
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <button type="button" aria-pressed={index === activeBankIndex} aria-label={`Select loop bank ${bank.key}: ${bank.name}`} onClick={() => selectLoopBank(index)} className="min-h-11 min-w-11 rounded px-1 font-mono text-lg font-black text-[#c7e58e] focus:outline-none">
+                        {bank.key}
                       </button>
-                    ))}
-                  </div>
-
-                  {(["start", "end"] as const).map((boundary) => (
-                    <div key={boundary} className="grid grid-cols-[4rem_1fr_1fr] items-center gap-2">
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                        {boundary}
-                      </p>
-                      <button
-                        type="button"
-                        className={compactButton(buttonStyles.secondary)}
-                        onClick={() => adjustBoundary(boundary, -nudgeAmount)}
-                      >
-                        -{nudgeAmount}s
-                      </button>
-                      <button
-                        type="button"
-                        className={compactButton(buttonStyles.secondary)}
-                        onClick={() => adjustBoundary(boundary, nudgeAmount)}
-                      >
-                        +{nudgeAmount}s
+                      <button type="button" aria-label={`Load a saved loop into bank ${bank.key}`} title={`Load saved loop into bank ${bank.key}`} onClick={() => setLoadingBankIndex(index)} className="grid h-11 w-11 place-items-center rounded border border-white/15 bg-[#141713] text-[#d7d3c7] transition hover:border-[#c7e58e] hover:text-[#c7e58e] focus:outline-none">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M5 3h12l2 2v16H5z" />
+                          <path d="M8 3v6h8V3" />
+                          <path d="M8 14h8v7H8z" />
+                        </svg>
                       </button>
                     </div>
-                  ))}
-
-                  <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-                    <button type="button" className={buttonStyles.secondary} onClick={halveLoop}>
-                      Halve loop
-                    </button>
-                    <button type="button" className={buttonStyles.secondary} onClick={doubleLoop}>
-                      Double loop
-                    </button>
-                    <button type="button" className={buttonStyles.text} onClick={clearBoundaries}>
-                      Clear boundaries
+                    <button type="button" aria-pressed={index === activeBankIndex} onClick={() => selectLoopBank(index)} className="mt-0.5 block min-h-11 w-full truncate rounded px-1 text-left text-xs text-[#e4dece] focus:outline-none">
+                      {bank.name}{bank.dirty && bank.savedLoopId ? " · Edited" : ""}
                     </button>
                   </div>
+                ))}
+              </div>
+            </fieldset>
+
+            <section aria-label="Loop adjustment" className="mt-5 rounded-xl border border-white/10 bg-[#1d201c] p-3 sm:p-4">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="font-mono text-base font-bold text-[#f6f0df]">Loop {activeBank.key}</h3>
+                <p className="truncate text-sm text-[#b8bba9]">{activeBank.name}</p>
+              </div>
+
+              <div className="mt-4 grid grid-cols-[auto_1fr_auto] items-center gap-3">
+                <span className="font-mono text-xs text-[#d9a75e]">{formatTime(loopStart, true)}</span>
+                <div className="relative h-11">
+                  <div className="absolute inset-x-0 top-4 h-2 rounded-full bg-[#0e100d]">
+                    {hasValidLoop ? <span className="absolute h-full rounded-full bg-[#c7e58e]" style={{ left: `${loopStartPercent}%`, width: `${Math.max(loopWidthPercent, 1)}%` }} /> : null}
+                  </div>
+                  <input aria-label="Adjust loop in point" type="range" min={0} max={duration || 1} step={0.1} value={Math.min(loopStart ?? 0, duration || 1)} disabled={!hasValidLoop} onChange={(event) => { const nextStart = Math.min(Number(event.target.value), (loopEnd ?? duration) - 0.2); setLoopStart(Math.max(0, nextStart)); setMarkingStage("ready") }} className="pointer-events-none absolute inset-0 h-11 w-full appearance-none bg-transparent disabled:opacity-40 [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#10120f] [&::-moz-range-thumb]:bg-[#d9a75e] [&::-webkit-slider-runnable-track]:h-2 [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:mt-[-6px] [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#10120f] [&::-webkit-slider-thumb]:bg-[#d9a75e]" />
+                  <input aria-label="Adjust loop out point" type="range" min={0} max={duration || 1} step={0.1} value={Math.min(loopEnd ?? 0, duration || 1)} disabled={!hasValidLoop} onChange={(event) => { const nextEnd = Math.max(Number(event.target.value), (loopStart ?? 0) + 0.2); setLoopEnd(Math.min(duration || nextEnd, nextEnd)); setMarkingStage("ready") }} className="pointer-events-none absolute inset-0 h-11 w-full appearance-none bg-transparent disabled:opacity-40 [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#10120f] [&::-moz-range-thumb]:bg-[#ef765f] [&::-webkit-slider-runnable-track]:h-2 [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:mt-[-6px] [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#10120f] [&::-webkit-slider-thumb]:bg-[#ef765f]" />
                 </div>
-              ) : null}
+                <span className="font-mono text-xs text-[#ef765f]">{formatTime(loopEnd, true)}</span>
+              </div>
 
-              <input
-                value={draftLabel}
-                onChange={(event) => setDraftLabel(event.target.value)}
-                placeholder="Label, eg B part"
-                aria-label="Passage label"
-                className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-                required
-              />
-              <textarea
-                value={draftNotes}
-                onChange={(event) => setDraftNotes(event.target.value)}
-                placeholder="Optional note"
-                aria-label="Passage note"
-                rows={3}
-                className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-              />
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                {([
+                  { id: "in", label: "Loop In", value: formatTime(loopStart, true), onMinus: () => adjustBoundary("start", -nudgeAmount), onPlus: () => adjustBoundary("start", nudgeAmount) },
+                  { id: "speed", label: "Speed", value: `${Math.round(playbackRate * 100)}%`, onMinus: () => stepPlaybackRate(-1), onPlus: () => stepPlaybackRate(1) },
+                  { id: "out", label: "Loop Out", value: formatTime(loopEnd, true), onMinus: () => adjustBoundary("end", -nudgeAmount), onPlus: () => adjustBoundary("end", nudgeAmount) },
+                ] as const).map((control) => (
+                  <div key={control.id} className="rounded-lg border border-white/10 bg-[#141713] p-2">
+                    <p className="text-center text-xs font-semibold text-[#b8bba9]">{control.label}</p>
+                    <div className="mt-2 grid grid-cols-[2.75rem_1fr_2.75rem] items-center gap-1">
+                      <button type="button" aria-label={`Decrease ${control.label}`} disabled={control.id === "speed" ? !isReady : !hasValidLoop} onClick={control.onMinus} className="min-h-11 min-w-11 rounded-md border border-white/15 text-lg hover:bg-[#30342d] disabled:opacity-35">−</button>
+                      <span className="truncate text-center font-mono text-sm text-[#c7e58e]">{control.value}</span>
+                      <button type="button" aria-label={`Increase ${control.label}`} disabled={control.id === "speed" ? !isReady : !hasValidLoop} onClick={control.onPlus} className="min-h-11 min-w-11 rounded-md border border-white/15 text-lg hover:bg-[#30342d] disabled:opacity-35">+</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-              {saveError ? (
-                <p className="text-sm font-medium text-destructive">{saveError}</p>
-              ) : null}
-              <button
-                type="submit"
-                className={buttonStyles.primary}
-                disabled={isPending || !hasValidLoop || !draftLabel.trim()}
-              >
-                {isPending
-                  ? "Saving…"
-                  : activeLoop
-                    ? "Save changes"
-                    : "Save passage"}
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-xs text-[#b8bba9]">Step</span>
+                {NUDGE_AMOUNTS.map((amount) => (
+                  <button key={amount} type="button" aria-pressed={nudgeAmount === amount} onClick={() => setNudgeAmount(amount)} className={joinClasses("min-h-11 min-w-11 rounded-md border px-3 text-xs font-semibold", nudgeAmount === amount ? "border-[#c7e58e] bg-[#2b3326] text-[#c7e58e]" : "border-white/15 text-[#d7d3c7]")}>{amount}s</button>
+                ))}
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-2" role="group" aria-label="Loop range controls">
+                <button type="button" disabled={!hasValidLoop} onClick={halveLoop} className={pedalButton}>Halve</button>
+                <button type="button" disabled={!hasValidLoop} onClick={doubleLoop} className={pedalButton}>Double</button>
+                <button type="button" onClick={clearBoundaries} className={joinClasses(pedalButton, "text-[#ffb09f]")}>Clear</button>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2" role="group" aria-label="Loop section navigation">
+                <button type="button" disabled={!canShiftPrevious} onClick={() => shiftSection("previous")} className={pedalButton}>Previous section</button>
+                <button type="button" disabled={!canShiftNext} onClick={() => shiftSection("next")} className={pedalButton}>Next section</button>
+              </div>
+            </section>
+
+            {saveError ? <p role="alert" className="mt-3 text-sm text-[#ff9b87]">{saveError}</p> : null}
+            {saveMessage ? (
+              <div className="mt-3 flex flex-wrap items-center gap-3" aria-live="polite">
+                <p className="text-sm text-[#dce9c7]">{saveMessage}</p>
+                {deletedLoop ? <button type="button" className="text-sm underline" onClick={undoDelete} disabled={isPending}>{isPending ? "Restoring…" : "Undo"}</button> : null}
+              </div>
+            ) : null}
+          </section>
+
+          {mediaPanel}
+        </aside>
+      </div>
+
+      <ResponsiveModal
+        isOpen={loadingBankIndex !== null}
+        onClose={() => setLoadingBankIndex(null)}
+        title={`Load bank ${loadingBankIndex === null ? "" : loopBanks[loadingBankIndex]?.key ?? ""}`.trim()}
+        description="Choose a saved loop for this bank."
+      >
+        {loops.length > 0 ? (
+          <div className="grid gap-2">
+            {loops.map((loop) => (
+              <button key={loop.id} type="button" onClick={() => loadLoopIntoBank(loop)} className="flex min-h-14 items-center justify-between gap-4 rounded-xl border border-border bg-background px-4 py-3 text-left transition hover:border-foreground/30 hover:bg-muted/50">
+                <span className="min-w-0">
+                  <span className="block truncate font-semibold text-foreground">{loop.label}</span>
+                  <span className="mt-0.5 block font-mono text-xs text-muted-foreground">{formatTime(Number(loop.start_seconds), true)}–{formatTime(Number(loop.end_seconds), true)}</span>
+                </span>
+                <span className="shrink-0 text-sm text-muted-foreground">{Math.round(Number(loop.playback_rate) * 100)}%</span>
               </button>
-              {activeLoop ? (
-                <button
-                  type="button"
-                  className={buttonStyles.destructiveSecondary}
-                  onClick={handleDelete}
-                  disabled={isPending}
-                >
-                  Delete passage
-                </button>
-              ) : null}
-            </form>
-          ) : null}
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">No saved loops yet. Mark a loop and use Save Loop first.</p>
+        )}
+      </ResponsiveModal>
 
-          {saveMessage ? (
-            <div className="mt-4 flex flex-wrap items-center gap-3" aria-live="polite">
-              <p className="text-sm font-medium text-foreground">{saveMessage}</p>
-              {deletedLoop ? (
-                <button
-                  type="button"
-                  className={buttonStyles.text}
-                  onClick={undoDelete}
-                  disabled={isPending}
-                >
-                  {isPending ? "Restoring…" : "Undo"}
-                </button>
-              ) : null}
-            </div>
-          ) : null}
-          {saveError && markingStage !== "ready" && !isEditing ? (
-            <p className="mt-4 text-sm font-medium text-destructive" role="alert">
-              {saveError}
-            </p>
-          ) : null}
-        </section>
-      </aside>
-    </div>
+      <ResponsiveModal
+        isOpen={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+        closeDisabled={isPending}
+        title={activeLoop ? `Update loop ${activeBank.key}` : `Save loop ${activeBank.key}`}
+        description={`${formatTime(loopStart, true)}–${formatTime(loopEnd, true)} at ${Math.round(playbackRate * 100)}% speed`}
+      >
+        <form onSubmit={handleSave} className="space-y-4">
+          <label className="block text-sm font-semibold">Loop name
+            <input value={draftLabel} onChange={(event) => setDraftLabel(event.target.value)} placeholder={`Loop ${activeBank.key}`} aria-label="Loop name" className="mt-1 w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--focus-ring)]" required autoFocus />
+          </label>
+          <label className="block text-sm font-semibold">Note <span className="font-normal text-muted-foreground">(optional)</span>
+            <textarea value={draftNotes} onChange={(event) => setDraftNotes(event.target.value)} placeholder="What should you focus on?" aria-label="Loop note" rows={3} className="mt-1 w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--focus-ring)]" />
+          </label>
+          {saveError ? <p role="alert" className="text-sm font-medium text-destructive">{saveError}</p> : null}
+          <div className="flex flex-wrap gap-3">
+            <button type="submit" className={buttonStyles.primary} disabled={isPending || !hasValidLoop || !draftLabel.trim()}>{isPending ? "Saving…" : activeLoop ? "Save changes" : "Save loop"}</button>
+            <button type="button" className={buttonStyles.secondary} onClick={() => setIsSaveModalOpen(false)} disabled={isPending}>Cancel</button>
+            {activeLoop ? <button type="button" className={`${buttonStyles.destructiveSecondary} sm:ml-auto`} onClick={handleDelete} disabled={isPending}>Delete saved loop</button> : null}
+          </div>
+        </form>
+      </ResponsiveModal>
+    </>
   )
 }

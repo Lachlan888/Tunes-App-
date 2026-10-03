@@ -9,6 +9,75 @@ export type LoopPlaybackState = {
 
 export const MINIMUM_LOOP_LENGTH = 0.2
 
+export const LOOP_BANK_KEYS = ["A", "B", "C", "D"] as const
+
+export type LoopBankKey = (typeof LOOP_BANK_KEYS)[number]
+
+export type LoopBankState = {
+  key: LoopBankKey
+  savedLoopId: number | null
+  name: string
+  startSeconds: number | null
+  endSeconds: number | null
+  playbackRate: number
+  dirty: boolean
+}
+
+export type BankLoop = {
+  id: number
+  label: string
+  start_seconds: number | string
+  end_seconds: number | string
+  playback_rate: number | string
+}
+
+export function loadSavedLoopIntoBank(
+  banks: LoopBankState[],
+  bankIndex: number,
+  loop: BankLoop
+): LoopBankState[] {
+  return banks.map((bank, index) =>
+    index === bankIndex
+      ? {
+          ...bank,
+          savedLoopId: loop.id,
+          name: loop.label,
+          startSeconds: Number(loop.start_seconds),
+          endSeconds: Number(loop.end_seconds),
+          playbackRate: Number(loop.playback_rate) || 1,
+          dirty: false,
+        }
+      : bank
+  )
+}
+
+export function createLoopBanks(loops: BankLoop[]): LoopBankState[] {
+  return LOOP_BANK_KEYS.map((key, index) => {
+    const loop = loops[index]
+    if (!loop) {
+      return {
+        key,
+        savedLoopId: null,
+        name: "Empty",
+        startSeconds: null,
+        endSeconds: null,
+        playbackRate: 1,
+        dirty: false,
+      }
+    }
+
+    return {
+      key,
+      savedLoopId: loop.id,
+      name: loop.label,
+      startSeconds: Number(loop.start_seconds),
+      endSeconds: Number(loop.end_seconds),
+      playbackRate: Number(loop.playback_rate) || 1,
+      dirty: false,
+    }
+  })
+}
+
 export function startNewSectionDraft(
   state: LoopPlaybackState
 ): LoopPlaybackState {
@@ -152,28 +221,33 @@ export function shiftLoopWindow(
   direction: "previous" | "next",
   mediaDuration: number
 ): LoopPlaybackState | null {
-  if (state.loopStart === null || state.loopEnd === null) return null
+  const { loopStart, loopEnd } = state
+  if (
+    loopStart === null || loopEnd === null ||
+    !Number.isFinite(loopStart) || !Number.isFinite(loopEnd) ||
+    loopStart < 0 || !Number.isFinite(mediaDuration) ||
+    (mediaDuration > 0 && loopEnd > mediaDuration)
+  ) return null
 
-  const loopLength = state.loopEnd - state.loopStart
+  const loopLength = loopEnd - loopStart
   if (loopLength <= MINIMUM_LOOP_LENGTH) return null
 
   if (direction === "previous") {
-    const nextStart = state.loopStart - loopLength
-    if (nextStart < 0) return null
-
+    if (loopStart === 0) return null
+    const nextStart = Math.max(0, loopStart - loopLength)
     return {
       ...state,
       loopStart: nextStart,
-      loopEnd: state.loopStart,
+      loopEnd: nextStart + loopLength,
     }
   }
 
-  const nextEnd = state.loopEnd + loopLength
+  const nextEnd = loopEnd + loopLength
   if (mediaDuration <= 0 || nextEnd > mediaDuration) return null
 
   return {
     ...state,
-    loopStart: state.loopEnd,
+    loopStart: loopEnd,
     loopEnd: nextEnd,
   }
 }

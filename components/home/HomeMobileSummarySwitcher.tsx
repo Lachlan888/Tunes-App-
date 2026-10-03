@@ -20,6 +20,7 @@ type HomeMobileSummarySwitcherProps = {
   activityNextCursor: string | null
   streakSummary: StreakSummary
   density: HomeDensity
+  leadingContent?: React.ReactNode
 }
 
 type MobileRowProps = {
@@ -279,14 +280,14 @@ function RepertoirePanel({
                 href: "/library/known",
               },
               {
-                label: "Practice",
+                label: "Currently practising",
                 value: summary.practiceCount,
                 href: "/library/practice",
               },
               {
-                label: "Lists",
-                value: summary.listCount,
-                href: "/learning-lists",
+                label: "Learning queue",
+                value: summary.learningQueueCount,
+                href: "/learning-lists?view=learning-queue",
               },
               {
                 label: "Badges",
@@ -296,6 +297,57 @@ function RepertoirePanel({
             ]}
           />
         </div>
+      </MobilePanel>
+
+      <MobilePanel>
+        <MobileSectionHeading
+          title="Learning queue"
+          action={<Link href="/learning-lists?view=learning-queue" className={buttonStyles.text}>View all</Link>}
+        />
+        <div className="mt-3">
+          {summary.learningQueuePreview.length === 0 ? (
+            <MobileEmptyBlock>Tunes saved to your lists appear here until you start practising or mark them Known.</MobileEmptyBlock>
+          ) : summary.learningQueuePreview.map((queueTune) => (
+            <MobileRow
+              key={queueTune.piece_id}
+              href={`/library/${queueTune.piece_id}`}
+              title={queueTune.title}
+              meta={`From ${queueTune.firstListName}`}
+              actionLabel="Open"
+            />
+          ))}
+        </div>
+      </MobilePanel>
+
+      <MobilePanel>
+        <MobileSectionHeading
+          title="Currently practising"
+          action={<Link href="/library/practice" className={buttonStyles.text}>View all</Link>}
+        />
+        <div className="mt-3">
+          {summary.inPracticePreview.length === 0 ? (
+            <MobileEmptyBlock>No tunes are currently in Practice.</MobileEmptyBlock>
+          ) : summary.inPracticePreview.map((userPiece) => (
+            <MobileRow
+              key={userPiece.user_piece_id}
+              href={`/library/${userPiece.piece_id}`}
+              title={userPiece.title}
+              meta={`Stage ${userPiece.stage}`}
+              detail={userPiece.nextReviewDue ? `Next review ${userPiece.nextReviewDue}` : "No review date set"}
+              actionLabel="Open"
+            />
+          ))}
+        </div>
+      </MobilePanel>
+
+      <MobilePanel>
+        <MobileSectionHeading
+          title="Known repertoire"
+          action={<Link href="/library/known" className={buttonStyles.text}>View all</Link>}
+        />
+        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+          {summary.knownCount} tune{summary.knownCount === 1 ? "" : "s"} marked Known. Open the full repertoire to review or update them.
+        </p>
       </MobilePanel>
 
       <StreakSummarySection streakSummary={streakSummary} />
@@ -339,6 +391,7 @@ export default function HomeMobileSummarySwitcher({
   activityNextCursor,
   streakSummary,
   density,
+  leadingContent,
 }: HomeMobileSummarySwitcherProps) {
   const activeTab = useSyncExternalStore(
     subscribeToHomeTab,
@@ -349,6 +402,8 @@ export default function HomeMobileSummarySwitcher({
   return <ResponsivePanels
     className="home-workbench"
     label="Home views"
+    showSwitcherLabel={false}
+    leadingContent={leadingContent}
     active={activeTab}
     onChange={persistHomeTab}
     panels={[

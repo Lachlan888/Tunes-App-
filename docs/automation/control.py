@@ -91,6 +91,9 @@ def execute(args):
         if args.action == 'preflight':
             return gate(root)
         if args.action == 'acquire':
+            environment_task = os.environ.get('CODEX_THREAD_ID')
+            if environment_task and args.task != environment_task:
+                raise ValueError('Task ID does not match CODEX_THREAD_ID; no lock created')
             decision = gate(root)
             if args.resume_reason and decision['decision'] in ('cooldown', 'awaiting_input'):
                 # A deliberate resume is allowed only after new input/environment
@@ -165,7 +168,8 @@ def main():
     commands = parser.add_subparsers(dest='action', required=True)
     commands.add_parser('preflight')
     acquire = commands.add_parser('acquire')
-    acquire.add_argument('--task', required=True, help='Actual Codex task ID; never a helper PID')
+    acquire.add_argument('--task', required=True,
+                         help='Actual Codex task ID; must match CODEX_THREAD_ID when available')
     acquire.add_argument('--resume-reason', choices=('input-received', 'environment-changed', 'independent-work'))
     for name in ('heartbeat', 'release', 'clear', 'defer'):
         sub = commands.add_parser(name)

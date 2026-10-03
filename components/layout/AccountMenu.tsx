@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useEffect, useId, useRef, useState } from "react"
 import LogoutButton from "@/components/LogoutButton"
 import Icon, { type IconName } from "@/components/ui/Icon"
@@ -24,6 +25,12 @@ type MenuLink = {
   count?: number
 }
 
+const practiceToolLinks: MenuLink[] = [
+  { href: "/review/diary", label: "Practice Diary", icon: "book" },
+  { href: "/review/foci", label: "Focus areas", icon: "practice" },
+  { href: "/review/diary/index", label: "Tune index & history", icon: "list" },
+]
+
 function CountBadge({ count = 0 }: { count?: number }) {
   if (count <= 0) return null
 
@@ -44,9 +51,16 @@ export default function AccountMenu({
   compact = false,
 }: AccountMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isPracticeToolsOpen, setIsPracticeToolsOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const practiceToolsTriggerRef = useRef<HTMLButtonElement>(null)
   const menuId = useId()
+  const practiceToolsId = useId()
+  const pathname = usePathname()
+  const activePracticeHref = practiceToolLinks
+    .filter((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href
   const initial = accountLabel?.trim().charAt(0).toUpperCase() || "A"
 
   useEffect(() => {
@@ -58,6 +72,11 @@ export default function AccountMenu({
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key !== "Escape") return
+      if (isPracticeToolsOpen) {
+        setIsPracticeToolsOpen(false)
+        practiceToolsTriggerRef.current?.focus()
+        return
+      }
       setIsOpen(false)
       triggerRef.current?.focus()
     }
@@ -72,7 +91,7 @@ export default function AccountMenu({
       document.removeEventListener("pointerdown", handlePointerDown)
       document.removeEventListener("keydown", handleKeyDown)
     }
-  }, [isOpen])
+  }, [isOpen, isPracticeToolsOpen])
 
   const links: MenuLink[] = [
     { href: "/dashboard", label: "Account & settings", icon: "settings" },
@@ -93,7 +112,11 @@ export default function AccountMenu({
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-controls={isOpen ? menuId : undefined}
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={() => setIsOpen((current) => {
+          if (current) setIsPracticeToolsOpen(false)
+          else setIsPracticeToolsOpen(Boolean(activePracticeHref))
+          return !current
+        })}
         className={joinClasses(
           "inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-control border border-hairline bg-surface-paper text-sm font-semibold text-text-primary shadow-material-rest transition-colors hover:bg-surface-note focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]",
           compact ? "h-11 w-11 p-0" : "px-2.5"
@@ -138,6 +161,58 @@ export default function AccountMenu({
                 <CountBadge count={item.count} />
               </Link>
             ))}
+
+            <button
+              ref={practiceToolsTriggerRef}
+              type="button"
+              role="menuitem"
+              aria-haspopup="menu"
+              aria-expanded={isPracticeToolsOpen}
+              aria-controls={practiceToolsId}
+              onClick={() => setIsPracticeToolsOpen((current) => !current)}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowRight") {
+                  event.preventDefault()
+                  setIsPracticeToolsOpen(true)
+                }
+                if (event.key === "ArrowLeft") {
+                  event.preventDefault()
+                  setIsPracticeToolsOpen(false)
+                }
+              }}
+              className={joinClasses(
+                buttonStyles.menuItem,
+                activePracticeHref && "bg-surface-note text-text-primary"
+              )}
+            >
+              <Icon name="practice" />
+              <span>Practice tools</span>
+              <span aria-hidden="true" className="ml-auto text-xs">{isPracticeToolsOpen ? "▲" : "▼"}</span>
+            </button>
+
+            {isPracticeToolsOpen ? (
+              <div id={practiceToolsId} role="group" aria-label="Practice tools" className="grid gap-0.5 border-l border-hairline pl-3">
+                {practiceToolLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    role="menuitem"
+                    aria-current={activePracticeHref === item.href ? "page" : undefined}
+                    onClick={() => {
+                      setIsPracticeToolsOpen(false)
+                      setIsOpen(false)
+                    }}
+                    className={joinClasses(
+                      buttonStyles.menuItem,
+                      activePracticeHref === item.href && "bg-surface-note text-text-primary"
+                    )}
+                  >
+                    <Icon name={item.icon} />
+                    <span>{item.label}</span>
+                  </Link>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <div className="border-t border-hairline pt-1">

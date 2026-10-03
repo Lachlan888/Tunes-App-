@@ -29,24 +29,15 @@ export default function BetaFeedbackModal({
   isOpen,
   onClose,
 }: BetaFeedbackModalProps) {
-  const [state, formAction] = useActionState(submitBetaFeedback, initialState)
-  const [pagePath, setPagePath] = useState("/")
-  const [pageUrl, setPageUrl] = useState("")
-  const [browser, setBrowser] = useState("")
-  const [viewportWidth, setViewportWidth] = useState("")
-  const [viewportHeight, setViewportHeight] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (!isOpen) return
-
-    setPagePath(getCurrentPagePath())
-    setPageUrl(window.location.href)
-    setBrowser(window.navigator.userAgent)
-    setViewportWidth(String(window.innerWidth))
-    setViewportHeight(String(window.innerHeight))
-    setIsSubmitting(false)
-  }, [isOpen])
+  const [state, formAction, isSubmitting] = useActionState(
+    submitBetaFeedback,
+    initialState
+  )
+  const [pagePath] = useState(() => getCurrentPagePath())
+  const [pageUrl] = useState(() => window.location.href)
+  const [browser] = useState(() => window.navigator.userAgent)
+  const [viewportWidth] = useState(() => String(window.innerWidth))
+  const [viewportHeight] = useState(() => String(window.innerHeight))
 
   useEffect(() => {
     if (state.status === "success") {
@@ -59,12 +50,6 @@ export default function BetaFeedbackModal({
 
     return undefined
   }, [state.status, onClose])
-
-  useEffect(() => {
-    if (state.status === "error") {
-      setIsSubmitting(false)
-    }
-  }, [state.status])
 
   function handleClose() {
     if (isSubmitting) return
@@ -102,7 +87,6 @@ export default function BetaFeedbackModal({
 
         <form
           action={formAction}
-          onSubmit={() => setIsSubmitting(true)}
           className="max-h-[calc(92vh-7rem)] space-y-4 overflow-y-auto px-5 py-5"
         >
           <input type="hidden" name="page_path" value={pagePath} />

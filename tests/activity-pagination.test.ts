@@ -40,7 +40,7 @@ function fixture(rows: Row[], hidden: string[] = []) {
   const loaded = { exports: {} as { loadFriendActivityPage: (db: unknown, friends: string[], user: string, limit?: number, cursor?: pagination.ActivityCursor | null) => Promise<{ items: Row[]; nextCursor: string | null }> } }
   new Function("require", "module", "exports", compiled)((id: string) => {
     if (id === "@/lib/activity-pagination") return pagination
-    if (["@/lib/auth/login-redirect", "@/lib/loaders/bounded-read", "@/lib/supabase/server", "@/lib/profile-search"].includes(id)) return {}
+    if (["@/lib/auth/login-redirect", "@/lib/loaders/bounded-read", "@/lib/loaders/friend-suggestions", "@/lib/supabase/server", "@/lib/profile-search"].includes(id)) return {}
     throw Error(`Unexpected runtime dependency ${id}`)
   }, loaded, loaded.exports)
   return { reads, run: (friends = ["friend"], cursor: pagination.ActivityCursor | null = null) => loaded.exports.loadFriendActivityPage(db, friends, "owner", undefined, cursor) }

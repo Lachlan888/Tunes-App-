@@ -15,6 +15,16 @@ export type PieceContributionResult =
       message: string
     }
 
+export function getPieceContributionRejectionMessage(
+  message: string
+): string {
+  if (/already (filled|contributed once)/i.test(message)) {
+    return "Someone filled this first. Your entry was not overwritten; refresh to see the saved value."
+  }
+
+  return message
+}
+
 export async function contributeMissingPieceDetails(
   supabase: SupabaseClient,
   pieceId: number,

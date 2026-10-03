@@ -7,6 +7,7 @@ export default function HomeSummarySection(props: {
   recentFriendActivity: FriendActivityItem[]
   activityNextCursor: string | null
   streakSummary: StreakSummary
+  leadingContent?: React.ReactNode
 }) {
   return <HomeMobileSummarySwitcher {...props} density="standard" />
 }

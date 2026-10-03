@@ -143,7 +143,7 @@ export default async function PublicListsPage({
   const redirectTo = withListPage(publicListHref, pagination.page)
 
   return (
-    <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
+    <main className="mx-auto max-w-[1500px] px-4 pb-5 pt-0 text-foreground md:px-6 md:py-8">
       {showSection("shared_header") ? <SharedListsHeader /> : null}
 
       {publicListsData.sharedLists.length === 0 ? (

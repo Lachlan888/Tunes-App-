@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { getAuthReturnPath } from "@/lib/auth/redirects"
 import { startPracticeForUser } from "@/lib/actions/user-pieces"
 import {
   recordPublicListCreatedEvent,
@@ -716,6 +717,15 @@ export async function importSelectedPublicListItems(formData: FormData) {
 }
 
 export async function bookmarkPublicList(formData: FormData) {
+  const listId = Number(formData.get("learning_list_id"))
+  const fallbackRedirectTo =
+    Number.isInteger(listId) && listId > 0
+      ? `/public-lists/${listId}`
+      : "/public-lists"
+  const redirectTo = getAuthReturnPath(
+    String(formData.get("redirect_to") ?? fallbackRedirectTo),
+    fallbackRedirectTo
+  )
   const supabase = await createClient()
 
   const {
@@ -723,13 +733,8 @@ export async function bookmarkPublicList(formData: FormData) {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    redirect(`/login?next=${encodeURIComponent(redirectTo)}`)
   }
-
-  const listId = Number(formData.get("learning_list_id"))
-  const redirectTo = String(
-    formData.get("redirect_to") ?? `/public-lists/${listId}`
-  )
 
   if (!Number.isInteger(listId) || listId <= 0) {
     redirect(appendQueryParam(redirectTo, "bookmark_public", "not_found"))

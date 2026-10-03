@@ -2,11 +2,15 @@ import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import test from "node:test"
 import {
+  ACTIVE_PRACTICE_SESSION_KEY,
   canBeginPracticeRating,
   canUndoPracticeRating,
   clampPracticeSessionPosition,
   getPracticeResultCounts,
+  getPracticeReflectionHref,
+  getSafePracticeReturnHref,
   getPracticeSessionHref,
+  getResumablePracticeHref,
   getPracticeSessionSuggestion,
   getResultingPracticeStage,
   parsePracticeLane,
@@ -40,6 +44,41 @@ test("practice lane URLs are explicit and invalid lanes recover to entry", () =>
   assert.equal(getPracticeSessionHref("catch-up"), "/review?session=catch-up")
   assert.equal(parsePracticeLane("catch-up"), "catch-up")
   assert.equal(parsePracticeLane("unknown"), null)
+})
+
+test("post-session reflection URLs stay dated, optional and local", () => {
+  assert.equal(
+    getPracticeReflectionHref("2026-09-25"),
+    "/review/diary?date=2026-09-25&from=session&return_to=%2F"
+  )
+  assert.equal(getSafePracticeReturnHref("/review?session=catch-up"), "/review?session=catch-up")
+  assert.equal(getSafePracticeReturnHref("https://evil.invalid"), "/")
+  assert.equal(getSafePracticeReturnHref("//evil.invalid"), "/")
+})
+
+test("Practice entry resumes only a genuine same-day active session", () => {
+  assert.equal(ACTIVE_PRACTICE_SESSION_KEY, "tunes.session.v1.practice.active")
+  assert.equal(
+    getResumablePracticeHref(
+      JSON.stringify({ href: "/review?session=catch-up", lane: "catch-up", sessionDate: "2026-09-25" }),
+      "2026-09-25"
+    ),
+    "/review?session=catch-up"
+  )
+  assert.equal(
+    getResumablePracticeHref(
+      JSON.stringify({ href: "/review?session=catch-up", lane: "catch-up", sessionDate: "2026-09-24" }),
+      "2026-09-25"
+    ),
+    null
+  )
+  assert.equal(
+    getResumablePracticeHref(
+      JSON.stringify({ href: "/review?session=focus", lane: "focus", sessionDate: "2026-09-25" }),
+      "2026-09-25"
+    ),
+    null
+  )
 })
 
 test("Focused Practice preserves existing Stage rules", () => {
@@ -100,7 +139,34 @@ test("Focused Practice uses reduced chrome, persistent ratings, Undo and summary
   assert.match(session, /crypto\.randomUUID/)
   assert.match(session, /End session/)
   assert.match(session, /Practice complete/)
+  assert.match(session, /Continue with catch-up/)
+  assert.match(session, /Reflect on this session/)
+  assert.match(session, /Add reflection/)
+  assert.match(session, /Not now/)
+  assert.match(session, /ACTIVE_PRACTICE_SESSION_KEY/)
   assert.match(session, /Keyboard: 1 Rough · 2 Shaky · 3 Solid/)
+})
+
+test("Practice root shows the general Practice view with a lane chooser", () => {
+  const page = readFileSync(new URL("../app/review/page.tsx", import.meta.url), "utf8")
+  assert.match(page, /<PageHeader title="Practice"/)
+  assert.match(page, /<ReviewQueueSection/)
+  assert.match(page, /<PracticeDiaryNav/)
+  assert.doesNotMatch(page, /<PracticeEntryResolver/)
+})
+
+test("changing Practice lanes starts with that lane's server queue", () => {
+  const page = readFileSync(new URL("../app/review/page.tsx", import.meta.url), "utf8")
+  assert.match(page, /<FocusedPracticeSession[\s\S]*?key=\{`\$\{today\}:\$\{practiceLane\}:\$\{sessionKey \?\? ""\}`\}/)
+})
+
+test("the diary accepts a session handoff with a safe optional return", () => {
+  const page = readFileSync(new URL("../app/review/diary/page.tsx", import.meta.url), "utf8")
+  assert.match(page, /fromSession/)
+  assert.match(page, /Add an optional reflection/)
+  assert.match(page, /Return without a reflection/)
+  assert.match(page, /getSafePracticeReturnHref/)
+  assert.match(page, /sessionReturnTo=\{fromSession \? returnTo : undefined\}/)
 })
 
 test("Focused Practice uses one separator after reference and preserves note drafts", () => {

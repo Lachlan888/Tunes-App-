@@ -11,15 +11,21 @@ const { create, act } = rendererRequire('react-test-renderer')
 const ts = require('typescript')
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const timers = new Map()
+const windowListeners = new Map()
 const storage = new Map()
 const sessionStorage = {getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)}
 let timerId = 0
 globalThis.window = {}
 globalThis.document = {}
+window.addEventListener=(type,handler)=>windowListeners.set(type,handler)
+window.removeEventListener=(type,handler)=>{if(windowListeners.get(type)===handler)windowListeners.delete(type)}
+const Modal=({isOpen,children,footer})=>isOpen?React.createElement('section',null,children,footer):null
 const mocks = {
   react:React,'react/jsx-runtime':rendererRequire('react/jsx-runtime'),
+  'react-dom':{createPortal:children=>children},
   '@/components/resilience/PrivateSessionProvider':{usePrivateSessionStorage:()=>sessionStorage},
-  '@/components/session-dock/SessionDockProvider':{useSessionDock:()=>{}},
+  '@/components/session-dock/SessionDockProvider':{useSessionDock:(_id,model)=>{dock=model}},
+  '@/components/ui/ResponsiveModal':{default:Modal},
 }
 const cache = new Map()
 function load(file) {
@@ -41,7 +47,7 @@ function load(file) {
 
 const NativeFormData=globalThis.FormData
 globalThis.FormData=class extends NativeFormData {constructor(){super()}}
-let provider, options
+let provider, options, dock
 class Provider {
   constructor(_mount,config){options=config;this.time=0;this.rate=1;this.state=2}
   getCurrentTime(){return this.time}
@@ -62,7 +68,8 @@ document.createElement=()=>({})
 let tree
 const props={videoId:'recording-a',title:'Fixture',recordingLabel:'Recording A',pieceId:42,mediaPanel:null}
 const labelled=label=>tree.root.findByProps({'aria-label':label})
-const button=text=>tree.root.findAllByType('button').find(n=>n.props.children===text)
+const nodeText=node=>typeof node==='string'?node:Array.isArray(node)?node.map(nodeText).join(''):node?.props?nodeText(node.props.children):''
+const button=text=>tree.root.findAllByType('button').find(n=>nodeText(n)===text)
 const change=async(label,value)=>act(async()=>labelled(label).props.onChange({target:{value}}))
 const click=async text=>act(async()=>{assert.ok(button(text),text);button(text).props.onClick()})
 const fixture=(id,label,start)=>({id,label,piece_id:42,youtube_video_id:'recording-a',start_seconds:start,end_seconds:start+5,playback_rate:0.75,notes:'Fixture notes'})
@@ -80,43 +87,38 @@ const mountPlaylist=async()=>{
  await act(async()=>options.events.onReady({target:provider}))
 }
 window.confirm=()=>true
-const rows=()=>labelled('Saved loop playlist').findAllByType('li')
-const labels=()=>rows().map(row=>row.findAllByType('span')[0].props.children[2])
-const rowButton=async(index,text)=>act(async()=>rows()[index].findAllByType('button').find(n=>n.props.children===text).props.onClick())
-const select=async index=>act(async()=>rows()[index].findAllByType('button')[0].props.onClick())
 const press=async label=>act(async()=>labelled(label).props.onClick())
+const bankLabels=()=>tree.root.findAllByType('button').map(node=>node.props['aria-label']).filter(label=>label?.startsWith('Select loop bank'))
 const submit=async()=>act(async()=>tree.root.findByType('form').props.onSubmit({preventDefault(){},currentTarget:{}}))
 try {
  await mountPlaylist()
- assert.deepEqual(labels(),['A','B','C'])
- await rowButton(2,'Move up');await rowButton(1,'Move up')
- assert.deepEqual(labels(),['C','A','B'])
- assert.equal(calls.length,0,'reordering never sends remote writes')
- await select(0)
+ assert.ok(labelled('Select loop bank A: A'))
+ assert.ok(labelled('Select loop bank B: B'))
+ assert.ok(labelled('Select loop bank C: C'))
+ assert.equal(provider.time,10);assert.equal(provider.state,2,'default bank selection never autoplays')
+ await press('Select loop bank C: C')
  assert.equal(provider.time,30);assert.equal(provider.state,2)
- await press('Audition C');assert.equal(provider.state,1)
- await press('Next loop');assert.equal(provider.time,10);assert.equal(provider.state,2)
- await press('Previous loop');assert.equal(provider.time,30);assert.equal(provider.state,2)
- await rowButton(0,'Rename / adjust');await change('Passage label','C revised');await change('Loop end seconds','37')
+ await act(async()=>dock.primaryAction.onInvoke());assert.equal(provider.state,1)
+ await act(async()=>dock.secondaryActions.find(action=>action.id==='previous').onInvoke());assert.equal(provider.time,20);assert.equal(provider.state,2)
+ await act(async()=>dock.secondaryActions.find(action=>action.id==='save-loop').onInvoke())
+ await change('Loop name','B revised')
  reject=true;await submit()
- assert.deepEqual(labels(),['C','A','B']);assert.equal(labelled('Passage label').props.value,'C revised')
- assert.equal(provider.time,30)
+ assert.equal(labelled('Loop name').props.value,'B revised')
+ assert.equal(provider.time,20)
  reject=false;await submit()
- assert.deepEqual(labels(),['C revised','A','B'])
+ assert.ok(bankLabels().includes('Select loop bank B: B revised'),bankLabels().join(' | '))
  assert.equal(calls.at(-1)[1].youtube_video_id,'recording-a')
- await click('Manage passage')
- reject=true;await click('Delete passage')
- assert.deepEqual(labels(),['C revised','A','B'])
- reject=false;await click('Delete passage')
- assert.deepEqual(labels(),['A','B'])
- reject=true;await click('Undo');assert.deepEqual(labels(),['A','B']);assert.ok(button('Undo'))
+ await act(async()=>dock.secondaryActions.find(action=>action.id==='save-loop').onInvoke())
+ reject=true;await click('Delete saved loop')
+ assert.ok(labelled('Select loop bank B: B revised'))
+ reject=false;await click('Delete saved loop')
+ assert.ok(labelled('Select loop bank B: Empty'))
+ reject=true;await click('Undo');assert.ok(labelled('Select loop bank B: Empty'));assert.ok(button('Undo'))
  reject=false;await click('Undo')
- assert.deepEqual(labels(),['C revised','A','B'],'Undo preserves the deleted loop playlist position')
- assert.equal(Number(calls.at(-1)[1].end_seconds),37)
+ assert.ok(labelled('Select loop bank B: B revised'),'Undo restores the deleted loop to its bank')
  await act(async()=>tree.unmount());await mountPlaylist()
- // Remount with server-returned restored ID, preserving session order.
- await act(async()=>tree.update(React.createElement(PlaylistPlayer,{...props,savedLoops:[saved[0],saved[1],{...saved[2],id:99,label:'C revised',end_seconds:37}]})))
- assert.deepEqual(labels(),['C revised','A','B'])
+ await act(async()=>tree.update(React.createElement(PlaylistPlayer,{...props,savedLoops:[saved[0],{...saved[1],id:99,label:'B revised'},saved[2]]})))
+ assert.ok(labelled('Select loop bank B: B revised'))
  assert.equal(provider.state,2,'remount never auto-auditions')
- console.log('PASS: playlist selection/audition, displayed previous/next, local reorder, rename/adjust, rejected update/delete/Undo, restored order and source payload')
+ console.log('PASS: loop-bank selection/playback, previous/next, rejected update/delete/Undo, restored bank and source payload')
 } finally {if(tree)await act(async()=>tree.unmount());globalThis.FormData=NativeFormData}

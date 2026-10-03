@@ -14,6 +14,7 @@ type MobileViewSwitcherProps<T extends string> = {
   options: readonly MobileViewOption<T>[]
   onChange: (value: T) => void
   label?: string
+  showLabel?: boolean
   className?: string
 }
 
@@ -22,16 +23,17 @@ export default function MobileViewSwitcher<T extends string>({
   options,
   onChange,
   label,
+  showLabel = true,
   className,
 }: MobileViewSwitcherProps<T>) {
   return (
     <div
       className={joinClasses(
-        "floating-material sticky top-14 z-10 -mx-4 px-4 py-3 md:hidden",
+        "floating-material sticky top-14 z-[300] -mx-4 border-b border-hairline px-4 py-3 md:hidden",
         className
       )}
     >
-      {label ? (
+      {label && showLabel ? (
         <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">
           {label}
         </p>

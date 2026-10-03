@@ -47,6 +47,7 @@ function fixture(userId: string | null, list: Row | null, denied = false) {
         redirect: (url: string) => { throw Error(`REDIRECT:${url}`) },
       }
       if (id === '@/lib/auth/login-redirect') return { redirectToLogin: () => { throw Error('LOGIN') } }
+      if (id === '@/lib/auth/redirects') return { getAuthReturnPath: (value: string, fallback: string) => value.startsWith('/') ? value : fallback }
       if (id === '@/lib/tune-media') return { loadTuneMediaBundles: async () => new Map() }
       if (id === 'next/cache') return { revalidatePath: () => forbidden('revalidate') }
       if (id === '@/lib/actions/user-pieces') return { startPracticeForUser: () => forbidden('practice') }

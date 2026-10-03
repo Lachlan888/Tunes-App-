@@ -10,6 +10,7 @@ type TuneRowProps = {
   actions?: ReactNode
   supportingContent?: ReactNode
   className?: string
+  compactMobile?: boolean
 }
 
 export default function TuneRow({
@@ -19,6 +20,7 @@ export default function TuneRow({
   actions,
   supportingContent,
   className = "",
+  compactMobile = false,
 }: TuneRowProps) {
   const provenance =
     sourceSummary ??
@@ -26,7 +28,7 @@ export default function TuneRow({
 
   return (
     <article
-      className={`grid gap-3 py-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-6 ${className}`}
+      className={`grid min-w-0 ${compactMobile ? "gap-2 py-2.5" : "gap-3 py-4"} md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-6 md:py-4 ${className}`}
     >
       <div className="min-w-0">
         <TuneIdentity
@@ -39,18 +41,21 @@ export default function TuneRow({
           timeSignature={piece.time_signature}
           sourceSummary={provenance}
           personalState={personalState}
+          compactMobile={compactMobile}
           headingClassName="break-words text-base font-semibold leading-tight text-text-primary md:text-lg"
           linkClassName="rounded-sm decoration-action-primary decoration-2 underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
         />
 
         {supportingContent ? (
-          <div className="mt-2 text-sm text-text-muted">{supportingContent}</div>
+          <div className={`${compactMobile ? "mt-1 overflow-hidden text-xs md:mt-2 md:text-sm" : "mt-2 text-sm"} text-text-muted`}>{supportingContent}</div>
         ) : null}
       </div>
 
       {actions ? (
         <div
-          className="flex flex-wrap items-center gap-2 md:justify-end"
+          className={compactMobile
+            ? "grid min-w-0 grid-cols-4 items-center gap-1 md:flex md:flex-wrap md:gap-2 md:justify-end"
+            : "flex flex-wrap items-center gap-2 md:justify-end"}
           aria-label={`Actions for ${piece.title}`}
         >
           {actions}

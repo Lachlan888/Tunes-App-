@@ -6,7 +6,10 @@ import {
   PIECE_CONTRIBUTION_FIELDS,
   PieceContributionValidationError,
 } from "../lib/pieces/contribution-policy.ts"
-import { contributeMissingPieceDetails } from "../lib/services/piece-contributions.ts"
+import {
+  contributeMissingPieceDetails,
+  getPieceContributionRejectionMessage,
+} from "../lib/services/piece-contributions.ts"
 
 const migrationUrl = new URL(
   "../supabase/migrations/20260924020823_enforce_piece_contributions.sql",
@@ -26,6 +29,17 @@ test("field policy exposes only fill-once canonical details", () => {
     "composer",
     "reference_url",
   ])
+})
+
+test("inline conflicts explain that another contributor won without losing the draft", () => {
+  assert.equal(
+    getPieceContributionRejectionMessage("Tune key is already filled"),
+    "Someone filled this first. Your entry was not overwritten; refresh to see the saved value."
+  )
+  assert.equal(
+    getPieceContributionRejectionMessage("Invalid tune key"),
+    "Invalid tune key"
+  )
 })
 
 test("contribution input is trimmed and canonicalised", () => {

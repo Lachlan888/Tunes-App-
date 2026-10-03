@@ -13,7 +13,7 @@ export default function InternalShell({ children, canModerate, canAccessDev, env
   const links = [
     { href: "/badges/new", label: "Create badge" },
     ...(canModerate ? [{ href: "/moderator", label: "Moderation" }] : []),
-    ...(canAccessDev ? [{ href: "/dev", label: "Operations" }, { href: "/dev/design-system", label: "Design system" }] : []),
+    ...(canAccessDev ? [{ href: "/dev", label: "Operations" }, { href: "/dev/festivals", label: "Festival hub" }, { href: "/dev/design-system", label: "Design system" }] : []),
   ]
   return <div className="internal-workspace min-h-screen bg-surface-paper text-foreground">
     <a href="#main-content" className="sr-only focus:not-sr-only focus:block focus:p-3">Skip to workspace</a>

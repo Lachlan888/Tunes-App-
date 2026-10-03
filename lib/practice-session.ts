@@ -8,6 +8,14 @@ export type PracticeLane = "due-today" | "catch-up" | "list" | "focus"
 export type PracticeRating = "failed" | "shaky" | "solid"
 export type PracticeRatingState = "idle" | "undo-window" | "submitting"
 
+export const ACTIVE_PRACTICE_SESSION_KEY = "tunes.session.v1.practice.active"
+
+export type ActivePracticeSession = {
+  href: string
+  lane: PracticeLane
+  sessionDate: string
+}
+
 export type PracticeSessionResult = {
   userPieceId: number
   pieceId: number
@@ -22,10 +30,64 @@ export function getPracticeSessionHref(lane: PracticeLane) {
   return `/review?session=${lane}`
 }
 
+export function getPracticeReflectionHref(
+  sessionDate: string,
+  returnTo = "/"
+) {
+  const params = new URLSearchParams({
+    date: /^\d{4}-\d{2}-\d{2}$/.test(sessionDate) ? sessionDate : "",
+    from: "session",
+    return_to: getSafePracticeReturnHref(returnTo),
+  })
+
+  if (!params.get("date")) params.delete("date")
+  return `/review/diary?${params.toString()}`
+}
+
+export function getSafePracticeReturnHref(value: string | undefined) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/"
+
+  try {
+    const url = new URL(value, "https://tunes.invalid")
+    if (url.origin !== "https://tunes.invalid") return "/"
+    return `${url.pathname}${url.search}${url.hash}`
+  } catch {
+    return "/"
+  }
+}
+
 export function parsePracticeLane(value: string | undefined): PracticeLane | null {
   return value === "due-today" || value === "catch-up" || value === "list" || value === "focus"
     ? value
     : null
+}
+
+export function getResumablePracticeHref(
+  storedValue: string | null,
+  today: string
+) {
+  if (!storedValue) return null
+
+  try {
+    const session = JSON.parse(storedValue) as Partial<ActivePracticeSession>
+    if (session.sessionDate !== today || !session.href || !session.lane) return null
+
+    const url = new URL(session.href, "https://tunes.invalid")
+    if (url.pathname !== "/review") return null
+
+    const lane = parsePracticeLane(url.searchParams.get("session") ?? undefined)
+    if (lane !== session.lane) return null
+
+    if (lane === "list" || lane === "focus") {
+      const idParam = lane === "list" ? "list_id" : "focus_id"
+      const id = Number(url.searchParams.get(idParam))
+      if (!Number.isSafeInteger(id) || id <= 0) return null
+    }
+
+    return `${url.pathname}${url.search}`
+  } catch {
+    return null
+  }
 }
 
 export function getResultingPracticeStage(

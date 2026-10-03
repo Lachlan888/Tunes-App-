@@ -169,6 +169,10 @@ html[data-session-dock="active"] {
   --session-dock-space: 5.25rem;
 }
 
+html[data-session-dock="active"][data-reference-practice="active"] {
+  --session-dock-space: 0px;
+}
+
 html[data-focus-mode="practice"] {
   --navigation-dock-space: 0px;
 }
@@ -200,6 +204,11 @@ html[data-focus-mode="practice"] .app-shell-content {
     padding-bottom: 6rem;
   }
 
+  html[data-session-dock="active"][data-reference-practice="active"]
+    .app-shell-content {
+    padding-bottom: 0;
+  }
+
   html[data-session-dock="active"] .session-dock {
     bottom: 1rem;
   }
@@ -207,6 +216,17 @@ html[data-focus-mode="practice"] .app-shell-content {
   html[data-focus-mode="practice"] .session-dock[data-session-dock-context="setlist-performance"] {
     left: 1rem;
     right: 1rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  html[data-session-dock="active"][data-reference-practice="active"] {
+    --session-dock-space: 5.25rem;
+  }
+
+  html[data-session-dock="active"][data-reference-practice="active"]
+    .app-shell-content {
+    padding-bottom: 6rem;
   }
 }
 

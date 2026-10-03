@@ -9,14 +9,78 @@ import {
   recordPieceCreatedEvent,
   recordPieceDetailsAddedEvent,
 } from "@/lib/services/activity-events"
-import { contributeMissingPieceDetails } from "@/lib/services/piece-contributions"
+import {
+  contributeMissingPieceDetails,
+  getPieceContributionRejectionMessage,
+} from "@/lib/services/piece-contributions"
 import { createClient } from "@/lib/supabase/server"
+import {
+  PIECE_CONTRIBUTION_FIELDS,
+  type PieceContributionField,
+} from "@/lib/pieces/contribution-policy"
 import {
   findExactTuneDuplicate,
   type TuneDuplicateCandidate,
 } from "@/lib/tunes/duplicate-suggestions"
 
 const TUNE_CREATE_TYPES = ["tune", "song"] as const
+
+export type InlinePieceContributionState = {
+  status: "idle" | "saved" | "rejected" | "signed_out"
+  message: string | null
+}
+
+export async function submitInlinePieceContribution(
+  _previousState: InlinePieceContributionState,
+  formData: FormData
+): Promise<InlinePieceContributionState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return {
+      status: "signed_out",
+      message: "Sign in to add this tune detail.",
+    }
+  }
+
+  const pieceId = Number(formData.get("piece_id"))
+  const field = formData.get("field")?.toString() as
+    | PieceContributionField
+    | undefined
+  const value = formData.get("value")?.toString() ?? ""
+
+  if (
+    !Number.isInteger(pieceId) ||
+    pieceId <= 0 ||
+    !field ||
+    !(PIECE_CONTRIBUTION_FIELDS as readonly string[]).includes(field)
+  ) {
+    return { status: "rejected", message: "This tune detail could not be saved." }
+  }
+
+  const result = await contributeMissingPieceDetails(supabase, pieceId, {
+    [field]: value,
+  })
+
+  if (result.status === "empty") {
+    return { status: "rejected", message: "Enter a value before saving." }
+  }
+
+  if (result.status === "rejected") {
+    return {
+      status: "rejected",
+      message: getPieceContributionRejectionMessage(result.message),
+    }
+  }
+
+  await recordPieceDetailsAddedEvent(user.id, pieceId, result.fields)
+  revalidatePath(`/library/${pieceId}`)
+
+  return { status: "saved", message: "Saved." }
+}
 
 function appendQueryParam(url: string, key: string, value: string) {
   return url.includes("?")

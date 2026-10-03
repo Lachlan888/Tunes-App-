@@ -16,6 +16,7 @@ type TuneIdentityProps = {
   linkClassName?: string
   headingLevel?: "h1" | "h2" | "h3"
   linkTitle?: boolean
+  compactMobile?: boolean
 }
 
 export function getUsefulAlias(
@@ -49,6 +50,7 @@ export default function TuneIdentity({
   linkClassName = "decoration-primary decoration-2 underline-offset-4 hover:underline",
   headingLevel = "h3",
   linkTitle = true,
+  compactMobile = false,
 }: TuneIdentityProps) {
   const Heading = headingLevel
   const usefulAlias = getUsefulAlias(alternateTitles, title)
@@ -61,6 +63,33 @@ export default function TuneIdentity({
 
   return (
     <div className={className}>
+      {compactMobile ? (
+        <div className="min-w-0 md:hidden">
+          <Heading className="flex min-w-0 items-baseline gap-2 text-base font-semibold leading-tight text-text-primary">
+            {linkTitle ? (
+              <Link
+                href={`/library/${id}`}
+                className={`${linkClassName} min-w-0 flex-1 truncate`}
+                title={title}
+              >
+                {title}
+              </Link>
+            ) : (
+              <span className="min-w-0 flex-1 truncate" title={title}>{title}</span>
+            )}
+            {tuneKey || timeSignature ? (
+              <span className="shrink-0 whitespace-nowrap text-xs font-medium text-text-muted">
+                {[tuneKey ? `Key ${tuneKey}` : null, timeSignature]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            ) : null}
+          </Heading>
+          {personalState ? <div className="mt-1">{personalState}</div> : null}
+        </div>
+      ) : null}
+
+      <div className={compactMobile ? "hidden md:block" : undefined}>
       <Heading className={headingClassName}>
         {linkTitle ? (
           <Link href={`/library/${id}`} className={linkClassName}>
@@ -88,6 +117,7 @@ export default function TuneIdentity({
       ) : null}
 
       {personalState ? <div className="mt-2">{personalState}</div> : null}
+      </div>
     </div>
   )
 }

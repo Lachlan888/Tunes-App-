@@ -14,6 +14,7 @@ import {
   sendFriendRequest,
 } from "@/lib/actions/friends"
 import { loadFriendsPageData } from "@/lib/loaders/friends"
+import type { FriendSuggestionResult } from "@/lib/loaders/friend-suggestions"
 import { paginateListItems, parseListPage } from "@/lib/list-view-state"
 
 type FriendsPageProps = {
@@ -78,6 +79,7 @@ function UserHandleLink({ username }: { username: string }) {
 function SearchResultsSection({
   searchQuery,
   searchMatches,
+  friendSuggestions,
 }: {
   searchQuery: string
   searchMatches: {
@@ -85,6 +87,7 @@ function SearchResultsSection({
     username: string | null
     display_name: string | null
   }[]
+  friendSuggestions: FriendSuggestionResult
 }) {
   return (
     <section className="mb-7 md:mb-8 md:rounded-2xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
@@ -96,11 +99,47 @@ function SearchResultsSection({
 
       <FriendSearchForm initialQuery={searchQuery} />
 
-      {!searchQuery && (
+      {!searchQuery && friendSuggestions.suggestions.length === 0 && (
         <EmptyState
-          title="Find musicians to connect with"
-          className="mt-4 hidden md:block"
+          title="Suggestions need a little more shared activity"
+          description="Search by name for now. Suggestions will appear when there are permitted shared styles, tunes or mutual connections."
+          className="mt-4"
         />
+      )}
+
+      {!searchQuery && friendSuggestions.suggestions.length > 0 && (
+        <div className="mt-5" aria-labelledby="friend-suggestions-title">
+          <h3 id="friend-suggestions-title" className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Suggested musicians
+          </h3>
+          <div className="mt-2 divide-y divide-border/70 md:grid md:grid-cols-2 md:gap-3 md:divide-y-0">
+            {friendSuggestions.suggestions.map((suggestion) => (
+              <article
+                key={suggestion.id}
+                className="flex items-center justify-between gap-4 py-4 first:pt-2 last:pb-0 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-foreground">
+                    {renderUserLink(suggestion.username, suggestion.display_name)}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{suggestion.reason}</p>
+                </div>
+                <form action={sendFriendRequest} className="shrink-0">
+                  <input type="hidden" name="addressee_id" value={suggestion.id} />
+                  <input type="hidden" name="redirect_to" value="/friends" />
+                  <SubmitButton
+                    label="Send"
+                    pendingLabel="Sending..."
+                    className={joinClasses(
+                      buttonStyles.primary,
+                      "min-h-9 px-3 py-1.5 text-xs sm:px-4 sm:text-sm"
+                    )}
+                  />
+                </form>
+              </article>
+            ))}
+          </div>
+        </div>
       )}
 
       {searchQuery && searchMatches.length === 0 && (
@@ -254,6 +293,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
     pendingIncomingRequests,
     acceptedFriends,
     searchMatches,
+    friendSuggestions,
     recentFriendActivity,
     activityNextCursor,
   } = await loadFriendsPageData(searchQuery)
@@ -279,6 +319,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
       <SearchResultsSection
         searchQuery={searchQuery}
         searchMatches={searchMatches}
+        friendSuggestions={friendSuggestions}
       />
 
       <IncomingRequestsSection
@@ -295,98 +336,53 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
     <RecentFriendActivitySection items={recentFriendActivity} nextCursor={activityNextCursor} />
   )
 
-  return (
-    <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      <PageHeader title="Social" />
-
+  const statusContent = (
+    <>
       {friendRequestStatus === "sent" && (
         <StatusBanner tone="success">Friend request sent.</StatusBanner>
       )}
-
       {friendRequestStatus === "missing_user" && (
-        <StatusBanner tone="warning">
-          Please choose a person from the search results.
+        <StatusBanner tone="warning">Please choose a person from the search results.</StatusBanner>
+      )}
+      {(friendRequestStatus === "not_found" || friendRequestStatus === "duplicate") && (
+        <StatusBanner tone="neutral">
+          {friendRequestStatus === "duplicate"
+            ? "A pending or accepted connection already exists with that person."
+            : "That request could not be completed. The person may be unavailable or private."}
         </StatusBanner>
       )}
-
       {friendRequestStatus === "self" && (
-        <StatusBanner tone="warning">
-          You cannot send a friend request to yourself.
-        </StatusBanner>
+        <StatusBanner tone="warning">You cannot send a friend request to yourself.</StatusBanner>
       )}
-
-      {friendRequestStatus === "not_found" && (
-        <StatusBanner tone="neutral">
-          That request could not be completed. The person may be unavailable or
-          private.
-        </StatusBanner>
-      )}
-
-      {friendRequestStatus === "duplicate" && (
-        <StatusBanner tone="neutral">
-          A pending or accepted connection already exists with that person.
-        </StatusBanner>
-      )}
-
       {friendAcceptStatus === "accepted" && (
         <StatusBanner tone="success">Friend request accepted.</StatusBanner>
       )}
-
       {friendAcceptStatus === "missing_connection" && (
-        <StatusBanner tone="warning">
-          Couldn’t tell which friend request to accept.
-        </StatusBanner>
+        <StatusBanner tone="warning">Couldn’t tell which friend request to accept.</StatusBanner>
       )}
-
-      {friendAcceptStatus === "not_found" && (
-        <StatusBanner tone="neutral">
-          That request is unavailable or has expired.
-        </StatusBanner>
+      {(friendAcceptStatus === "not_found" || friendAcceptStatus === "forbidden" || friendAcceptStatus === "invalid_status") && (
+        <StatusBanner tone="neutral">That request is unavailable or has expired.</StatusBanner>
       )}
-
-      {friendAcceptStatus === "forbidden" && (
-        <StatusBanner tone="neutral">
-          That request is unavailable or has expired.
-        </StatusBanner>
-      )}
-
-      {friendAcceptStatus === "invalid_status" && (
-        <StatusBanner tone="neutral">
-          That request is unavailable or has expired.
-        </StatusBanner>
-      )}
-
       {friendDeclineStatus === "declined" && (
         <StatusBanner tone="success">Friend request refused.</StatusBanner>
       )}
-
       {friendDeclineStatus === "missing_connection" && (
-        <StatusBanner tone="warning">
-          Couldn’t tell which friend request to refuse.
-        </StatusBanner>
+        <StatusBanner tone="warning">Couldn’t tell which friend request to refuse.</StatusBanner>
       )}
+      {(friendDeclineStatus === "not_found" || friendDeclineStatus === "forbidden" || friendDeclineStatus === "invalid_status") && (
+        <StatusBanner tone="neutral">That request is unavailable or has expired.</StatusBanner>
+      )}
+    </>
+  )
 
-      {friendDeclineStatus === "not_found" && (
-        <StatusBanner tone="neutral">
-          That request is unavailable or has expired.
-        </StatusBanner>
-      )}
-
-      {friendDeclineStatus === "forbidden" && (
-        <StatusBanner tone="neutral">
-          That request is unavailable or has expired.
-        </StatusBanner>
-      )}
-
-      {friendDeclineStatus === "invalid_status" && (
-        <StatusBanner tone="neutral">
-          That request is unavailable or has expired.
-        </StatusBanner>
-      )}
+  return (
+    <main className="mx-auto max-w-[1500px] px-4 pb-5 pt-0 text-foreground md:px-6 md:py-8">
+      <PageHeader title="Social" className="hidden md:flex" />
 
       <FriendsMobileSwitcher
         addFriendsContent={addFriendsContent}
         activityContent={activityContent}
+        leadingContent={statusContent}
       />
 
     </main>

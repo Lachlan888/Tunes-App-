@@ -65,6 +65,11 @@ export default function CompareDesktop(props: CompareViewProps) {
             compareSuggestions={compareSuggestions}
             filterPreservedUsers={filterPreservedUsers}
             includePractice={includePractice}
+            titleQuery={titleQuery}
+            selectedKeys={selectedKeys}
+            selectedStyles={selectedStyles}
+            selectedTimeSignatures={selectedTimeSignatures}
+            overlapGroup={props.overlapGroup}
           />
 
           {error === "multiple_matches" ? (

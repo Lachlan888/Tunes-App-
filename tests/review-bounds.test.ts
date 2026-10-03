@@ -22,7 +22,11 @@ test('review page and session queries bound payloads while preserving full count
     assert.ok(f.calls.some(c => c[0] === 'eq' && c[1] === 'user_id' && c[2] === 'owner'))
     assert.ok(f.calls.some(c => c[0] === 'limit' && c[1] === limit))
     assert.deepEqual(f.calls.filter(c => c[0] === 'order').map(c => c[1]), ['next_review_due', 'stage', 'id'])
-    if (lane) assert.ok(f.calls.some(c => c[0] === (lane === 'catch-up' ? 'lt' : 'eq') && c[1] === 'next_review_due' && c[2] === '2026-09-13'))
+    if (lane) {
+      const expectedMethod = lane === 'catch-up' ? 'lt' : 'eq'
+      assert.ok(f.calls.some(c => c[0] === expectedMethod && c[1] === 'next_review_due' && c[2] === '2026-09-13'))
+      assert.ok(!f.calls.some(c => c[0] === (lane === 'catch-up' ? 'eq' : 'lt') && c[1] === 'next_review_due'), 'today and catch-up membership must stay separate')
+    }
   }
 })
 test('scoped practice filters membership before limiting, including lists larger than one API page', async () => {

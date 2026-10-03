@@ -1,5 +1,10 @@
 import Link from "next/link"
-import { safeReferenceReturn } from "@/lib/reference-media-routing"
+import { addToLearningList } from "@/lib/actions/lists"
+import { startLearning } from "@/lib/actions/user-pieces"
+import {
+  getReferencePracticeHref,
+  safeReferenceReturn,
+} from "@/lib/reference-media-routing"
 import ReferencePracticeWorkspace from "@/components/reference-media/ReferencePracticeWorkspace"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { loadTuneDetailData } from "@/lib/loaders/tune-detail"
@@ -45,6 +50,11 @@ export default async function ReferenceMediaPage({
     tuneDetail.tuneMediaBundle,
     requestedSourceId
   )
+  const redirectTo = getReferencePracticeHref(
+    tuneDetail.pieceId,
+    selectedSource?.id,
+    returnTo
+  )
 
   return (
     <main className="mx-auto w-full max-w-[1500px] px-4 py-5 text-foreground sm:px-6 sm:py-8">
@@ -74,6 +84,14 @@ export default async function ReferenceMediaPage({
         mediaBundle={tuneDetail.tuneMediaBundle}
         initialSourceId={selectedSource?.id ?? null}
         requestedSourceId={requestedSourceId}
+        userPiece={tuneDetail.typedUserPiece}
+        userKnownPiece={tuneDetail.typedUserKnownPiece}
+        learningLists={tuneDetail.typedLearningLists}
+        learningListItems={tuneDetail.typedLearningListItems}
+        practiceDiaryEnabled={tuneDetail.practiceDiaryEnabled}
+        redirectTo={redirectTo}
+        startLearning={startLearning}
+        addToLearningList={addToLearningList}
       />
     </main>
   )

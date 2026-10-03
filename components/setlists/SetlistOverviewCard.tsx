@@ -26,7 +26,7 @@ export default function SetlistOverviewCard({ setlist }: { setlist: SetlistOverv
           <p className="mt-1 truncate text-sm text-text-muted">With {setlist.collaboratorLabels.join(", ")}</p>
         ) : null}
       </div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm" aria-label="Your private readiness">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm" role="group" aria-label="Your private readiness">
         <span><strong>{setlist.readyCount}</strong> Known</span>
         <span><strong>{setlist.practiceCount}</strong> in Practice</span>
         <span><strong>{setlist.newToMeCount}</strong> new to you</span>

@@ -111,6 +111,47 @@ test("secondary navigation overlays and the Home view is persisted", () => {
   assert.doesNotMatch(accountMenu, /Compare repertoires/)
   assert.match(accountMenu, /canModerate \?/)
   assert.match(accountMenu, /canAccessDev \?/)
+  assert.match(accountMenu, /Practice tools/)
+  assert.match(accountMenu, /aria-haspopup="menu"/)
+  assert.match(accountMenu, /aria-expanded=\{isPracticeToolsOpen\}/)
+  assert.match(accountMenu, /event\.key === "ArrowRight"/)
+  assert.match(accountMenu, /event\.key === "ArrowLeft"/)
+  assert.match(accountMenu, /aria-current=\{activePracticeHref === item\.href \? "page" : undefined\}/)
+  for (const href of ["/review/diary", "/review/foci", "/review/diary/index"]) {
+    assert.match(accountMenu, new RegExp(`href: "${href}"`))
+  }
+  assert.doesNotMatch(accountMenu, /href: "\/review", label: "Practice tools"/)
   assert.match(home, /tunes\.home\.mobile-view/)
   assert.match(home, /useSyncExternalStore/)
+})
+
+test("mobile destination switchers sit below the shell header without duplicate headings", () => {
+  const switcher = readFileSync(new URL("../components/ui/MobileViewSwitcher.tsx", import.meta.url), "utf8")
+  const panels = readFileSync(new URL("../components/layout/ResponsivePanels.tsx", import.meta.url), "utf8")
+  const homePage = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8")
+  const home = readFileSync(new URL("../components/home/HomeMobileSummarySwitcher.tsx", import.meta.url), "utf8")
+  const lists = readFileSync(new URL("../app/learning-lists/page.tsx", import.meta.url), "utf8")
+  const listNav = readFileSync(new URL("../components/lists/ListsSectionNav.tsx", import.meta.url), "utf8")
+  const friends = readFileSync(new URL("../app/friends/page.tsx", import.meta.url), "utf8")
+  const friendsSwitcher = readFileSync(new URL("../components/friends/FriendsMobileSwitcher.tsx", import.meta.url), "utf8")
+  const compare = readFileSync(new URL("../components/compare/CompareMobile.tsx", import.meta.url), "utf8")
+  const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8")
+
+  assert.match(switcher, /sticky top-14 z-\[300\]/)
+  assert.match(switcher, /border-b border-hairline/)
+  assert.match(switcher, /label && showLabel/)
+  assert.match(panels, /scroll-mt-28/)
+  assert.match(css, /padding-bottom: calc\(var\(--navigation-dock-space\) \+ var\(--session-dock-space\)\)/)
+  assert.match(css, /scroll-margin-block: 4rem calc\(var\(--navigation-dock-space\) \+ var\(--session-dock-space\)\)/)
+
+  for (const page of [homePage, lists, friends]) {
+    assert.match(page, /pb-5 pt-0/)
+  }
+  assert.match(home, /showSwitcherLabel=\{false\}/)
+  assert.match(friendsSwitcher, /showSwitcherLabel=\{false\}/)
+  assert.match(listNav, /sticky top-14 z-\[300\]/)
+  assert.match(lists, /<PageHeader title="Lists" className="hidden md:flex"/)
+  assert.match(lists, /<div className="hidden md:block">/)
+  assert.match(friends, /<PageHeader title="Social" className="hidden md:flex"/)
+  assert.match(compare, /hidden font-serif text-4xl[^"]*md:block">Compare/)
 })

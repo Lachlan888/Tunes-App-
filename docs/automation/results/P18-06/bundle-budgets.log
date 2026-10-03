@@ -1,0 +1,48 @@
+{
+  "measuredAt": "2026-09-26T08:05:08.759Z",
+  "metric": "all route client-reference chunks, gzip upper bound; not initial network transfer",
+  "measurements": [
+    {
+      "route": "/",
+      "chunks": 16,
+      "rawBytes": 872053,
+      "gzipBytes": 256961
+    },
+    {
+      "route": "/library",
+      "chunks": 17,
+      "rawBytes": 918008,
+      "gzipBytes": 269103
+    },
+    {
+      "route": "/review",
+      "chunks": 16,
+      "rawBytes": 872933,
+      "gzipBytes": 258127
+    },
+    {
+      "route": "/compare",
+      "chunks": 18,
+      "rawBytes": 1336236,
+      "gzipBytes": 395481
+    },
+    {
+      "route": "/learning-lists",
+      "chunks": 16,
+      "rawBytes": 893301,
+      "gzipBytes": 260956
+    },
+    {
+      "route": "/trends",
+      "chunks": 15,
+      "rawBytes": 848134,
+      "gzipBytes": 249675
+    },
+    {
+      "route": "/friends",
+      "chunks": 16,
+      "rawBytes": 868490,
+      "gzipBytes": 256067
+    }
+  ]
+}

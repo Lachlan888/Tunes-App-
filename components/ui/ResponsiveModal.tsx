@@ -1,7 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { useEffect, useId, useRef, useState } from "react"
+import { useEffect, useId, useRef, useSyncExternalStore } from "react"
 import { createPortal } from "react-dom"
 import Icon from "@/components/ui/Icon"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
@@ -32,6 +32,8 @@ type ResponsiveModalProps = {
   closeLabel?: string
 }
 
+const subscribeToClientMount = () => () => undefined
+
 export default function ResponsiveModal({
   isOpen,
   onClose,
@@ -56,7 +58,11 @@ export default function ResponsiveModal({
   const modalId = useId()
   const titleId = `${modalId}-title`
   const descriptionId = description ? `${modalId}-description` : undefined
-  const [isMounted, setIsMounted] = useState(false)
+  const isMounted = useSyncExternalStore(
+    subscribeToClientMount,
+    () => true,
+    () => false
+  )
   const dialogRef = useRef<HTMLElement>(null)
 
   function requestClose() {
@@ -65,10 +71,6 @@ export default function ResponsiveModal({
   }
 
   useBodyScrollLock(isOpen)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
 
   useEffect(() => {
     if (!isOpen || closeDisabled || !closeOnEscape) return

@@ -89,7 +89,7 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               {preview.isSignedIn ? (
-                <ConnectAndCompareButton token={token} />
+                <ConnectAndCompareButton inviteCode={token} />
               ) : (
                 <>
                   <Link
@@ -126,7 +126,7 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
               Continue to compare repertoires with {preview.inviter.name}.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <ConnectAndCompareButton token={token} label="Compare now" />
+              <ConnectAndCompareButton inviteCode={token} label="Compare now" />
               <Link
                 href="/"
                 className="inline-flex min-h-12 items-center justify-center rounded-control px-5 py-3 text-sm font-medium text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"

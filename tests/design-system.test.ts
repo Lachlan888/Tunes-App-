@@ -94,3 +94,64 @@ test("accessibility preference fallbacks are defined", () => {
   assert.match(css, /prefers-contrast:\s*more/)
   assert.match(css, /forced-colors:\s*active/)
 })
+
+test("reference loop controls keep named groups and 44px phone targets", () => {
+  const player = readFileSync(
+    join(process.cwd(), "components/library/YouTubeLoopPlayer.tsx"),
+    "utf8"
+  )
+
+  assert.match(player, /role="group" aria-label="Loop pedal controls"/)
+  assert.match(player, /role="group" aria-label="Loop range controls"/)
+  assert.match(player, /aria-pressed=\{isPlaying\}/)
+  assert.match(player, /className="min-h-11 min-w-11 rounded-md border/)
+  assert.match(player, /joinClasses\("min-h-11 min-w-11 rounded-md border px-3/)
+  assert.match(player, /className="grid h-11 w-11 place-items-center/)
+})
+
+test("visible practice navigation uses the source-of-truth Focus areas name", () => {
+  const accountMenu = readFileSync(
+    join(process.cwd(), "components/layout/AccountMenu.tsx"),
+    "utf8"
+  )
+
+  assert.match(accountMenu, /label: "Focus areas"/)
+  assert.doesNotMatch(accountMenu, /label: "Focus Areas"/)
+})
+
+test("named status and control containers expose semantics instead of labelling generic elements", () => {
+  const setlistCard = readFileSync(
+    join(process.cwd(), "components/setlists/SetlistOverviewCard.tsx"),
+    "utf8"
+  )
+  const tuneActions = readFileSync(
+    join(process.cwd(), "components/library/TuneDetailActions.tsx"),
+    "utf8"
+  )
+  const sessionDockShowcase = readFileSync(
+    join(process.cwd(), "components/session-dock/SessionDockShowcase.tsx"),
+    "utf8"
+  )
+
+  assert.match(setlistCard, /role="group" aria-label="Your private readiness"/)
+  assert.match(tuneActions, /role="status"[^>]+aria-label="This tune is marked as known"/)
+  assert.match(sessionDockShowcase, /role="group" aria-label="Session Dock preview context"/)
+})
+
+test("design guidance prohibits decorative eyebrow labels", () => {
+  const direction = readFileSync(
+    join(
+      process.cwd(),
+      "docs/Tunes App — Full UI/UX Audit and 2026 Product Design Direction.md"
+    ),
+    "utf8"
+  )
+  const context = readFileSync(
+    join(process.cwd(), "docs/Tunes-App-Current-Context.md"),
+    "utf8"
+  )
+
+  assert.match(direction, /Do not use decorative eyebrow labels/)
+  assert.match(context, /decorative eyebrow labels are prohibited/)
+  assert.match(context, /Begin with the real heading/)
+})

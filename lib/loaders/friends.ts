@@ -1,6 +1,7 @@
 import { activityCursor, ACTIVITY_PAGE_SIZE, type ActivityCursor } from "@/lib/activity-pagination"
 import { redirectToLogin } from "@/lib/auth/login-redirect"
 import { readBoundedRows } from "@/lib/loaders/bounded-read"
+import { loadFriendSuggestions } from "@/lib/loaders/friend-suggestions"
 import { createClient } from "@/lib/supabase/server"
 import {
   searchProfilesForSelection,
@@ -685,11 +686,12 @@ export async function loadFriendsPageData(searchQuery?: string) {
 
   const acceptedFriendIds = acceptedFriends.map((friend) => friend.user_id)
 
-  const activityPage = await loadFriendActivityPage(
-    supabase,
-    acceptedFriendIds,
-    user.id
-  )
+  const [activityPage, friendSuggestions] = await Promise.all([
+    loadFriendActivityPage(supabase, acceptedFriendIds, user.id),
+    trimmedQuery
+      ? Promise.resolve({ suggestions: [], state: "insufficient_signals" as const })
+      : loadFriendSuggestions(supabase, user.id, typedConnections),
+  ])
 
   return {
     user,
@@ -697,6 +699,7 @@ export async function loadFriendsPageData(searchQuery?: string) {
     acceptedFriends,
     searchMatches,
     searchQuery: trimmedQuery,
+    friendSuggestions,
     recentFriendActivity: activityPage.items,
     activityNextCursor: activityPage.nextCursor,
   }

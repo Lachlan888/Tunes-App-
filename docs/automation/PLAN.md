@@ -1,6 +1,6 @@
 # Final work sequence
 
-Activated 15 September 2026: finish P19 → P20–P31 → P32 integration → P33 festival hubs → P18 release hardening. The current state/chunk continues unchanged. Prompts 20–33 are queued work, not completed work.
+Activated 15 September 2026 and extended by direct user review on 24 September 2026: finish P19 → P20–P31 → P32 integration → P33 festival hubs → P34 responsive/session refinements → P18 release hardening. The current state/chunk continues unchanged. Registered prompts are queued work, not completed work.
 
 One row is one run, including verification. Most Prompt 19 implementation is documented complete. Trust each specification’s carried-forward summary and address ONLY its explicit remaining gaps. These are completion buckets, not ten new feature implementations; a documented finished bucket can be carried forward without a new audit. Ten P19 slices are deliberate: its expanded 15 requirements include independent provider, persistence and permission scenarios that should not share one large window. Split further before edits if a slice cannot fit. Normal startup loads only the current specification.
 
@@ -80,7 +80,13 @@ One row is one run, including verification. Most Prompt 19 implementation is doc
 | [P33-05](chunks/P33-05.md) | Existing save/auth and Compare journeys | P33-04 |
 | [P33-06](chunks/P33-06.md) | Home promotion and archive lifecycle | P33-05 |
 | [P33-07](chunks/P33-07.md) | Integrated festival acceptance | P33-06 |
-| [P18-01](chunks/P18-01.md) | Confirmed code and check failures | P33-07 |
+| [P34-01](chunks/P34-01.md) | Today-first Focused Practice | P33-07 |
+| [P34-02](chunks/P34-02.md) | Reflection handoff and Home repertoire | P34-01 |
+| [P34-03](chunks/P34-03.md) | Practice tools submenu | P34-02 |
+| [P34-04](chunks/P34-04.md) | Sticky mobile view controls | P34-03 |
+| [P34-05](chunks/P34-05.md) | Compact mobile tune actions | P34-04 |
+| [P34-06](chunks/P34-06.md) | Integrated responsive acceptance | P34-01 through P34-05 |
+| [P18-01](chunks/P18-01.md) | Confirmed code and check failures | P34-06 |
 | [P18-02](chunks/P18-02.md) | Bounded data and measured performance | P18-01 |
 | [P18-03](chunks/P18-03.md) | Account isolation and offline recovery | P18-02 |
 | [P18-04](chunks/P18-04.md) | Accessibility and semantic consistency | P18-03 |

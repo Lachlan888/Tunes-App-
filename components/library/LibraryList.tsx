@@ -190,6 +190,7 @@ export default function LibraryList({
     const row = (
       <TuneRow
         piece={piece}
+        compactMobile
         supportingContent={supportingContent}
         personalState={
           <TuneStateIndicator
@@ -201,7 +202,7 @@ export default function LibraryList({
         }
         actions={selectionMode ? null : (
           <>
-          {onPreview ? <button type="button" aria-label={`Preview ${piece.title}`} aria-pressed={previewPieceId === piece.id} onClick={event => onPreview(piece, event.currentTarget)} className="inline-flex min-h-11 items-center whitespace-nowrap rounded-control border border-hairline px-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Preview</button> : null}
+          {onPreview ? <button type="button" aria-label={`Preview ${piece.title}`} aria-pressed={previewPieceId === piece.id} onClick={event => onPreview(piece, event.currentTarget)} className="inline-flex min-h-11 min-w-0 w-full items-center justify-center whitespace-nowrap rounded-control border border-hairline px-1 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] md:w-auto md:px-3 md:text-sm">Preview</button> : null}
           <LibraryTuneCardActions
             piece={piece}
             activeUserPiece={activeUserPiece}
@@ -226,7 +227,7 @@ export default function LibraryList({
 
     return (
       <div
-        className={`grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2 rounded-object px-2 transition-colors ${
+        className={`grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-1 rounded-object px-1 transition-colors md:gap-2 md:px-2 ${
           isSelected ? "bg-state-due/12" : ""
         }`}
       >

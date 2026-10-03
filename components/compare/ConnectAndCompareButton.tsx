@@ -8,7 +8,7 @@ import { acceptCompareInvite } from "@/lib/actions/compare-invites"
 import { buildCompareJoinPath } from "@/lib/compare-invite-paths"
 
 type ConnectAndCompareButtonProps = {
-  token: string
+  inviteCode: string
   label?: string
 }
 
@@ -28,14 +28,14 @@ function errorMessage(reason: string) {
 }
 
 export default function ConnectAndCompareButton({
-  token,
+  inviteCode,
   label = "Connect and compare",
 }: ConnectAndCompareButtonProps) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [profileRequired, setProfileRequired] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const joinPath = buildCompareJoinPath(token)
+  const joinPath = buildCompareJoinPath(inviteCode)
   const profileHref = `/dashboard?next=${encodeURIComponent(joinPath)}`
 
   function acceptInvite() {
@@ -43,7 +43,7 @@ export default function ConnectAndCompareButton({
     setProfileRequired(false)
 
     startTransition(async () => {
-      const result = await acceptCompareInvite(token)
+      const result = await acceptCompareInvite(inviteCode)
 
       if (result.ok) {
         router.push(result.compareHref)

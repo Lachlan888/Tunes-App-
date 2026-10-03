@@ -8,7 +8,10 @@ type TuneCollectionActionButtonProps = {
   action: (formData: FormData) => Promise<void>
   fields: Record<string, ActionFieldValue>
   label: string
+  mobileLabel?: string
   pendingLabel: string
+  mobilePendingLabel?: string
+  ariaLabel?: string
   className?: string
   confirmMessage?: string
 }
@@ -22,7 +25,10 @@ export default function TuneCollectionActionButton({
   action,
   fields,
   label,
+  mobileLabel,
   pendingLabel,
+  mobilePendingLabel,
+  ariaLabel,
   className,
   confirmMessage,
 }: TuneCollectionActionButtonProps) {
@@ -47,9 +53,19 @@ export default function TuneCollectionActionButton({
       className={className}
       disabled={isPending}
       aria-busy={isPending}
+      aria-label={ariaLabel}
       onClick={runAction}
     >
-      {isPending ? pendingLabel : label}
+      {mobileLabel ? (
+        <>
+          <span className="md:hidden">
+            {isPending ? mobilePendingLabel ?? pendingLabel : mobileLabel}
+          </span>
+          <span className="hidden md:inline">
+            {isPending ? pendingLabel : label}
+          </span>
+        </>
+      ) : isPending ? pendingLabel : label}
     </button>
   )
 }

@@ -21,7 +21,9 @@ import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import type { PracticeNoteCategory } from "@/lib/loaders/practice-diary"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 import {
+  ACTIVE_PRACTICE_SESSION_KEY,
   getPracticeResultCounts,
+  getPracticeReflectionHref,
   getPracticeSessionSuggestion,
   getResultingPracticeStage,
   canBeginPracticeRating,
@@ -53,21 +55,36 @@ function isEditableTarget(target: EventTarget | null) {
 }
 
 function SessionSummary({
+  lane,
   results,
   remainingCount,
+  catchUpCount,
+  sessionDate,
+  practiceDiaryEnabled,
   onContinue,
 }: {
+  lane: PracticeLane
   results: PracticeSessionResult[]
   remainingCount: number
+  catchUpCount: number
+  sessionDate: string
+  practiceDiaryEnabled: boolean
   onContinue: () => void
 }) {
   const counts = getPracticeResultCounts(results)
+  const todayComplete = lane === "due-today" && remainingCount === 0
 
   return (
     <FocusModeShell
       eyebrow="Practice complete"
-      title={`${results.length} tune${results.length === 1 ? "" : "s"} practised`}
-      detail={remainingCount > 0 ? `${remainingCount} left in this lane` : "This lane is clear"}
+      title={todayComplete && results.length === 0
+        ? "Today’s practice is clear"
+        : `${results.length} tune${results.length === 1 ? "" : "s"} practised`}
+      detail={remainingCount > 0
+        ? `${remainingCount} left in this lane`
+        : todayComplete
+          ? "Today’s due queue is complete"
+          : "This lane is clear"}
     >
       <section className="mx-auto mt-8 max-w-3xl">
         <div className="grid grid-cols-3 border-y border-hairline text-center">
@@ -112,11 +129,32 @@ function SessionSummary({
           <p className="mt-1 leading-6">{getPracticeSessionSuggestion(results)}</p>
         </section>
 
+        {practiceDiaryEnabled ? (
+          <section className="mt-6 border-y border-hairline py-5" aria-labelledby="session-reflection-heading">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">Optional reflection</p>
+            <h2 id="session-reflection-heading" className="mt-1 font-serif text-2xl font-bold">Reflect on this session</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-text-muted">
+              Add one overall note for today in your existing Practice Diary, or skip it for now. Your ratings and schedule are already saved.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link href={getPracticeReflectionHref(sessionDate)} className={buttonStyles.primary}>
+                Add reflection
+              </Link>
+              <Link href="/" className={buttonStyles.text}>Not now</Link>
+            </div>
+          </section>
+        ) : null}
+
         <div className="mt-6 flex flex-wrap gap-3">
           {remainingCount > 0 ? (
             <button type="button" onClick={onContinue} className={buttonStyles.practice}>
               Continue practice
             </button>
+          ) : null}
+          {todayComplete && catchUpCount > 0 ? (
+            <Link href="/review?session=catch-up" className={buttonStyles.practice}>
+              Continue with catch-up
+            </Link>
           ) : null}
           <Link href="/review" className={buttonStyles.primary}>Back to Practice</Link>
           <Link href="/learning-lists?view=learning-queue" className={buttonStyles.secondary}>Open learning queue</Link>
@@ -134,6 +172,8 @@ export default function FocusedPracticeSession({
   noteCategories,
   sessionLabel,
   sessionKey,
+  catchUpCount,
+  practiceDiaryEnabled,
 }: {
   lane: PracticeLane
   initialQueue: ReviewQueueItem[]
@@ -142,6 +182,8 @@ export default function FocusedPracticeSession({
   noteCategories: PracticeNoteCategory[]
   sessionLabel?: string
   sessionKey?: string
+  catchUpCount: number
+  practiceDiaryEnabled: boolean
 }) {
   const sessionStorage = usePrivateSessionStorage()
   const online = useOnlineStatus()
@@ -167,6 +209,7 @@ export default function FocusedPracticeSession({
     queue.length
   )
   const currentItem = queue[currentIndex] ?? null
+  const currentHref = `${pathname}${searchParams.size > 0 ? `?${searchParams.toString()}` : ""}`
   const draftKey = `${storagePrefix}.draft.${currentItem?.id ?? "none"}`
   useEffect(() => {
     let draft: { body?: string; category?: string; focus?: string; add?: boolean } = {}
@@ -229,6 +272,26 @@ export default function FocusedPracticeSession({
   useEffect(() => () => {
     if (undoTimerRef.current !== null) window.clearTimeout(undoTimerRef.current)
   }, [])
+
+  useEffect(() => {
+    if (currentItem && !ended) {
+      sessionStorage.setItem(ACTIVE_PRACTICE_SESSION_KEY, JSON.stringify({
+        href: currentHref,
+        lane,
+        sessionDate,
+      }))
+      return
+    }
+
+    const activeSession = sessionStorage.getItem(ACTIVE_PRACTICE_SESSION_KEY)
+    try {
+      if (activeSession && JSON.parse(activeSession)?.href === currentHref) {
+        sessionStorage.removeItem(ACTIVE_PRACTICE_SESSION_KEY)
+      }
+    } catch {
+      sessionStorage.removeItem(ACTIVE_PRACTICE_SESSION_KEY)
+    }
+  }, [currentHref, currentItem, ended, lane, sessionDate, sessionStorage])
 
   const commitRating = useCallback(async (pending: PendingRating) => {
     setIsSubmitting(true)
@@ -403,8 +466,12 @@ export default function FocusedPracticeSession({
   if (ended || !currentItem) {
     return (
       <SessionSummary
+        lane={lane}
         results={results}
         remainingCount={queue.length}
+        catchUpCount={catchUpCount}
+        sessionDate={sessionDate}
+        practiceDiaryEnabled={practiceDiaryEnabled}
         onContinue={() => setEnded(false)}
       />
     )

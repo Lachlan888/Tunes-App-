@@ -11,6 +11,8 @@ import CompareOutcomeExperience from "@/components/compare/CompareOutcomeExperie
 import { buildCompareHref, removeUserOnce } from "@/lib/compare-page"
 import EnterCompareCodeForm from "@/components/compare/EnterCompareCodeForm"
 import type { CompareViewProps } from "@/components/compare/compare-view-types"
+import PendingLinkButton from "@/components/PendingLinkButton"
+import { getSuggestedCompareAction } from "@/lib/compare-suggestion-action"
 
 export default function CompareMobile(props: CompareViewProps) {
   const {
@@ -28,6 +30,11 @@ export default function CompareMobile(props: CompareViewProps) {
     redirectTo,
     compareHeading,
     canShowResults,
+    titleQuery,
+    selectedKeys,
+    selectedStyles,
+    selectedTimeSignatures,
+    overlapGroup,
   } = props
 
   const hasSearchResolution =
@@ -44,7 +51,7 @@ export default function CompareMobile(props: CompareViewProps) {
       {canShowResults ? (
         <div className="pb-8">
           <header className="mb-5">
-            <h1 className="font-serif text-4xl font-bold tracking-tight">Compare</h1>
+            <h1 className="hidden font-serif text-4xl font-bold tracking-tight md:block">Compare</h1>
             <p className="mt-2 text-sm text-muted-foreground">{compareHeading}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {selectedProfiles.map((profile) => (
@@ -70,7 +77,7 @@ export default function CompareMobile(props: CompareViewProps) {
       ) : (
         <>
           <header className="mb-6">
-            <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground">
+            <h1 className="hidden font-serif text-4xl font-bold tracking-tight text-foreground md:block">
               Compare
             </h1>
           </header>
@@ -128,30 +135,47 @@ export default function CompareMobile(props: CompareViewProps) {
 
               <div className="mt-3 divide-y divide-border border-y border-border">
                 {compareSuggestions.slice(0, 5).map((suggestion) => (
-                  <div
-                    key={suggestion.user_id}
-                    className="flex items-center justify-between gap-3 py-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-foreground">
-                        {suggestion.display_name ||
-                          suggestion.username ||
-                          "Unnamed player"}
-                      </p>
+                  (() => {
+                    const action = getSuggestedCompareAction(
+                      filterPreservedUsers,
+                      suggestion.username
+                    )
 
-                      <p className="mt-1 truncate text-xs text-muted-foreground">
-                        @{suggestion.username}
-                      </p>
-                    </div>
+                    return (
+                      <div
+                        key={suggestion.user_id}
+                        className="flex items-center justify-between gap-3 py-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-foreground">
+                            {suggestion.display_name ||
+                              suggestion.username ||
+                              "Unnamed player"}
+                          </p>
 
-                    <button
-                      type="button"
-                      onClick={() => setIsAddSheetOpen(true)}
-                      className="inline-flex min-h-11 shrink-0 rounded-control border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
-                    >
-                      Add
-                    </button>
-                  </div>
+                          <p className="mt-1 truncate text-xs text-muted-foreground">
+                            @{suggestion.username}
+                          </p>
+                        </div>
+
+                        <PendingLinkButton
+                          href={buildCompareHref(action.nextUsers, {
+                            q: titleQuery,
+                            key: selectedKeys,
+                            style: selectedStyles,
+                            time_signature: selectedTimeSignatures,
+                            includePractice,
+                            group: overlapGroup,
+                          })}
+                          label={action.label}
+                          pendingLabel="Loading comparison..."
+                          disabled={action.disabled}
+                          refresh
+                          className="inline-flex min-h-11 shrink-0 rounded-control border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+                        />
+                      </div>
+                    )
+                  })()
                 ))}
               </div>
             </section>
@@ -165,6 +189,11 @@ export default function CompareMobile(props: CompareViewProps) {
         compareSuggestions={compareSuggestions}
         filterPreservedUsers={filterPreservedUsers}
         includePractice={includePractice}
+        titleQuery={titleQuery}
+        selectedKeys={selectedKeys}
+        selectedStyles={selectedStyles}
+        selectedTimeSignatures={selectedTimeSignatures}
+        overlapGroup={overlapGroup}
         matchingProfiles={matchingProfiles}
         searchMatches={searchMatches}
         primarySearchValue={primarySearchValue}

@@ -2,8 +2,10 @@
 
 import {
   COMPARE_INVITE_LIFETIME_MS,
+  createCompareInviteAlias,
   createCompareInviteToken,
   deriveCompareInviteState,
+  getCompareInviteLookup,
   hashCompareInviteToken,
   isValidCompareInviteToken,
 } from "@/lib/compare-invites"
@@ -28,6 +30,7 @@ type InviteRow = {
   accepted_at: string | null
   revoked_at: string | null
   connection_id: number | null
+  alias_code: string | null
 }
 
 type CreateCompareInviteResult =
@@ -35,6 +38,7 @@ type CreateCompareInviteResult =
       ok: true
       state: "pending"
       token: string
+      code: string
       joinPath: string
       expiresAt: string
       reused: boolean
@@ -97,7 +101,7 @@ async function findReusableInvite(
   const { data, error } = await supabaseAdmin
     .from("compare_invites")
     .select(
-      "id, creator_user_id, expires_at, accepted_by_user_id, accepted_at, revoked_at, connection_id"
+      "id, creator_user_id, expires_at, accepted_by_user_id, accepted_at, revoked_at, connection_id, alias_code"
     )
     .eq("creator_user_id", creatorUserId)
     .eq("token_hash", tokenHash)
@@ -170,13 +174,18 @@ export async function getOrCreateCompareInvite(input?: {
         const existingState = deriveCompareInviteState(reusableInvite)
 
         if (existingState === "pending") {
-          return {
-            ok: true,
-            state: "pending",
-            token: existingToken,
-            joinPath: buildCompareJoinPath(existingToken),
-            expiresAt: reusableInvite.expires_at,
-            reused: true,
+          if (!reusableInvite.alias_code) {
+            await revokeActiveInvites(user.id)
+          } else {
+            return {
+              ok: true,
+              state: "pending",
+              token: existingToken,
+              code: reusableInvite.alias_code,
+              joinPath: buildCompareJoinPath(existingToken),
+              expiresAt: reusableInvite.expires_at,
+              reused: true,
+            }
           }
         }
 
@@ -205,8 +214,9 @@ export async function getOrCreateCompareInvite(input?: {
 
     await revokeActiveInvites(user.id)
 
-    for (let attempt = 0; attempt < 2; attempt += 1) {
+    for (let attempt = 0; attempt < 6; attempt += 1) {
       const token = createCompareInviteToken()
+      const alias = createCompareInviteAlias()
       const tokenHash = hashCompareInviteToken(token)
       const expiresAt = new Date(
         Date.now() + COMPARE_INVITE_LIFETIME_MS
@@ -215,6 +225,8 @@ export async function getOrCreateCompareInvite(input?: {
       const { error } = await supabaseAdmin.from("compare_invites").insert({
         creator_user_id: user.id,
         token_hash: tokenHash,
+        alias_code: alias.code,
+        alias_key: alias.key,
         expires_at: expiresAt,
       })
 
@@ -223,6 +235,7 @@ export async function getOrCreateCompareInvite(input?: {
           ok: true,
           state: "pending",
           token,
+          code: alias.code,
           joinPath: buildCompareJoinPath(token),
           expiresAt,
           reused: false,
@@ -300,16 +313,31 @@ type AcceptInviteRpcRow = {
 }
 
 export async function acceptCompareInvite(
-  rawToken: string
+  rawCode: string
 ): Promise<AcceptCompareInviteResult> {
   const { supabase, user } = await getAuthenticatedUser()
 
   if (!user) return { ok: false, reason: "signed_out" }
-  if (!isValidCompareInviteToken(rawToken)) {
+  const lookup = getCompareInviteLookup(rawCode)
+  if (!lookup) {
     return { ok: false, reason: "invalid" }
   }
 
-  const tokenHash = hashCompareInviteToken(rawToken)
+  let tokenHash = lookup.key
+  if (lookup.kind === "alias") {
+    const supabaseAdmin = createCompareAdminClient()
+    const { data: invite, error: lookupError } = await supabaseAdmin
+      .from("compare_invites")
+      .select("token_hash")
+      .eq("alias_key", lookup.key)
+      .maybeSingle()
+
+    if (lookupError || !invite?.token_hash) {
+      return { ok: false, reason: "invalid" }
+    }
+    tokenHash = invite.token_hash
+  }
+
   const { data, error } = await supabase.rpc("accept_compare_invite", {
     p_token_hash: tokenHash,
   })

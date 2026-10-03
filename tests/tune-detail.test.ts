@@ -93,6 +93,46 @@ test("Manage and route recovery expose permission-safe tune actions", () => {
   assert.match(notFound, /Back to Tunes/)
 })
 
+test("About exposes fill-once tune details inline with explicit save and cancel", () => {
+  const page = readFileSync(
+    new URL("../app/library/[id]/page.tsx", import.meta.url),
+    "utf8"
+  )
+  const inlineDetails = readFileSync(
+    new URL("../components/library/TuneInlineDetails.tsx", import.meta.url),
+    "utf8"
+  )
+
+  assert.match(page, /<TuneInlineDetails/)
+  assert.match(inlineDetails, /submitInlinePieceContribution/)
+  assert.match(inlineDetails, /Not recorded — add/)
+  assert.match(inlineDetails, /label="Save"/)
+  assert.match(inlineDetails, />\s*Cancel\s*</)
+  assert.match(inlineDetails, /value=\{draft\}/)
+  assert.match(inlineDetails, /Manage → Edit shared tune details/)
+  assert.doesNotMatch(inlineDetails, /onBlur=/)
+})
+
+test("About keeps creator and contributor credits quiet, distinct, and privacy-safe", () => {
+  const page = readFileSync(
+    new URL("../app/library/[id]/page.tsx", import.meta.url),
+    "utf8"
+  )
+  const loader = readFileSync(
+    new URL("../lib/loaders/tune-detail/attribution.ts", import.meta.url),
+    "utf8"
+  )
+
+  assert.match(page, /Added by/)
+  assert.match(page, /separate from composer or source attribution/)
+  assert.match(page, /<details/)
+  assert.match(page, /Field contribution credits/)
+  assert.match(loader, /piece_field_contributions/)
+  assert.match(loader, /show_identity/)
+  assert.match(loader, /Private player/)
+  assert.match(loader, /Unknown player/)
+})
+
 test("view-scoped loading keeps shared identity data stable", () => {
   const loader = readFileSync(
     new URL("../lib/loaders/tune-detail.ts", import.meta.url),

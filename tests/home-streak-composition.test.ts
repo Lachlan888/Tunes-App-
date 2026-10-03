@@ -34,7 +34,7 @@ const Home = load("components/home/HomeMobileSummarySwitcher.tsx", {
 for (const [scenario, current, best] of [["populated", 4, 9], ["new user", 0, 0], ["broken streak", 0, 9]] as const) {
   test(`Home places one authoritative streak summary in Repertoire: ${scenario}`, () => {
     const html = renderToStaticMarkup(React.createElement(Home, {
-      summary: { dueTodayPreview: [], inPracticePreview: [], learningQueuePreview: [], dueTodayCount: 0, needsAttentionCount: 0, knownCount: 0, practiceCount: 0, listCount: 0, badgeSummary: { receivedCount: 0 } },
+      summary: { dueTodayPreview: [], inPracticePreview: [], learningQueuePreview: [], dueTodayCount: 0, needsAttentionCount: 0, knownCount: 0, practiceCount: 0, learningQueueCount: 0, listCount: 0, badgeSummary: { receivedCount: 0 } },
       streakSummary: { current_revision_streak: current, longest_revision_streak: best, current_practice_streak: current, longest_practice_streak: best },
       recentFriendActivity: [], activityNextCursor: null, density: "standard",
     }))
@@ -45,6 +45,12 @@ for (const [scenario, current, best] of [["populated", 4, 9], ["new user", 0, 0]
     assert.equal((html.match(new RegExp(`>Best ${best}<`, "g")) ?? []).length, 2)
     assert.equal((html.slice(html.indexOf(">Streaks<")).match(new RegExp(`>${current}</p>`, "g")) ?? []).length, 2)
     assert.match(html, /href="\/review"/)
+    assert.match(html, />Learning queue</)
+    assert.match(html, />Currently practising</)
+    assert.match(html, />Known repertoire</)
+    assert.match(html, /href="\/learning-lists\?view=learning-queue"/)
+    assert.match(html, /href="\/library\/practice"/)
+    assert.match(html, /href="\/library\/known"/)
   })
 }
 

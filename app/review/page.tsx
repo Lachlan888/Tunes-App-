@@ -28,21 +28,8 @@ function getSingleValue(value: string | string[] | undefined) {
 
 export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const resolvedSearchParams = await searchParams
-  const showSection = (sectionId: string) => {
-    void sectionId
-    return true
-  }
-
-  const mode = resolvedSearchParams?.mode ?? ""
-  const reviewMode = mode === "catch-up" ? "catch-up" : "due-today"
   const practiceLane = parsePracticeLane(resolvedSearchParams?.session)
-  const removeFromPracticeStatus =
-    resolvedSearchParams?.remove_from_practice ?? ""
-  const practiceUpdate = resolvedSearchParams?.practice_update ?? ""
-  const loopStatus = getSingleValue(resolvedSearchParams?.loop)
-  const preferredReferenceStatus = getSingleValue(
-    resolvedSearchParams?.preferred_reference
-  )
+  const reviewMode = resolvedSearchParams?.mode === "catch-up" ? "catch-up" : "due-today"
 
   const {
     practiceDiaryEnabled,
@@ -54,11 +41,6 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     today, dueTodayCount, catchUpCount, activeCount, queueTotal, sessionLabel, sessionKey,
   } = await loadReviewPageData({ lane: practiceLane, listId: Number(resolvedSearchParams?.list_id), focusId: Number(resolvedSearchParams?.focus_id) })
 
-  const dueTodayRedirectTo = "/review#review-queue"
-  const catchUpRedirectTo = "/review?mode=catch-up#review-queue"
-  const redirectTo =
-    reviewMode === "catch-up" ? catchUpRedirectTo : dueTodayRedirectTo
-
   if (!streakSummary) {
     return redirectToLogin()
   }
@@ -68,6 +50,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
     return (
       <FocusedPracticeSession
+        key={`${today}:${practiceLane}:${sessionKey ?? ""}`}
         lane={practiceLane}
         initialQueue={queue}
         queueTotal={queueTotal}
@@ -75,49 +58,34 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         noteCategories={practiceDiaryEnabled ? noteCategories : []}
         sessionLabel={sessionLabel}
         sessionKey={sessionKey}
+        catchUpCount={catchUpCount}
+        practiceDiaryEnabled={practiceDiaryEnabled}
       />
     )
   }
 
+  const redirectTo = reviewMode === "catch-up"
+    ? "/review?mode=catch-up#review-queue"
+    : "/review#review-queue"
+
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       <PageHeader title="Practice" />
-
-      {showSection("status_messages") ? (
-        <PracticeStatusMessages
-          practiceUpdate={practiceUpdate}
-          removeFromPracticeStatus={removeFromPracticeStatus}
-          loopStatus={loopStatus}
-          preferredReferenceStatus={preferredReferenceStatus}
-        />
-      ) : null}
-
-      {(showSection("due_today") || showSection("catch_up")) ? (
-        <ReviewQueueSection
-          dueTodayCount={dueTodayCount}
-          catchUpCount={catchUpCount}
-        />
-      ) : null}
-
-      {showSection("active_practice") ? (
-        <ActivePracticeSection
-          practiceItems={practiceItems}
-          totalCount={activeCount}
-          redirectTo={redirectTo}
-        />
-      ) : null}
-
+      <PracticeStatusMessages
+        practiceUpdate={resolvedSearchParams?.practice_update ?? ""}
+        removeFromPracticeStatus={resolvedSearchParams?.remove_from_practice ?? ""}
+        loopStatus={getSingleValue(resolvedSearchParams?.loop)}
+        preferredReferenceStatus={getSingleValue(resolvedSearchParams?.preferred_reference)}
+      />
+      <ReviewQueueSection dueTodayCount={dueTodayCount} catchUpCount={catchUpCount} />
+      <ActivePracticeSection
+        practiceItems={practiceItems}
+        totalCount={activeCount}
+        redirectTo={redirectTo}
+      />
       <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.45fr)]">
-        {showSection("practice_nav") ? (
-          <PracticeDiaryNav active="review" compact />
-        ) : null}
-
-        {showSection("streaks") ? (
-          <StreakSummarySection
-            streakSummary={streakSummary}
-            className="lg:mt-0"
-          />
-        ) : null}
+        <PracticeDiaryNav active="review" compact />
+        <StreakSummarySection streakSummary={streakSummary} className="lg:mt-0" />
       </section>
     </main>
   )

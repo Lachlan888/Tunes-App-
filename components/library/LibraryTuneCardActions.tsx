@@ -6,10 +6,10 @@ import { markAsKnown } from "@/lib/actions/known-pieces"
 import type { Piece, UserPiece } from "@/lib/types"
 
 const compactSecondaryAction =
-  "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm font-semibold text-text-primary shadow-material-rest transition-colors hover:border-action-primary/45 hover:bg-surface-note focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "inline-flex min-h-11 min-w-0 w-full items-center justify-center whitespace-nowrap rounded-control border border-hairline bg-surface-paper px-1 py-2 text-xs font-semibold text-text-primary shadow-material-rest transition-colors hover:border-action-primary/45 hover:bg-surface-note focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 md:w-auto md:px-3 md:text-sm"
 
 const compactPracticeAction =
-  "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-control border border-state-practice bg-state-practice px-3 py-2 text-sm font-semibold text-state-practice-foreground shadow-material-rest transition-colors hover:bg-state-practice/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "inline-flex min-h-11 min-w-0 w-full items-center justify-center whitespace-nowrap rounded-control border border-state-practice bg-state-practice px-1 py-2 text-xs font-semibold text-state-practice-foreground shadow-material-rest transition-colors hover:bg-state-practice/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 md:w-auto md:px-3 md:text-sm"
 
 type LibraryTuneCardActionsProps = {
   piece: Piece
@@ -46,9 +46,11 @@ export default function LibraryTuneCardActions({
       <button
         type="button"
         className={compactSecondaryAction}
+        aria-label={`Add ${piece.title} to List`}
         onClick={onOpenAddToList}
       >
-        Add to List
+        <span className="md:hidden">Add</span>
+        <span className="hidden md:inline">Add to List</span>
       </button>
 
       {!isAlreadyInPractice && !isKnown ? (
@@ -57,7 +59,10 @@ export default function LibraryTuneCardActions({
             action={startLearning}
             fields={{ piece_id: piece.id, redirect_to: redirectTo }}
             label="Start Practice"
+            mobileLabel="Practice"
             pendingLabel="Starting..."
+            mobilePendingLabel="Starting"
+            ariaLabel={`Start Practice for ${piece.title}`}
             className={compactPracticeAction}
           />
 
@@ -65,11 +70,33 @@ export default function LibraryTuneCardActions({
             action={markAsKnown}
             fields={{ piece_id: piece.id, redirect_to: redirectTo }}
             label="Mark Known"
+            mobileLabel="Known"
             pendingLabel="Saving..."
+            mobilePendingLabel="Saving"
+            ariaLabel={`Mark ${piece.title} Known`}
             className={compactSecondaryAction}
           />
         </>
-      ) : null}
+      ) : (
+        <>
+          <button
+            type="button"
+            className={`${compactPracticeAction} md:hidden`}
+            disabled
+            aria-label={`Start Practice for ${piece.title} — ${isAlreadyInPractice ? "already in practice" : "already known"}`}
+          >
+            Practice
+          </button>
+          <button
+            type="button"
+            className={`${compactSecondaryAction} md:hidden`}
+            disabled
+            aria-label={`Mark ${piece.title} Known — ${isAlreadyInPractice ? "already in practice" : "already known"}`}
+          >
+            Known
+          </button>
+        </>
+      )}
     </div>
   )
 }

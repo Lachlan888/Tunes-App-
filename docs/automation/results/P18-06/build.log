@@ -1,0 +1,23 @@
+
+> tunes-app@0.1.0 build
+> next build
+
+▲ Next.js 16.1.7 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Turbopack build encountered 1 warnings:
+[next]/internal/font/google/lora_e33d2718.module.css
+Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Lora:wght@400..700&display=swap
+
+
+
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+[next]/internal/font/google/lora_e33d2718.module.css
+next/font: error:
+Failed to fetch `Lora` from Google Fonts.
+
+
+    at ignore-listed frames

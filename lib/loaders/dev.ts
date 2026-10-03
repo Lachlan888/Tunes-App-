@@ -8,7 +8,6 @@ import type {
   DevDashboardData,
   DevFeatureUsageRow,
   DevMetricVisualisation,
-  DevMetricVisualisationRow,
   DevSummaryData,
   DevUserActivityRow,
 } from "@/lib/types/dev"
@@ -62,10 +61,6 @@ function weekAgoIso() {
 
 function safeString(value: unknown) {
   return typeof value === "string" ? value : null
-}
-
-function safeNumber(value: unknown) {
-  return typeof value === "number" && Number.isFinite(value) ? value : 0
 }
 
 function getStringFromKeys(row: AnyRow, keys: string[]) {

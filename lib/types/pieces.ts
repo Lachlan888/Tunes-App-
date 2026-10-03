@@ -25,6 +25,7 @@ export type Piece = {
   composer?: string | null
   composer_user_id?: string | null
   reference_url?: string | null
+  created_by?: string | null
   created_at?: string | null
   piece_styles?: PieceStyleTag[] | null
 }

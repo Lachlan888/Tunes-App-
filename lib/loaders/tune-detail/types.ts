@@ -9,6 +9,7 @@ import type {
   UserPiece,
   UserRole,
 } from "@/lib/types"
+import type { PieceContributionField } from "@/lib/pieces/contribution-policy"
 
 export type UserPieceMetadata = {
   notes: string | null
@@ -109,6 +110,22 @@ export type ProfileRow = {
   display_name: string | null
 }
 
+export type AttributionPerson = {
+  displayName: string
+  username: string | null
+}
+
+export type PieceFieldContributionAttribution = {
+  field: PieceContributionField
+  contributedAt: string
+  contributor: AttributionPerson
+}
+
+export type PieceAttribution = {
+  creator: AttributionPerson | null
+  contributions: PieceFieldContributionAttribution[]
+}
+
 export type PracticeProfileRow = {
   practice_diary_enabled: boolean | null
 }
@@ -180,6 +197,7 @@ export type TuneDetailLoadedData = {
   composerProfile: ProfileRow | null
   composerProfileOptions: ProfileRow[]
   profileMap: Record<string, CommentAuthor>
+  pieceAttribution: PieceAttribution
 }
 
 export type TuneDetailLoadResult =

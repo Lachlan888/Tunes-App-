@@ -60,7 +60,8 @@ export default function DesktopNav({
 
       <nav aria-label={shellKind === "internal" ? "Internal navigation" : "Primary navigation"} className="grid gap-1 p-2">
         {shellKind === "consumer"
-          ? primaryNavItems.map((item) => {
+          ? <>
+            {primaryNavItems.map((item) => {
               const isSelected = selectedDestination === item.destination
               const badgeCount = item.destination === "practice" ? overduePracticeCount : item.destination === "social" ? socialAttentionCount : 0
 
@@ -83,7 +84,21 @@ export default function DesktopNav({
                   <RailBadge count={badgeCount} />
                 </Link>
               )
-            })
+            })}
+            {canAccessDev ? (
+              <div className="mt-2 border-t border-hairline pt-2">
+                <Link
+                  href="/dev/festivals"
+                  title="Festival hub preview"
+                  aria-label="Festival hub preview"
+                  className="flex min-h-12 items-center justify-center gap-3 rounded-control px-3 text-sm font-semibold text-text-muted transition-colors hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start"
+                >
+                  <Icon name="stage" size={21} />
+                  <span className="hidden xl:inline">Festival hub</span>
+                </Link>
+              </div>
+            ) : null}
+          </>
           : (
             <>
               <Link href="/" className="flex min-h-12 items-center justify-center gap-3 rounded-control px-3 text-sm font-semibold text-text-muted hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start">

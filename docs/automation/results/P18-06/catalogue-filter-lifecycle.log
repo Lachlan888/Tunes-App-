@@ -1,0 +1,2 @@
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+PASS: draft changes/clear do not navigate; cancel discards; apply navigates once preserving query/sort/group; incoming URL restores state; toolbar Clear removes filters

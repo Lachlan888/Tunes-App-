@@ -3,30 +3,44 @@
 import PendingLinkButton from "@/components/PendingLinkButton"
 import UserIdentityLink from "@/components/UserIdentityLink"
 import type { CompareSuggestion } from "@/lib/loaders/compare"
-import { addConfirmedCompareUser, buildCompareHref } from "@/lib/compare-page"
+import { buildCompareHref } from "@/lib/compare-page"
+import { getSuggestedCompareAction } from "@/lib/compare-suggestion-action"
 
 type CompareSuggestionsSectionProps = {
   compareSuggestions: CompareSuggestion[]
   filterPreservedUsers: string[]
   includePractice: boolean
+  titleQuery: string
+  selectedKeys: string[]
+  selectedStyles: string[]
+  selectedTimeSignatures: string[]
+  overlapGroup: "all" | "strong" | "shaky"
 }
 
 function SuggestionCard({
   friend,
   filterPreservedUsers,
   includePractice,
+  titleQuery,
+  selectedKeys,
+  selectedStyles,
+  selectedTimeSignatures,
+  overlapGroup,
 }: {
   friend: CompareSuggestion
   filterPreservedUsers: string[]
   includePractice: boolean
+  titleQuery: string
+  selectedKeys: string[]
+  selectedStyles: string[]
+  selectedTimeSignatures: string[]
+  overlapGroup: "all" | "strong" | "shaky"
 }) {
   const label = friend.display_name || friend.username || "Unnamed player"
-
-  const alreadySelected = filterPreservedUsers.some(
-    (user) => user.toLowerCase() === friend.username.toLowerCase()
+  const action = getSuggestedCompareAction(
+    filterPreservedUsers,
+    friend.username
   )
-
-  const nextUsers = addConfirmedCompareUser(filterPreservedUsers, friend.username)
 
   return (
     <article
@@ -56,12 +70,20 @@ function SuggestionCard({
 
         <div data-card-action>
           <PendingLinkButton
-            href={buildCompareHref(nextUsers, { includePractice })}
-            label={alreadySelected ? "Already added" : "Add to compare"}
+            href={buildCompareHref(action.nextUsers, {
+              q: titleQuery,
+              key: selectedKeys,
+              style: selectedStyles,
+              time_signature: selectedTimeSignatures,
+              includePractice,
+              group: overlapGroup,
+            })}
+            label={action.label}
             pendingLabel="Loading..."
             refresh
+            disabled={action.disabled}
             className={
-              alreadySelected
+              action.disabled
                 ? "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
                 : "inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
             }
@@ -76,6 +98,11 @@ export default function CompareSuggestionsSection({
   compareSuggestions,
   filterPreservedUsers,
   includePractice,
+  titleQuery,
+  selectedKeys,
+  selectedStyles,
+  selectedTimeSignatures,
+  overlapGroup,
 }: CompareSuggestionsSectionProps) {
   if (compareSuggestions.length === 0) {
     return null
@@ -98,6 +125,11 @@ export default function CompareSuggestionsSection({
             friend={friend}
             filterPreservedUsers={filterPreservedUsers}
             includePractice={includePractice}
+            titleQuery={titleQuery}
+            selectedKeys={selectedKeys}
+            selectedStyles={selectedStyles}
+            selectedTimeSignatures={selectedTimeSignatures}
+            overlapGroup={overlapGroup}
           />
         ))}
       </div>

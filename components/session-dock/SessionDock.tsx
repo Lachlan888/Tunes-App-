@@ -233,6 +233,7 @@ export default function SessionDock({
         aria-hidden={isExpanded || undefined}
         className={joinClasses(
           "session-dock floating-material fixed inset-x-2 z-[320] rounded-sheet border border-hairline p-2 shadow-material-floating transition-[opacity,transform] [transition-duration:var(--motion-standard)] [transition-timing-function:var(--ease-folk)] md:inset-x-auto md:bottom-4 md:left-[calc(var(--app-rail-width)+1rem)] md:right-4 md:mx-auto md:max-w-4xl",
+          model.context === "reference-media" && "hidden",
           isExpanded && "pointer-events-none invisible translate-y-2 opacity-0"
         )}
       >
@@ -278,9 +279,11 @@ export default function SessionDock({
           </button>
 
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-text-muted">
-              {model.identity.eyebrow}
-            </p>
+            {model.identity.eyebrow ? (
+              <p className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-text-muted">
+                {model.identity.eyebrow}
+              </p>
+            ) : null}
             <p className="truncate text-sm font-semibold text-text-primary sm:text-base">
               {model.identity.title}
             </p>

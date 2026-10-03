@@ -268,17 +268,17 @@ export default async function LearningListsPage({
   }
 
   return (
-    <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
+    <main className="mx-auto max-w-[1500px] px-4 pb-5 pt-0 text-foreground md:px-6 md:py-8">
       <ListOriginScroll originHref={redirectTo} />
+      <PageHeader title="Lists" className="hidden md:flex" />
+
+      <ListsSectionNav activeView={activeView} counts={viewCounts} />
+
       {bookmarkMessage ? (
         <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
           {bookmarkMessage}
         </div>
       ) : null}
-
-      <PageHeader title="Lists" />
-
-      <ListsSectionNav activeView={activeView} counts={viewCounts} />
 
       {showSection("status_messages") ? (
         <ListsStatusMessages
@@ -298,7 +298,7 @@ export default async function LearningListsPage({
 
       <section className="mb-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div>
+          <div className="hidden md:block">
             <h2 className="font-serif text-3xl font-bold tracking-tight text-foreground md:text-4xl">
               {activeViewConfig.label}
             </h2>

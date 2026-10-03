@@ -1,3 +1,4 @@
+import Link from "next/link"
 import DevSummaryCards from "@/components/dev/DevSummaryCards"
 import FeatureUsagePanel from "@/components/dev/FeatureUsagePanel"
 import FeedbackInbox from "@/components/dev/FeedbackInbox"
@@ -65,9 +66,14 @@ export default async function DevPage({ searchParams }: DevPageProps) {
       <PageHeader
         title="Dev"
         actions={
-          <Link href="/dev/design-system" className={buttonStyles.secondary}>
-            Design system
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/dev/festivals" className={buttonStyles.secondary}>
+              Festival hubs
+            </Link>
+            <Link href="/dev/design-system" className={buttonStyles.secondary}>
+              Design system
+            </Link>
+          </div>
         }
       />
 
@@ -119,4 +125,3 @@ export default async function DevPage({ searchParams }: DevPageProps) {
     </main>
   )
 }
-import Link from "next/link"

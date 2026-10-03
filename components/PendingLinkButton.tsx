@@ -10,6 +10,7 @@ type PendingLinkButtonProps = {
   pendingLabel?: string
   className?: string
   refresh?: boolean
+  disabled?: boolean
 }
 
 export default function PendingLinkButton({
@@ -18,6 +19,7 @@ export default function PendingLinkButton({
   pendingLabel,
   className = "",
   refresh = false,
+  disabled = false,
 }: PendingLinkButtonProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -26,8 +28,10 @@ export default function PendingLinkButton({
     <button
       type="button"
       data-navigation-href={href}
-      disabled={isPending}
+      disabled={disabled || isPending}
       onClick={() => {
+        if (disabled) return
+
         startTransition(() => {
           router.push(href)
           if (refresh) {

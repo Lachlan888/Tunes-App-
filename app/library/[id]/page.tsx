@@ -8,6 +8,7 @@ import PieceCommentsSection from "@/components/library/PieceCommentsSection"
 import PieceLoreSection from "@/components/library/PieceLoreSection"
 import TuneCanonicalDetailsCard from "@/components/library/TuneCanonicalDetailsCard"
 import TuneDetailPageOptions from "@/components/library/TuneDetailPageOptions"
+import TuneInlineDetails from "@/components/library/TuneInlineDetails"
 import TuneDetailViewNav from "@/components/library/TuneDetailViewNav"
 import TunePrivateNotesSection from "@/components/library/TunePrivateNotesSection"
 import TunePracticeHistorySection from "@/components/practice-diary/TunePracticeHistorySection"
@@ -21,6 +22,7 @@ import { addToLearningList } from "@/lib/actions/lists"
 import { startLearning } from "@/lib/actions/user-pieces"
 import { upsertUserPieceNotes } from "@/lib/actions/user-piece-metadata"
 import type {
+  AttributionPerson,
   PublicTuneListSummary,
   TuneDetailLoadedData,
 } from "@/lib/loaders/tune-detail"
@@ -182,6 +184,54 @@ function DetailValue({ label, children }: { label: string; children: ReactNode }
   )
 }
 
+function AttributionName({ person }: { person: AttributionPerson }) {
+  return person.username ? (
+    <Link
+      href={`/users/${encodeURIComponent(person.username)}`}
+      className="font-medium underline underline-offset-4 hover:text-action-primary"
+    >
+      {person.displayName}
+    </Link>
+  ) : (
+    <span>{person.displayName}</span>
+  )
+}
+
+const contributionFieldLabels = {
+  key: "Key",
+  style: "Style",
+  time_signature: "Time signature",
+  composer: "Composer/source text",
+  reference_url: "Reference URL",
+} as const
+
+function TuneAttributionSummary({ data }: { data: TuneDetailLoadedData }) {
+  const { creator, contributions } = data.pieceAttribution
+
+  return (
+    <div className="mt-4 border-t border-hairline pt-4 text-xs leading-5 text-text-muted">
+      <p>
+        Added by {creator ? <AttributionName person={creator} /> : "creator not recorded"}.
+        {" "}Catalogue contribution credit is separate from composer or source attribution.
+      </p>
+      {contributions.length > 0 ? (
+        <details className="mt-2">
+          <summary className="cursor-pointer font-semibold text-text-primary">
+            Field contribution credits ({contributions.length})
+          </summary>
+          <ul className="mt-2 space-y-1">
+            {contributions.map((entry) => (
+              <li key={entry.field}>
+                {contributionFieldLabels[entry.field]} added by <AttributionName person={entry.contributor} /> · {formatDate(entry.contributedAt)}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+    </div>
+  )
+}
+
 function TunePageOptions({ data, redirectTo }: { data: TuneDetailLoadedData; redirectTo: string }) {
   const hasPersonalRelationship = Boolean(
     data.typedUserPiece || data.typedUserKnownPiece || data.typedLearningListItems.length > 0
@@ -310,8 +360,9 @@ function AboutView({ data, aliases }: { data: TuneDetailLoadedData; aliases: str
         <SectionHeader title="About" description="Provenance, aliases, related tune notes and secondary catalogue metadata." />
         <div className="grid gap-5 lg:grid-cols-2">
           <div className="rounded-object bg-surface-note p-4"><h3 className="font-semibold text-text-primary">Provenance</h3><dl className="mt-2"><DetailValue label="Source">{source.source}</DetailValue><DetailValue label="Confidence">{source.confidence}</DetailValue><DetailValue label="Basis">{source.detail}</DetailValue></dl></div>
-          <div className="rounded-object bg-surface-note p-4"><h3 className="font-semibold text-text-primary">Catalogue metadata</h3><dl className="mt-2"><DetailValue label="Aliases">{aliases.length > 0 ? aliases.join(" · ") : "No aliases recorded"}</DetailValue><DetailValue label="Related tunes">{relatedTunes.length > 0 ? relatedTunes.map((entry) => entry.entry_text).join(" · ") : "No tune-family links recorded"}</DetailValue><DetailValue label="Time signature">{data.typedPiece.time_signature || "Not recorded"}</DetailValue><DetailValue label="Catalogue record">#{data.pieceId} · added {formatDate(data.typedPiece.created_at)}</DetailValue></dl></div>
+          <TuneInlineDetails piece={data.typedPiece} styleOptions={data.styleOptions} currentUserRole={data.currentUserRole} composerDisplayValue={data.composerProfile ? source.source : data.typedPiece.composer} />
         </div>
+        <div className="mt-5 rounded-object bg-surface-note p-4"><h3 className="font-semibold text-text-primary">Catalogue context</h3><dl className="mt-2"><DetailValue label="Aliases">{aliases.length > 0 ? aliases.join(" · ") : "No aliases recorded"}</DetailValue><DetailValue label="Related tunes">{relatedTunes.length > 0 ? relatedTunes.map((entry) => entry.entry_text).join(" · ") : "No tune-family links recorded"}</DetailValue><DetailValue label="Catalogue record">#{data.pieceId} · added {formatDate(data.typedPiece.created_at)}</DetailValue></dl><TuneAttributionSummary data={data} /></div>
         <div className="mt-5 border-t border-hairline pt-5"><h3 className="font-semibold text-text-primary">Community</h3><p className="mt-1 text-sm leading-6 text-text-muted">Public lists, source notes and discussion remain attributed to their contributors.</p><PublicListAppearances publicLists={data.typedPublicTuneLists} /><CommunitySummary data={data} /></div>
       </section>
       <details className={panelClassName}>

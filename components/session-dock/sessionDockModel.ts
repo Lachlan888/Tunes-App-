@@ -79,7 +79,8 @@ export type SessionDockModel = {
   id: string
   context: SessionDockContext
   identity: {
-    eyebrow: string
+    /** Optional functional context only. Never use as a decorative pre-heading. */
+    eyebrow?: string
     title: string
     detail?: string
   }

@@ -5,12 +5,14 @@ import type { ReactNode } from "react"
 import MobileViewSwitcher from "@/components/ui/MobileViewSwitcher"
 
 /** A single content tree: phone disclosure becomes simultaneous workspace panels. */
-export default function ResponsivePanels<T extends string>({ panels, active, onChange, label, className = "" }: {
+export default function ResponsivePanels<T extends string>({ panels, active, onChange, label, className = "", leadingContent, showSwitcherLabel = true }: {
   panels: { id: T; label: string; content: ReactNode }[]
   active: T
   onChange: (value: T) => void
   label: string
   className?: string
+  leadingContent?: ReactNode
+  showSwitcherLabel?: boolean
 }) {
   const root = useRef<HTMLDivElement>(null)
   const idPrefix = useId()
@@ -29,9 +31,10 @@ export default function ResponsivePanels<T extends string>({ panels, active, onC
   }, [onChange, panels])
 
   return <div ref={root} className={className}>
-    <MobileViewSwitcher value={active} options={panels.map(panel => ({ id: panel.id, label: panel.label, controls: `${idPrefix}-${panel.id}` }))} onChange={onChange} label={label} />
+    <MobileViewSwitcher value={active} options={panels.map(panel => ({ id: panel.id, label: panel.label, controls: `${idPrefix}-${panel.id}` }))} onChange={onChange} label={label} showLabel={showSwitcherLabel} />
+    {leadingContent}
     <div className="responsive-panels">
-      {panels.map(panel => <section key={panel.id} id={`${idPrefix}-${panel.id}`} data-workbench-panel={panel.id} data-active={active === panel.id} aria-label={panel.label} className="min-w-0">
+      {panels.map(panel => <section key={panel.id} id={`${idPrefix}-${panel.id}`} data-workbench-panel={panel.id} data-active={active === panel.id} aria-label={panel.label} className="min-w-0 scroll-mt-28">
         {panel.content}
       </section>)}
     </div>

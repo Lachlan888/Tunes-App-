@@ -1,0 +1,7 @@
+{
+  "owner_task_id": "P18-01",
+  "terminal_turn_status": "failed",
+  "evidence": "read_thread: task 01a0d870-116f-7e61-b268-ee9a52eb43dc turn 01a0d870-1586-7e50-9c56-f97ab69751fb observed failed (model capacity)",
+  "checked_at": "2026-09-26T02:07:36.545379+00:00",
+  "lock_sha256": "61b225d336aa8fcd0175f8b32c6eee2fd433f1da40d4ac4d4bca59632b483dad"
+}

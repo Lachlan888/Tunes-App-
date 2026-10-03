@@ -13,7 +13,6 @@ import {
   pollCompareInvite,
   cancelCompareInvite,
 } from "@/lib/actions/compare-invites"
-import { formatCompareInviteCode } from "@/lib/compare-invites"
 import { getSiteUrl } from "@/lib/site-url"
 
 const STORED_TOKEN_KEY = "tunes.compare-in-person-token"
@@ -60,6 +59,7 @@ export default function CompareInPersonSheet({
   const sessionStorage = usePrivateSessionStorage()
   const router = useRouter()
   const [token, setToken] = useState<string | null>(null)
+  const [code, setCode] = useState<string | null>(null)
   const [joinPath, setJoinPath] = useState<string | null>(null)
   const [expiresAt, setExpiresAt] = useState<string | null>(null)
   const [sheetState, setSheetState] = useState<SheetState>("loading")
@@ -100,6 +100,7 @@ export default function CompareInPersonSheet({
 
       sessionStorage.setItem(STORED_TOKEN_KEY, result.token)
       setToken(result.token)
+      setCode(result.code)
       setJoinPath(result.joinPath)
       setExpiresAt(result.expiresAt)
       setSheetState("waiting")
@@ -181,6 +182,7 @@ export default function CompareInPersonSheet({
 
       sessionStorage.setItem(STORED_TOKEN_KEY, result.token)
       setToken(result.token)
+      setCode(result.code)
       setJoinPath(result.joinPath)
       setExpiresAt(result.expiresAt)
       setConnectedName(null)
@@ -218,10 +220,23 @@ export default function CompareInPersonSheet({
     }
   }
 
+  async function copyCode() {
+    if (!code) return
+    setShareFeedback(null)
+
+    try {
+      await navigator.clipboard.writeText(code)
+      setShareFeedback("Join code copied.")
+    } catch {
+      setShareFeedback("Couldn’t copy the join code.")
+    }
+  }
+
   async function cancelSession() {
     if (token) await cancelCompareInvite(token)
     sessionStorage.removeItem(STORED_TOKEN_KEY)
     setToken(null)
+    setCode(null)
     setSheetState("revoked")
   }
 
@@ -270,10 +285,13 @@ export default function CompareInPersonSheet({
             Waiting for someone to connect…
           </p>
 
-          {token ? (
+          {code ? (
             <div className="mt-4 rounded-2xl border border-border bg-background/70 p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Join code</p>
-              <p className="mt-2 break-words font-mono text-lg font-bold tracking-wider text-foreground">{formatCompareInviteCode(token)}</p>
+              <p className="mt-2 break-words text-xl font-bold text-foreground">{code}</p>
+              <button type="button" onClick={copyCode} className="mt-3 min-h-11 rounded-control border border-border bg-card px-4 text-sm font-semibold text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
+                Copy join code
+              </button>
             </div>
           ) : null}
 

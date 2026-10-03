@@ -57,17 +57,9 @@ export default function UserSearchPicker({
     if (selectedUser) return
 
     const trimmedQuery = query.trim()
-    requestIdRef.current += 1
-    const requestId = requestIdRef.current
+    if (trimmedQuery.length < 2) return
 
-    if (trimmedQuery.length < 2) {
-      setResults([])
-      setResultGroup(null)
-      setErrorMessage(null)
-      setHasSearched(false)
-      setActiveIndex(-1)
-      return
-    }
+    const requestId = ++requestIdRef.current
 
     const timeoutId = window.setTimeout(() => {
       setHasSearched(true)
@@ -103,6 +95,7 @@ export default function UserSearchPicker({
   }, [learningListId, query, searchUsers, selectedUser])
 
   function selectUser(user: ListShareRecipientSearchResult) {
+    requestIdRef.current += 1
     setSelectedUser(user)
     setQuery("")
     setResults([])
@@ -113,6 +106,7 @@ export default function UserSearchPicker({
   }
 
   function changeSelection() {
+    requestIdRef.current += 1
     setSelectedUser(null)
     setQuery("")
     setResults([])
@@ -210,8 +204,18 @@ export default function UserSearchPicker({
           id={inputId}
           value={query}
           onChange={(event) => {
+            const nextQuery = event.target.value
+            requestIdRef.current += 1
             setSelectedUser(null)
-            setQuery(event.target.value)
+            setQuery(nextQuery)
+
+            if (nextQuery.trim().length < 2) {
+              setResults([])
+              setResultGroup(null)
+              setErrorMessage(null)
+              setHasSearched(false)
+              setActiveIndex(-1)
+            }
           }}
           onKeyDown={handleKeyDown}
           placeholder="Search by name or username"

@@ -19,7 +19,7 @@ test("Practice entry uses the real collection and keeps the learning queue", () 
   assert.doesNotMatch(reviewQueue, /From focus areas/)
 })
 
-test("Practice navigation stays complete without the supporting-tools card", () => {
+test("general Practice view keeps the sidebar and deep Practice navigation", () => {
   for (const href of [
     "/review",
     "/review/diary",
@@ -30,6 +30,8 @@ test("Practice navigation stays complete without the supporting-tools card", () 
   }
 
   assert.match(reviewPage, /<PracticeDiaryNav active="review" compact \/>/)
+  assert.match(reviewPage, /<ReviewQueueSection/)
+  assert.match(reviewPage, /<ActivePracticeSection/)
   assert.doesNotMatch(reviewPage, /Supporting tools/)
   assert.match(practiceNav, /inline-flex w-fit max-w-full/)
 })

@@ -20,10 +20,13 @@ globalThis.window = {}
 globalThis.document = {}
 window.addEventListener=(type,handler)=>windowListeners.set(type,handler)
 window.removeEventListener=(type,handler)=>{if(windowListeners.get(type)===handler)windowListeners.delete(type)}
+const Modal=({isOpen,children,footer})=>isOpen?React.createElement('section',null,children,footer):null
 const mocks = {
   react:React,'react/jsx-runtime':rendererRequire('react/jsx-runtime'),
+  'react-dom':{createPortal:children=>children},
   '@/components/resilience/PrivateSessionProvider':{usePrivateSessionStorage:()=>sessionStorage},
   '@/components/session-dock/SessionDockProvider':{useSessionDock:(_id,model)=>{dock=model}},
+  '@/components/ui/ResponsiveModal':{default:Modal},
 }
 const cache = new Map()
 function load(file) {
@@ -78,9 +81,7 @@ const mount=async p=>{
   await act(async()=>options.events.onReady({target:provider}))
 }
 const labelled=label=>tree.root.findByProps({'aria-label':label})
-const button=text=>tree.root.findAllByType('button').find(n=>n.props.children===text)
 const change=async(label,value)=>act(async()=>labelled(label).props.onChange({target:{value}}))
-const click=async text=>act(async()=>{assert.ok(button(text),text);button(text).props.onClick()})
 const tick=async()=>act(async()=>{for(const fn of timers.values())fn()})
 const key=async(code,target={tagName:'DIV'})=>act(async()=>windowListeners.get('keydown')?.({code,target,defaultPrevented:false,altKey:false,ctrlKey:false,metaKey:false,shiftKey:false,preventDefault(){this.defaultPrevented=true}}))
 try {
@@ -99,13 +100,15 @@ try {
   await key('Space')
   assert.equal(provider.state,2,'space pauses provider playback')
   assert.equal(createCalls,0)
-  await click('Set loop end')
-  assert.equal(labelled('Loop start seconds').props.value,0)
-  assert.equal(labelled('Loop end seconds').props.value,27.5)
+  await act(async()=>dock.secondaryActions.find(action=>action.id==='loop-out').onInvoke())
+  assert.equal(labelled('Adjust loop in point').props.value,0)
+  assert.equal(labelled('Adjust loop out point').props.value,27.5)
+  assert.equal(tree.root.findAllByType('form').length,0)
+  await act(async()=>dock.secondaryActions.find(action=>action.id==='loop-out').onInvoke())
+  assert.equal(tree.root.findAllByType('form').length,0,'recapture keeps one draft without opening save')
+  await change('Adjust loop out point','8.5')
+  await act(async()=>dock.secondaryActions.find(action=>action.id==='save-loop').onInvoke())
   assert.equal(tree.root.findAllByType('form').length,1)
-  await click('Set loop end')
-  assert.equal(tree.root.findAllByType('form').length,1,'recapture keeps one draft')
-  await change('Loop end seconds','8.5')
   await act(async()=>dock.primaryAction.onInvoke())
   assert.equal(provider.time,0,'resume returns inside shortened loop')
   assert.equal(dock.primaryAction.label.includes('Pause'),true)
@@ -115,13 +118,13 @@ try {
   await act(async()=>dock.primaryAction.onInvoke())
   provider.time=8.6;await tick()
   assert.equal(provider.time,0,'forward boundary crossing loops')
-  await change('Passage label','Phrase A')
+  await change('Loop name','Phrase A')
   const submit=tree.root.findByType('form').props.onSubmit
   await act(async()=>{submit({preventDefault(){},currentTarget:{}});submit({preventDefault(){},currentTarget:{}})})
   assert.equal(createCalls,1,'same-turn duplicate submission is guarded')
   await act(async()=>finishSave())
   assert.equal(tree.root.findAllByType('form').length,0,'saved draft closes')
-  await click('Manage passage')
+  await act(async()=>dock.secondaryActions.find(action=>action.id==='save-loop').onInvoke())
   await act(async()=>tree.root.findByType('form').props.onSubmit({preventDefault(){},currentTarget:{}}))
   assert.equal(updateCalls,1,'subsequent save updates existing passage')
   assert.equal(createCalls,1)
@@ -133,12 +136,12 @@ try {
   assert.equal(provider.time,6)
   assert.equal(provider.rate,0.75)
   assert.equal(provider.state,2,'restoration never autoplays')
-  assert.equal(labelled('Loop end seconds').props.value,8.5)
+  assert.equal(labelled('Adjust loop out point').props.value,8.5)
   assert.equal(JSON.parse(storage.get('tunes.session.v1.reference.42.recording-a')).mobileView,before.mobileView)
   await act(async()=>tree.update(React.createElement(Player,{...props,videoId:'recording-b'})))
   await act(async()=>options.events.onReady({target:provider}))
   assert.equal(provider.time,0,'new source does not inherit old playhead')
-  assert.equal(labelled('Loop end seconds').props.value,'')
+  assert.equal(labelled('Adjust loop out point').props.value,0)
   await act(async()=>options.events.onError({target:provider,data:150}))
   assert.equal(dock.primaryAction.disabled,true)
   assert.ok(tree.root.findAllByType('a').some(a=>a.props.href==='https://www.youtube.com/watch?v=recording-b'))
@@ -148,7 +151,7 @@ try {
     {id:11,label:'Second',start_seconds:30,end_seconds:40,playback_rate:0.75,notes:''},
   ]
   await mount({...props,videoId:'recording-c',savedLoops:orderedLoops})
-  await change('Select loop','10')
+  await act(async()=>labelled('Select loop bank A: First').props.onClick())
   assert.equal(provider.time,10)
   assert.equal(provider.state,2,'selecting a loop does not autoplay')
   await act(async()=>dock.secondaryActions.find(action=>action.id==='next').onInvoke())
@@ -156,6 +159,46 @@ try {
   assert.equal(provider.state,2,'next selection remains paused')
   await act(async()=>dock.secondaryActions.find(action=>action.id==='previous').onInvoke())
   assert.equal(provider.time,10,'previous follows playlist order')
+  const sectionButton = text => tree.root.findAllByType('button').find(button => button.props.children === text)
+  const click = async text => {
+    assert.equal(sectionButton(text).props.disabled, false)
+    await act(async()=>sectionButton(text).props.onClick())
+  }
+  const range = () => [labelled('Adjust loop in point').props.value, labelled('Adjust loop out point').props.value]
+  await change('Adjust loop out point', '24')
+  await change('Adjust loop in point', '20')
+  await act(async()=>dock.transport.speed.onChange(0.75))
+  await click('Next section')
+  assert.deepEqual(range(), [24,28])
+  assert.equal(provider.rate,0.75)
+  assert.equal(provider.state,2)
+  await click('Previous section')
+  await click('Previous section')
+  assert.deepEqual(range(), [16,20])
+  await click('Halve')
+  await click('Next section')
+  assert.deepEqual(range(), [18,20])
+  await click('Double')
+  await click('Next section')
+  assert.deepEqual(range(), [22,26])
+  await change('Adjust loop in point', '2')
+  await change('Adjust loop out point', '6')
+  await click('Previous section')
+  assert.deepEqual(range(), [0,4])
+  assert.equal(sectionButton('Previous section').props.disabled,true)
+  await change('Adjust loop out point', '116')
+  await change('Adjust loop in point', '112')
+  await click('Next section')
+  assert.deepEqual(range(), [116,120])
+  assert.equal(sectionButton('Next section').props.disabled,true)
+  await change('Adjust loop in point', '115')
+  await change('Adjust loop out point', '119')
+  assert.equal(sectionButton('Next section').props.disabled,true)
+  await act(async()=>sectionButton('Clear').props.onClick())
+  assert.equal(sectionButton('Previous section').props.disabled,true)
+  assert.equal(sectionButton('Next section').props.disabled,true)
+  assert.equal(provider.rate,0.75)
+  console.log('PASS: section buttons, same-length shifts, speed preservation, start clamp, end limits, resize and clear')
   assert.ok(destroyed>=2)
   console.log('PASS: dock seek/speed, keyboard, pause/stop, loop order, zero-start capture, boundary/resume, persistence, source replacement, provider recovery')
 } finally {if(tree)await act(async()=>tree.unmount());globalThis.FormData=NativeFormData}

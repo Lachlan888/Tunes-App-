@@ -1,7 +1,6 @@
 import {
   deriveCompareInviteState,
-  hashCompareInviteToken,
-  isValidCompareInviteToken,
+  getCompareInviteLookup,
 } from "@/lib/compare-invites"
 import { buildSingleUserComparePath } from "@/lib/compare-invite-paths"
 import { createAdminClient } from "@/lib/supabase/admin"
@@ -46,9 +45,10 @@ function safeInviterName(profile: {
 }
 
 export async function loadCompareInvitePreview(
-  rawToken: string
+  rawCode: string
 ): Promise<CompareInvitePreview> {
-  if (!isValidCompareInviteToken(rawToken)) return { state: "invalid" }
+  const lookup = getCompareInviteLookup(rawCode)
+  if (!lookup) return { state: "invalid" }
 
   const supabase = await createClient()
   const {
@@ -56,13 +56,15 @@ export async function loadCompareInvitePreview(
   } = await supabase.auth.getUser()
 
   const supabaseAdmin = createCompareAdminClient()
-  const { data, error } = await supabaseAdmin
+  let query = supabaseAdmin
     .from("compare_invites")
     .select(
       "creator_user_id, expires_at, accepted_by_user_id, accepted_at, revoked_at"
     )
-    .eq("token_hash", hashCompareInviteToken(rawToken))
-    .maybeSingle()
+  query = lookup.kind === "token"
+    ? query.eq("token_hash", lookup.key)
+    : query.eq("alias_key", lookup.key)
+  const { data, error } = await query.maybeSingle()
 
   if (error || !data) return { state: "invalid" }
 

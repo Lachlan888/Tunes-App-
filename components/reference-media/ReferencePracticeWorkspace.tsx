@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import YouTubeLoopPlayer, {
   type ReferencePracticeView,
 } from "@/components/library/YouTubeLoopPlayer"
+import ReferencePracticeStrip from "@/components/reference-media/ReferencePracticeStrip"
 import MobileViewSwitcher from "@/components/ui/MobileViewSwitcher"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import { useSessionDock } from "@/components/session-dock/SessionDockProvider"
@@ -17,13 +18,26 @@ import {
   type TuneMediaBundle,
   type TuneMediaSource,
 } from "@/lib/tune-media"
-import type { Piece } from "@/lib/types"
+import type {
+  LearningList,
+  Piece,
+  UserKnownPiece,
+  UserPiece,
+} from "@/lib/types"
 
 type ReferencePracticeWorkspaceProps = {
   piece: Piece
   mediaBundle: TuneMediaBundle
   initialSourceId: string | null
   requestedSourceId?: string | null
+  userPiece: UserPiece | null
+  userKnownPiece: UserKnownPiece | null
+  learningLists: LearningList[] | null
+  learningListItems: Array<{ learning_list_id: number; piece_id: number }> | null
+  practiceDiaryEnabled: boolean
+  redirectTo: string
+  startLearning: (formData: FormData) => Promise<void>
+  addToLearningList: (formData: FormData) => Promise<void>
 }
 
 const mediaTypes = [
@@ -71,20 +85,17 @@ function RecordingSelector({
   const redirectTo = getReferencePracticeHref(pieceId, selectedSource?.id)
 
   return (
-    <section className="min-w-0 rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="mt-1 font-serif text-2xl font-bold text-foreground">
-            {sources.length === 1 ? "Recording" : "Recordings"}
-          </h2>
-        </div>
-        <span className="text-sm text-muted-foreground">
-          {sources.length} available
-        </span>
+    <section className="min-w-0 rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
+          Reference track
+        </h2>
+        <span className="text-xs text-muted-foreground">{sources.length} available</span>
       </div>
 
       {sources.length > 0 ? (
-        <label className="mt-3 block text-sm font-semibold">Recording
+        <label className="mt-2 block text-sm font-semibold">
+          <span className="sr-only">Recording</span>
           <select aria-label="Reference recording" value={selectedSource?.id ?? ""} onChange={event => { const source = sources.find(item => item.id === event.target.value); if (source) onSelect(source) }} className="mt-1 min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3">{sources.map(source => <option key={source.id} value={source.id}>{source.label} · {sourceKindLabel(source)}</option>)}</select>
           {selectedSource?.notes && <p className="mt-2 text-sm font-normal text-text-muted">{selectedSource.notes}</p>}
         </label>
@@ -94,7 +105,7 @@ function RecordingSelector({
         </p>
       )}
 
-      <details className="mt-4">
+      <details className="mt-3">
         <summary className="list-none">
           <span className={`${buttonStyles.secondary} cursor-pointer`}>
             Add recording
@@ -154,7 +165,6 @@ function UnavailableWorkspace({
       id: `reference-media:${piece.id}:unavailable`,
       context: "reference-media",
       identity: {
-        eyebrow: "Reference",
         title: selectedSource?.label ?? piece.title,
         detail: selectedSource
           ? "External source"
@@ -268,6 +278,14 @@ export default function ReferencePracticeWorkspace({
   mediaBundle,
   initialSourceId,
   requestedSourceId,
+  userPiece,
+  userKnownPiece,
+  learningLists,
+  learningListItems,
+  practiceDiaryEnabled,
+  redirectTo,
+  startLearning,
+  addToLearningList,
 }: ReferencePracticeWorkspaceProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -305,25 +323,45 @@ export default function ReferencePracticeWorkspace({
     />
   )
 
+  const practiceStrip = (
+    <ReferencePracticeStrip
+      piece={piece}
+      userPiece={userPiece}
+      userKnownPiece={userKnownPiece}
+      learningLists={learningLists}
+      learningListItems={learningListItems}
+      practiceDiaryEnabled={practiceDiaryEnabled}
+      redirectTo={redirectTo}
+      startLearning={startLearning}
+      addToLearningList={addToLearningList}
+    />
+  )
+
   if (!selectedSource?.isYouTube || !selectedSource.youtubeVideoId) {
     return (
-      <UnavailableWorkspace
-        piece={piece}
-        selectedSource={selectedSource}
-        mediaPanel={mediaPanel}
-      />
+      <>
+        {practiceStrip}
+        <UnavailableWorkspace
+          piece={piece}
+          selectedSource={selectedSource}
+          mediaPanel={mediaPanel}
+        />
+      </>
     )
   }
 
   return (
-    <YouTubeLoopPlayer
-      key={`${piece.id}:${selectedSource.youtubeVideoId}`}
-      videoId={selectedSource.youtubeVideoId}
-      title={`${piece.title} — ${selectedSource.label}`}
-      recordingLabel={selectedSource.label}
-      pieceId={piece.id}
-      savedLoops={getLoopsForSource(mediaBundle, selectedSource)}
-      mediaPanel={mediaPanel}
-    />
+    <>
+      {practiceStrip}
+      <YouTubeLoopPlayer
+        key={`${piece.id}:${selectedSource.youtubeVideoId}`}
+        videoId={selectedSource.youtubeVideoId}
+        title={`${piece.title} — ${selectedSource.label}`}
+        recordingLabel={selectedSource.label}
+        pieceId={piece.id}
+        savedLoops={getLoopsForSource(mediaBundle, selectedSource)}
+        mediaPanel={mediaPanel}
+      />
+    </>
   )
 }

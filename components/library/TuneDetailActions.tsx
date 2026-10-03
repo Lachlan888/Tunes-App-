@@ -118,7 +118,7 @@ export default function TuneDetailActions({
             className={tuneStateActionClass}
           />
         ) : isKnown ? (
-          <div className={knownInertStatusClass} aria-label="This tune is marked as known">
+          <div className={knownInertStatusClass} role="status" aria-label="This tune is marked as known">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Status
             </p>

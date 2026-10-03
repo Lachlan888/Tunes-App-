@@ -210,7 +210,7 @@ export default function SessionDockShowcase() {
         Switch task contexts, then use the fixed dock below. Tap its handle for
         a medium sheet or drag the handle upward for the full workspace.
       </p>
-      <div className="mt-4 flex flex-wrap gap-2" aria-label="Session Dock preview context">
+      <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Session Dock preview context">
         {SESSION_DOCK_CONTEXTS.map((candidate) => (
           <button
             key={candidate}

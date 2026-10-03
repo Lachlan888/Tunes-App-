@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -20,9 +21,12 @@ class ControlTests(unittest.TestCase):
     def tearDown(self):
         self.temp.cleanup()
 
-    def call(self, *args):
+    def call(self, *args, env=None):
+        process_env = os.environ.copy()
+        process_env.pop('CODEX_THREAD_ID', None)
+        process_env.update(env or {})
         p = subprocess.run([sys.executable, str(SCRIPT), '--directory', str(self.root), *args],
-                           capture_output=True, text=True)
+                           capture_output=True, text=True, env=process_env)
         return p.returncode, json.loads(p.stdout)
 
     def acquire(self):
@@ -39,11 +43,21 @@ class ControlTests(unittest.TestCase):
         self.assertFalse((self.root / 'lock.json').exists())
 
     def test_competing_acquisitions_have_exactly_one_winner(self):
+        process_env = os.environ.copy()
+        process_env.pop('CODEX_THREAD_ID', None)
         commands = [subprocess.Popen([sys.executable, str(SCRIPT), '--directory', str(self.root),
-                    'acquire', '--task', 'task-' + str(i)], stdout=subprocess.PIPE, text=True) for i in range(8)]
+                    'acquire', '--task', 'task-' + str(i)], stdout=subprocess.PIPE, text=True,
+                    env=process_env) for i in range(8)]
         results = [json.loads(p.communicate()[0])['decision'] for p in commands]
         self.assertEqual(results.count('acquired'), 1)
         self.assertEqual(results.count('inspect_owner'), 7)
+
+    def test_acquire_rejects_task_id_that_disagrees_with_environment(self):
+        code, result = self.call('acquire', '--task', 'P18-01',
+                                 env={'CODEX_THREAD_ID': '01a0d870-116f-7e61-b268-ee9a52eb43dc'})
+        self.assertEqual(code, 2)
+        self.assertEqual(result['decision'], 'error')
+        self.assertFalse((self.root / 'lock.json').exists())
 
     def test_other_owner_cannot_refresh_or_release(self):
         self.acquire()

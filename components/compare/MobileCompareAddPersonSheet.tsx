@@ -11,6 +11,7 @@ import {
   addConfirmedCompareUser,
   buildCompareHref,
 } from "@/lib/compare-page"
+import { getSuggestedCompareAction } from "@/lib/compare-suggestion-action"
 
 type CompareCandidateProfile = ProfileSearchRow | RankedProfileMatch
 
@@ -20,6 +21,11 @@ type MobileCompareAddPersonSheetProps = {
   compareSuggestions: CompareSuggestion[]
   filterPreservedUsers: string[]
   includePractice: boolean
+  titleQuery: string
+  selectedKeys: string[]
+  selectedStyles: string[]
+  selectedTimeSignatures: string[]
+  overlapGroup: "all" | "strong" | "shaky"
   matchingProfiles: ProfileSearchRow[]
   searchMatches: RankedProfileMatch[]
   primarySearchValue: string
@@ -40,6 +46,11 @@ export default function MobileCompareAddPersonSheet({
   compareSuggestions,
   filterPreservedUsers,
   includePractice,
+  titleQuery,
+  selectedKeys,
+  selectedStyles,
+  selectedTimeSignatures,
+  overlapGroup,
   matchingProfiles,
   searchMatches,
   primarySearchValue,
@@ -68,7 +79,14 @@ export default function MobileCompareAddPersonSheet({
   }
 
   function goToCompareWithUsers(nextUsers: string[], pendingLabel: string) {
-    const href = buildCompareHref(nextUsers, { includePractice })
+    const href = buildCompareHref(nextUsers, {
+      q: titleQuery,
+      key: selectedKeys,
+      style: selectedStyles,
+      time_signature: selectedTimeSignatures,
+      includePractice,
+      group: overlapGroup,
+    })
     setPendingValue(pendingLabel)
 
     startTransition(() => {
@@ -107,15 +125,6 @@ export default function MobileCompareAddPersonSheet({
     )
 
     goToCompareWithUsers(nextUsers, profile.username)
-  }
-
-  function addSuggestion(suggestion: CompareSuggestion) {
-    const nextUsers = addConfirmedCompareUser(
-      filterPreservedUsers,
-      suggestion.username
-    )
-
-    goToCompareWithUsers(nextUsers, suggestion.username)
   }
 
   return (
@@ -221,36 +230,50 @@ export default function MobileCompareAddPersonSheet({
             {visibleSuggestions.length > 0 ? (
               <div className="mt-3 divide-y divide-border border-y border-border">
                 {visibleSuggestions.map((suggestion) => (
-                  <div
-                    key={suggestion.user_id}
-                    className="flex items-center justify-between gap-3 py-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-foreground">
-                        {getProfileLabel(suggestion)}
-                      </p>
+                  (() => {
+                    const action = getSuggestedCompareAction(
+                      filterPreservedUsers,
+                      suggestion.username
+                    )
 
-                      <p className="mt-1 truncate text-xs text-muted-foreground">
-                        @{suggestion.username}
-                      </p>
-                    </div>
+                    return (
+                      <div
+                        key={suggestion.user_id}
+                        className="flex items-center justify-between gap-3 py-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-foreground">
+                            {getProfileLabel(suggestion)}
+                          </p>
 
-                    <button
-                      type="button"
-                      disabled={isPending}
-                      onClick={() => addSuggestion(suggestion)}
-                      className="inline-flex min-h-11 shrink-0 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
-                    >
-                      {pendingValue === suggestion.username && isPending ? (
-                        <span className="inline-flex items-center justify-center gap-2">
-                          <LoadingSpinner label="Adding..." size="sm" decorative />
-                          <span>Adding...</span>
-                        </span>
-                      ) : (
-                        "Add"
-                      )}
-                    </button>
-                  </div>
+                          <p className="mt-1 truncate text-xs text-muted-foreground">
+                            @{suggestion.username}
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={action.disabled || isPending}
+                          onClick={() =>
+                            goToCompareWithUsers(
+                              action.nextUsers,
+                              suggestion.username
+                            )
+                          }
+                          className="inline-flex min-h-11 shrink-0 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+                        >
+                          {pendingValue === suggestion.username && isPending ? (
+                            <span className="inline-flex items-center justify-center gap-2">
+                              <LoadingSpinner label="Adding..." size="sm" decorative />
+                              <span>Adding...</span>
+                            </span>
+                          ) : (
+                            action.label
+                          )}
+                        </button>
+                      </div>
+                    )
+                  })()
                 ))}
               </div>
             ) : (

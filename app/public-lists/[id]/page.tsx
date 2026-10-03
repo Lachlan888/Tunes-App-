@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { publicListHref, safePublicListReturn } from "@/lib/list-return"
 import type { ReactNode } from "react"
+import { buttonStyles } from "@/components/ui/buttonStyles"
 import TuneMediaLauncher from "@/components/reference-media/TuneMediaLauncher"
 import SubmitButton from "@/components/SubmitButton"
 import ListPager from "@/components/lists/ListPager"
@@ -267,7 +268,7 @@ export default async function PublicListDetailPage({
                       name="learning_list_id"
                       value={typedList.id}
                     />
-                    <input type="hidden" name="redirect_to" value={redirectTo} />
+                    <input type="hidden" name="redirect_to" value={pageHref} />
                     <SubmitButton
                       label="Remove bookmark"
                       pendingLabel="Removing..."
@@ -291,7 +292,7 @@ export default async function PublicListDetailPage({
                       name="learning_list_id"
                       value={typedList.id}
                     />
-                    <input type="hidden" name="redirect_to" value={redirectTo} />
+                    <input type="hidden" name="redirect_to" value={pageHref} />
                     <SubmitButton
                       label="Bookmark list"
                       pendingLabel="Bookmarking..."
@@ -481,6 +482,12 @@ export default async function PublicListDetailPage({
             Log in to bookmark this shared list as a reference, copy tunes into
             your own lists, start practice, or mark tunes as known.
           </p>
+          <Link
+            href={`/login?next=${encodeURIComponent(pageHref)}`}
+            className={`${buttonStyles.primary} mt-4`}
+          >
+            Sign in to save this list
+          </Link>
         </section>
       ) : null}
 

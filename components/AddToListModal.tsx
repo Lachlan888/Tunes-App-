@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useEffect, useMemo, useRef, useState } from "react"
+import { useActionState, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles } from "@/components/ui/buttonStyles"
@@ -63,7 +63,15 @@ export default function AddToListModal({
   onClose,
 }: AddToListModalProps) {
   const [isAddPending, setIsAddPending] = useState(false)
-  const [selectedListIds, setSelectedListIds] = useState<number[]>([])
+  const [selectedListIds, setSelectedListIds] = useState<number[]>(() => {
+    const initialSelectedId = Number(selectedListId)
+
+    return Number.isInteger(initialSelectedId) &&
+      initialSelectedId > 0 &&
+      !existingListIds.includes(initialSelectedId)
+      ? [initialSelectedId]
+      : []
+  })
   const [showCreateForm, setShowCreateForm] = useState(
     !learningLists || learningLists.length === 0
   )
@@ -72,76 +80,39 @@ export default function AddToListModal({
   )
   const [createSuccessMessage, setCreateSuccessMessage] = useState("")
   const [createState, createListAction, isCreatePending] = useActionState(
-    createListInline,
+    async (previousState: CreateListInlineState, formData: FormData) => {
+      const nextState = await createListInline(previousState, formData)
+      const createdList = nextState.createdList
+
+      if (nextState.status === "success" && createdList) {
+        setLocalLearningLists((currentLists) =>
+          currentLists.some((list) => list.id === createdList.id)
+            ? currentLists
+            : [
+                ...currentLists,
+                {
+                  id: createdList.id,
+                  name: createdList.name,
+                  description: createdList.description,
+                },
+              ]
+        )
+        setSelectedListIds((currentListIds) =>
+          currentListIds.includes(createdList.id)
+            ? currentListIds
+            : [...currentListIds, createdList.id]
+        )
+        onChangeSelectedListId(String(createdList.id))
+        setShowCreateForm(false)
+        setCreateSuccessMessage("List created and selected.")
+      }
+
+      return nextState
+    },
     initialCreateListInlineState
   )
 
-  const hasAppliedCreatedListRef = useRef(false)
-
-  useEffect(() => {
-    setLocalLearningLists(learningLists ?? [])
-  }, [learningLists])
-
-  useEffect(() => {
-    const initialSelectedId = Number(selectedListId)
-
-    if (
-      Number.isInteger(initialSelectedId) &&
-      initialSelectedId > 0 &&
-      !existingListIds.includes(initialSelectedId)
-    ) {
-      setSelectedListIds([initialSelectedId])
-    } else {
-      setSelectedListIds([])
-    }
-  }, [selectedListId, selectedPiece.id, existingListIds])
-
-  useEffect(() => {
-    if (
-      createState.status !== "success" ||
-      !createState.createdList ||
-      hasAppliedCreatedListRef.current
-    ) {
-      return
-    }
-
-    const createdList = createState.createdList
-
-    setLocalLearningLists((currentLists) => {
-      const alreadyExists = currentLists.some((list) => list.id === createdList.id)
-
-      if (alreadyExists) {
-        return currentLists
-      }
-
-      return [
-        ...currentLists,
-        {
-          id: createdList.id,
-          name: createdList.name,
-          description: createdList.description,
-        },
-      ]
-    })
-
-    onChangeSelectedListId(String(createdList.id))
-    setSelectedListIds((currentListIds) =>
-      currentListIds.includes(createdList.id)
-        ? currentListIds
-        : [...currentListIds, createdList.id]
-    )
-    setShowCreateForm(false)
-    setCreateSuccessMessage("List created and selected.")
-    hasAppliedCreatedListRef.current = true
-  }, [createState, onChangeSelectedListId])
-
-  useEffect(() => {
-    if (createState.status !== "success") {
-      hasAppliedCreatedListRef.current = false
-    }
-  }, [createState.status])
-
-  const availableLists = useMemo(() => localLearningLists, [localLearningLists])
+  const availableLists = localLearningLists
 
   const isClosingDisabled = isAddPending || isCreatePending
   const hasLists = availableLists.length > 0

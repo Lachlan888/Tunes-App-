@@ -158,6 +158,7 @@ Colour must still never be the only state cue. Pair it with plain language, an i
 
 - Use the system sans-serif stack for controls, lists and metadata so the app remains crisp and familiar on each platform.
 - Add one warm editorial serif—used sparingly—for tune titles, section openings and badge names. It should feel like a printed tune collection, not a faux-pub menu.
+- Do not use decorative eyebrow labels: no small uppercase category above a title, no repeated context word above a self-explanatory heading, and no ornamental `kicker / title` pair. Start with the real heading. A compact label is allowed only when it carries functional information that is not already expressed—such as a form-field label, control group, state, permission, active mode or scope. Accessible names may remain visually hidden where needed.
 - Stop putting a visible border and rounded rectangle around every grouping. Use paper surfaces, spacing and hairline dividers for ordinary lists; reserve lifted cards for a true object or decision.
 - Adopt a coherent radius scale: roughly 12 px for compact controls, 18 px for cards, 24 px for sheets and a full pill only for status or a one-line control group.
 - Use one consistent outline icon family. The current abundance of text pills makes hierarchy harder to scan than icon-plus-label navigation would.

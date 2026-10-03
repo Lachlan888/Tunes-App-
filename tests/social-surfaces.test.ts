@@ -50,6 +50,10 @@ test("Friends preserves request actions and privacy-safe recovery copy", () => {
   )
 
   assert.match(page, /sendFriendRequest/)
+  assert.match(page, /Suggested musicians/)
+  assert.match(page, /Suggestions need a little more shared activity/)
+  assert.match(page, /suggestion\.reason/)
+  assert.match(page, /name="redirect_to" value="\/friends"/)
   assert.match(page, /acceptFriendRequest/)
   assert.match(page, /declineFriendRequest/)
   assert.match(page, /unavailable or has expired/)

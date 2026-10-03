@@ -6,11 +6,13 @@ import type { PracticeDiaryDayDataWithNotes } from "@/lib/loaders/practice-diary
 
 type PracticeDayViewProps = {
   data: PracticeDiaryDayDataWithNotes
+  sessionReturnTo?: string
 }
 
-export default function PracticeDayView({ data }: PracticeDayViewProps) {
-  const redirectTo =
-    data.selectedDate === data.today
+export default function PracticeDayView({ data, sessionReturnTo }: PracticeDayViewProps) {
+  const redirectTo = sessionReturnTo
+    ? `/review/diary?date=${data.selectedDate}&from=session&return_to=${encodeURIComponent(sessionReturnTo)}`
+    : data.selectedDate === data.today
       ? "/review/diary"
       : `/review/diary?date=${data.selectedDate}`
 

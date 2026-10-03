@@ -33,9 +33,13 @@ export type {
   TuneReviewSummary,
   UserPieceMediaLoop,
   UserPieceMetadata,
+  AttributionPerson,
+  PieceAttribution,
+  PieceFieldContributionAttribution,
 } from "./tune-detail/types"
 
 import type { TuneDetailLoadResult } from "./tune-detail/types"
+import { loadPieceAttribution } from "./tune-detail/attribution"
 
 export type TuneDetailLoadScope = TuneDetailView
 
@@ -102,7 +106,7 @@ export async function loadTuneDetailData(
     }
   }
 
-  const [composerProfile, profileMap] = await withServerTiming(
+  const [composerProfile, profileMap, pieceAttribution] = await withServerTiming(
     `tune-detail.${scope}.secondary-data`,
     () =>
       Promise.all([
@@ -114,6 +118,7 @@ export async function loadTuneDetailData(
               tuneCommunity.typedPieceLoreEntries
             )
           : Promise.resolve({}),
+        loadPieceAttribution(supabase, pieceId, piece.created_by),
       ])
   )
 
@@ -164,5 +169,6 @@ export async function loadTuneDetailData(
     composerProfile,
     composerProfileOptions,
     profileMap,
+    pieceAttribution,
   }
 }

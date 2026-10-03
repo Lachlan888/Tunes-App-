@@ -9,20 +9,12 @@ import { uploadKnownTunesCsv } from "@/lib/actions/bulk-import"
 export default function BulkImportKnownTunesModal() {
   const searchParams = useSearchParams()
 
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(
+    () => searchParams.get("import") === "known"
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedFileName, setSelectedFileName] = useState("")
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false)
-  const [hasHandledAutoOpen, setHasHandledAutoOpen] = useState(false)
-
-  useEffect(() => {
-    if (hasHandledAutoOpen) return
-
-    if (searchParams.get("import") === "known") {
-      setIsOpen(true)
-      setHasHandledAutoOpen(true)
-    }
-  }, [hasHandledAutoOpen, searchParams])
 
   useEffect(() => {
     if (!isOpen || isSubmitting) return
