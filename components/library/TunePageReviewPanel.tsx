@@ -134,7 +134,7 @@ function ReviewNoteModal({
       onClick={onClose}
     >
       <div
-        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-border bg-card p-4 shadow-xl sm:p-6"
+        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-sheet border border-hairline bg-surface-paper p-4 shadow-material-floating sm:p-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="tune-page-review-note-modal-title"
@@ -144,7 +144,7 @@ function ReviewNoteModal({
           <div className="min-w-0">
             <h3
               id="tune-page-review-note-modal-title"
-              className="mt-2 break-words font-serif text-2xl font-bold text-foreground"
+              className="mt-2 break-words text-2xl font-bold tracking-tight text-text-primary"
             >
               {selectedOutcome.modalTitle}
             </h3>
@@ -189,7 +189,7 @@ function ReviewNoteModal({
             <select
               name="category_id"
               defaultValue=""
-              className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="mt-2 min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             >
               <option value="">No category</option>
               {noteCategories.map((category) => (
@@ -209,7 +209,7 @@ function ReviewNoteModal({
               name="practice_note"
               rows={5}
               placeholder="What happened with this tune today?"
-              className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm leading-6 text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="mt-2 w-full rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm leading-6 text-text-primary focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             />
           </label>
 
@@ -281,11 +281,11 @@ export default function TunePageReviewPanel({
       className={
         isMobile
           ? "min-w-0 border-b border-border pb-6 last:border-b-0 last:pb-0"
-          : "w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6"
+          : "w-full max-w-full border-t border-hairline py-6"
       }
     >
       <div className="flex min-w-0 flex-col gap-1 sm:gap-2">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-xl font-bold tracking-tight text-text-primary">
           {isFormalReview ? "Review" : "Practice check"}
         </h2>
 
@@ -303,7 +303,7 @@ export default function TunePageReviewPanel({
       </div>
 
       {!practiceDiaryEnabled && !isFormalReview ? (
-        <div className={isMobile ? "mt-4" : "mt-5 rounded-2xl border border-border bg-background/70 p-4"}>
+        <div className={isMobile ? "mt-4" : "mt-5 border-y border-hairline py-4"}>
           <p className="text-sm leading-6 text-muted-foreground">
             Enable Practice Diary on your Profile page to log practice checks for
             tunes that are not in practice.

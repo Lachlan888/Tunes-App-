@@ -187,7 +187,7 @@ export default function TuneInlineDetails({
   const isModerator = currentUserRole === "moderator" || currentUserRole === "admin"
 
   return (
-    <div className="rounded-object bg-surface-note p-4">
+    <div className="border-t border-hairline py-4">
       <h3 className="font-semibold text-text-primary">Tune details</h3>
       <p className="mt-1 text-sm leading-6 text-text-muted">
         Missing shared details can be filled once. Saving never replaces an existing value.
@@ -195,7 +195,7 @@ export default function TuneInlineDetails({
       <dl className="mt-2">
         {details.map((detail) => (
           <div key={detail.field} className="border-b border-hairline py-3 last:border-b-0">
-            <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">{detail.label}</dt>
+            <dt className="text-xs font-semibold text-text-muted">{detail.label}</dt>
             <dd className="mt-1"><InlineEditor detail={detail} pieceId={piece.id} styleOptions={styleOptions} /></dd>
           </div>
         ))}

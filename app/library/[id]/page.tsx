@@ -69,7 +69,7 @@ type PiecePageProps = {
 }
 
 const panelClassName =
-  "rounded-object bg-surface-paper p-5 shadow-material-rest sm:p-6"
+  "border-t border-hairline py-6"
 
 function splitAliases(value: string | null | undefined) {
   return (value ?? "")
@@ -266,9 +266,9 @@ function TuneHeader({ data, aliases, redirectTo }: { data: TuneDetailLoadedData;
   const personalState = getPersonalState(data)
 
   return (
-    <header className="rounded-sheet bg-surface-paper p-5 shadow-material-raised sm:p-6">
-      <div className="flex min-w-0 items-start justify-between gap-4">
-        <TuneIdentity id={data.pieceId} title={data.typedPiece.title} alternateTitles={aliases.join("; ")} tuneType={data.typedPiece.type} style={data.typedPiece.style} tuneKey={data.typedPiece.key} sourceSummary={`${source.source} · ${source.confidence}`} personalState={<StatusMark tone={personalState.tone}>{personalState.label}</StatusMark>} headingLevel="h1" linkTitle={false} headingClassName="break-words font-serif text-3xl font-bold leading-tight tracking-tight text-text-primary sm:text-4xl md:text-5xl" />
+    <header className="border-b border-hairline pb-6">
+      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <TuneIdentity id={data.pieceId} title={data.typedPiece.title} alternateTitles={aliases.join("; ")} tuneType={data.typedPiece.type} style={data.typedPiece.style} tuneKey={data.typedPiece.key} sourceSummary={`${source.source} · ${source.confidence}`} personalState={<StatusMark tone={personalState.tone}>{personalState.label}</StatusMark>} className="min-w-0 flex-1" headingLevel="h1" linkTitle={false} headingClassName="break-words font-sans text-4xl font-bold leading-[1.04] tracking-tight text-text-primary sm:text-5xl md:text-6xl" />
         <TunePageOptions data={data} redirectTo={redirectTo} />
       </div>
     </header>
@@ -304,7 +304,7 @@ function PracticeView({ data, redirectTo }: { data: TuneDetailLoadedData; redire
         </dl>
         {data.typedUserPiece ? (
           <>
-            <PracticeProgress stage={data.typedUserPiece.stage} className="mt-5 rounded-object bg-surface-note p-4" />
+            <PracticeProgress stage={data.typedUserPiece.stage} className="mt-5 border-t border-hairline pt-4" />
             <PendingLinkButton href="/review" label="Open Practice queue" pendingLabel="Opening Practice..." className={`${buttonStyles.practice} mt-5`} />
           </>
         ) : (
@@ -327,7 +327,7 @@ function getProfileName(publicList: PublicTuneListSummary) {
 function PublicListAppearances({ publicLists }: { publicLists: PublicTuneListSummary[] }) {
   return publicLists.length > 0 ? (
     <ul className="mt-3 flex flex-wrap gap-2">
-      {publicLists.map((list) => <li key={list.id}><Link href={`/public-lists/${list.id}`} className="inline-flex min-h-11 max-w-full items-center rounded-pill border border-hairline bg-surface-note px-3 py-2 text-sm font-semibold text-text-primary hover:border-action-primary/45"><span className="truncate">{list.name}</span><span className="ml-2 shrink-0 text-xs text-text-muted">{getProfileName(list)}</span></Link></li>)}
+      {publicLists.map((list) => <li key={list.id}><Link href={`/public-lists/${list.id}`} className="inline-flex min-h-11 max-w-full items-center border-b border-hairline px-3 py-2 text-sm font-semibold text-text-primary hover:border-action-primary/45"><span className="truncate">{list.name}</span><span className="ml-2 shrink-0 text-xs text-text-muted">{getProfileName(list)}</span></Link></li>)}
     </ul>
   ) : <p className="mt-2 text-sm text-text-muted">No public-list appearances yet.</p>
 }
@@ -338,11 +338,11 @@ function CommunitySummary({ data }: { data: TuneDetailLoadedData }) {
 
   return (
     <div className="mt-5 grid gap-5 lg:grid-cols-2">
-      <div className="rounded-object bg-surface-note p-4">
+      <div className="border-t border-hairline py-4">
         <h3 className="font-semibold text-text-primary">Community sources</h3><p className="mt-1 text-sm text-text-muted">Contributor supplied · not independently verified</p>
         {sourceEntries.length > 0 ? <ul className="mt-4 space-y-3">{sourceEntries.map((entry) => <li key={entry.id} className="border-t border-hairline pt-3 first:border-t-0 first:pt-0"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">{entry.category.replaceAll("_", " ")}</p><p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-text-primary">{entry.entry_text}</p><p className="mt-1 text-xs text-text-muted">Added by {data.profileMap[entry.user_id]?.displayName || "Unknown player"}</p></li>)}</ul> : <p className="mt-4 text-sm text-text-muted">No source or folklore entries yet.</p>}
       </div>
-      <div className="rounded-object bg-surface-note p-4">
+      <div className="border-t border-hairline py-4">
         <h3 className="font-semibold text-text-primary">Recent discussion</h3><p className="mt-1 text-sm text-text-muted">Community comments · contributor attributed</p>
         {recentComments.length > 0 ? <ul className="mt-4 space-y-3">{recentComments.map((comment) => <li key={comment.id} className="border-t border-hairline pt-3 first:border-t-0 first:pt-0"><p className="line-clamp-3 whitespace-pre-wrap break-words text-sm leading-6 text-text-primary">{comment.body}</p><p className="mt-1 text-xs text-text-muted">{data.profileMap[comment.user_id]?.displayName || "Unknown player"} · {formatDate(comment.created_at)}</p></li>)}</ul> : <p className="mt-4 text-sm text-text-muted">No comments yet.</p>}
       </div>
@@ -359,10 +359,10 @@ function AboutView({ data, aliases }: { data: TuneDetailLoadedData; aliases: str
       <section className={panelClassName}>
         <SectionHeader title="About" description="Provenance, aliases, related tune notes and secondary catalogue metadata." />
         <div className="grid gap-5 lg:grid-cols-2">
-          <div className="rounded-object bg-surface-note p-4"><h3 className="font-semibold text-text-primary">Provenance</h3><dl className="mt-2"><DetailValue label="Source">{source.source}</DetailValue><DetailValue label="Confidence">{source.confidence}</DetailValue><DetailValue label="Basis">{source.detail}</DetailValue></dl></div>
+          <div className="border-t border-hairline py-4"><h3 className="font-semibold text-text-primary">Provenance</h3><dl className="mt-2"><DetailValue label="Source">{source.source}</DetailValue><DetailValue label="Confidence">{source.confidence}</DetailValue><DetailValue label="Basis">{source.detail}</DetailValue></dl></div>
           <TuneInlineDetails piece={data.typedPiece} styleOptions={data.styleOptions} currentUserRole={data.currentUserRole} composerDisplayValue={data.composerProfile ? source.source : data.typedPiece.composer} />
         </div>
-        <div className="mt-5 rounded-object bg-surface-note p-4"><h3 className="font-semibold text-text-primary">Catalogue context</h3><dl className="mt-2"><DetailValue label="Aliases">{aliases.length > 0 ? aliases.join(" · ") : "No aliases recorded"}</DetailValue><DetailValue label="Related tunes">{relatedTunes.length > 0 ? relatedTunes.map((entry) => entry.entry_text).join(" · ") : "No tune-family links recorded"}</DetailValue><DetailValue label="Catalogue record">#{data.pieceId} · added {formatDate(data.typedPiece.created_at)}</DetailValue></dl><TuneAttributionSummary data={data} /></div>
+        <div className="mt-5 border-t border-hairline pt-4"><h3 className="font-semibold text-text-primary">Catalogue context</h3><dl className="mt-2"><DetailValue label="Aliases">{aliases.length > 0 ? aliases.join(" · ") : "No aliases recorded"}</DetailValue><DetailValue label="Related tunes">{relatedTunes.length > 0 ? relatedTunes.map((entry) => entry.entry_text).join(" · ") : "No tune-family links recorded"}</DetailValue><DetailValue label="Catalogue record">#{data.pieceId} · added {formatDate(data.typedPiece.created_at)}</DetailValue></dl><TuneAttributionSummary data={data} /></div>
         <div className="mt-5 border-t border-hairline pt-5"><h3 className="font-semibold text-text-primary">Community</h3><p className="mt-1 text-sm leading-6 text-text-muted">Public lists, source notes and discussion remain attributed to their contributors.</p><PublicListAppearances publicLists={data.typedPublicTuneLists} /><CommunitySummary data={data} /></div>
       </section>
       <details className={panelClassName}>
@@ -398,7 +398,7 @@ export default async function PiecePage({ params, searchParams }: PiecePageProps
     <main className="mx-auto w-full max-w-[1500px] px-4 py-5 text-text-primary sm:px-6 sm:py-8">
       <TuneDetailSessionDock pieceId={tuneDetail.pieceId} title={tuneDetail.typedPiece.title} detail={tuneDetailLabel || "Tune detail"} redirectTo={redirectTo} referenceHref={referenceHref} pageOptionsTriggerId={`tune-page-options-${tuneDetail.pieceId}`} isInPractice={Boolean(tuneDetail.typedUserPiece)} practiceStage={tuneDetail.typedUserPiece?.stage ?? null} isKnown={Boolean(tuneDetail.typedUserKnownPiece)} startPractice={startLearning} />
       <Link href="/library" className="inline-flex min-h-11 items-center text-sm font-semibold text-text-muted underline underline-offset-4 hover:text-text-primary">Back to Tunes</Link>
-      {statusMessage ? <div className="mt-3 rounded-object bg-surface-note p-4 text-sm font-medium text-text-primary">{statusMessage}</div> : null}
+      {statusMessage ? <div className="mt-3 border-t border-hairline py-4 text-sm font-medium text-text-primary">{statusMessage}</div> : null}
       <div className="mt-3"><TuneHeader data={tuneDetail} aliases={aliases} redirectTo={redirectTo} /></div>
       <div className="mt-4"><TuneDetailViewNav pieceId={tuneDetail.pieceId} activeView={activeView} /></div>
       <div className="mt-5 min-w-0">

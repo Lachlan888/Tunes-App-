@@ -30,7 +30,7 @@ function PracticeCategoryNoteCard({ note }: PracticeCategoryNoteCardProps) {
       : note.body
 
   return (
-    <div className="rounded-xl border border-border bg-card p-3">
+    <div className="border-l-2 border-hairline py-2 pl-3">
       {note.pieceId && note.tuneTitle ? (
         <Link
           href={`/library/${note.pieceId}`}
@@ -70,7 +70,7 @@ function PracticeCategorySummaryCard({
   const hiddenCount = Math.max(summary.notes.length - visibleNotes.length, 0)
 
   return (
-    <article className="rounded-2xl border border-border bg-background/70 p-4">
+    <article className="border-b border-hairline py-5">
       <div className="flex items-start justify-between gap-3">
         <Link
           href={`/review/diary/index/categories/${summary.categoryId}`}
@@ -81,7 +81,7 @@ function PracticeCategorySummaryCard({
 
         <Link
           href={`/review/diary/index/categories/${summary.categoryId}`}
-          className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground transition hover:border-primary hover:bg-card hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-control border border-hairline px-3 py-1 text-xs font-semibold text-muted-foreground transition hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           aria-label={`Open ${summary.categoryName} category`}
         >
           {summary.noteCount}
@@ -121,14 +121,14 @@ export default function PracticeCategorySummaryList({
 }: PracticeCategorySummaryListProps) {
   if (summaries.length === 0) {
     return (
-      <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+      <p className="mt-5 border-b border-hairline bg-surface-note p-4 text-sm leading-6 text-muted-foreground">
         {emptyMessage}
       </p>
     )
   }
 
   return (
-    <div className="mt-5 space-y-3">
+    <div className="mt-5 border-t border-hairline">
       {summaries.map((summary) => (
         <PracticeCategorySummaryCard
           key={summary.categoryId}

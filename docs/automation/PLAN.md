@@ -1,6 +1,52 @@
-# Final work sequence
+# Hourly work sequence
 
-Activated 15 September 2026 and extended by direct user review on 24 September 2026: finish P19 → P20–P31 → P32 integration → P33 festival hubs → P34 responsive/session refinements → P18 release hardening. The current state/chunk continues unchanged. Registered prompts are queued work, not completed work.
+## Immediate priority: editorial visual system
+
+**V02 precedes all remaining P35–P44 work.** V01 was an initial code pass and is not evidence of whole-app visual completion. Implement the [Media Studio-informed editorial system](../design/EDITORIAL_SYSTEM.md) systematically across all user-facing routes, then inspect rendered mobile, tablet, and desktop states and correct inconsistencies before resuming P35-03 or feature work. Preserve routes, data flows, actions, and behaviours. Mobile and desktop are each optimised products with the same capabilities. Owner final acceptance remains separate from agent-rendered verification.
+
+| Active chunk | Goal | Depends on |
+|---|---|---|
+| [V02-01](chunks/V02-01.md) | Inventory every route/state; inspect desktop rail and account-menu traversal; correct shared shell, palette, typography and wrapper primitives | V01 |
+| [V02-02](chunks/V02-02.md) | Home, Practice, Diary, focus and trends editorial pass | V02-01 |
+| [V02-03](chunks/V02-03.md) | Tunes, repertoire, tune detail and Reference editorial pass | V02-02 |
+| [V02-04](chunks/V02-04.md) | Lists, public lists, sets and Compare editorial pass | V02-03 |
+| [V02-05](chunks/V02-05.md) | Social, badges, festivals, account/auth, admin and remaining routes | V02-04 |
+| [V02-06](chunks/V02-06.md) | Whole-app rendered cross-route recheck and parity gate | V02-05 |
+
+**Active from 5 October 2026:** the redesign queue is [V02 then P35–P44](REDESIGN_SEQUENCE.md). P42 and P43 separately implement the owner-approved explanatory-copy and contextual-menu audits; P44 is the final gate. V01 is completed initial code work; it does not satisfy V02. Read the [product contract](../PRODUCT_CONTRACT.md) after acquisition. P1–P34/P18 below are completed historical sequence/evidence; do not restart them. The current state and current chunk are authoritative.
+
+| Active chunk | Goal | Depends on |
+|---|---|---|
+| [P35-01](chunks/P35-01.md) | Reconcile and baseline | old queue complete |
+| [P35-02](chunks/P35-02.md) | Enrolment versus practice | P35-01 |
+| [P35-03](chunks/P35-03.md) | Schedule and count truth | V02-06 |
+| [P36-01](chunks/P36-01.md) | Home hierarchy | P35-03 |
+| [P36-02](chunks/P36-02.md) | Stage/day explanation | P36-01 |
+| [P36-03](chunks/P36-03.md) | Core journey | P36-02 |
+| [P37-01](chunks/P37-01.md) | Shared spacing and triple dividers | P36-03 |
+| [P37-02](chunks/P37-02.md) | Primary route polish | P37-01 |
+| [P37-03](chunks/P37-03.md) | Detail/secondary route polish | P37-02 |
+| [P37-04](chunks/P37-04.md) | Focused Practice Diary workspace | P37-03 |
+| [P38-01](chunks/P38-01.md) | Tunes catalogue | P37-04 |
+| [P38-02](chunks/P38-02.md) | Tune Info/Reference; lore on Info | P38-01 |
+| [P38-03](chunks/P38-03.md) | Lists | P38-02 |
+| [P39-01](chunks/P39-01.md) | First-class Compare | P38-03 |
+| [P39-02](chunks/P39-02.md) | Visible beta feedback | P39-01 |
+| [P39-03](chunks/P39-03.md) | Partner festival lifecycle | P39-02 |
+| [P40-01](chunks/P40-01.md) | Measured performance | P39-03 |
+| [P40-02](chunks/P40-02.md) | Accessibility/resilience | P40-01 |
+| [P41-01](chunks/P41-01.md) | Pre-copy/menu integration checkpoint | P40-02 |
+| [P42-01](chunks/P42-01.md) | Tune collection and detail copy | P41-01 |
+| [P42-02](chunks/P42-02.md) | Everyday and social copy | P42-01 |
+| [P42-03](chunks/P42-03.md) | Secondary workspaces and copy gate | P42-02 |
+| [P43-01](chunks/P43-01.md) | Shared menu pattern and tune actions | P42-03 |
+| [P43-02](chunks/P43-02.md) | Collection, people and secondary menus | P43-01 |
+| [P43-03](chunks/P43-03.md) | Contextual-menu interaction and parity gate | P43-02 |
+| [P44-01](chunks/P44-01.md) | Copy and contextual-action integration | P43-03 |
+
+## Completed 2026 sequence
+
+Activated 15 September 2026 and completed 26 September 2026: P19 → P20–P31 → P32 → P33 → P34 → P18. The table below is retained for history; its queued-work wording is superseded by the active table above.
 
 One row is one run, including verification. Most Prompt 19 implementation is documented complete. Trust each specification’s carried-forward summary and address ONLY its explicit remaining gaps. These are completion buckets, not ten new feature implementations; a documented finished bucket can be carried forward without a new audit. Ten P19 slices are deliberate: its expanded 15 requirements include independent provider, persistence and permission scenarios that should not share one large window. Split further before edits if a slice cannot fit. Normal startup loads only the current specification.
 

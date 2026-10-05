@@ -27,7 +27,7 @@ test("mobile catalogue identity keeps long titles, key, time, and status compact
   assert.match(libraryList, /<TuneRow[\s\S]*?compactMobile/)
   assert.match(tuneIdentity, /min-w-0 flex-1 truncate/)
   assert.match(tuneIdentity, /title=\{title\}/)
-  assert.match(tuneIdentity, /tuneKey \? `Key \$\{tuneKey\}`/)
+  assert.match(tuneIdentity, /\[tuneKey, timeSignature\]/)
   assert.match(tuneIdentity, /timeSignature/)
   assert.match(tuneIdentity, /shrink-0 whitespace-nowrap/)
   assert.ok(

@@ -41,11 +41,11 @@ export default function CompareSearchForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm"
+      className="mb-8 border-y border-hairline py-5"
     >
       <label
         htmlFor="user"
-        className="block text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground"
+        className="block text-xl font-semibold text-foreground"
       >
         Add player to compare
       </label>
@@ -56,14 +56,14 @@ export default function CompareSearchForm({
           name="user"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          className="w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+          className="w-full rounded-control border border-border bg-surface-paper px-4 py-3 text-foreground outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
           placeholder="Search by username or display name"
         />
 
         <button
           type="submit"
           disabled={isPending}
-          className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+          className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
         >
           {isPending ? (
             <span className="inline-flex items-center justify-center gap-2">

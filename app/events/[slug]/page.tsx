@@ -31,12 +31,12 @@ function formatSnapshotDate(value: string) {
 function CollectionCard({ collection }: { collection: PublicFestivalCollection }) {
   const title = collection.display_title || collection.learning_list.name
   return (
-    <article className="flex h-full min-w-0 flex-col rounded-object border border-hairline bg-surface-paper p-5 shadow-material-rest">
-      <div className="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">
+    <article className="flex h-full min-w-0 flex-col border-b border-hairline py-5 first:border-t">
+      <div className="flex flex-wrap gap-2 text-xs font-semibold  tracking-[0.12em] text-text-muted">
         {collection.tradition_label ? <span>{collection.tradition_label}</span> : null}
         {collection.display_credit ? <span>Curated by {collection.display_credit}</span> : null}
       </div>
-      <h3 className="mt-3 break-words font-serif text-2xl font-bold leading-tight text-text-primary">
+      <h3 className="mt-3 break-words font-sans text-2xl font-bold leading-tight text-text-primary">
         {title}
       </h3>
       {collection.learning_list.description ? (
@@ -67,7 +67,7 @@ export default async function FestivalPage({ params }: FestivalPageProps) {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 text-text-primary md:px-6 md:py-10">
-      <header className="overflow-hidden rounded-object border border-hairline bg-surface-paper shadow-material-rest">
+      <header className="overflow-hidden border-y border-hairline">
         {festival.branding_image_url && festival.branding_alt ? (
           // Supplied festival branding may live on an organiser-controlled host.
           // eslint-disable-next-line @next/next/no-img-element
@@ -78,13 +78,10 @@ export default async function FestivalPage({ params }: FestivalPageProps) {
           />
         ) : null}
         <div className="p-5 sm:p-8 md:p-10">
-          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">
-            <span>{festival.lifecycle === "archived" ? "Festival archive" : "Festival hub"}</span>
-            {festival.curator_credit ? <span>· Curated by {festival.curator_credit}</span> : null}
-          </div>
-          <h1 className="mt-3 max-w-4xl break-words font-serif text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+          <h1 className="max-w-4xl break-words font-sans text-4xl font-bold leading-tight tracking-tight md:text-6xl">
             {festival.name}
           </h1>
+          <p className="mt-2 text-sm text-text-muted">{[festival.lifecycle === "archived" ? "Festival archive" : "Festival hub", festival.curator_credit ? `Curated by ${festival.curator_credit}` : null].filter(Boolean).join(" · ")}</p>
           {festival.description ? (
             <p className="mt-5 max-w-3xl break-words text-base leading-7 text-text-muted md:text-lg">
               {festival.description}
@@ -103,8 +100,8 @@ export default async function FestivalPage({ params }: FestivalPageProps) {
         </div>
       </header>
 
-      <section className="mt-7 rounded-object bg-surface-note p-5 md:p-6" aria-labelledby="festival-context-title">
-        <h2 id="festival-context-title" className="font-serif text-2xl font-bold">Before you join in</h2>
+      <section className="mt-7 border-y border-hairline bg-surface-note/60 px-1 py-5 md:px-4 md:py-6" aria-labelledby="festival-context-title">
+        <h2 id="festival-context-title" className="font-sans text-2xl font-bold">Before you join in</h2>
         <p className="mt-2 max-w-4xl text-sm leading-6 text-text-muted md:text-base">
           Some tunes to get familiar with before joining in. Every session takes its own direction. These collections are suggested repertoire, not guaranteed setlists or a record of what was played.
         </p>
@@ -116,8 +113,8 @@ export default async function FestivalPage({ params }: FestivalPageProps) {
       {sessions.length > 0 ? (
         <section className="mt-10" aria-labelledby="session-preview-title">
           <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">Programme sessions</p>
-            <h2 id="session-preview-title" className="mt-2 font-serif text-3xl font-bold md:text-4xl">Playing together</h2>
+            <h2 id="session-preview-title" className="font-sans text-3xl font-bold md:text-4xl">Playing together</h2>
+            <p className="mt-2 text-sm font-semibold text-text-muted">Programme sessions</p>
             <p className="mt-3 text-sm leading-6 text-text-muted">
               Times are shown in {festival.timezone} as programme information
               {festival.programme_snapshot_date ? ` from the ${formatSnapshotDate(festival.programme_snapshot_date)} snapshot` : " from the available programme snapshot"}.
@@ -133,8 +130,8 @@ export default async function FestivalPage({ params }: FestivalPageProps) {
         if (sectionCollections.length === 0) return null
         return (
           <section className="mt-10" key={kind} aria-labelledby={`collections-${kind}`}>
-            <h2 id={`collections-${kind}`} className="font-serif text-3xl font-bold md:text-4xl">{label}</h2>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <h2 id={`collections-${kind}`} className="font-sans text-3xl font-bold md:text-4xl">{label}</h2>
+            <div className="mt-5 divide-y divide-hairline sm:grid sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3">
               {sectionCollections.map((collection) => <CollectionCard key={collection.id} collection={collection} />)}
             </div>
           </section>
@@ -142,8 +139,8 @@ export default async function FestivalPage({ params }: FestivalPageProps) {
       })}
 
       {!hasHubContent ? (
-        <section className="mt-10 rounded-object border border-dashed border-hairline bg-surface-note p-6 text-center">
-          <h2 className="font-serif text-2xl font-bold">Collections are being prepared</h2>
+        <section className="mt-10 border-y border-dashed border-hairline bg-surface-note/60 py-6 text-center">
+          <h2 className="font-sans text-2xl font-bold">Collections are being prepared</h2>
           <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-text-muted">
             There are no published repertoire collections or programme sessions here yet. Check back when the festival shares more details.
           </p>

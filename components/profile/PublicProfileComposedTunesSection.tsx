@@ -24,15 +24,15 @@ export default function PublicProfileComposedTunesSection({
   }
 
   return (
-    <section className="min-w-0 max-w-full md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
+    <section className="min-w-0 max-w-full border-t border-hairline pt-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h2 className="mt-2 break-words font-serif text-2xl font-bold leading-tight tracking-tight text-foreground md:text-3xl">
+          <h2 className="mt-2 break-words font-sans text-2xl font-bold leading-tight tracking-tight text-foreground md:text-3xl">
             Tunes by {displayName}
           </h2>
         </div>
 
-        <span className="w-fit text-sm font-medium text-muted-foreground md:rounded-full md:border md:border-border md:bg-background/70 md:px-3 md:py-1">
+        <span className="w-fit text-sm font-medium text-muted-foreground md:rounded-control md:border md:border-border md:bg-background/70 md:px-3 md:py-1">
           {tunes.length} tune{tunes.length === 1 ? "" : "s"}
         </span>
       </div>
@@ -47,7 +47,7 @@ export default function PublicProfileComposedTunesSection({
                 href={`/library/${tune.id}`}
                 className="block py-4 transition hover:text-primary"
               >
-                <span className="block break-words font-serif text-xl font-bold leading-tight text-foreground">
+                <span className="block break-words font-sans text-xl font-bold leading-tight text-foreground">
                   {tune.title}
                 </span>
 

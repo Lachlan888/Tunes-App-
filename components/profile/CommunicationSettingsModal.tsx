@@ -111,10 +111,10 @@ export default function CommunicationSettingsModal({
   }
 
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+    <section className="rounded-object border border-border bg-card p-6 ">
       <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
             Communication settings
           </h2>
 
@@ -140,7 +140,7 @@ export default function CommunicationSettingsModal({
       {statusMessage && statusTone ? (
         <p
           className={joinClasses(
-            "mt-5 rounded-2xl border p-4 text-sm font-medium shadow-sm",
+            "mt-5 rounded-object border p-4 text-sm font-medium ",
             statusStyles[statusTone]
           )}
         >
@@ -187,7 +187,7 @@ export default function CommunicationSettingsModal({
           className="space-y-7"
         >
           <section>
-            <label className="flex gap-3 rounded-2xl border border-border bg-background/70 p-4 shadow-sm">
+            <label className="flex gap-3 rounded-object border border-border bg-background/70 p-4 ">
               <input
                 type="checkbox"
                 name="email_enabled"
@@ -209,11 +209,11 @@ export default function CommunicationSettingsModal({
           </section>
 
           <section>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
               Immediate emails
             </h3>
 
-            <div className="mt-3 rounded-2xl border border-border bg-background/70 px-4 shadow-sm">
+            <div className="mt-3 rounded-object border border-border bg-background/70 px-4 ">
               {toggleOptions.map((option) => (
                 <PreferenceToggle
                   key={option.name}
@@ -225,7 +225,7 @@ export default function CommunicationSettingsModal({
           </section>
 
           <section>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
               Email digest
             </h3>
 
@@ -238,7 +238,7 @@ export default function CommunicationSettingsModal({
               {digestOptions.map((option) => (
                 <label
                   key={option.value}
-                  className="flex gap-3 rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
+                  className="flex gap-3 rounded-object border border-border bg-background/70 p-4 "
                 >
                   <input
                     type="radio"
@@ -260,7 +260,7 @@ export default function CommunicationSettingsModal({
             <h4 className="mt-6 text-sm font-semibold text-foreground">
               Include in my digest
             </h4>
-            <div className="mt-3 rounded-2xl border border-border bg-background/70 px-4 shadow-sm">
+            <div className="mt-3 rounded-object border border-border bg-background/70 px-4 ">
               {digestSections.map((option) => (
                 <label key={option.name} className="flex gap-3 border-b border-border/70 py-4 last:border-b-0">
                   <input

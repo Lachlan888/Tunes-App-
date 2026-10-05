@@ -45,7 +45,7 @@ function StatusMessage({
 }) {
   if (type === "list_add" && status === "success") {
     return (
-      <div className="mb-6 rounded-2xl border border-success bg-success/10 p-4 text-sm font-medium text-muted-foreground">
+      <div className="mb-6 border-l-2 border-state-known bg-state-known/8 px-4 py-3 text-sm font-medium text-text-primary">
         Tune added to list.
       </div>
     )
@@ -53,7 +53,7 @@ function StatusMessage({
 
   if (type === "list_add" && status === "duplicate") {
     return (
-      <div className="mb-6 rounded-2xl border border-border bg-muted p-4 text-sm font-medium text-muted-foreground">
+      <div className="mb-6 border-l-2 border-hairline bg-surface-note px-4 py-3 text-sm font-medium text-text-muted">
         That tune is already in this list.
       </div>
     )
@@ -61,7 +61,7 @@ function StatusMessage({
 
   if (type === "remove_tune" && status === "success") {
     return (
-      <div className="mb-6 rounded-2xl border border-success bg-success/10 p-4 text-sm font-medium text-muted-foreground">
+      <div className="mb-6 border-l-2 border-state-known bg-state-known/8 px-4 py-3 text-sm font-medium text-text-primary">
         Tune removed from your app.
       </div>
     )
@@ -69,7 +69,7 @@ function StatusMessage({
 
   if (type === "remove_tune" && status === "missing_piece") {
     return (
-      <div className="mb-6 rounded-2xl border border-warning bg-warning/20 p-4 text-sm font-medium text-warning-foreground">
+      <div className="mb-6 border-l-2 border-state-due bg-state-due/12 px-4 py-3 text-sm font-medium text-text-primary">
         Couldn’t tell which tune to remove.
       </div>
     )
@@ -77,7 +77,7 @@ function StatusMessage({
 
   if (type === "remove_tune" && status === "error") {
     return (
-      <div className="mb-6 rounded-2xl border border-destructive bg-destructive/10 p-4 text-sm font-medium text-destructive">
+      <div className="mb-6 border-l-2 border-action-destructive bg-action-destructive/8 px-4 py-3 text-sm font-medium text-action-destructive">
         Couldn’t remove tune.
       </div>
     )

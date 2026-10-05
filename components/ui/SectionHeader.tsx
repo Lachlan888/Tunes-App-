@@ -15,7 +15,6 @@ type SectionHeaderProps = {
 export default function SectionHeader({
   title,
   count,
-  eyebrow,
   description,
   actions,
   className,
@@ -30,18 +29,12 @@ export default function SectionHeader({
       )}
     >
       <div className="min-w-0">
-        {eyebrow ? (
-          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">
-            {eyebrow}
-          </p>
-        ) : null}
-
         <div className="flex min-w-0 items-baseline gap-2">
           <h2
             className={joinClasses(
               variant === "editorial"
-                ? "font-serif text-2xl font-semibold leading-tight tracking-tight text-text-primary"
-                : "text-sm font-semibold uppercase tracking-[0.16em] text-text-muted",
+                ? "font-sans text-2xl font-bold leading-tight tracking-tight text-text-primary"
+                : "font-sans text-xl font-bold leading-tight tracking-tight text-text-primary",
               titleClassName
             )}
           >

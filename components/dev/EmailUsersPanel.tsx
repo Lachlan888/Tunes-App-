@@ -18,7 +18,7 @@ type EmailUsersPanelProps = {
 }
 
 const inputClassName =
-  "w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full rounded-object border border-border bg-background px-3 py-2.5 text-sm text-foreground  outline-none transition placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 const audienceLabel: Record<AdminEmailAudience, string> = {
   all_users: "All users",
@@ -57,9 +57,9 @@ export default function EmailUsersPanel({
   }
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+    <div className="rounded-object border border-border bg-card p-6 ">
       <div className="max-w-3xl">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
           Email users
         </h2>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -77,7 +77,7 @@ export default function EmailUsersPanel({
         <input type="hidden" name="broadcast_id" value={broadcastId} />
 
         <label className="block">
-          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <span className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
             Audience
           </span>
           <select
@@ -98,7 +98,7 @@ export default function EmailUsersPanel({
         </label>
 
         <label className="block">
-          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <span className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
             Subject
           </span>
           <input
@@ -112,7 +112,7 @@ export default function EmailUsersPanel({
         </label>
 
         <label className="block">
-          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <span className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
             Heading <span className="font-normal normal-case">(optional)</span>
           </span>
           <input
@@ -125,7 +125,7 @@ export default function EmailUsersPanel({
         </label>
 
         <label className="block">
-          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <span className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
             Message
           </span>
           <textarea
@@ -139,8 +139,8 @@ export default function EmailUsersPanel({
           />
         </label>
 
-        <fieldset className="rounded-2xl border border-border bg-background/50 p-4">
-          <legend className="px-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <fieldset className="rounded-object border border-border bg-background/50 p-4">
+          <legend className="px-1 text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
             Optional CTA
           </legend>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -200,7 +200,7 @@ export default function EmailUsersPanel({
       {state.message ? (
         <div
           className={joinClasses(
-            "mt-5 max-w-3xl rounded-2xl border p-4 text-sm",
+            "mt-5 max-w-3xl rounded-object border p-4 text-sm",
             state.status === "success"
               ? "border-state-known/55 bg-state-known/12 text-text-primary"
               : "border-action-destructive/55 bg-action-destructive/10 text-action-destructive"
@@ -214,7 +214,7 @@ export default function EmailUsersPanel({
                 ["total", "sent", "failed", "skipped"] as const
               ).map((key) => (
                 <div key={key}>
-                  <dt className="text-xs uppercase tracking-wide opacity-75">
+                  <dt className="text-xs  tracking-wide opacity-75">
                     {key}
                   </dt>
                   <dd className="mt-1 text-lg font-bold">
@@ -232,9 +232,9 @@ export default function EmailUsersPanel({
           Recent broadcasts
         </h3>
         {recentBroadcasts.length ? (
-          <div className="mt-4 overflow-x-auto rounded-2xl border border-border">
+          <div className="mt-4 overflow-x-auto rounded-object border border-border">
             <table className="min-w-full divide-y divide-border text-left text-sm">
-              <thead className="bg-muted/60 text-xs uppercase tracking-wide text-muted-foreground">
+              <thead className="bg-muted/60 text-xs  tracking-wide text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Date</th>
                   <th className="px-4 py-3 font-semibold">Subject</th>
@@ -312,7 +312,7 @@ export default function EmailUsersPanel({
         {currentBroadcastHasReturned && state.message ? (
           <p
             className={joinClasses(
-              "mt-4 rounded-xl border p-3 text-sm font-medium",
+              "mt-4 rounded-object border p-3 text-sm font-medium",
               state.status === "success"
                 ? "border-state-known/55 bg-state-known/12 text-text-primary"
                 : "border-action-destructive/55 bg-action-destructive/10 text-action-destructive"

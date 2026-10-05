@@ -27,13 +27,10 @@ export default async function PracticeCategoryDetailPage({
           Back to index
         </Link>
 
-        <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Practice category
-        </p>
-
-        <h1 className="mt-2 break-words font-serif text-3xl font-bold leading-tight tracking-tight">
+        <h1 className="mt-4 break-words font-sans text-4xl font-bold leading-tight tracking-tight">
           {data.category.name}
         </h1>
+        <p className="mt-2 text-xs font-medium text-muted-foreground">Practice category</p>
 
         {data.category.prompt ? (
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -44,18 +41,15 @@ export default async function PracticeCategoryDetailPage({
         <PracticeDiaryNav active="index" />
       </section>
 
-      <section className="mb-6 hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
+      <section className="mb-6 hidden border-b border-hairline pb-6 md:block">
         <Link href="/review/diary/index" className={buttonStyles.text}>
           Back to index
         </Link>
 
-        <p className="mt-4 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Practice category
-        </p>
-
-        <h1 className="mt-2 break-words font-serif text-5xl font-bold leading-tight tracking-tight">
+        <h1 className="mt-4 break-words font-sans text-5xl font-bold leading-tight tracking-tight">
           {data.category.name}
         </h1>
+        <p className="mt-2 text-sm font-medium text-muted-foreground">Practice category</p>
 
         <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
           {data.category.prompt ??

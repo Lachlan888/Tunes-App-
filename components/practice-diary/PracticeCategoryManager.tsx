@@ -12,7 +12,7 @@ type PracticeCategoryManagerProps = {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full rounded-control border border-hairline bg-surface-paper px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function PracticeCategoryManager({
   categories,
@@ -21,12 +21,12 @@ export default function PracticeCategoryManager({
   return (
     <section className="space-y-5">
       <section>
-        <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
+        <h3 className="font-sans text-lg font-bold tracking-tight text-foreground">
           Current categories
         </h3>
 
         {categories.length === 0 ? (
-          <div className="mt-3 rounded-2xl border border-border bg-background/70 p-4">
+          <div className="mt-3 border-y border-hairline bg-surface-note px-3 py-4">
             <p className="text-sm leading-6 text-muted-foreground">
               You do not have any active practice categories yet.
             </p>
@@ -35,16 +35,16 @@ export default function PracticeCategoryManager({
               <SubmitButton
                 label="Create starter categories"
                 pendingLabel="Creating..."
-                className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+                className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
               />
             </form>
           </div>
         ) : (
-          <ul className="mt-3 space-y-3">
+          <ul className="mt-3 divide-y divide-hairline border-y border-hairline">
             {categories.map((category) => (
               <li
                 key={category.id}
-                className="rounded-2xl border border-border bg-background/70 p-4"
+                className="py-4"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
@@ -78,7 +78,7 @@ export default function PracticeCategoryManager({
                     <SubmitButton
                       label="Archive"
                       pendingLabel="Archiving..."
-                      className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+                      className="inline-flex min-h-11 items-center justify-center rounded-control border border-hairline bg-surface-paper px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-surface-note hover:text-foreground disabled:cursor-not-allowed disabled:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
                     />
                   </form>
                 </div>
@@ -88,8 +88,8 @@ export default function PracticeCategoryManager({
         )}
       </section>
 
-      <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-        <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
+      <section className="border-t border-hairline pt-5">
+        <h3 className="font-sans text-lg font-bold tracking-tight text-foreground">
           Add category
         </h3>
 
@@ -97,7 +97,7 @@ export default function PracticeCategoryManager({
           <input type="hidden" name="redirect_to" value={redirectTo} />
 
           <label className="block">
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <span className="mb-2 block text-sm font-semibold text-foreground">
               Category name
             </span>
             <input
@@ -109,7 +109,7 @@ export default function PracticeCategoryManager({
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <span className="mb-2 block text-sm font-semibold text-foreground">
               Prompt
             </span>
             <textarea
@@ -123,7 +123,7 @@ export default function PracticeCategoryManager({
           <SubmitButton
             label="Add category"
             pendingLabel="Adding..."
-            className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+            className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
           />
         </form>
       </section>

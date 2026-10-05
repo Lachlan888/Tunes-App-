@@ -2,10 +2,7 @@
 
 import { redirect } from "next/navigation"
 import { getTomorrow } from "@/lib/review"
-import { reconcileStreaksForUser } from "@/lib/streaks"
 import { createClient } from "@/lib/supabase/server"
-import { recordStartedPracticeEvent } from "@/lib/services/activity-events"
-import { notifyComposerTuneStartedPractice } from "@/lib/services/composer-notifications"
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 
@@ -19,83 +16,23 @@ function appendQueryParam(url: string, key: string, value: string) {
 
 export async function startPracticeForUser(
   supabase: SupabaseServerClient,
-  userId: string,
   pieceId: number
 ): Promise<"started" | "already_in_practice"> {
   const nextReviewDue = getTomorrow()
-
-  const { data: existingUserPiece, error: fetchUserPieceError } = await supabase
-    .from("user_pieces")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("piece_id", pieceId)
-    .maybeSingle()
-
-  if (fetchUserPieceError) {
-    throw new Error(fetchUserPieceError.message)
-  }
-
-  if (existingUserPiece) {
-    return "already_in_practice"
-  }
-
-  const { error: deleteKnownError } = await supabase
-    .from("user_known_pieces")
-    .delete()
-    .eq("user_id", userId)
-    .eq("piece_id", pieceId)
-
-  if (deleteKnownError) {
-    throw new Error(deleteKnownError.message)
-  }
-
-  const { error: insertUserPieceError } = await supabase
-    .from("user_pieces")
-    .insert({
-      user_id: userId,
-      piece_id: pieceId,
-      status: "learning",
-      stage: 1,
-      next_review_due: nextReviewDue,
-    })
-
-  if (insertUserPieceError) {
-    throw new Error(insertUserPieceError.message)
-  }
-
-  await recordStartedPracticeEvent(userId, pieceId)
-
-  const { data: pieceForNotification, error: pieceNotificationError } =
-    await supabase
-      .from("pieces")
-      .select("id, title, composer_user_id")
-      .eq("id", pieceId)
-      .maybeSingle()
-
-  if (pieceNotificationError) {
-    console.error(
-      "Error loading piece for composer practice notification:",
-      pieceNotificationError
-    )
-  }
-
-  if (pieceForNotification) {
-    await notifyComposerTuneStartedPractice({
-      supabase,
-      composerUserId: pieceForNotification.composer_user_id,
-      learnerUserId: userId,
-      piece: {
-        id: pieceForNotification.id,
-        title: pieceForNotification.title,
-      },
-    })
-  }
-
-  await reconcileStreaksForUser(supabase, userId, {
-    markPracticeActivity: true,
+  const { data, error } = await supabase.rpc("enrol_piece_in_practice", {
+    p_piece_id: pieceId,
+    p_next_review_due: nextReviewDue,
   })
 
-  return "started"
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  if (data !== "started" && data !== "already_in_practice") {
+    throw new Error("Unexpected practice transition result")
+  }
+
+  return data
 }
 
 export async function startLearning(formData: FormData) {
@@ -116,7 +53,7 @@ export async function startLearning(formData: FormData) {
     redirect(redirectTo)
   }
 
-  await startPracticeForUser(supabase, user.id, pieceId)
+  await startPracticeForUser(supabase, pieceId)
 
   redirect(redirectTo)
 }

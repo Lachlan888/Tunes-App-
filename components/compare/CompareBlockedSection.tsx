@@ -12,7 +12,7 @@ type CompareBlockedSectionProps = {
 }
 
 const secondaryButtonClass =
-  "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+  "inline-flex min-h-11 rounded-control border border-border bg-surface-paper px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
 
 export default function CompareBlockedSection({
   matchedProfile,
@@ -24,21 +24,19 @@ export default function CompareBlockedSection({
     : null
 
   return (
-    <section className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <section className="mb-8 border-y border-hairline py-5">
       <div className="mb-5">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Friend request needed
-        </p>
-        <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">
           Player found
         </h2>
+        <p className="mt-2 text-sm font-semibold text-muted-foreground">Friend request needed</p>
       </div>
 
       <article
         className={
           profileHref
-            ? "flex flex-col gap-4 rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted/70 hover:shadow-md focus-within:ring-2 focus-within:ring-[var(--focus-ring)] md:flex-row md:items-center md:justify-between"
-            : "flex flex-col gap-4 rounded-2xl border border-border bg-background/70 p-4 shadow-sm md:flex-row md:items-center md:justify-between"
+            ? "flex flex-col gap-4 border-y border-hairline py-4 transition focus-within:ring-2 focus-within:ring-[var(--focus-ring)] md:flex-row md:items-center md:justify-between"
+            : "flex flex-col gap-4 border-y border-hairline py-4 md:flex-row md:items-center md:justify-between"
         }
 
       >

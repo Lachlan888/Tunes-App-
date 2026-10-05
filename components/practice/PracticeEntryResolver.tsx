@@ -35,7 +35,7 @@ export default function PracticeEntryResolver({ today, readyCount, activeCount }
   return (
     <section className="practice-entry" aria-labelledby="practice-entry-title">
       <div className="practice-entry-symbol" aria-hidden="true"><Icon name={available ? "practice" : "check"} size={30} /></div>
-      <h1 id="practice-entry-title" className="font-serif text-5xl font-semibold tracking-tight sm:text-6xl">{available ? "Practice" : activeCount > 0 ? "All caught up" : "Your practice starts here"}</h1>
+      <h1 id="practice-entry-title" className="font-sans text-5xl font-bold tracking-tight sm:text-6xl">{available ? "Practice" : activeCount > 0 ? "All caught up" : "Your practice starts here"}</h1>
       <p className="mt-4 text-base leading-7 text-text-muted sm:text-lg">
         {resumeHref ? "Pick up where you left off." : readyCount > 0 ? `${readyCount} tune${readyCount === 1 ? "" : "s"} ready. One at a time.` : activeCount > 0 ? "Your next tunes will be here when they’re due." : "Add tunes to Practice and we’ll take care of what’s next."}
       </p>

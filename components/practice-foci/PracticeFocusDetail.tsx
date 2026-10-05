@@ -44,7 +44,7 @@ function FocusEditPanel({
 }) {
   return (
     <section className="grid gap-4">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
         Edit focus
       </h2>
 
@@ -58,7 +58,7 @@ function FocusEditPanel({
             name="title"
             required
             defaultValue={focus.title}
-            className="min-w-0 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className="min-w-0 rounded-control border border-hairline bg-surface-paper px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
         </label>
 
@@ -68,7 +68,7 @@ function FocusEditPanel({
             name="description"
             rows={4}
             defaultValue={focus.description ?? ""}
-            className="min-w-0 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className="min-w-0 rounded-control border border-hairline bg-surface-paper px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
         </label>
 
@@ -78,7 +78,7 @@ function FocusEditPanel({
             name="target_date"
             type="date"
             defaultValue={focus.target_date ?? ""}
-            className="min-w-0 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className="min-w-0 rounded-control border border-hairline bg-surface-paper px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
         </label>
 
@@ -108,9 +108,9 @@ function RecentFocusNotes({
   recentNotes: PracticeFocusRecentNote[]
 }) {
   return (
-    <section className="grid gap-3 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
+    <section className="grid gap-3 border-t border-hairline pt-6">
       <div>
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
           Evidence
         </h2>
 
@@ -120,7 +120,7 @@ function RecentFocusNotes({
       </div>
 
       {recentNotes.length === 0 ? (
-        <p className="border-t border-border pt-4 text-sm leading-6 text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-4">
+        <p className="border-b border-hairline bg-surface-note p-4 text-sm leading-6 text-muted-foreground">
           No focus-linked notes yet. Add one from a review card by choosing this
           focus in the practice diary note modal.
         </p>
@@ -128,7 +128,7 @@ function RecentFocusNotes({
         <ul className="divide-y divide-border">
           {recentNotes.map((note) => (
             <li key={note.id} className="py-4">
-              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-muted-foreground">
                 <span>{formatDateOnly(note.practice_date)}</span>
 
                 {note.category_name ? (
@@ -174,9 +174,9 @@ export default function PracticeFocusDetail({
   return (
     <section className="grid gap-7 md:gap-6">
       <section className="grid gap-5 border-y border-border py-5 sm:grid-cols-3">
-        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Intent</p><p className="mt-2 text-sm leading-6 text-foreground">{focus.description || "Add a short intention so each practice session has a clear purpose."}</p></div>
-        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Evidence</p><p className="mt-2 text-sm leading-6 text-foreground">{recentNotes.length} linked {recentNotes.length === 1 ? "note" : "notes"} across {focus.tunes.length} {focus.tunes.length === 1 ? "tune" : "tunes"}.</p></div>
-        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Next review</p><p className="mt-2 text-sm leading-6 text-foreground">{focus.target_date ? formatDateOnly(focus.target_date) : "No review date set — add one when this focus needs a checkpoint."}</p></div>
+        <div><p className="text-sm font-bold text-foreground">Intent</p><p className="mt-2 text-sm leading-6 text-foreground">{focus.description || "Add a short intention so each practice session has a clear purpose."}</p></div>
+        <div><p className="text-sm font-bold text-foreground">Evidence</p><p className="mt-2 text-sm leading-6 text-foreground">{recentNotes.length} linked {recentNotes.length === 1 ? "note" : "notes"} across {focus.tunes.length} {focus.tunes.length === 1 ? "tune" : "tunes"}.</p></div>
+        <div><p className="text-sm font-bold text-foreground">Next review</p><p className="mt-2 text-sm leading-6 text-foreground">{focus.target_date ? formatDateOnly(focus.target_date) : "No review date set — add one when this focus needs a checkpoint."}</p></div>
       </section>
 
       <FocusActionMenu
@@ -188,7 +188,7 @@ export default function PracticeFocusDetail({
       />
 
       {isEditing ? (
-        <section className="md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
+        <section className="border-t border-hairline pt-6">
           <FocusEditPanel
             focus={focus}
             redirectTo={redirectTo}
@@ -199,8 +199,8 @@ export default function PracticeFocusDetail({
 
       <RecentFocusNotes recentNotes={recentNotes} />
 
-      <section className="grid gap-4 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <section className="grid gap-4 border-t border-hairline pt-6">
+        <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
           Linked tunes
         </h2>
 

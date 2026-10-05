@@ -11,7 +11,7 @@ export default function CompareStatusMessage({
 }: CompareStatusMessageProps) {
   return (
     <div
-      className={`mb-6 rounded-2xl border p-4 text-sm font-medium shadow-sm ${statusStyles[tone]}`}
+      className={`mb-6 border-y py-3 text-sm font-medium ${statusStyles[tone]}`}
     >
       {children}
     </div>

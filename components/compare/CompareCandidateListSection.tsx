@@ -22,10 +22,10 @@ type CompareCandidateListSectionProps = {
 }
 
 const primaryButtonClass =
-  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
 
 const secondaryButtonClass =
-  "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+  "inline-flex min-h-11 rounded-control border border-border bg-surface-paper px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
 
 function CandidateCard({
   profile,
@@ -51,8 +51,8 @@ function CandidateCard({
     <article
       className={
         profileHref
-          ? "flex flex-col gap-4 rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted/70 hover:shadow-md focus-within:ring-2 focus-within:ring-[var(--focus-ring)] md:flex-row md:items-center md:justify-between"
-          : "flex flex-col gap-4 rounded-2xl border border-border bg-background/70 p-4 shadow-sm md:flex-row md:items-center md:justify-between"
+          ? "flex flex-col gap-4 py-4 transition focus-within:ring-2 focus-within:ring-[var(--focus-ring)] md:flex-row md:items-center md:justify-between"
+          : "flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between"
       }
 
     >
@@ -119,8 +119,8 @@ export default function CompareCandidateListSection({
   }
 
   return (
-    <section className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <section className="mb-8 border-t border-hairline pt-5">
+      <h2 className="text-xl font-semibold text-foreground">
         {title}
       </h2>
 
@@ -130,7 +130,7 @@ export default function CompareCandidateListSection({
         </p>
       ) : null}
 
-      <div className="mt-5 space-y-3">
+      <div className="mt-4 divide-y divide-hairline border-y border-hairline">
         {profiles.map((profile) => (
           <CandidateCard
             key={profile.id}

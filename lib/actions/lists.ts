@@ -1075,7 +1075,7 @@ export async function startSelectedListTunes(formData: FormData) {
 
   try {
     for (const pieceId of safeIds) {
-      await startPracticeForUser(supabase, user.id, pieceId)
+      await startPracticeForUser(supabase, pieceId)
     }
   } catch {
     redirect(appendQueryParam(redirectTo, "list_batch", "error"))

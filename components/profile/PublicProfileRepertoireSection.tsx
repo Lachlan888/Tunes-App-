@@ -31,16 +31,16 @@ type PublicProfileRepertoireSectionProps = {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full rounded-object border border-border bg-background/70 px-4 py-3 text-sm text-foreground  outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 const secondaryButtonClass =
-  "inline-flex min-h-11 items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "inline-flex min-h-11 items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-foreground  transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 const activeChipClass =
-  "rounded-full border border-primary bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-sm transition"
+  "rounded-control border border-primary bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground  transition"
 
 const inactiveChipClass =
-  "rounded-full border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground"
+  "rounded-control border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground  transition hover:bg-muted hover:text-foreground"
 
 function getProfileDisplayName(profile: Profile) {
   return profile.display_name || profile.username
@@ -180,8 +180,8 @@ export default function PublicProfileRepertoireSection({
   if (!canViewFullRepertoire) {
     if (isOwnProfile) {
       return (
-        <section className="min-w-0 max-w-full md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <section className="min-w-0 max-w-full border-t border-hairline pt-5">
+          <p className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
             Friend repertoire view
           </p>
           <EmptyState
@@ -189,7 +189,7 @@ export default function PublicProfileRepertoireSection({
             description="Turn on “Show repertoire to friends” in Profile settings if you want accepted friends to browse the tunes you know or have in practice."
             primaryActionHref="/dashboard"
             primaryActionLabel="Edit Profile"
-            className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
+            className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 "
           />
         </section>
       )
@@ -203,10 +203,10 @@ export default function PublicProfileRepertoireSection({
   }
 
   return (
-    <section className="min-w-0 max-w-full md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
+    <section className="min-w-0 max-w-full border-t border-hairline pt-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
-          <h2 className="mt-2 break-words font-serif text-2xl font-bold leading-tight tracking-tight text-foreground md:text-3xl">
+          <h2 className="mt-2 break-words font-sans text-2xl font-bold leading-tight tracking-tight text-foreground md:text-3xl">
             {isOwnProfile ? "Your repertoire" : `${profileName}’s repertoire`}
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
@@ -218,7 +218,7 @@ export default function PublicProfileRepertoireSection({
           </p>
         </div>
 
-        <span className="w-fit rounded-full border border-border bg-background/70 px-3 py-1 text-sm font-medium text-muted-foreground">
+        <span className="w-fit rounded-control border border-border bg-background/70 px-3 py-1 text-sm font-medium text-muted-foreground">
           {tunes.length} tune{tunes.length === 1 ? "" : "s"}
         </span>
       </div>
@@ -231,16 +231,16 @@ export default function PublicProfileRepertoireSection({
               ? "Tunes you mark known or start practising will appear here."
               : "This friend does not have visible known or practice tunes yet."
           }
-          className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
+          className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 "
         />
       ) : (
         <>
-          <div className="mt-4 rounded-xl bg-card p-3 md:mt-6 md:rounded-2xl md:border md:border-border md:bg-muted md:p-4">
+          <div className="mt-4 rounded-object bg-card p-3 md:mt-6 md:rounded-object md:border md:border-border md:bg-muted md:p-4">
             <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_repeat(3,minmax(8rem,12rem))]">
               <div>
                 <label
                   htmlFor="profile-repertoire-search"
-                  className="mb-2 block text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                  className="mb-2 block text-sm font-semibold  tracking-[0.14em] text-muted-foreground"
                 >
                   Search
                 </label>
@@ -256,7 +256,7 @@ export default function PublicProfileRepertoireSection({
               <div>
                 <label
                   htmlFor="profile-repertoire-key"
-                  className="mb-2 block text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                  className="mb-2 block text-sm font-semibold  tracking-[0.14em] text-muted-foreground"
                 >
                   Key
                 </label>
@@ -278,7 +278,7 @@ export default function PublicProfileRepertoireSection({
               <div>
                 <label
                   htmlFor="profile-repertoire-style"
-                  className="mb-2 block text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                  className="mb-2 block text-sm font-semibold  tracking-[0.14em] text-muted-foreground"
                 >
                   Style
                 </label>
@@ -300,7 +300,7 @@ export default function PublicProfileRepertoireSection({
               <div>
                 <label
                   htmlFor="profile-repertoire-time"
-                  className="mb-2 block text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                  className="mb-2 block text-sm font-semibold  tracking-[0.14em] text-muted-foreground"
                 >
                   Time
                 </label>
@@ -350,7 +350,7 @@ export default function PublicProfileRepertoireSection({
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+                  className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground  transition hover:bg-muted hover:text-foreground items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
                 >
                   Clear filters
                 </button>
@@ -368,7 +368,7 @@ export default function PublicProfileRepertoireSection({
             <EmptyState
               title="No tunes match these filters"
               description="Try broadening the search, key, style, time, or relationship filter."
-              className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
+              className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 "
             />
           ) : (
             <ul className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -390,11 +390,11 @@ export default function PublicProfileRepertoireSection({
                       pieceStyles={tune.piece_styles}
                       listNames={tune.viewer_list_names}
                     >
-                      <span className="rounded-full border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground">
+                      <span className="rounded-control border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground">
                         {getProfileStateLabel(tune.profile_state, profileName)}
                       </span>
 
-                      <span className="rounded-full border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground">
+                      <span className="rounded-control border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground">
                         {getViewerStateLabel(tune.viewer_state)}
                       </span>
 

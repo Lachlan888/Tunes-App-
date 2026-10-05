@@ -13,7 +13,7 @@ export default function LibraryHeaderActions({
     <div className="mb-6 grid gap-3 md:mb-8 md:flex md:flex-wrap md:items-center">
       <CreateTuneModal styleOptions={styleOptions} />
 
-      <div className="hidden md:block">
+      <div>
         <BulkImportKnownTunesModal />
       </div>
     </div>

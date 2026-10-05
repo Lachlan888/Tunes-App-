@@ -61,7 +61,7 @@ export default async function SetlistsPage({ searchParams }: SetlistsPageProps) 
 
       {showSection("pending_invites") && pendingInvites.length > 0 ? (
         <section className="mb-8 border-y border-hairline py-5">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <h2 className="text-xl font-semibold text-foreground">
             Pending invitations
           </h2>
 
@@ -98,7 +98,7 @@ export default async function SetlistsPage({ searchParams }: SetlistsPageProps) 
                     <SubmitButton
                       label="Accept"
                       pendingLabel="Accepting..."
-                      className="min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                      className="min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                     />
                   </form>
 
@@ -112,7 +112,7 @@ export default async function SetlistsPage({ searchParams }: SetlistsPageProps) 
                     <SubmitButton
                       label="Decline"
                       pendingLabel="Declining..."
-                      className="min-h-11 inline-flex items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                      className="min-h-11 inline-flex items-center justify-center rounded-control border border-border bg-surface-paper px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                     />
                   </form>
                 </div>
@@ -124,7 +124,7 @@ export default async function SetlistsPage({ searchParams }: SetlistsPageProps) 
 
       {showSection("setlists") ? (
         <section className="border-t border-hairline pt-5">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <h2 className="text-xl font-semibold text-foreground">
             Your setlists
           </h2>
 
@@ -139,7 +139,7 @@ export default async function SetlistsPage({ searchParams }: SetlistsPageProps) 
 
               <Link
                 href="/library"
-                className="mt-4 inline-flex min-h-11 items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="mt-4 inline-flex min-h-11 items-center justify-center rounded-control border border-border bg-surface-paper px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               >
                 Browse tunes
               </Link>

@@ -18,10 +18,10 @@ type PracticeNoteFormProps = {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full rounded-control border border-hairline bg-surface-paper px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 const selectClassName =
-  "rounded-full border border-border bg-background/70 px-4 py-2 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "min-h-11 rounded-control border border-hairline bg-surface-paper px-4 py-2 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function PracticeNoteForm({
   practiceDate,
@@ -66,14 +66,11 @@ export default function PracticeNoteForm({
 
       <label className="block">
         {labelTuneName ? (
-          <span className="mb-2 block text-sm font-semibold tracking-[0.12em] text-muted-foreground">
-            <span className="uppercase">Add note for </span>
-            <span className="font-serif text-base font-semibold italic normal-case tracking-normal text-muted-foreground">
-              {labelTuneName}
-            </span>
+          <span className="mb-2 block text-sm font-semibold text-foreground">
+            Add note for {labelTuneName}
           </span>
         ) : (
-          <span className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <span className="mb-2 block text-sm font-semibold text-foreground">
             {label}
           </span>
         )}
@@ -101,7 +98,7 @@ export default function PracticeNoteForm({
         <SubmitButton
           label="Save note"
           pendingLabel="Saving..."
-          className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+          className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
         />
 
         <span aria-live="polite" className="text-xs text-muted-foreground">{isDirty ? "Unsaved note" : "Ready"}</span>

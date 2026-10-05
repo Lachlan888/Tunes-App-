@@ -21,13 +21,13 @@ function StreakItem({
   desktopHelper: string
 }) {
   return (
-    <div className="min-w-0 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4">
-      <p className="text-sm font-semibold leading-6 text-foreground md:text-sm md:uppercase md:tracking-[0.16em] md:text-muted-foreground">
+    <div className="min-w-0 border-t border-hairline pt-4 first:border-t-0 first:pt-0 md:border-l md:border-t-0 md:pl-5 md:pt-0 md:first:border-l-0 md:first:pl-0">
+      <p className="text-sm font-semibold leading-6 text-foreground">
         {label}
       </p>
 
       <div className="mt-1 flex flex-wrap items-end gap-x-2 gap-y-1 md:block">
-        <p className="font-serif text-4xl font-bold leading-none text-foreground md:text-5xl">
+        <p className="font-sans text-4xl font-bold leading-none text-foreground md:text-5xl">
           {current}
         </p>
 
@@ -50,15 +50,15 @@ export default function StreakSummarySection({
   return (
     <section
       className={joinClasses(
-        "md:rounded-2xl md:border md:border-hairline md:bg-surface-paper md:p-5 md:shadow-sm",
+        "border-t border-hairline pt-5",
         className
       )}
     >
-      <h2 className="px-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:px-0 md:text-sm">
+      <h2 className="text-xl font-bold tracking-tight text-foreground">
         Streaks
       </h2>
 
-      <div className="mt-3 grid grid-cols-2 gap-4 md:mt-4 md:gap-4">
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 md:gap-5">
         <StreakItem
           label="Revision"
           current={streakSummary.current_revision_streak}

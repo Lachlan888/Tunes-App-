@@ -4,7 +4,7 @@ import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeBu
 import TuneMediaLauncher from "@/components/reference-media/TuneMediaLauncher"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { cardStyles } from "@/components/ui/cardStyles"
-import { APP_TIME_ZONE } from "@/lib/review"
+import { formatPracticeDate } from "@/lib/review"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 
 type ActivePracticeSectionProps = {
@@ -13,23 +13,15 @@ type ActivePracticeSectionProps = {
   redirectTo: string
 }
 
-function formatDueDate(dateValue: string | null) {
-  if (!dateValue) return "No due date"
-
-  return new Date(dateValue).toLocaleDateString("en-AU", {
-    timeZone: APP_TIME_ZONE,
-  })
-}
-
 export default function ActivePracticeSection({
   practiceItems,
   totalCount,
   redirectTo,
 }: ActivePracticeSectionProps) {
   return (
-    <section className="mt-10 border-y border-border/70 py-4 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
+    <section className="mt-10 border-t border-hairline pt-5">
       <details>
-        <summary className="cursor-pointer text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <summary className="cursor-pointer text-xl font-bold tracking-tight text-foreground">
           Currently in practice ({totalCount})
         </summary>
 
@@ -40,11 +32,11 @@ export default function ActivePracticeSection({
         <Link href="/library/practice" className={buttonStyles.text}>Browse all Practice tunes</Link>
 
         {practiceItems.length === 0 ? (
-          <p className="mt-4 border-y border-dashed border-border py-4 text-sm text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-4">
+          <p className="mt-4 border-b border-hairline py-4 text-sm text-muted-foreground">
             No tunes in practice yet.
           </p>
         ) : (
-          <ul className="mt-4 divide-y divide-border/70 md:space-y-3 md:divide-y-0">
+          <ul className="mt-4 divide-y divide-hairline border-t border-hairline">
             {practiceItems.slice(0, 20).map((userPiece) => {
               const badgeLabel =
                 userPiece.overdue_days > 0
@@ -87,7 +79,7 @@ export default function ActivePracticeSection({
                       </p>
 
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Due: {formatDueDate(userPiece.next_review_due)}
+                        {formatPracticeDate(userPiece.next_review_due) ? `Next review ${formatPracticeDate(userPiece.next_review_due)}` : "No review date set"}
                       </p>
 
                       <PracticeProgress

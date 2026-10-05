@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
+import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import {
   archivePracticeFocus,
@@ -28,14 +29,14 @@ function getStatusLabel(status: PracticeFocus["status"]) {
 
 function getStatusClasses(status: PracticeFocus["status"]) {
   if (status === "active") {
-    return "border-success bg-success text-success-foreground"
+    return "text-success"
   }
 
   if (status === "completed") {
-    return "border-primary bg-primary text-primary-foreground"
+    return "text-primary"
   }
 
-  return "border-border bg-muted text-muted-foreground"
+  return "text-muted-foreground"
 }
 
 function formatDateOnly(dateOnly: string | null) {
@@ -90,106 +91,78 @@ function FocusPickerModal({
   ]
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end bg-foreground/30 px-3 pb-3 md:items-center md:justify-center md:p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Choose practice focus"
+    <ResponsiveModal
+      isOpen
+      onClose={onClose}
+      mobileMode="full-screen"
+      desktopMaxWidth="md:max-w-3xl"
+      title="Choose a focus"
+      description="Open another focus from your current focus areas."
+      bodyClassName="min-h-0 flex-1 overflow-y-auto px-4 py-2 md:px-6"
     >
-      <div className="max-h-[88vh] w-full overflow-hidden rounded-t-3xl border border-border bg-background shadow-xl md:max-w-3xl md:rounded-3xl">
-        <div className="sticky top-0 z-10 border-b border-border bg-background px-4 py-4 md:px-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground">
-                Choose a focus
-              </h2>
+      <div className="grid gap-7 pb-4">
+        {groups.map((group) =>
+          group.foci.length > 0 ? (
+            <section key={group.title} className="grid gap-2">
+              <div className="flex items-baseline justify-between gap-3 border-b border-hairline py-3">
+                <h3 className="font-sans text-lg font-bold tracking-tight text-foreground">
+                  {group.title}
+                </h3>
+                <p className="text-sm tabular-nums text-muted-foreground">
+                  {group.foci.length}
+                </p>
+              </div>
 
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Open another focus from your current focus areas.
-              </p>
-            </div>
+              <div className="divide-y divide-hairline">
+                {group.foci.map((focusOption) => {
+                  const isCurrent = focusOption.id === currentFocusId
 
-            <button
-              type="button"
-              className={buttonStyles.text}
-              onClick={onClose}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-
-        <div className="max-h-[calc(88vh-8rem)] overflow-y-auto px-4 py-4 md:px-6">
-          <div className="grid gap-6">
-            {groups.map((group) =>
-              group.foci.length > 0 ? (
-                <section key={group.title} className="grid gap-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                      {group.title}
-                    </h3>
-
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {group.foci.length}
-                    </p>
-                  </div>
-
-                  <div className="grid gap-3">
-                    {group.foci.map((focusOption) => {
-                      const isCurrent = focusOption.id === currentFocusId
-
-                      return (
-                        <Link
-                          key={focusOption.id}
-                          href={`/review/foci/${focusOption.id}`}
+                  return (
+                    <Link
+                      key={focusOption.id}
+                      href={`/review/foci/${focusOption.id}`}
+                      className={joinClasses(
+                        "grid gap-2 border-l-2 px-3 py-4 text-left transition hover:bg-surface-note/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]",
+                        isCurrent
+                          ? "border-action-primary bg-surface-note"
+                          : "border-transparent"
+                      )}
+                    >
+                      <div className="flex min-w-0 items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="break-words font-sans text-lg font-bold leading-tight text-foreground">
+                            {focusOption.title}
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                            {formatFocusMeta(focusOption)}
+                          </p>
+                        </div>
+                        <span
                           className={joinClasses(
-                            "grid gap-2 rounded-2xl border p-4 text-left shadow-sm transition hover:border-primary hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                            "shrink-0 text-xs font-bold",
                             isCurrent
-                              ? "border-primary bg-card"
-                              : "border-border bg-background/70"
+                              ? "text-action-primary"
+                              : getStatusClasses(focusOption.status)
                           )}
                         >
-                          <div className="flex min-w-0 items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <p className="break-words font-serif text-xl font-bold leading-tight text-foreground">
-                                {focusOption.title}
-                              </p>
+                          {isCurrent ? "Current" : getStatusLabel(focusOption.status)}
+                        </span>
+                      </div>
 
-                              <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                                {formatFocusMeta(focusOption)}
-                              </p>
-                            </div>
-
-                            <span
-                              className={joinClasses(
-                                "shrink-0 rounded-full border px-3 py-1 text-xs font-semibold",
-                                isCurrent
-                                  ? "border-primary bg-primary text-primary-foreground"
-                                  : getStatusClasses(focusOption.status)
-                              )}
-                            >
-                              {isCurrent
-                                ? "Current"
-                                : getStatusLabel(focusOption.status)}
-                            </span>
-                          </div>
-
-                          {focusOption.description ? (
-                            <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
-                              {focusOption.description}
-                            </p>
-                          ) : null}
-                        </Link>
-                      )
-                    })}
-                  </div>
-                </section>
-              ) : null
-            )}
-          </div>
-        </div>
+                      {focusOption.description ? (
+                        <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
+                          {focusOption.description}
+                        </p>
+                      ) : null}
+                    </Link>
+                  )
+                })}
+              </div>
+            </section>
+          ) : null
+        )}
       </div>
-    </div>
+    </ResponsiveModal>
   )
 }
 
@@ -207,34 +180,21 @@ function FocusActionsSheet({
   onToggleEdit: () => void
   onOpenPicker: () => void
   onClose: () => void
-}) {
+  }) {
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end bg-foreground/30 px-3 pb-3 md:items-center md:justify-center md:p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Focus actions"
+    <ResponsiveModal
+      isOpen
+      onClose={onClose}
+      desktopMaxWidth="md:max-w-md"
+      title={focus.title}
+      description="Change this focus or its linked workflow."
     >
-      <div className="w-full rounded-t-3xl border border-border bg-background p-4 shadow-xl md:max-w-md md:rounded-3xl md:p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground">
-              {focus.title}
-            </h2>
-          </div>
-
-          <button type="button" className={buttonStyles.text} onClick={onClose}>
-            Close
-          </button>
-        </div>
-
-        <div className="mt-5 grid gap-3">
+        <div className="grid gap-3">
           <button
             type="button"
             className={`${buttonStyles.secondaryStrong} w-full`}
             onClick={() => {
               onOpenPicker()
-              onClose()
             }}
           >
             Change focus
@@ -286,9 +246,8 @@ function FocusActionsSheet({
               className={`${buttonStyles.destructiveSecondary} w-full`}
             />
           </form>
-        </div>
       </div>
-    </div>
+    </ResponsiveModal>
   )
 }
 
@@ -301,16 +260,15 @@ export default function FocusActionMenu({
 }: FocusActionMenuProps) {
   const [isActionsOpen, setIsActionsOpen] = useState(false)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
+  const openPicker = useCallback(() => setIsPickerOpen(true), [])
+  const closePicker = useCallback(() => setIsPickerOpen(false), [])
+  const closeActions = useCallback(() => setIsActionsOpen(false), [])
 
   return (
     <>
-      <section className="grid gap-3 md:flex md:items-center md:justify-between md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
+      <section className="grid gap-3 border-b border-hairline pb-5 md:flex md:items-center md:justify-between">
         <div className="hidden md:block">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Current focus
-          </p>
-
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+          <p className="text-sm leading-6 text-muted-foreground">
             {formatFocusMeta(focus)}
           </p>
         </div>
@@ -330,8 +288,8 @@ export default function FocusActionMenu({
           redirectTo={redirectTo}
           isEditing={isEditing}
           onToggleEdit={onToggleEdit}
-          onOpenPicker={() => setIsPickerOpen(true)}
-          onClose={() => setIsActionsOpen(false)}
+          onOpenPicker={openPicker}
+          onClose={closeActions}
         />
       ) : null}
 
@@ -339,7 +297,7 @@ export default function FocusActionMenu({
         <FocusPickerModal
           foci={allFoci}
           currentFocusId={focus.id}
-          onClose={() => setIsPickerOpen(false)}
+          onClose={closePicker}
         />
       ) : null}
     </>

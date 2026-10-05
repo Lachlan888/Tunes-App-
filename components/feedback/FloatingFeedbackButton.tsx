@@ -10,7 +10,7 @@ export default function FloatingFeedbackButton({
   variant = "floating",
   onOpen,
 }: {
-  variant?: "floating" | "menu" | "hidden"
+  variant?: "floating" | "menu" | "focus" | "header" | "hidden"
   onOpen?: () => void
 }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -35,13 +35,24 @@ export default function FloatingFeedbackButton({
         className={
           variant === "menu"
             ? buttonStyles.menuItem
-            : "fixed bottom-[calc(var(--navigation-dock-space)+var(--session-dock-space)+0.75rem)] right-4 z-[250] rounded-pill border border-action-primary bg-action-primary px-4 py-3 text-sm font-semibold text-action-primary-foreground shadow-material-floating transition-colors hover:bg-action-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] md:bottom-[calc(var(--session-dock-space)+1.5rem)] md:right-6"
+            : variant === "focus"
+              ? `${buttonStyles.text} !min-h-11 !w-auto shrink-0`
+              : variant === "header"
+                ? "inline-flex min-h-11 shrink-0 items-center rounded-control border border-action-primary bg-action-primary px-3 text-xs font-semibold text-action-primary-foreground transition-colors hover:bg-action-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+            : "fixed bottom-[calc(var(--navigation-dock-space)+var(--session-dock-space)+0.5rem)] right-2 z-[250] hidden rounded-control border border-action-primary bg-action-primary px-3 py-3 text-sm font-semibold text-action-primary-foreground shadow-material-floating transition-colors hover:bg-action-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] md:inline-flex md:bottom-auto md:top-6 md:right-6 md:px-4"
         }
         aria-label="Send beta feedback"
         data-floating-feedback={variant === "floating" || undefined}
       >
         {variant === "menu" ? <Icon name="feedback" /> : null}
-        <span>Help & feedback</span>
+        {variant === "floating" ? (
+          <>
+            <span className="lg:hidden">Feedback</span>
+            <span className="hidden lg:inline">Help & feedback</span>
+          </>
+        ) : (
+          <span>{variant === "focus" || variant === "header" ? "Feedback" : "Help & feedback"}</span>
+        )}
       </button>}
 
       {isOpen ? (

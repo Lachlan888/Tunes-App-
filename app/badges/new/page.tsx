@@ -56,13 +56,13 @@ export default async function NewBadgePage({
       </div>
 
       {message ? (
-        <div className="mb-6 rounded-2xl border border-warning bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+        <div className="mb-6 border-l-4 border-warning py-2 pl-3 text-sm font-medium text-foreground">
           {message}
         </div>
       ) : null}
 
       <section className="mb-5 border-b border-border pb-5">
-        <h1 className="mt-3 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+        <h1 className="mt-3 text-4xl font-bold tracking-tight text-foreground md:text-4xl">
           Create Badge
         </h1>
 

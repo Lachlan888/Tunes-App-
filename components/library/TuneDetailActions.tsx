@@ -38,7 +38,7 @@ export default function TuneDetailActions({
   )
 
   const tuneStatePracticeStatusClass = joinClasses(
-    "inline-flex w-full items-center justify-center rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm sm:w-auto",
+    "inline-flex w-full items-center justify-center rounded-control border border-state-practice bg-state-practice px-4 py-2 text-sm font-medium text-state-practice-foreground sm:w-auto",
     tuneStateButtonSize
   )
 
@@ -48,11 +48,11 @@ export default function TuneDetailActions({
   )
 
   const knownInertStatusClass =
-    "flex min-h-[3.25rem] w-full flex-col justify-center rounded-2xl px-1 py-2 text-left sm:!w-[15rem] sm:!min-w-[15rem]"
+    "flex min-h-[3.25rem] w-full flex-col justify-center border-l-2 border-state-known px-3 py-2 text-left sm:!w-[15rem] sm:!min-w-[15rem]"
 
   return (
-    <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <section className="w-full max-w-full border-t border-hairline py-6">
+      <h2 className="text-xl font-bold tracking-tight text-text-primary">
         My Practice
       </h2>
 
@@ -60,9 +60,9 @@ export default function TuneDetailActions({
         Manage your practice state for this tune.
       </p>
 
-      <div className="mt-5 grid min-w-0 gap-3 sm:grid-cols-3">
-        <div className="min-w-0 rounded-2xl border border-border bg-background/70 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      <div className="mt-5 grid min-w-0 divide-y divide-hairline border-y border-hairline sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        <div className="min-w-0 py-4 sm:px-4 sm:first:pl-0">
+          <p className="text-xs font-semibold text-text-muted">
             Practice
           </p>
           <p className="mt-2 min-w-0 break-words text-lg font-semibold text-foreground">
@@ -70,8 +70,8 @@ export default function TuneDetailActions({
           </p>
         </div>
 
-        <div className="min-w-0 rounded-2xl border border-border bg-background/70 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <div className="min-w-0 py-4 sm:px-4">
+          <p className="text-xs font-semibold text-text-muted">
             Known
           </p>
           <p className="mt-2 min-w-0 break-words text-lg font-semibold text-foreground">
@@ -79,8 +79,8 @@ export default function TuneDetailActions({
           </p>
         </div>
 
-        <div className="min-w-0 rounded-2xl border border-border bg-background/70 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <div className="min-w-0 py-4 sm:px-4 sm:last:pr-0">
+          <p className="text-xs font-semibold text-text-muted">
             Stage
           </p>
           <p className="mt-2 min-w-0 break-words text-lg font-semibold text-foreground">
@@ -90,7 +90,7 @@ export default function TuneDetailActions({
       </div>
 
       {isAlreadyInPractice && currentStage ? (
-        <div className="mt-5 min-w-0 rounded-2xl border border-border bg-background/70 p-4">
+        <div className="mt-5 min-w-0 border-t border-hairline pt-4">
           <PracticeProgress stage={currentStage} />
         </div>
       ) : null}
@@ -119,7 +119,7 @@ export default function TuneDetailActions({
           />
         ) : isKnown ? (
           <div className={knownInertStatusClass} role="status" aria-label="This tune is marked as known">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="text-xs font-semibold text-text-muted">
               Status
             </p>
             <p className="mt-1 text-sm font-medium text-muted-foreground">

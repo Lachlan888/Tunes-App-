@@ -58,7 +58,7 @@ export default async function DevPage({ searchParams }: DevPageProps) {
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
       {statusMessage ? (
-        <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+        <div className="mb-6 border-l-4 border-hairline py-2 pl-3 text-sm font-medium text-foreground">
           {statusMessage}
         </div>
       ) : null}
@@ -97,7 +97,7 @@ export default async function DevPage({ searchParams }: DevPageProps) {
       </section>
 
       <section className="mb-10">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
           Feedback inbox
         </h2>
         <div className="mt-5">
@@ -106,7 +106,7 @@ export default async function DevPage({ searchParams }: DevPageProps) {
       </section>
 
       <section className="mb-10">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
           Feature usage
         </h2>
         <div className="mt-5">
@@ -115,7 +115,7 @@ export default async function DevPage({ searchParams }: DevPageProps) {
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
           User activity
         </h2>
         <div className="mt-5">

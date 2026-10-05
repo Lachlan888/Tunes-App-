@@ -58,7 +58,7 @@ function StatusBanner({
 }) {
   return (
     <div
-      className={`mb-5 rounded-2xl border p-4 text-sm font-medium shadow-sm md:mb-6 ${statusStyles[tone]}`}
+      className={`mb-5 border-l-4 py-2 pl-3 text-sm font-medium md:mb-6 ${statusStyles[tone]}`}
     >
       {children}
     </div>
@@ -90,9 +90,9 @@ function SearchResultsSection({
   friendSuggestions: FriendSuggestionResult
 }) {
   return (
-    <section className="mb-7 md:mb-8 md:rounded-2xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
+    <section className="mb-8 border-t border-hairline pt-6">
       <div className="mb-4 md:mb-5">
-        <h2 className="text-xl font-semibold tracking-tight text-foreground md:mt-2 md:font-serif md:text-3xl md:font-bold">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">
           Find friends
         </h2>
       </div>
@@ -109,14 +109,14 @@ function SearchResultsSection({
 
       {!searchQuery && friendSuggestions.suggestions.length > 0 && (
         <div className="mt-5" aria-labelledby="friend-suggestions-title">
-          <h3 id="friend-suggestions-title" className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <h3 id="friend-suggestions-title" className="text-base font-bold text-foreground">
             Suggested musicians
           </h3>
-          <div className="mt-2 divide-y divide-border/70 md:grid md:grid-cols-2 md:gap-3 md:divide-y-0">
+          <div className="mt-2 divide-y divide-hairline border-y border-hairline md:grid md:grid-cols-2 md:divide-x md:divide-y-0">
             {friendSuggestions.suggestions.map((suggestion) => (
               <article
                 key={suggestion.id}
-                className="flex items-center justify-between gap-4 py-4 first:pt-2 last:pb-0 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm"
+                className="flex items-center justify-between gap-4 px-1 py-4 md:px-4"
               >
                 <div className="min-w-0">
                   <p className="truncate font-medium text-foreground">
@@ -151,11 +151,11 @@ function SearchResultsSection({
       )}
 
       {searchMatches.length > 0 && (
-        <div className="mt-5 divide-y divide-border/70 md:space-y-3 md:divide-y-0">
+        <div className="mt-5 divide-y divide-hairline border-y border-hairline">
           {searchMatches.map((match) => (
             <article
               key={match.id}
-              className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm md:transition md:hover:bg-muted/70"
+              className="flex items-center justify-between gap-4 px-1 py-4 transition hover:bg-surface-note/50"
             >
               <div className="min-w-0">
                 <p className="truncate font-medium text-foreground">
@@ -202,9 +202,9 @@ function IncomingRequestsSection({
   }[]
 }) {
   return (
-    <section className="mb-7 md:mb-8 md:rounded-2xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
+    <section className="mb-8 border-t border-hairline pt-6">
       <div className="mb-4 md:mb-5">
-        <h2 className="text-xl font-semibold tracking-tight text-foreground md:mt-2 md:font-serif md:text-3xl md:font-bold">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">
           <span className="md:hidden">Requests</span>
           <span className="hidden md:inline">Incoming requests</span>
         </h2>
@@ -213,11 +213,11 @@ function IncomingRequestsSection({
       {pendingIncomingRequests.length === 0 ? (
         <EmptyState title="No incoming requests" />
       ) : (
-        <div className="divide-y divide-border/70 md:space-y-3 md:divide-y-0">
+        <div className="divide-y divide-hairline border-y border-hairline">
           {pendingIncomingRequests.map((request) => (
             <article
               key={request.connection_id}
-              className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm md:transition md:hover:bg-muted/70"
+              className="flex items-center justify-between gap-4 px-1 py-4 transition hover:bg-surface-note/50"
             >
               <div className="min-w-0">
                 <p className="truncate font-medium text-foreground">
@@ -377,7 +377,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 pb-5 pt-0 text-foreground md:px-6 md:py-8">
-      <PageHeader title="Social" className="hidden md:flex" />
+      <PageHeader title="Social"  />
 
       <FriendsMobileSwitcher
         addFriendsContent={addFriendsContent}

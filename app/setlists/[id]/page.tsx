@@ -28,8 +28,8 @@ export default async function SetlistDetailPage({ params, searchParams }: {
   return <main className="mx-auto max-w-6xl space-y-6 px-4 py-6 text-foreground sm:px-6">
     <Link href="/setlists" className="inline-flex min-h-11 items-center text-sm underline underline-offset-4">Back to Setlists</Link>
     <SetlistHeader setlist={setlist} members={acceptedMembers} tuneCount={items.length} />
-    <nav aria-label="Setlist views" className="flex flex-wrap gap-2">
-      {(["read", ...(canEdit ? ["manage"] : [])] as const).map(view => <Link key={view} href={`?mode=${view}`} aria-current={mode === view ? "page" : undefined} className={`inline-flex min-h-11 items-center rounded-full border border-hairline px-5 text-sm font-semibold ${mode === view ? "bg-primary text-primary-foreground" : ""}`}>{view === "read" ? "Read" : "Manage"}</Link>)}
+    <nav aria-label="Setlist detail mode" className="flex flex-wrap border-b border-hairline">
+      {(["read", ...(canEdit ? ["manage"] : [])] as const).map(view => <Link key={view} href={`?mode=${view}`} aria-current={mode === view ? "page" : undefined} className={`inline-flex min-h-11 items-center border-b-2 px-5 text-sm font-semibold ${mode === view ? "border-primary text-foreground" : "border-transparent text-muted-foreground"}`}>{view === "read" ? "Read" : "Manage"}</Link>)}
     </nav>
     <SetlistStatusMessages setlistStatus={query?.setlist ?? ""} inviteStatus={query?.setlist_invite ?? ""} itemStatus={query?.setlist_item ?? ""} />
     {requestedMode === "manage" && !canEdit ? <p role="status">Accept your invitation from Setlists before managing this set.</p> : null}

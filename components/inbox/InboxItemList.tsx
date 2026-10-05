@@ -62,7 +62,7 @@ export default function InboxItemList({
             <article className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
               <div className={`border-l-4 pl-3 ${isUnread ? "border-state-social" : "border-border"}`}>
                 <div className="flex items-start gap-2">
-                  {isUnread ? <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-state-social" aria-label="Unread" /> : null}
+                  {isUnread ? <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-control bg-state-social" aria-label="Unread" /> : null}
                   <div>
                     <p className="text-sm font-medium leading-6">{notificationText(item)}</p>
                     {item.activity_context ? <p className="mt-1 text-sm text-muted-foreground">{item.activity_context.summary}</p> : null}

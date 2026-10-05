@@ -18,11 +18,11 @@ export default function BadgeRecipientsList({
 }: BadgeRecipientsListProps) {
   if (awards.length === 0) {
     return (
-      <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <section className="rounded-object border border-border bg-card p-6 ">
+        <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
           Recipients
         </h2>
-        <p className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+        <p className="mt-4 rounded-object border border-border bg-background/70 p-4 text-sm text-muted-foreground">
           No one has received this badge yet.
         </p>
       </section>
@@ -30,8 +30,8 @@ export default function BadgeRecipientsList({
   }
 
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <section className="rounded-object border border-border bg-card p-6 ">
+      <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
         Recipients
       </h2>
 
@@ -42,7 +42,7 @@ export default function BadgeRecipientsList({
           return (
             <li
               key={award.id}
-              className="rounded-2xl border border-border bg-background/70 p-4"
+              className="rounded-object border border-border bg-background/70 p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>

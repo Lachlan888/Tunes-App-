@@ -84,7 +84,7 @@ export default function TrendTuneList({
 
   if (entries.length === 0) {
     return (
-      <p className="rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+      <p className="border-t border-hairline py-4 text-sm text-muted-foreground">
         No tunes found for this section yet.
       </p>
     )
@@ -92,7 +92,7 @@ export default function TrendTuneList({
 
   return (
     <>
-      <ul className="divide-y divide-border border-y border-border">
+      <ul className="divide-y divide-hairline border-t border-hairline">
         {entries.map((entry) => {
           const piece = entry.piece
 
@@ -120,7 +120,7 @@ export default function TrendTuneList({
                 <div className="min-w-0">
                   <Link
                     href={`/library/${piece.id}`}
-                    className="font-serif text-xl font-bold leading-tight text-foreground underline-offset-4 hover:underline"
+                    className="font-sans text-xl font-bold leading-tight text-foreground underline-offset-4 hover:underline"
                   >
                     {piece.title}
                   </Link>
@@ -155,7 +155,7 @@ export default function TrendTuneList({
 
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
                   {isAlreadyInPractice ? (
-                    <span className="rounded-full border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground shadow-sm">
+                    <span className="rounded-control border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground">
                       Already in practice
                     </span>
                   ) : (
@@ -165,14 +165,14 @@ export default function TrendTuneList({
                       <SubmitButton
                         label="Add to Practice"
                         pendingLabel="Starting..."
-                        className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+                        className="inline-flex min-h-11 items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       />
                     </form>
                   )}
 
                   {!isAlreadyInPractice &&
                     (isKnown ? (
-                      <span className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm">
+                      <span className="rounded-control border border-state-known bg-state-known px-4 py-2 text-sm font-medium text-state-known-foreground">
                         Known
                       </span>
                     ) : (
@@ -186,14 +186,14 @@ export default function TrendTuneList({
                         <SubmitButton
                           label="Mark Known"
                           pendingLabel="Saving..."
-                          className="inline-flex min-h-11 rounded-control border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+                          className="inline-flex min-h-11 items-center justify-center rounded-control border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                         />
                       </form>
                     ))}
 
                   <button
                     type="button"
-                    className="inline-flex min-h-11 rounded-control border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+                    className="inline-flex min-h-11 items-center justify-center rounded-control border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
                     onClick={() => {
                       setSelectedPiece(piece)
                       setSelectedListId("")

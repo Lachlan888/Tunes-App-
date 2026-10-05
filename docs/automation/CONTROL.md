@@ -1,5 +1,9 @@
 # Lean runner controls — authorised 22 September 2026
 
+## Explicit visual-review request — 4 October 2026
+
+The user has now explicitly requested that future automation **systematically implement and render-check the visual overhaul across the whole app**. This authorises a focused V02 local/disposable-environment browser review and route/viewport evidence despite the 23 September default below. Check palette, hierarchy, wrappers, metadata, navigation, responsive composition and interaction preservation using `docs/design/EDITORIAL_SYSTEM.md`. Do not substitute code inspection for rendered review. The owner still performs final manual acceptance; do not claim it from agent checks. No production writes or role-login fixture requests follow from this exception.
+
 ## User testing preference — 23 September 2026
 
 The user owns manual functional testing and visual acceptance across the project. Agents should test code using targeted automated behavioural/regression tests, scoped lint, typecheck when appropriate, and required code/build/database integration checks. Do not visually crawl the app, run manual browser walkthroughs, capture screenshot matrices, or request role-login fixtures for manual acceptance unless the user explicitly asks. This instruction supersedes older browser/manual/responsive visual acceptance gates in chunk specs, RUNNER and CONTROL. Record these checks as user-owned/not agent-verified, never as passed; their absence must not block the queue or pause the runner. Continue fixing demonstrated defects and preserve automated permission/privacy enforcement checks. At integration/release gates report code verification separately from user-owned manual acceptance; do not claim complete user-facing acceptance without user confirmation. Keep verification focused to reduce token use.

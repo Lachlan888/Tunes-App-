@@ -118,7 +118,7 @@ function getBeatClassName(accent: BeatAccent, isCurrent: boolean) {
         : "border-border bg-transparent text-muted-foreground"
 
   return joinClasses(
-    "grid min-h-11 min-w-11 place-items-center rounded-xl border px-2 py-2 text-sm font-semibold shadow-sm transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] sm:min-h-12 sm:min-w-12",
+    "grid min-h-11 min-w-11 place-items-center rounded-control border px-2 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] sm:min-h-12 sm:min-w-12",
     accentClassName,
     isCurrent && "ring-2 ring-[var(--focus-ring)] ring-offset-2 ring-offset-card"
   )
@@ -186,10 +186,10 @@ function NumericStepper({
 
   return (
     <label className="grid min-w-0 gap-1">
-      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+      <span className="text-xs font-bold text-muted-foreground">
         {label}
       </span>
-      <span className="grid min-h-11 grid-cols-[2.75rem_minmax(4.5rem,1fr)_2.75rem] overflow-hidden rounded-xl border border-border bg-background/80 shadow-sm md:min-h-10 md:grid-cols-[2.5rem_minmax(4rem,1fr)_2.5rem]">
+      <span className="grid min-h-11 grid-cols-[2.75rem_minmax(4.5rem,1fr)_2.75rem] overflow-hidden rounded-control border border-hairline bg-surface-paper md:min-h-10 md:grid-cols-[2.5rem_minmax(4rem,1fr)_2.5rem]">
         <button
           type="button"
           className="grid place-items-center border-r border-border text-lg font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-45"
@@ -589,13 +589,13 @@ export default function PracticeMetronome({
             />
 
             <label className="grid gap-1">
-              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <span className="text-xs font-bold text-muted-foreground">
                 Unit
               </span>
               <select
                 value={denominator}
                 onChange={(event) => setDenominator(Number(event.target.value))}
-                className="min-h-11 w-full rounded-xl border border-border bg-background/80 px-3 py-2 text-sm font-medium text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-10 md:w-20"
+                className="min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-10 md:w-20"
                 aria-label="Metronome beat unit"
               >
                 {DENOMINATORS.map((value) => (
@@ -608,7 +608,7 @@ export default function PracticeMetronome({
           </div>
         </div>
 
-        <div className="grid gap-3 rounded-2xl border border-border/70 bg-background/50 p-3">
+        <div className="grid gap-3 border-y border-hairline bg-surface-note px-3 py-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm font-medium text-foreground">
               {settingsSummary}

@@ -321,7 +321,7 @@ export default function SetlistTuneMatrix({
   }, [openStatusItemId])
 
   return (
-    <div className="space-y-4">
+    <div className="divide-y divide-hairline border-y border-hairline">
       {items.map((item, index) => {
         const piece = item.piece
         const title = piece?.title ?? "Unknown tune"
@@ -335,18 +335,18 @@ export default function SetlistTuneMatrix({
         return (
           <article
             key={item.id}
-            className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
+            className="py-5"
           >
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-muted-foreground">
+                  <span className="min-w-8 text-sm font-bold tabular-nums text-muted-foreground">
                     {index + 1}
                   </span>
 
                   <Link
                     href={`/library/${item.piece_id}`}
-                    className="font-serif text-2xl font-bold tracking-tight text-foreground underline decoration-transparent underline-offset-4 transition hover:text-primary hover:decoration-primary focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                    className="text-2xl font-bold tracking-tight text-foreground underline decoration-transparent underline-offset-4 transition hover:text-primary hover:decoration-primary focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                   >
                     {title}
                   </Link>

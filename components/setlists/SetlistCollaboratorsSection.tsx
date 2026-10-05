@@ -16,17 +16,16 @@ function memberLabel(member: SetlistMember) {
   return member.profile?.display_name || member.profile?.username || "Unknown"
 }
 
-function MemberPill({
+function MemberRow({
   member,
   status,
 }: {
   member: SetlistMember
   status: "accepted" | "pending"
 }) {
-  const className =
-    status === "accepted"
-      ? "rounded-full border border-success bg-success px-3 py-1 text-sm font-medium text-success-foreground"
-      : "rounded-full border border-border bg-background/70 px-3 py-1 text-sm font-medium text-muted-foreground"
+  const className = status === "accepted"
+    ? "block border-l-2 border-success py-2 pl-3 text-sm font-medium text-foreground"
+    : "block border-l-2 border-warning py-2 pl-3 text-sm font-medium text-muted-foreground"
 
   return (
     <span className={className}>
@@ -56,20 +55,20 @@ export default function SetlistCollaboratorsSection({
   inviteSetlistCollaborator,
 }: SetlistCollaboratorsSectionProps) {
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+    <section className="border-t border-hairline pt-5">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <h2 className="text-xl font-semibold text-foreground">
             Collaborators
           </h2>
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 divide-y divide-hairline border-y border-hairline">
             {acceptedMembers.map((member) => (
-              <MemberPill key={member.id} member={member} status="accepted" />
+              <MemberRow key={member.id} member={member} status="accepted" />
             ))}
 
             {pendingMembers.map((member) => (
-              <MemberPill key={member.id} member={member} status="pending" />
+              <MemberRow key={member.id} member={member} status="pending" />
             ))}
           </div>
         </div>

@@ -240,7 +240,7 @@ export default function SetlistStatusMessages({
         <div
           key={message.key}
           role="status"
-          className={`rounded-2xl border p-4 text-sm font-medium shadow-sm ${toneClassName(
+          className={`border-y py-3 text-sm font-medium ${toneClassName(
             message.tone
           )}`}
         >

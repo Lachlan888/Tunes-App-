@@ -1,4 +1,4 @@
-import { getProgressTowardsKnown } from "@/lib/review"
+import { getReviewIntervalDays } from "@/lib/review"
 
 type PracticeProgressProps = {
   stage: number | null | undefined
@@ -9,26 +9,18 @@ export default function PracticeProgress({
   stage,
   className = "",
 }: PracticeProgressProps) {
-  const progress = getProgressTowardsKnown(stage)
+  const safeStage = Math.min(Math.max(stage ?? 1, 1), 10)
+  const intervalDays = getReviewIntervalDays(stage)
 
   return (
-    <div className={className}>
-      <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="font-medium text-muted-foreground">
-          REVIEW PROGRESS
-        </span>
-        <span className="font-semibold text-foreground">{progress}%</span>
-      </div>
-
-      <div
-        className="mt-2 h-3 w-full overflow-hidden rounded-full border border-border bg-background/80 shadow-inner"
-        aria-hidden="true"
-      >
-        <div
-          className="h-full rounded-full bg-primary transition-all"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
+    <div className={`border-l-2 border-state-practice pl-3 ${className}`}>
+      <p className="text-sm font-semibold text-foreground">
+        Stage {safeStage} <span aria-hidden="true">·</span>{" "}
+        {intervalDays}-day review
+      </p>
+      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+        This stage sets the interval after the next review result.
+      </p>
     </div>
   )
 }

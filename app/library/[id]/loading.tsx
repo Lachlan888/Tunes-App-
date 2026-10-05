@@ -11,12 +11,12 @@ export default function TuneDetailLoading() {
         Loading tune detail
       </span>
       <Skeleton className="h-11 w-28" />
-      <section className="mt-3 rounded-sheet bg-surface-paper p-5 shadow-material-raised sm:p-6">
+      <section className="mt-3 border-b border-hairline py-6">
         <Skeleton className="h-10 w-3/5" />
         <Skeleton className="mt-3 h-4 w-2/5" />
-        <Skeleton className="mt-3 h-7 w-36 rounded-pill" />
+        <Skeleton className="mt-3 h-7 w-36" />
       </section>
-      <div className="mt-4 grid grid-cols-3 gap-1 rounded-control bg-surface-note p-1">
+      <div className="mt-4 grid grid-cols-3 border-b border-hairline">
         <Skeleton className="h-11" />
         <Skeleton className="h-11" />
         <Skeleton className="h-11" />

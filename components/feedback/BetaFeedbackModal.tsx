@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
+import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { submitBetaFeedback } from "@/lib/actions/beta-feedback"
 import type { BetaFeedbackFormState } from "@/lib/types"
 
@@ -16,10 +17,10 @@ const initialState: BetaFeedbackFormState = {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/80 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "w-full rounded-object border border-border bg-background/80 px-4 py-3 text-sm text-foreground  outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 const textareaClassName =
-  "min-h-32 w-full rounded-2xl border border-border bg-background/80 px-4 py-3 text-sm leading-6 text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "min-h-32 w-full rounded-object border border-border bg-background/80 px-4 py-3 text-sm leading-6 text-foreground  outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 function getCurrentPagePath() {
   return `${window.location.pathname}${window.location.search}${window.location.hash}`
@@ -61,33 +62,19 @@ export default function BetaFeedbackModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[500] flex items-end justify-center bg-foreground/25 px-3 py-4 md:items-center md:px-6">
-      <div className="max-h-[92vh] w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-card shadow-2xl">
-        <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
-          <div>
-            <h2 className="mt-1 font-serif text-2xl font-bold">
-              Send feedback
-            </h2>
-
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              This includes the exact page path so the issue can be opened from
-              the Dev Cockpit.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleClose}
-            disabled={isSubmitting}
-            className="min-h-11 rounded-control border border-border px-3 py-1 text-sm font-semibold text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Close
-          </button>
-        </div>
-
+    <ResponsiveModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      closeDisabled={isSubmitting}
+      title="Send feedback"
+      description="This includes the exact page path so the issue can be opened from the Dev Cockpit."
+      mobileMode="full-screen"
+      desktopMaxWidth="md:max-w-lg"
+      bodyClassName="min-h-0 min-w-0 flex-1 overflow-y-auto p-0"
+    >
         <form
           action={formAction}
-          className="max-h-[calc(92vh-7rem)] space-y-4 overflow-y-auto px-5 py-5"
+          className="space-y-4 px-5 py-5"
         >
           <input type="hidden" name="page_path" value={pagePath} />
           <input type="hidden" name="page_url" value={pageUrl} />
@@ -95,8 +82,8 @@ export default function BetaFeedbackModal({
           <input type="hidden" name="viewport_width" value={viewportWidth} />
           <input type="hidden" name="viewport_height" value={viewportHeight} />
 
-          <div className="rounded-2xl border border-border bg-background/70 p-3 text-xs leading-5 text-muted-foreground">
-            <p className="font-semibold uppercase tracking-[0.14em]">
+          <div className="rounded-object border border-border bg-background/70 p-3 text-xs leading-5 text-muted-foreground">
+            <p className="font-semibold  tracking-[0.14em]">
               Captured page
             </p>
             <p className="mt-1 break-all">{pagePath}</p>
@@ -154,7 +141,7 @@ export default function BetaFeedbackModal({
 
           {state.message ? (
             <div
-              className={`rounded-2xl border p-3 text-sm font-medium ${
+              className={`rounded-object border p-3 text-sm font-medium ${
                 state.status === "success"
                   ? "border-success bg-success/10 text-foreground"
                   : "border-destructive bg-destructive/10 text-foreground"
@@ -178,11 +165,10 @@ export default function BetaFeedbackModal({
               label="Send feedback"
               pendingLabel="Sending…"
               forcePending={isSubmitting}
-              className="min-h-11 rounded-control bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="min-h-11 rounded-control bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground  transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             />
           </div>
         </form>
-      </div>
-    </div>
+    </ResponsiveModal>
   )
 }

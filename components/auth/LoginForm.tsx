@@ -13,10 +13,10 @@ function isAlreadyRegisteredMessage(message: string) {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "w-full rounded-object border border-border bg-background/70 px-4 py-3 text-sm text-foreground  outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 const primaryButtonClassName =
-  "w-full min-h-11 rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60"
+  "w-full min-h-11 rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground  transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60"
 
 const modeButtonClassName =
   "text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
@@ -148,11 +148,8 @@ export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
 
   return (
     <main className="mx-auto max-w-xl px-4 py-6 text-foreground sm:px-6 lg:py-10">
-      <section
-        id="sign-in"
-        className="rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-6 lg:p-8"
-      >
-        <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground">
+      <section id="sign-in" className="border-t border-hairline py-6 sm:py-8">
+        <h1 className="font-sans text-4xl font-bold tracking-tight text-foreground">
           {isLogin && "Sign in"}
           {isSignup && "Create account"}
           {isReset && "Reset password"}
@@ -175,13 +172,13 @@ export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
         )}
 
         {message && (
-          <div role="status" className="mt-5 rounded-2xl border border-success bg-background/70 p-4 text-sm text-success shadow-sm">
+          <div role="status" className="mt-5 border-l-4 border-success py-2 pl-3 text-sm text-success">
             {message}
           </div>
         )}
 
         {errorMessage && (
-          <div role="alert" className="mt-5 rounded-2xl border border-destructive bg-background/70 p-4 text-sm text-destructive shadow-sm">
+          <div role="alert" className="mt-5 border-l-4 border-destructive py-2 pl-3 text-sm text-destructive">
             {errorMessage}
           </div>
         )}
@@ -198,7 +195,7 @@ export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
           <div>
             <label
               htmlFor="email"
-              className="mb-2 block text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+              className="mb-2 block text-sm font-semibold  tracking-[0.14em] text-muted-foreground"
             >
               Email
             </label>
@@ -219,7 +216,7 @@ export default function LoginForm({ initialMode, nextPath }: LoginFormProps) {
             <div>
               <label
                 htmlFor="password"
-                className="mb-2 block text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                className="mb-2 block text-sm font-semibold  tracking-[0.14em] text-muted-foreground"
               >
                 Password
               </label>

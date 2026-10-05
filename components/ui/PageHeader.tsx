@@ -23,7 +23,7 @@ export default function PageHeader({
   return (
     <header
       className={joinClasses(
-        "mb-5 flex flex-col gap-3 md:mb-6 md:flex-row md:items-center md:justify-between",
+        "mb-8 flex flex-col gap-4 border-b border-hairline pb-5 md:mb-10 md:flex-row md:items-end md:justify-between",
         className
       )}
     >
@@ -40,7 +40,7 @@ export default function PageHeader({
 
         <h1
           className={joinClasses(
-            "break-words font-serif text-3xl font-semibold leading-tight tracking-tight text-text-primary md:text-4xl",
+            "break-words font-sans text-4xl font-bold leading-[1.05] tracking-tight text-text-primary sm:text-5xl md:text-6xl",
             titleClassName
           )}
         >

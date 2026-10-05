@@ -1,0 +1,7 @@
+{
+  "owner_task_id": "01a101dc-50d8-76f0-8fdd-b81a54ec1ddb",
+  "terminal_turn_status": "interrupted",
+  "evidence": "wait_threads, turn 01a101dc-55a7-7f21-9561-def02ec1888f and observed terminal status interrupted",
+  "checked_at": "2026-10-04T02:03:12.810827+00:00",
+  "lock_sha256": "f48be6de22a063ada1f07596802590fc91b72753367877124c36ed4f5901459d"
+}

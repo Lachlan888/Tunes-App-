@@ -49,18 +49,18 @@ export default function MetricVisualiser({
 
   if (!selectedVisualisation) {
     return (
-      <div className="rounded-3xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
+      <div className="border-y border-hairline py-6 text-sm text-muted-foreground">
         No metrics available yet.
       </div>
     )
   }
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+    <section className="border-y border-hairline">
       <div className="border-b border-border bg-card-strong/70 p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight">
+            <h2 className="mt-2 font-sans text-3xl font-bold tracking-tight">
               {selectedVisualisation.label}
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
@@ -75,7 +75,7 @@ export default function MetricVisualiser({
             <select
               value={selectedId}
               onChange={(event) => setSelectedId(event.target.value)}
-              className="mt-2 w-full rounded-2xl border border-border bg-background/80 px-4 py-3 text-sm font-medium text-foreground outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="mt-2 w-full rounded-object border border-border bg-background/80 px-4 py-3 text-sm font-medium text-foreground outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
             >
               {visualisations.map((visualisation) => (
                 <option key={visualisation.id} value={visualisation.id}>
@@ -87,29 +87,29 @@ export default function MetricVisualiser({
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-3">
-          <div className="rounded-2xl border border-border bg-background/70 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <div className="border-b border-hairline py-4">
+            <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
               Total
             </p>
-            <p className="mt-2 font-serif text-4xl font-bold">
+            <p className="mt-2 font-sans text-4xl font-bold">
               {formatNumber(totalValue)}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-border bg-background/70 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <div className="border-b border-hairline py-4">
+            <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
               Rows
             </p>
-            <p className="mt-2 font-serif text-4xl font-bold">
+            <p className="mt-2 font-sans text-4xl font-bold">
               {formatNumber(rows.length)}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-border bg-background/70 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <div className="border-b border-hairline py-4">
+            <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
               Top item
             </p>
-            <p className="mt-2 truncate font-serif text-2xl font-bold">
+            <p className="mt-2 truncate font-sans text-2xl font-bold">
               {topRow ? topRow.label : "None"}
             </p>
             {topRow ? (
@@ -128,10 +128,10 @@ export default function MetricVisualiser({
         </div>
       ) : (
         <div className="grid gap-6 p-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]">
-          <div className="rounded-3xl border border-border bg-background/70 p-5">
+          <div className="min-w-0 rounded-object border border-border bg-background/70 p-5">
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
-                <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
                   Ranked chart
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -151,7 +151,7 @@ export default function MetricVisualiser({
                   <div key={row.id}>
                     <div className="mb-2 flex items-center justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-primary text-xs font-bold text-primary-foreground">
                           {index + 1}
                         </div>
                         <div className="min-w-0">
@@ -167,7 +167,7 @@ export default function MetricVisualiser({
                       </div>
 
                       <div className="shrink-0 text-right">
-                        <p className="font-serif text-2xl font-bold">
+                        <p className="font-sans text-2xl font-bold">
                           {formatNumber(row.value)}
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -176,9 +176,9 @@ export default function MetricVisualiser({
                       </div>
                     </div>
 
-                    <div className="h-5 overflow-hidden rounded-full border border-border bg-card-strong">
+                    <div className="h-5 overflow-hidden rounded-control border border-border bg-card-strong">
                       <div
-                        className="h-full rounded-full bg-primary shadow-sm"
+                        className="h-full rounded-control bg-primary "
                         style={{ width: `${width}%` }}
                       />
                     </div>
@@ -188,9 +188,9 @@ export default function MetricVisualiser({
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="rounded-3xl border border-border bg-background/70 p-5">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="min-w-0 space-y-4">
+            <div className="rounded-object border border-border bg-background/70 p-5">
+              <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
                 Distribution
               </h3>
 
@@ -201,10 +201,10 @@ export default function MetricVisualiser({
                   return (
                     <div
                       key={row.id}
-                      className="rounded-2xl border border-border bg-card p-4"
+                      className="rounded-object border border-border bg-card p-4"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-primary text-xs font-bold text-primary-foreground">
                           {getInitials(row.label)}
                         </div>
                         <div className="min-w-0">
@@ -217,7 +217,7 @@ export default function MetricVisualiser({
                         </div>
                       </div>
 
-                      <p className="mt-3 font-serif text-3xl font-bold">
+                      <p className="mt-3 font-sans text-3xl font-bold">
                         {formatNumber(row.value)}
                       </p>
 
@@ -234,8 +234,8 @@ export default function MetricVisualiser({
               </div>
             </div>
 
-            <div className="rounded-3xl border border-border bg-background/70 p-5">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <div className="rounded-object border border-border bg-background/70 p-5">
+              <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
                 Details
               </h3>
 
@@ -255,7 +255,7 @@ export default function MetricVisualiser({
                         </p>
                       ) : null}
                     </div>
-                    <p className="font-serif text-xl font-bold">
+                    <p className="font-sans text-xl font-bold">
                       {formatNumber(row.value)}
                     </p>
                   </div>

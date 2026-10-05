@@ -41,8 +41,8 @@ export default function NavigationDock({
       aria-label="Primary navigation"
       onFocusCapture={() => setIsCompact(false)}
       className={joinClasses(
-        "floating-material fixed inset-x-2 bottom-[max(0.5rem,env(safe-area-inset-bottom))] z-[300] grid grid-cols-6 border border-hairline shadow-material-floating transition-[padding,border-radius] [transition-duration:var(--motion-standard)] [transition-timing-function:var(--ease-folk)] md:hidden",
-        isCompact ? "rounded-object p-1" : "rounded-sheet p-1.5"
+        "fixed inset-x-0 bottom-0 z-[300] grid grid-cols-6 border-t border-hairline bg-surface-canvas pb-[max(0.25rem,env(safe-area-inset-bottom))] transition-[padding,border-radius] [transition-duration:var(--motion-standard)] [transition-timing-function:var(--ease-folk)] md:hidden",
+        isCompact ? "p-1" : "p-1.5"
       )}
     >
       {primaryNavItems.map((item) => {
@@ -60,9 +60,9 @@ export default function NavigationDock({
             href={item.href}
             aria-current={isSelected ? "page" : undefined}
             className={joinClasses(
-              "relative flex min-h-11 min-w-11 flex-col items-center justify-center gap-0.5 rounded-control px-1 text-[0.68rem] font-semibold leading-none transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]",
+              "relative flex min-h-11 min-w-11 flex-col items-center justify-center gap-0.5 border-t-2 border-transparent px-1 text-[0.68rem] font-semibold leading-none transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]",
               isSelected
-                ? "bg-action-primary text-action-primary-foreground shadow-material-rest"
+                ? "border-action-primary text-text-primary"
                 : "text-text-muted hover:bg-surface-note hover:text-text-primary"
             )}
           >

@@ -19,12 +19,12 @@ export default function PracticeCategoryManagerModal({
 
   return (
     <>
-      <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:rounded-3xl md:p-5">
+      <section className="border-t border-hairline pt-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
+            <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
               Practice categories
-            </p>
+            </h2>
 
             <p className="mt-2 hidden text-sm leading-6 text-muted-foreground md:block">
               Manage note categories for tempo, form, technique, variations, or

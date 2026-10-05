@@ -51,7 +51,7 @@ export default function CompareMobile(props: CompareViewProps) {
       {canShowResults ? (
         <div className="pb-8">
           <header className="mb-5">
-            <h1 className="hidden font-serif text-4xl font-bold tracking-tight md:block">Compare</h1>
+            <h1 className="font-sans text-4xl font-bold tracking-tight md:text-6xl">Compare</h1>
             <p className="mt-2 text-sm text-muted-foreground">{compareHeading}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {selectedProfiles.map((profile) => (
@@ -63,7 +63,7 @@ export default function CompareMobile(props: CompareViewProps) {
                       : filterPreservedUsers,
                     { includePractice }
                   )}
-                  className="inline-flex min-h-11 items-center rounded-full border border-border px-3 text-sm font-medium"
+                  className="inline-flex min-h-11 items-center border-b border-hairline px-1 text-sm font-medium"
                 >
                   {profile.display_name || profile.username || "Musician"} ×
                 </Link>
@@ -77,7 +77,7 @@ export default function CompareMobile(props: CompareViewProps) {
       ) : (
         <>
           <header className="mb-6">
-            <h1 className="hidden font-serif text-4xl font-bold tracking-tight text-foreground md:block">
+            <h1 className="font-sans text-4xl font-bold tracking-tight text-foreground md:text-6xl">
               Compare
             </h1>
           </header>
@@ -89,7 +89,7 @@ export default function CompareMobile(props: CompareViewProps) {
           />
 
           <section className="mb-7">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <h2 className="text-xl font-semibold text-foreground">
               Start compare
             </h2>
 
@@ -97,7 +97,7 @@ export default function CompareMobile(props: CompareViewProps) {
               <button
                 type="button"
                 onClick={() => setIsInviteSheetOpen(true)}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               >
                 <QrIcon />
                 <span>Compare in person</span>
@@ -106,7 +106,7 @@ export default function CompareMobile(props: CompareViewProps) {
               <button
                 type="button"
                 onClick={() => setIsAddSheetOpen(true)}
-                className="inline-flex min-h-12 rounded-control border border-border bg-background/70 px-5 py-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+                className="inline-flex min-h-12 rounded-control border border-border bg-surface-paper px-5 py-3 text-sm font-medium text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
               >
                 Add person
               </button>
@@ -116,7 +116,7 @@ export default function CompareMobile(props: CompareViewProps) {
 
           {matchedProfile && !canCompare ? (
             <section className="border-y border-border py-4">
-              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <h2 className="text-xl font-semibold text-foreground">
                 Friend request needed
               </h2>
 
@@ -129,7 +129,7 @@ export default function CompareMobile(props: CompareViewProps) {
 
           {compareSuggestions.length > 0 ? (
             <section className="mt-7">
-              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <h2 className="text-xl font-semibold text-foreground">
                 Suggested friends
               </h2>
 

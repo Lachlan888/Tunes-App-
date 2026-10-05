@@ -10,9 +10,9 @@ type CompareJoinPageProps = {
   params: Promise<{ token: string }>
 }
 
-function StatusCard({ children }: { children: React.ReactNode }) {
+function StatusLine({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+    <p className="border-y border-hairline py-4 text-sm leading-6 text-muted-foreground">
       {children}
     </p>
   )
@@ -27,47 +27,43 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
 
   return (
     <main className="mx-auto max-w-xl px-4 py-6 text-foreground sm:px-6 sm:py-10">
-      <section className="rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Compare in person
-        </p>
-
+      <section>
         {preview.state === "invalid" ? (
           <>
-            <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight">
+            <h1 className="font-sans text-4xl font-bold tracking-tight">
               This comparison code isn’t valid
             </h1>
             <div className="mt-5">
-              <StatusCard>Ask the musician to create a new code.</StatusCard>
+              <StatusLine>Ask the musician to create a new code.</StatusLine>
             </div>
           </>
         ) : null}
 
         {preview.state === "expired" ? (
           <>
-            <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight">
+            <h1 className="font-sans text-4xl font-bold tracking-tight">
               This comparison code has expired
             </h1>
             <div className="mt-5">
-              <StatusCard>Ask them to create a new one.</StatusCard>
+              <StatusLine>Ask them to create a new one.</StatusLine>
             </div>
           </>
         ) : null}
 
         {preview.state === "revoked" || preview.state === "consumed" ? (
           <>
-            <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight">
+            <h1 className="font-sans text-4xl font-bold tracking-tight">
               This invitation is no longer available
             </h1>
             <div className="mt-5">
-              <StatusCard>Ask the musician to create a new code.</StatusCard>
+              <StatusLine>Ask the musician to create a new code.</StatusLine>
             </div>
           </>
         ) : null}
 
         {preview.state === "self" ? (
           <>
-            <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight">
+            <h1 className="font-sans text-4xl font-bold tracking-tight">
               This is your own comparison code
             </h1>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
@@ -78,7 +74,7 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
 
         {preview.state === "valid" ? (
           <>
-            <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight">
+            <h1 className="font-sans text-4xl font-bold tracking-tight">
               {preview.inviter.name} wants to compare repertoires
             </h1>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
@@ -94,7 +90,7 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
                 <>
                   <Link
                     href={signupHref}
-                    className="inline-flex min-h-12 items-center justify-center rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                    className="inline-flex min-h-12 items-center justify-center rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                   >
                     Sign up to compare
                   </Link>
@@ -119,7 +115,7 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
 
         {preview.state === "already_connected" ? (
           <>
-            <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight">
+            <h1 className="font-sans text-4xl font-bold tracking-tight">
               You’re already connected
             </h1>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
@@ -139,7 +135,7 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
 
         {preview.state === "accepted" ? (
           <>
-            <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight">
+            <h1 className="font-sans text-4xl font-bold tracking-tight">
               Connected with {preview.inviter.name}
             </h1>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
@@ -147,7 +143,7 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
             </p>
             <Link
               href={preview.compareHref}
-              className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] sm:w-auto"
+              className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] sm:w-auto"
             >
               Compare now
             </Link>
@@ -155,7 +151,7 @@ export default async function CompareJoinPage({ params }: CompareJoinPageProps) 
         ) : null}
 
         {preview.state === "invalid" || preview.state === "expired" || preview.state === "revoked" || preview.state === "consumed" ? (
-          <div className="mt-6 border-t border-border pt-5">
+          <div className="mt-6">
             <div className="flex flex-wrap gap-3">
               <Link href="/compare" className="inline-flex min-h-11 items-center rounded-control border border-primary bg-primary px-4 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Start a new comparison</Link>
             </div>

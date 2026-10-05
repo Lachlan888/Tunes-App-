@@ -30,13 +30,13 @@ type UserInstrumentsSectionProps = {
 }
 
 const inputClassName =
-  "flex-1 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "flex-1 rounded-object border border-border bg-background/70 px-4 py-3 text-sm text-foreground  outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 const primaryButtonClassName =
-  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center"
+  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground  transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center"
 
 const secondaryButtonClassName =
-  "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center"
+  "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground  transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center"
 
 function ProfileDraftHiddenInputs({
   profileDraft,
@@ -118,8 +118,8 @@ export default function UserInstrumentsSection({
   profileDraft,
 }: UserInstrumentsSectionProps) {
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <section className="rounded-object border border-border bg-card p-6 ">
+      <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
         Instruments
       </h2>
 
@@ -129,19 +129,19 @@ export default function UserInstrumentsSection({
       </p>
 
       {instrumentSaved && (
-        <p className="mt-5 rounded-2xl border border-success bg-muted p-4 text-sm font-medium text-foreground shadow-sm">
+        <p className="mt-5 rounded-object border border-success bg-muted p-4 text-sm font-medium text-foreground ">
           Instrument added.
         </p>
       )}
 
       {instrumentRemoved && (
-        <p className="mt-5 rounded-2xl border border-success bg-muted p-4 text-sm font-medium text-foreground shadow-sm">
+        <p className="mt-5 rounded-object border border-success bg-muted p-4 text-sm font-medium text-foreground ">
           Instrument removed.
         </p>
       )}
 
       {instrumentErrorMessage && (
-        <p className="mt-5 rounded-2xl border border-destructive bg-muted p-4 text-sm font-medium text-destructive shadow-sm">
+        <p className="mt-5 rounded-object border border-destructive bg-muted p-4 text-sm font-medium text-destructive ">
           {instrumentErrorMessage}
         </p>
       )}
@@ -171,7 +171,7 @@ export default function UserInstrumentsSection({
           {instruments.map((instrument) => (
             <li
               key={instrument.id}
-              className="flex flex-col gap-3 rounded-2xl border border-border bg-background/70 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-object border border-border bg-background/70 p-4  sm:flex-row sm:items-center sm:justify-between"
             >
               <span className="text-sm font-medium text-foreground">
                 {instrument.instrument_name}
@@ -196,7 +196,7 @@ export default function UserInstrumentsSection({
           ))}
         </ul>
       ) : (
-        <p className="mt-6 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+        <p className="mt-6 rounded-object border border-border bg-background/70 p-4 text-sm text-muted-foreground">
           No instruments added yet.
         </p>
       )}

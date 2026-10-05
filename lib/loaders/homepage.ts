@@ -4,7 +4,7 @@ import {
   getBacklogTierLabel,
   isDueExactlyToday,
 } from "@/lib/review"
-import { reconcileStreaksForUser } from "@/lib/streaks"
+import { getStreakSummaryForUser } from "@/lib/streaks"
 import { requireUserContext } from "@/lib/auth/session"
 import { withServerTiming } from "@/lib/server-timing"
 import { createClient } from "@/lib/supabase/server"
@@ -263,6 +263,7 @@ function buildGettingStartedState(options: {
   knownCount: number
   listCount: number
   dueTodayCount: number
+  needsAttentionCount: number
   reviewEventCount: number
 }): GettingStartedState {
   const totalInPractice = options.practiceCount
@@ -281,7 +282,9 @@ function buildGettingStartedState(options: {
   const hasPracticeTunes = totalInPractice > 0
   const hasLists = totalLists > 0
   const hasCompletedReview = options.reviewEventCount > 0
-  const hasFinishedToday = hasPracticeTunes && options.dueTodayCount === 0
+  const hasFinishedToday =
+    hasPracticeTunes &&
+    options.dueTodayCount + options.needsAttentionCount === 0
 
   const tasks: GettingStartedTask[] = [
     {
@@ -441,7 +444,7 @@ export async function loadHomepageData() {
     { data: connectionRows, error: connectionError },
   ] = await withServerTiming("homepage.primary-data", () =>
     Promise.all([
-      reconcileStreaksForUser(supabase, user.id),
+      getStreakSummaryForUser(supabase, user.id),
       loadHomeBadgeSummary({
         supabase,
         userId: user.id,
@@ -541,7 +544,6 @@ export async function loadHomepageData() {
   const safeKnownCount = repertoireSummary?.known_count ?? 0
   const safeListCount = repertoireSummary?.list_count ?? 0
   const safeInstrumentCount = repertoireSummary?.instrument_count ?? 0
-  const safeReviewEventCount = repertoireSummary?.review_event_count ?? 0
 
   const typedPracticeSummaryRows =
     (practiceSummaryRows ?? []) as HomePracticeSummaryRow[]
@@ -649,15 +651,10 @@ export async function loadHomepageData() {
     () => Promise.all([
       loadFriendActivityPage(supabase, acceptedFriendIds, user.id),
 
-      typedPracticeSummaryRows.length > 0
-        ? supabase
-            .from("review_events")
-            .select("id", { count: "exact", head: true })
-            .in(
-              "user_piece_id",
-              typedPracticeSummaryRows.map((userPiece) => userPiece.id)
-            )
-        : Promise.resolve({ count: 0, error: null }),
+      supabase
+        .from("review_events")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id),
 
     ])
   )
@@ -666,7 +663,8 @@ export async function loadHomepageData() {
     throw new Error(reviewEventResult.error.message)
   }
 
-  const reviewEventCount = safeReviewEventCount || reviewEventResult.count || 0
+  const reviewEventCount =
+    repertoireSummary?.review_event_count ?? reviewEventResult.count ?? 0
 
   const gettingStartedState = buildGettingStartedState({
     profile: (profile ?? null) as HomepageProfileRow | null,
@@ -675,6 +673,7 @@ export async function loadHomepageData() {
     knownCount: safeKnownCount,
     listCount: safeListCount,
     dueTodayCount,
+    needsAttentionCount,
     reviewEventCount,
   })
 

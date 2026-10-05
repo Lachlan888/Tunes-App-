@@ -32,7 +32,7 @@ export default function DirectMessageThreadList({
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   {thread.unreadCount > 0 ? (
-                    <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-state-social" aria-label="Unread messages" />
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-control bg-state-social" aria-label="Unread messages" />
                   ) : null}
                   <h2 className="truncate font-semibold">{label}</h2>
                 </div>
@@ -66,7 +66,7 @@ export default function DirectMessageThreadList({
                 <input type="hidden" name="recipient_user_id" value={thread.otherUser.id} />
                 <input type="hidden" name="redirect_to" value="/inbox?tab=messages" />
                 <label className="block text-sm font-semibold" htmlFor={`reply-${thread.otherUser.id}`}>Reply to {label}</label>
-                <textarea id={`reply-${thread.otherUser.id}`} name="body" rows={3} required className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]" />
+                <textarea id={`reply-${thread.otherUser.id}`} name="body" rows={3} required className="w-full rounded-object border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]" />
                 <div className="flex flex-wrap gap-2">
                   <SubmitButton label="Send reply" pendingLabel="Sending..." className="inline-flex min-h-11 rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]" />
                   {thread.otherUser.username ? (

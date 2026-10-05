@@ -149,7 +149,7 @@ export function LearningQueueView({
 
   if (learningQueueTunes.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
+      <div className="border-y border-dashed border-hairline py-5 text-sm text-muted-foreground">
         Tunes you add to lists but have not started practising or marked Known
         will appear here.
       </div>
@@ -164,7 +164,7 @@ export function LearningQueueView({
           {isSelecting ? "Cancel select" : "Select"}
         </button>
       </div>
-      <ul className="divide-y-0 border-y border-border/70 md:rounded-3xl md:border md:bg-card md:px-5 md:shadow-sm">
+      <ul className="border-y border-hairline">
       {learningQueueTunes.map((queueTune) => {
         const tuneTitle = queueTune.piece.title
         const listText = getListNamesText(queueTune.listNames)
@@ -261,7 +261,7 @@ export function UnsortedView({
 
   if (!hasUnsorted) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
+      <div className="border-y border-dashed border-hairline py-5 text-sm text-muted-foreground">
         Every Known or in-practice tune is already represented in at least one
         list.
       </div>
@@ -273,7 +273,7 @@ export function UnsortedView({
       <div className="grid gap-6 lg:grid-cols-2">
         <section>
           <div className="mb-3">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <h3 className="text-lg font-semibold text-foreground">
               In Practice, Not In A List
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -283,11 +283,11 @@ export function UnsortedView({
           </div>
 
           {unlistedPracticeTunes.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-border bg-card p-4 text-sm text-muted-foreground">
+            <p className="border-y border-dashed border-hairline py-4 text-sm text-muted-foreground">
               No in-practice tunes need list organisation.
             </p>
           ) : (
-            <ul className="border-y border-border/70 md:rounded-3xl md:border md:bg-card md:px-5 md:shadow-sm">
+            <ul className="border-y border-hairline">
               {unlistedPracticeTunes.map((userPiece) => {
                 const piece = extractJoinedPiece(userPiece.pieces)
                 const pieceTitle = piece?.title ?? "Untitled tune"
@@ -327,7 +327,7 @@ export function UnsortedView({
 
         <section>
           <div className="mb-3">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <h3 className="text-lg font-semibold text-foreground">
               Known, Not In A List
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -336,11 +336,11 @@ export function UnsortedView({
           </div>
 
           {unlistedKnownTunes.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-border bg-card p-4 text-sm text-muted-foreground">
+            <p className="border-y border-dashed border-hairline py-4 text-sm text-muted-foreground">
               No Known tunes need list organisation.
             </p>
           ) : (
-            <ul className="border-y border-border/70 md:rounded-3xl md:border md:bg-card md:px-5 md:shadow-sm">
+            <ul className="border-y border-hairline">
               {unlistedKnownTunes.map((userKnownPiece) => {
                 const piece = extractJoinedPiece(userKnownPiece.pieces)
                 const pieceTitle = piece?.title ?? "Untitled tune"
@@ -408,7 +408,7 @@ export function SavedSharedView({
 
   if (!hasSavedOrShared) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
+      <div className="border-y border-dashed border-hairline py-5 text-sm text-muted-foreground">
         Bookmarked public lists and lists shared directly with you will appear
         here.
       </div>

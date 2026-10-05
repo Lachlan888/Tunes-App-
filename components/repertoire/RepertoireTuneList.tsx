@@ -61,13 +61,13 @@ function formatDueDate(dateValue: string | null | undefined) {
 }
 
 const secondaryButtonClass =
-  "inline-flex min-h-11 items-center justify-center rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm font-semibold text-text-muted shadow-material-rest transition-colors hover:border-action-primary/45 hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "inline-flex min-h-11 items-center justify-center rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm font-semibold text-text-muted transition-colors hover:border-action-primary/45 hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 const removeButtonClass =
-  "inline-flex min-h-11 items-center justify-center rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm font-semibold text-text-muted shadow-material-rest transition-colors hover:border-action-primary/45 hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "inline-flex min-h-11 items-center justify-center rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm font-semibold text-text-muted transition-colors hover:border-action-primary/45 hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 const destructiveButtonClass =
-  "inline-flex min-h-11 items-center justify-center rounded-control border border-action-destructive bg-surface-paper px-3 py-2 text-sm font-semibold text-action-destructive shadow-material-rest transition-colors hover:bg-action-destructive/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "inline-flex min-h-11 items-center justify-center rounded-control border border-action-destructive bg-surface-paper px-3 py-2 text-sm font-semibold text-action-destructive transition-colors hover:bg-action-destructive/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 export default function RepertoireTuneList({
   mode,
@@ -236,7 +236,7 @@ export default function RepertoireTuneList({
             : undefined
         }
         resetLabel={hasActiveFilters ? "Reset filters" : undefined}
-        className="rounded-object bg-surface-paper px-4 shadow-material-rest md:px-5"
+        className="border-y border-hairline"
         items={
           groupBy === "none"
             ? items.map(renderItem)
@@ -245,7 +245,7 @@ export default function RepertoireTuneList({
                   <section aria-labelledby={`group-${groupLabel.replaceAll(/[^a-z0-9]+/gi, "-").toLowerCase()}`}>
                     <h2
                       id={`group-${groupLabel.replaceAll(/[^a-z0-9]+/gi, "-").toLowerCase()}`}
-                      className="border-b border-hairline bg-surface-paper py-2 text-xs font-semibold uppercase tracking-[0.14em] text-text-muted"
+                      className="border-b border-hairline py-3 text-sm font-semibold text-text-primary"
                     >
                       {groupLabel} · {groupItems.length}
                     </h2>

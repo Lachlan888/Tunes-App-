@@ -31,7 +31,7 @@ type PieceCommentsSectionProps = {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full rounded-control border border-hairline bg-surface-paper px-4 py-3 text-sm text-text-primary outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 function AuthorLink({ author }: { author: CommentAuthor }) {
   if (!author.username) {
@@ -99,8 +99,8 @@ function ReportCommentForm({
   commentId: number
 }) {
   return (
-    <details className="mt-3 rounded-2xl border border-border bg-background/70 p-3">
-      <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground">
+    <details className="mt-3 border-t border-hairline pt-3">
+      <summary className="cursor-pointer text-xs font-semibold text-text-muted hover:text-text-primary">
         Report
       </summary>
 
@@ -193,9 +193,9 @@ export default function PieceCommentsSection({
   )
 
   return (
-    <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
+    <section className="w-full max-w-full border-t border-hairline py-6">
       <div>
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-xl font-bold tracking-tight text-text-primary">
           Comments
         </h2>
 
@@ -215,7 +215,7 @@ export default function PieceCommentsSection({
       </div>
 
       {parentComments.length > 0 ? (
-        <ul className="mt-6 space-y-4">
+        <ul className="mt-6 divide-y divide-hairline border-y border-hairline">
           {parentComments.map((comment) => {
             const author = profileMap[comment.user_id] ?? {
               displayName: "Unknown player",
@@ -229,10 +229,10 @@ export default function PieceCommentsSection({
             return (
               <li
                 key={comment.id}
-                className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
+                className="py-4"
               >
                 {isHidden ? (
-                  <p className="rounded-2xl border border-destructive bg-muted p-3 text-sm font-medium text-destructive">
+                  <p className="border-l-2 border-action-destructive bg-action-destructive/8 p-3 text-sm font-medium text-action-destructive">
                     This comment has been hidden by a moderator.
                   </p>
                 ) : (
@@ -279,10 +279,10 @@ export default function PieceCommentsSection({
                       return (
                         <div
                           key={reply.id}
-                          className="rounded-2xl border border-border bg-muted/70 p-3"
+                          className="border-l border-hairline py-3 pl-4"
                         >
                           {replyIsHidden ? (
-                            <p className="rounded-2xl border border-destructive bg-muted p-3 text-sm font-medium text-destructive">
+                            <p className="border-l-2 border-action-destructive bg-action-destructive/8 p-3 text-sm font-medium text-action-destructive">
                               This reply has been hidden by a moderator.
                             </p>
                           ) : (
@@ -337,7 +337,7 @@ export default function PieceCommentsSection({
           })}
         </ul>
       ) : (
-        <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+        <p className="mt-5 border-y border-hairline py-4 text-sm text-text-muted">
           No comments yet.
         </p>
       )}

@@ -9,6 +9,7 @@ import StreakSummarySection from "@/components/practice/StreakSummarySection"
 import ResponsivePanels from "@/components/layout/ResponsivePanels"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import type { FriendActivityItem } from "@/lib/friend-activity"
+import { formatPracticeDate, getReviewIntervalDays } from "@/lib/review"
 import type { HomeSummaryData, StreakSummary } from "@/lib/types"
 
 type MobileHomeTab = "today" | "repertoire" | "social"
@@ -81,7 +82,7 @@ function MobileSectionHeading({
 }) {
   return (
     <div className="flex items-start justify-between gap-4 px-1">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <h2 className="text-xl font-bold tracking-tight text-foreground">
         {title}
       </h2>
 
@@ -91,7 +92,7 @@ function MobileSectionHeading({
 }
 
 function MobilePanel({ children }: { children: React.ReactNode }) {
-  return <section className="border-y border-border/70 py-4">{children}</section>
+  return <section className="py-4">{children}</section>
 }
 
 function MobileStatGrid({
@@ -100,7 +101,7 @@ function MobileStatGrid({
   items: { label: string; value: number; href: string }[]
 }) {
   return (
-    <div className="grid grid-cols-2 border-y border-hairline">
+    <div className="grid grid-cols-2 border-b border-hairline">
       {items.map((item) => (
         <Link
           key={item.label}
@@ -120,7 +121,7 @@ function MobileStatGrid({
 
 function MobileEmptyBlock({ children }: { children: React.ReactNode }) {
   return (
-    <p className="border-y border-dashed border-border py-4 text-sm leading-6 text-muted-foreground">
+    <p className="border-b border-hairline py-4 text-sm leading-6 text-muted-foreground">
       {children}
     </p>
   )
@@ -197,8 +198,8 @@ function TodayPanel({
     ? `${summary.needsAttentionCount} overdue tune${summary.needsAttentionCount === 1 ? "" : "s"} · oldest first`
     : continueTune
       ? summary.dueTodayPreview[0]?.piece_id === continueTune.piece_id
-        ? `Due today · Stage ${continueTune.stage}`
-        : `In practice · Stage ${continueTune.stage}`
+        ? `Stage ${continueTune.stage} · ${getReviewIntervalDays(continueTune.stage)}-day review due today`
+        : `Stage ${continueTune.stage} · ${getReviewIntervalDays(continueTune.stage)}-day review`
       : queuedTune
         ? `Next from ${queuedTune.firstListName}`
         : "Your practice room is ready"
@@ -209,8 +210,8 @@ function TodayPanel({
 
   return (
     <div className="space-y-4">
-      <section className="rounded-object border border-hairline bg-surface-paper p-4 shadow-material-rest">
-        <h2 className="mt-2 font-serif text-2xl font-bold leading-tight text-text-primary">{continueTitle}</h2>
+      <section className="border-b border-hairline py-5">
+        <h2 className="mt-2 font-sans text-2xl font-bold leading-tight text-text-primary">{continueTitle}</h2>
         <p className="mt-1 text-sm text-text-muted">{continueMeta}</p>
         <Link href={continueHref} className={`${buttonStyles.primary} mt-4`}>
           {summary.dueTodayCount > 0 || summary.needsAttentionCount > 0
@@ -233,7 +234,7 @@ function TodayPanel({
                   key={userPiece.user_piece_id}
                   href={`/library/${userPiece.piece_id}`}
                   title={userPiece.title}
-                  meta={`Stage ${userPiece.stage}`}
+                  meta={`Stage ${userPiece.stage} · ${getReviewIntervalDays(userPiece.stage)}-day review`}
                 />
               ))}
             {learningQueuePreview.map((queueTune) => (
@@ -332,8 +333,8 @@ function RepertoirePanel({
               key={userPiece.user_piece_id}
               href={`/library/${userPiece.piece_id}`}
               title={userPiece.title}
-              meta={`Stage ${userPiece.stage}`}
-              detail={userPiece.nextReviewDue ? `Next review ${userPiece.nextReviewDue}` : "No review date set"}
+              meta={`Stage ${userPiece.stage} · ${getReviewIntervalDays(userPiece.stage)}-day review`}
+              detail={formatPracticeDate(userPiece.nextReviewDue) ? `Next review ${formatPracticeDate(userPiece.nextReviewDue)}` : "No review date set"}
               actionLabel="Open"
             />
           ))}

@@ -265,7 +265,7 @@ export default function LibraryList({
         }
         resetHref={hasActiveFilters ? "/library" : undefined}
         resetLabel={hasActiveFilters ? "Reset filters" : undefined}
-        className="rounded-object bg-surface-paper px-4 shadow-material-rest md:px-5"
+        className="border-y border-hairline"
         items={pagePieces.map((piece) => (
           <li
             key={piece.id}

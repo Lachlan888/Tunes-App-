@@ -20,7 +20,7 @@ export default function PracticeDayView({ data, sessionReturnTo }: PracticeDayVi
     <div className="space-y-5 md:space-y-6">
       <section className="diary-day-workbench">
         <section className="diary-reflection border-b border-border pb-6">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
+          <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
             Session summary
           </h2>
 
@@ -41,7 +41,7 @@ export default function PracticeDayView({ data, sessionReturnTo }: PracticeDayVi
         <section className="border-b border-border pb-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:text-sm">
+              <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
                 Due on this day
               </h2>
 

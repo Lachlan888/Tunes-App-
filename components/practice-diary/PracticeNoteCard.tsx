@@ -39,21 +39,20 @@ export default function PracticeNoteCard({
   const categoryName = getCategoryName({ note, categories })
 
   return (
-    <article className="rounded-2xl border border-border bg-background/70 p-4 text-sm shadow-sm md:bg-card">
-      <div className="flex flex-wrap items-center gap-2">
+    <article className="border-l-2 border-state-practice pl-3 text-sm">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-muted-foreground">
         {categoryName ? (
-          <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <span className="font-semibold text-foreground">
             {categoryName}
           </span>
         ) : null}
 
         {note.focus?.title ? (
-          <span className="rounded-full border border-accent bg-accent px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-accent-foreground">
-            {note.focus.title}
-          </span>
+          <><span aria-hidden="true">·</span><span>{note.focus.title}</span></>
         ) : null}
 
-        <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <span aria-hidden="true">·</span>
+        <span>
           {formatNoteTime(note.created_at)}
         </span>
       </div>

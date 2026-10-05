@@ -147,18 +147,18 @@ function getMessageClasses(
   tone: "success" | "warning" | "error" | "neutral"
 ) {
   if (tone === "success") {
-    return "mb-6 rounded-2xl border border-success bg-muted p-4 text-sm font-medium text-foreground shadow-sm"
+    return "mb-6 border-l-4 border-success py-2 pl-3 text-sm font-medium text-foreground"
   }
 
   if (tone === "warning") {
-    return "mb-6 rounded-2xl border border-warning bg-muted p-4 text-sm font-medium text-foreground shadow-sm"
+    return "mb-6 border-l-4 border-warning py-2 pl-3 text-sm font-medium text-foreground"
   }
 
   if (tone === "error") {
-    return "mb-6 rounded-2xl border border-destructive bg-muted p-4 text-sm font-medium text-destructive shadow-sm"
+    return "mb-6 border-l-4 border-destructive py-2 pl-3 text-sm font-medium text-destructive"
   }
 
-  return "mb-6 rounded-2xl border border-border bg-muted p-4 text-sm font-medium text-muted-foreground shadow-sm"
+  return "mb-6 border-l-4 border-hairline py-2 pl-3 text-sm font-medium text-muted-foreground"
 }
 
 
@@ -201,9 +201,9 @@ export default async function PublicProfilePage({ params, searchParams }: {
           <form action={`/users/${encodeURIComponent(username)}`} className="flex flex-wrap items-end gap-3">
             <input type="hidden" name="tab" value={query.tab} />
             {query.preview && <input type="hidden" name="preview" value="public" />}
-            <label className="min-w-0 flex-1 text-sm">Search {query.tab}<input name="q" defaultValue={query.q} maxLength={100} className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2.5" /></label>
-            {query.tab === 'repertoire' && <label className="text-sm">Collection<select name="group" defaultValue={query.group} className="mt-1 block rounded-xl border border-border bg-surface px-3 py-2.5"><option value="known">Known</option><option value="practice">In practice</option><option value="composed">Composed</option></select></label>}
-            <button className="min-h-11 rounded-xl border border-border px-4" type="submit">Apply</button>
+            <label className="min-w-0 flex-1 text-sm">Search {query.tab}<input name="q" defaultValue={query.q} maxLength={100} className="mt-1 w-full rounded-object border border-border bg-surface px-3 py-2.5" /></label>
+            {query.tab === 'repertoire' && <label className="text-sm">Collection<select name="group" defaultValue={query.group} className="mt-1 block rounded-object border border-border bg-surface px-3 py-2.5"><option value="known">Known</option><option value="practice">In practice</option><option value="composed">Composed</option></select></label>}
+            <button className="min-h-11 rounded-object border border-border px-4" type="submit">Apply</button>
           </form>
           {query.tab === 'repertoire' && <>
             {!inventoryVisible ? <p className="text-sm text-text-muted">This collection is not shared with this view.</p> : <>

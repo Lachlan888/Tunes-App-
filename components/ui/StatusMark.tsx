@@ -23,20 +23,20 @@ type StatusMarkProps = {
 }
 
 const toneClasses: Record<StatusTone, string> = {
-  neutral: "border-hairline bg-surface-note text-text-muted",
-  known: "border-state-known bg-state-known text-state-known-foreground",
+  neutral: "border-hairline text-text-muted",
+  known: "border-state-known text-state-known",
   practice:
-    "border-state-practice bg-state-practice text-state-practice-foreground",
-  due: "border-state-due bg-state-due text-state-due-foreground",
+    "border-state-practice text-state-practice",
+  due: "border-state-due text-text-primary",
   overdue:
-    "border-state-overdue bg-state-overdue text-state-overdue-foreground",
-  social: "border-state-social bg-state-social text-state-social-foreground",
+    "border-state-overdue text-state-overdue",
+  social: "border-state-social text-state-social",
   destructive:
-    "border-action-destructive bg-action-destructive text-action-destructive-foreground",
-  rough: "border-state-overdue bg-state-overdue text-state-overdue-foreground",
-  shaky: "border-state-due bg-state-due text-state-due-foreground",
-  solid: "border-state-known bg-state-known text-state-known-foreground",
-  stage: "border-state-due bg-state-due text-state-due-foreground",
+    "border-action-destructive text-action-destructive",
+  rough: "border-state-overdue text-state-overdue",
+  shaky: "border-state-due text-text-primary",
+  solid: "border-state-known text-state-known",
+  stage: "border-state-due text-text-primary",
 }
 
 const toneIcons: Record<StatusTone, IconName> = {
@@ -62,7 +62,7 @@ export default function StatusMark({
   return (
     <span
       className={joinClasses(
-        "inline-flex min-h-7 items-center gap-1.5 rounded-pill border px-2.5 py-1 text-xs font-semibold leading-none",
+        "inline-flex min-h-7 items-center gap-1.5 border-l-2 px-2 py-1 text-xs font-semibold leading-none",
         toneClasses[tone],
         className
       )}

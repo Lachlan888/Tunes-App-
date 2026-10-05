@@ -110,8 +110,8 @@ export default async function PracticeDiaryPage({
 
       {fromSession ? (
         <section className="mb-5 border-l-4 border-state-practice bg-surface-note px-4 py-4" aria-labelledby="session-reflection-prompt">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">Practice complete</p>
-          <h2 id="session-reflection-prompt" className="mt-1 font-serif text-2xl font-bold">Add an optional reflection</h2>
+          <p className="text-sm font-semibold text-text-muted">Practice complete</p>
+          <h2 id="session-reflection-prompt" className="mt-1 font-sans text-2xl font-bold">Add an optional reflection</h2>
           <p className="mt-2 text-sm leading-6 text-text-muted">Use today’s Session summary below, or return without writing a note. Your review results are already saved.</p>
           <Link href={returnTo} className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">Return without a reflection</Link>
         </section>

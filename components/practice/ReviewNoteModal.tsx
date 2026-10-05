@@ -92,7 +92,7 @@ export default function ReviewNoteModal({
             <select
               name="category_id"
               defaultValue=""
-              className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="mt-2 w-full rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               disabled={isSubmitting}
             >
               <option value="">No category</option>
@@ -114,7 +114,7 @@ export default function ReviewNoteModal({
                 name="focus_id"
                 value={selectedFocusId}
                 onChange={(event) => setSelectedFocusId(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="mt-2 w-full rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                 disabled={isSubmitting}
               >
                 <option value="">No focus</option>
@@ -129,7 +129,7 @@ export default function ReviewNoteModal({
           ) : null}
 
           {shouldShowAddTuneToFocus ? (
-            <label className="flex gap-3 rounded-2xl border border-border bg-background/70 p-3 text-sm leading-6 text-muted-foreground">
+            <label className="flex gap-3 border-y border-hairline bg-surface-note px-3 py-3 text-sm leading-6 text-muted-foreground">
               <input
                 type="checkbox"
                 name="add_tune_to_focus"
@@ -150,7 +150,7 @@ export default function ReviewNoteModal({
               name="practice_note"
               rows={5}
               placeholder="What happened with this tune today?"
-              className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm leading-6 text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="mt-2 w-full rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm leading-6 text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               disabled={isSubmitting}
             />
           </label>

@@ -50,18 +50,18 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
         </p>
       ) : null}
 
-      <nav aria-label="Inbox categories" className="mb-8 inline-flex rounded-full border border-border bg-muted/50 p-1">
+      <nav aria-label="Inbox categories" className="mb-8 flex border-b border-hairline">
         <Link
           href="/inbox?tab=activity"
           aria-current={tab === "activity" ? "page" : undefined}
-          className={`inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold ${tab === "activity" ? "bg-state-social text-state-social-foreground" : "text-muted-foreground"}`}
+          className={`inline-flex min-h-11 items-center border-b-2 px-4 text-sm font-semibold ${tab === "activity" ? "border-state-social text-state-social" : "border-transparent text-muted-foreground"}`}
         >
           Activity {data.unreadNotificationCount > 0 ? `· ${data.unreadNotificationCount}` : ""}
         </Link>
         <Link
           href="/inbox?tab=messages"
           aria-current={tab === "messages" ? "page" : undefined}
-          className={`inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold ${tab === "messages" ? "bg-state-social text-state-social-foreground" : "text-muted-foreground"}`}
+          className={`inline-flex min-h-11 items-center border-b-2 px-4 text-sm font-semibold ${tab === "messages" ? "border-state-social text-state-social" : "border-transparent text-muted-foreground"}`}
         >
           Messages {data.unreadMessageCount > 0 ? `· ${data.unreadMessageCount}` : ""}
         </Link>
@@ -69,7 +69,7 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
 
       {tab === "messages" ? (
         <section aria-labelledby="messages-title">
-          <h1 id="messages-title" className="mt-1 font-serif text-3xl font-bold">Conversations</h1>
+          <h2 id="messages-title" className="mt-1 text-2xl font-bold">Conversations</h2>
           <p className="mb-5 mt-2 text-sm text-muted-foreground">Open a person to read the latest messages and reply.</p>
           <DirectMessageThreadList threads={data.messageThreads} />
         </section>
@@ -78,7 +78,7 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
           <section aria-labelledby="new-title">
             <div className="flex items-end justify-between gap-4">
               <div>
-                <h1 id="new-title" className="mt-1 font-serif text-3xl font-bold">New</h1>
+                <h2 id="new-title" className="mt-1 text-2xl font-bold">New</h2>
               </div>
               {data.unreadNotificationCount > 0 ? (
                 <form action={markAllNotificationsRead}>
@@ -92,7 +92,7 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
           </section>
 
           <section aria-labelledby="history-title">
-            <h2 id="history-title" className="mt-1 font-serif text-2xl font-bold">History</h2>
+            <h2 id="history-title" className="mt-1 text-2xl font-bold">History</h2>
             <div className="mt-4">
               <InboxItemList items={history.items} emptyMessage="No activity history yet." />
             </div>

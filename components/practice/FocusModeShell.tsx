@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useLayoutEffect, type ReactNode } from "react"
+import FloatingFeedbackButton from "@/components/feedback/FloatingFeedbackButton"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 
 export default function FocusModeShell({
@@ -34,26 +35,26 @@ export default function FocusModeShell({
     <main className="mx-auto min-h-screen max-w-5xl px-4 py-4 text-text-primary sm:px-6 md:py-6">
       <header className="flex items-center justify-between gap-4 border-b border-hairline pb-4">
         <div className="min-w-0">
-          {eyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">
-            {eyebrow}
-          </p> : null}
-          <p className="truncate font-serif text-xl font-bold sm:text-2xl">{title}</p>
-          {detail ? <p className="mt-1 text-sm text-text-muted">{detail}</p> : null}
+          <p className="truncate font-sans text-xl font-bold sm:text-2xl">{title}</p>
+          {eyebrow || detail ? <p className="mt-1 text-sm text-text-muted">{[eyebrow, detail].filter(Boolean).join(" · ")}</p> : null}
         </div>
-        {!showExit ? null : onEnd ? (
-          <button
-            type="button"
-            onClick={onEnd}
-            disabled={endDisabled}
-            className={`${buttonStyles.secondary} !w-auto shrink-0`}
-          >
-            End session
-          </button>
-        ) : (
-          <Link href={exitHref} className={`${buttonStyles.secondary} !w-auto shrink-0`}>
-            Exit
-          </Link>
-        )}
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <FloatingFeedbackButton variant="focus" />
+          {!showExit ? null : onEnd ? (
+            <button
+              type="button"
+              onClick={onEnd}
+              disabled={endDisabled}
+              className={`${buttonStyles.secondary} !w-auto shrink-0`}
+            >
+              End session
+            </button>
+          ) : (
+            <Link href={exitHref} className={`${buttonStyles.secondary} !w-auto shrink-0`}>
+              Exit
+            </Link>
+          )}
+        </div>
       </header>
       {children}
     </main>

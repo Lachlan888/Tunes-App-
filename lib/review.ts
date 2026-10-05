@@ -149,6 +149,24 @@ export function getMaxPracticeStage() {
   return REVIEW_INTERVALS.length
 }
 
+export function getReviewIntervalDays(stage: number | null | undefined) {
+  return REVIEW_INTERVALS[getSafeStage(stage) - 1]
+}
+
+export function formatPracticeDate(dateValue: string | null | undefined) {
+  const dateOnly = normaliseStoredDate(dateValue)
+  if (!dateOnly) return null
+
+  const [year, month, day] = dateOnly.split("-").map(Number)
+  if (!year || !month || !day) return null
+
+  return new Intl.DateTimeFormat("en-AU", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month - 1, day)))
+}
+
 export function getNextReviewDateFromStage(stage: number) {
   const safeStage = getSafeStage(stage)
   const intervalDays = REVIEW_INTERVALS[safeStage - 1]

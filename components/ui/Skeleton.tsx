@@ -32,7 +32,7 @@ export function LoadingState({
       aria-busy="true"
       aria-label={label}
       className={joinClasses(
-        "rounded-object bg-surface-paper p-5 shadow-material-rest",
+        "border-y border-hairline py-5",
         className
       )}
     >

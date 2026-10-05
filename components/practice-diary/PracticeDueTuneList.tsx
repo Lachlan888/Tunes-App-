@@ -12,25 +12,25 @@ export default function PracticeDueTuneList({
 }: PracticeDueTuneListProps) {
   if (dueTunes.length === 0) {
     return (
-      <p className="rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+      <p className="border-b border-hairline bg-surface-note px-4 py-4 text-sm leading-6 text-muted-foreground">
         {emptyMessage}
       </p>
     )
   }
 
   return (
-    <div className="space-y-2.5 lg:space-y-3">
+    <div className="border-t border-hairline">
       {dueTunes.map((dueTune) => (
         <article
           key={`${dueTune.userPieceId}-${dueTune.dueDate}`}
-          className="rounded-xl border border-border bg-background/70 px-3 py-2.5 shadow-sm lg:rounded-2xl lg:p-4"
+          className="border-b border-hairline px-1 py-4 lg:px-2"
         >
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
               {dueTune.piece ? (
                 <Link
                   href={`/library/${dueTune.piece.id}`}
-                  className="line-clamp-2 block overflow-hidden font-serif font-bold leading-[1.08] text-foreground transition hover:text-primary"
+                  className="line-clamp-2 block overflow-hidden font-sans font-bold leading-[1.08] text-foreground transition hover:text-primary"
                   style={{
                     fontSize: "clamp(1.05rem, 4.6vw, 1.45rem)",
                   }}
@@ -39,7 +39,7 @@ export default function PracticeDueTuneList({
                 </Link>
               ) : (
                 <h3
-                  className="line-clamp-2 overflow-hidden font-serif font-bold leading-[1.08] text-foreground"
+                  className="line-clamp-2 overflow-hidden font-sans font-bold leading-[1.08] text-foreground"
                   style={{
                     fontSize: "clamp(1.05rem, 4.6vw, 1.45rem)",
                   }}
@@ -49,7 +49,7 @@ export default function PracticeDueTuneList({
               )}
             </div>
 
-            <span className="shrink-0 rounded-full border border-accent bg-accent px-2.5 py-0.5 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-accent-foreground lg:px-3 lg:py-1 lg:text-xs">
+            <span className="shrink-0 border-l-2 border-state-practice px-2.5 py-1 text-xs font-semibold text-text-muted">
               Stage {dueTune.stage}
             </span>
           </div>

@@ -15,7 +15,7 @@ export default function PracticeSessionSummary({ count, remainingCount, sessionD
     <FocusModeShell eyebrow="" title="Practice" detail="" showExit={false}>
       <section className="practice-finish">
         <div className="practice-entry-symbol" aria-hidden="true"><Icon name="check" size={30} /></div>
-        <h1 className="font-serif text-4xl font-semibold tracking-tight sm:text-5xl">{count > 0 ? `${count} tune${count === 1 ? "" : "s"} practised` : remainingCount > 0 ? "Ready when you are" : "All caught up"}</h1>
+        <h1 className="font-sans text-4xl font-bold tracking-tight sm:text-5xl">{count > 0 ? `${count} tune${count === 1 ? "" : "s"} practised` : remainingCount > 0 ? "Ready when you are" : "All caught up"}</h1>
         <p className="mt-4 text-base leading-7 text-text-muted">{count > 0 ? "Your progress is saved." : remainingCount > 0 ? "Your tunes will be here when you return." : "There’s nothing due right now."}</p>
         <Link href="/review" onClick={onDone} className="practice-start-button">Done</Link>
         {practiceDiaryEnabled && count > 0 && !diaryDismissed ? (

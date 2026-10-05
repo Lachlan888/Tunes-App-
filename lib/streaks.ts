@@ -223,27 +223,7 @@ export async function getStreakSummaryForUser(
   supabase: SupabaseServerClient,
   userId: string
 ): Promise<StreakSummary> {
-  const { data, error } = await supabase
-    .from("user_streak_stats")
-    .select(
-      "current_revision_streak, longest_revision_streak, current_practice_streak, longest_practice_streak, last_reconciled_date"
-    )
-    .eq("user_id", userId)
-    .maybeSingle()
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  if (!data) {
-    return createEmptyStreakSummary()
-  }
-
-  return {
-    current_revision_streak: data.current_revision_streak ?? 0,
-    longest_revision_streak: data.longest_revision_streak ?? 0,
-    current_practice_streak: data.current_practice_streak ?? 0,
-    longest_practice_streak: data.longest_practice_streak ?? 0,
-    last_reconciled_date: data.last_reconciled_date ?? null,
-  }
+  const today = getToday()
+  const dailyRows = await fetchDailyRows(supabase, userId)
+  return calculateStreakSummary(dailyRows, today)
 }

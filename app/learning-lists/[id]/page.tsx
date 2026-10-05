@@ -57,7 +57,7 @@ function StatusMessage({
 }) {
   return (
     <div
-      className={`mt-6 rounded-2xl border bg-background/70 p-4 text-sm shadow-sm ${getStatusClasses(
+      className={`mt-6 border-y py-3 text-sm ${getStatusClasses(
         tone
       )}`}
     >
@@ -125,11 +125,11 @@ export default async function LearningListDetailPage({
 
       <div className="mb-6 mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {isOwner ? (
-          <nav aria-label="List detail mode" className="inline-flex rounded-full border border-border bg-card p-1">
-            <Link href={viewHref} aria-current={mode === "reader" ? "page" : undefined} className={`rounded-full px-4 py-2 text-sm font-semibold ${mode === "reader" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+          <nav aria-label="List detail mode" className="inline-flex border-b border-hairline">
+            <Link href={viewHref} aria-current={mode === "reader" ? "page" : undefined} className={`min-h-11 border-b-2 px-4 py-2 text-sm font-semibold ${mode === "reader" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
               Reader
             </Link>
-            <Link href={manageHref} aria-current={mode === "manage" ? "page" : undefined} className={`rounded-full px-4 py-2 text-sm font-semibold ${mode === "manage" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+            <Link href={manageHref} aria-current={mode === "manage" ? "page" : undefined} className={`min-h-11 border-b-2 px-4 py-2 text-sm font-semibold ${mode === "manage" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
               Manage
             </Link>
           </nav>
@@ -138,7 +138,7 @@ export default async function LearningListDetailPage({
         )}
 
         {activeTuneCount > 0 ? (
-          <Link href={`/review?session=list&list_id=${typedList.id}`} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
+          <Link href={`/review?session=list&list_id=${typedList.id}`} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
             Start Practice · {activeTuneCount}
           </Link>
         ) : (
@@ -251,10 +251,10 @@ export default async function LearningListDetailPage({
         <StatusMessage tone="error">Couldn’t update private access.</StatusMessage>
       )}
 
-      <header className="border-b border-border/70 pb-5 md:rounded-3xl md:border md:bg-card md:p-6 md:shadow-sm">
+      <header className="border-b border-hairline pb-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
-            <h1 className="break-words font-serif text-3xl font-bold tracking-tight text-foreground md:text-5xl">
+            <h1 className="break-words font-sans text-4xl font-bold tracking-tight text-foreground md:text-5xl">
               {typedList.name}
             </h1>
 
@@ -276,7 +276,7 @@ export default async function LearningListDetailPage({
               {typedList.is_imported && (
                 <>
                   <span aria-hidden="true">•</span>
-                  <span className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold text-muted-foreground">
+                  <span className="text-xs font-semibold text-muted-foreground">
                     Your editable copy
                   </span>
                 </>
@@ -313,13 +313,13 @@ export default async function LearningListDetailPage({
         </div>
       </header>
 
-      <section className="mt-7 md:mt-8 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <section className="mt-7 md:mt-8">
+        <h2 className="text-xl font-semibold text-foreground">
           {mode === "manage" ? "Manage order and membership" : "Tunes in playing order"}
         </h2>
 
         {pagination.items.length === 0 ? (
-          <p className="mt-4 border-y border-border/70 py-4 text-sm text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-4">
+          <p className="mt-4 border-y border-hairline py-4 text-sm text-muted-foreground">
             This list has no tunes yet.
           </p>
         ) : mode === "manage" ? (

@@ -21,17 +21,17 @@ function getUserLabel(row: DevUserActivityRow) {
 export default function UserActivityTable({ rows }: UserActivityTableProps) {
   if (rows.length === 0) {
     return (
-      <div className="rounded-3xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
+      <div className="border-y border-hairline py-6text-sm text-muted-foreground ">
         No users found.
       </div>
     )
   }
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+    <div className="border-y border-hairline">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[900px] border-collapse text-left text-sm">
-          <thead className="border-b border-border bg-background/70 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+          <thead className="border-b border-border bg-background/70 text-xs  tracking-[0.14em] text-muted-foreground">
             <tr>
               <th className="px-4 py-3 font-semibold">User</th>
               <th className="px-4 py-3 font-semibold">Joined</th>

@@ -129,15 +129,15 @@ function DesktopFocusPickerRow({
       type="button"
       onClick={onSelect}
       className={joinClasses(
-        "grid w-full gap-2 rounded-2xl border p-4 text-left shadow-sm transition hover:border-primary hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+        "grid w-full gap-2 border-b border-hairline p-4 text-left transition hover:bg-surface-note focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
         isSelected
-          ? "border-primary bg-card"
-          : "border-border bg-background/70"
+          ? "border-state-practice bg-surface-note"
+          : "bg-transparent"
       )}
     >
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="break-words font-serif text-xl font-bold leading-tight text-foreground">
+          <p className="break-words font-sans text-xl font-bold leading-tight text-foreground">
             {focus.title}
           </p>
 
@@ -169,10 +169,10 @@ function DesktopFocusPickerRow({
 
 function SelectedFocusCard({ focus }: { focus: PracticeFocus }) {
   return (
-    <article className="grid gap-4 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
+    <article className="grid gap-4 border-b border-hairline pb-6">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="min-w-0 break-words font-serif text-3xl font-bold leading-tight text-foreground md:text-4xl">
+          <h2 className="min-w-0 break-words font-sans text-3xl font-bold leading-tight text-foreground md:text-4xl">
             {focus.title}
           </h2>
 
@@ -216,7 +216,7 @@ function SelectedFocusCard({ focus }: { focus: PracticeFocus }) {
 
       {focus.tunes.length > 0 ? (
         <div className="grid gap-2 border-t border-border pt-4">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <h3 className="font-sans text-xl font-bold tracking-tight text-foreground">
             Tunes in this focus
           </h3>
 
@@ -270,7 +270,7 @@ function FocusPickerModal({
         <div className="sticky top-0 z-10 border-b border-border bg-background px-4 py-4 md:px-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground">
+              <h2 className="mt-1 font-sans text-2xl font-bold leading-tight text-foreground">
                 Choose a focus
               </h2>
 
@@ -294,7 +294,7 @@ function FocusPickerModal({
             {groups.map((group) => (
               <section key={group.status} className="grid gap-3">
                 <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <h3 className="font-sans text-lg font-bold text-foreground">
                     {group.title}
                   </h3>
 
@@ -397,8 +397,8 @@ export default function PracticeFocusList({
 
   if (allFoci.length === 0) {
     return (
-      <section className="grid gap-4 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <section className="grid gap-4 border-b border-hairline pb-6">
+        <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
           Your focus areas
         </h2>
 
@@ -412,10 +412,10 @@ export default function PracticeFocusList({
 
   return (
     <div className="grid min-w-0 gap-5 md:gap-6">
-      <section className="grid gap-3 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
+      <section className="grid gap-3 border-b border-hairline pb-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
               Current intention
             </h2>
 

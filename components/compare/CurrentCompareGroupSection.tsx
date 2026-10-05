@@ -24,8 +24,8 @@ export default function CurrentCompareGroupSection({
   includePractice,
 }: CurrentCompareGroupSectionProps) {
   return (
-    <section className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <section className="mb-8 border-y border-hairline py-5">
+      <h2 className="text-xl font-semibold text-foreground">
         Current group
       </h2>
 
@@ -43,7 +43,7 @@ export default function CurrentCompareGroupSection({
       />
 
       {selectedProfiles.length > 0 ? (
-        <div className="mt-5 flex flex-wrap gap-3">
+        <div className="mt-5 divide-y divide-hairline border-y border-hairline">
           {selectedProfiles.map((profile) => {
             const nextUsers = removeUserOnce(
               filterPreservedUsers,
@@ -53,7 +53,7 @@ export default function CurrentCompareGroupSection({
             return (
               <div
                 key={profile.id}
-                className="flex items-center gap-3 rounded-full border border-border bg-background/70 px-4 py-2 text-sm shadow-sm"
+                className="flex items-center justify-between gap-3 py-2 text-sm"
               >
                 <span className="font-medium text-foreground">
                   <UserIdentityLink
@@ -80,7 +80,7 @@ export default function CurrentCompareGroupSection({
           })}
         </div>
       ) : (
-        <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+        <p className="mt-5 border-y border-hairline py-4 text-sm text-muted-foreground">
           No confirmed players in the group yet.
         </p>
       )}

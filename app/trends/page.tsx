@@ -35,12 +35,12 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
         <PersonalTrendInsights insight={personalInsights} />
       ) : (
         <section
-          className="border-y border-border py-7"
+          className="border-b border-hairline py-7"
           aria-labelledby="signed-out-trends-title"
         >
           <h2
             id="signed-out-trends-title"
-            className="mt-2 font-serif text-2xl font-bold"
+            className="mt-2 font-sans text-2xl font-bold"
           >
             Find a strong place to start
           </h2>
@@ -64,7 +64,7 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
         >
           <h2
             id="friend-pattern-title"
-            className="mt-1 font-serif text-2xl font-bold"
+            className="mt-1 font-sans text-2xl font-bold"
           >
             {friendTakeaway.label} is common among your friends
           </h2>
@@ -90,7 +90,7 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
       >
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 id="styles-title" className="mt-1 font-serif text-2xl font-bold">
+            <h2 id="styles-title" className="mt-1 font-sans text-2xl font-bold">
               Browse by style
             </h2>
           </div>
@@ -103,7 +103,7 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
         </div>
 
         {visibleStyles.length > 0 ? (
-          <ul className="mt-4 divide-y divide-border border-y border-border">
+          <ul className="mt-4 divide-y divide-hairline border-t border-hairline">
             {visibleStyles.map((entry) => (
               <li key={entry.slug}>
                 <Link

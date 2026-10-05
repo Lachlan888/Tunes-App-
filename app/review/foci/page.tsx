@@ -52,7 +52,7 @@ export default async function PracticeFociPage({
       </section>
 
       {statusMessage ? (
-        <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
+        <div className="mb-5 border-l-4 border-state-practice bg-surface-note p-4 text-sm font-medium text-foreground md:mb-6">
           {statusMessage}
         </div>
       ) : null}

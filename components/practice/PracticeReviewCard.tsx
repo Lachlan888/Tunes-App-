@@ -37,7 +37,7 @@ export default function PracticeReviewCard({
   const title = userPiece.piece?.title ?? "Untitled piece"
 
   return (
-    <article className="min-w-0 rounded-2xl border border-border bg-background/70 p-3 shadow-sm transition hover:bg-muted/70 sm:p-5">
+    <article className="min-w-0 border-b border-hairline py-4 transition-colors hover:bg-surface-note/40 sm:py-6">
       <div className="mb-2 flex justify-end">
         <RemoveFromPracticeButton
           userPieceId={userPiece.id}
@@ -50,7 +50,7 @@ export default function PracticeReviewCard({
       </div>
 
       <div className="min-w-0">
-        <h2 className="break-words text-center font-serif text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
+        <h2 className="break-words text-left font-sans text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
           {userPiece.piece ? (
             <PendingLinkButton
               href={`/library/${userPiece.piece.id}`}
@@ -63,7 +63,7 @@ export default function PracticeReviewCard({
           )}
         </h2>
 
-        <p className="mt-3 text-center text-sm font-medium leading-6 text-muted-foreground">
+        <p className="mt-2 text-left text-xs font-medium leading-5 text-muted-foreground">
           Key:{" "}
           <span className="italic">
             {userPiece.piece?.key ?? "Unknown"}
@@ -81,7 +81,7 @@ export default function PracticeReviewCard({
 
       {userPiece.piece && userPiece.media_bundle.effectiveReference ? (
         <div className="mt-5 w-full">
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <p className="mb-2 text-left text-sm font-semibold text-muted-foreground">
             Reference Media
           </p>
           <TuneMediaLauncher
@@ -92,7 +92,7 @@ export default function PracticeReviewCard({
             label="Open Reference Media"
             className="min-h-11 flex w-full items-center justify-center rounded-control border border-border bg-muted px-4 py-2 text-center text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-card hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
-          <div className="mt-2 text-center">
+          <div className="mt-2 text-left">
             <PendingLinkButton
               href={`/library/${userPiece.piece.id}#reference-media`}
               label="Tune Detail"
@@ -101,7 +101,7 @@ export default function PracticeReviewCard({
             />
           </div>
           {userPiece.media_bundle.additionalMedia.length > 0 ? (
-            <div className="mt-3 text-center text-xs text-muted-foreground">
+            <div className="mt-3 text-left text-xs text-muted-foreground">
               {userPiece.media_bundle.additionalMedia.length} additional source
               {userPiece.media_bundle.additionalMedia.length === 1 ? "" : "s"} on
               Tune Detail

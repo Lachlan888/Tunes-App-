@@ -175,7 +175,7 @@ export default async function PublicListsPage({
             {hasActiveFilters ? (
               <Link
                 href="/public-lists"
-                className="min-h-11 inline-flex items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="min-h-11 inline-flex items-center justify-center rounded-control border border-border bg-surface-paper px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               >
                 Reset view
               </Link>
@@ -187,19 +187,19 @@ export default async function PublicListsPage({
               title="No public lists match this view"
               primaryActionHref="/public-lists"
               primaryActionLabel="Reset view"
-              className="bg-card p-5"
-              titleClassName="font-serif text-2xl font-bold text-foreground"
+              className="border-y border-hairline py-5"
+              titleClassName="text-2xl font-bold text-foreground"
             />
           ) : (
             <>
               <SharedListsMobileList lists={pagination.items} redirectTo={redirectTo} />
 
-              <section className="hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <section className="hidden md:block">
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">
                   Public lists
                 </h2>
 
-                <div className="mt-5 grid gap-4 xl:grid-cols-2">
+                <div className="mt-4 border-t border-hairline">
                   {pagination.items.map((list) => (
                     <SharedListCard key={list.id} list={list} redirectTo={redirectTo} />
                   ))}

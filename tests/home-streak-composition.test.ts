@@ -29,6 +29,10 @@ const Home = load("components/home/HomeMobileSummarySwitcher.tsx", {
   "@/components/practice/StreakSummarySection": { default: streakComponent, __esModule: true },
   "@/components/layout/ResponsivePanels": { default: ({ panels }: { panels: { id: string; content: unknown }[] }) => React.createElement("div", null, panels.map((panel) => React.createElement("section", { key: panel.id, "data-panel": panel.id }, panel.content))), __esModule: true },
   "@/components/ui/buttonStyles": { buttonStyles: { primary: "", text: "" } },
+  "@/lib/review": {
+    formatPracticeDate: (value: string | null | undefined) => value?.slice(0, 10) ?? null,
+    getReviewIntervalDays: () => 1,
+  },
 }).default
 
 for (const [scenario, current, best] of [["populated", 4, 9], ["new user", 0, 0], ["broken streak", 0, 9]] as const) {
@@ -58,6 +62,35 @@ const loader = load("lib/loaders/homepage.ts", {
   "@/lib/loaders/friends": {}, "@/lib/review": {}, "@/lib/streaks": {},
   "@/lib/auth/session": {}, "@/lib/server-timing": {}, "@/lib/supabase/server": {},
 }, "\nexport { loadHomeBadgeSummary };\n").loadHomeBadgeSummary
+
+const buildGettingStartedState = load("lib/loaders/homepage.ts", {
+  "@/lib/loaders/friends": {}, "@/lib/review": {}, "@/lib/streaks": {},
+  "@/lib/auth/session": {}, "@/lib/server-timing": {}, "@/lib/supabase/server": {},
+}, "\nexport { buildGettingStartedState };\n").buildGettingStartedState as (options: {
+  profile: { username: string; display_name: string }
+  instrumentCount: number
+  practiceCount: number
+  knownCount: number
+  listCount: number
+  dueTodayCount: number
+  needsAttentionCount: number
+  reviewEventCount: number
+}) => { tasks: { id: string; isComplete: boolean }[] }
+
+test("Getting Started keeps practice pending while overdue tunes remain", () => {
+  const state = buildGettingStartedState({
+    profile: { username: "player", display_name: "Player" },
+    instrumentCount: 1,
+    practiceCount: 2,
+    knownCount: 1,
+    listCount: 1,
+    dueTodayCount: 0,
+    needsAttentionCount: 2,
+    reviewEventCount: 1,
+  })
+  const finishToday = state.tasks.find((task: { id: string }) => task.id === "finish_today")
+  assert.equal(finishToday?.isComplete, false)
+})
 
 test("Home badge reads retain user filters and exact counts without preview reads", async () => {
   const reads: Record<string, unknown>[] = []

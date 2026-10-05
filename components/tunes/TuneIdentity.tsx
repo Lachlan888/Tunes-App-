@@ -46,7 +46,7 @@ export default function TuneIdentity({
   sourceSummary,
   personalState,
   className,
-  headingClassName = "break-words font-serif text-2xl font-bold leading-tight tracking-tight text-foreground",
+  headingClassName = "break-words font-sans text-2xl font-bold leading-tight tracking-tight text-foreground",
   linkClassName = "decoration-primary decoration-2 underline-offset-4 hover:underline",
   headingLevel = "h3",
   linkTitle = true,
@@ -57,7 +57,7 @@ export default function TuneIdentity({
   const metadata = [
     tuneType,
     style,
-    tuneKey ? `Key ${tuneKey}` : null,
+    tuneKey,
     timeSignature,
   ].filter(Boolean)
 
@@ -79,7 +79,7 @@ export default function TuneIdentity({
             )}
             {tuneKey || timeSignature ? (
               <span className="shrink-0 whitespace-nowrap text-xs font-medium text-text-muted">
-                {[tuneKey ? `Key ${tuneKey}` : null, timeSignature]
+                {[tuneKey, timeSignature]
                   .filter(Boolean)
                   .join(" · ")}
               </span>
@@ -105,7 +105,7 @@ export default function TuneIdentity({
       ) : null}
 
       {metadata.length > 0 ? (
-        <p className="mt-1 text-sm leading-5 text-text-muted">
+        <p className="mt-1 text-xs font-medium leading-5 tracking-[0.02em] text-text-muted">
           {metadata.join(" · ")}
         </p>
       ) : null}

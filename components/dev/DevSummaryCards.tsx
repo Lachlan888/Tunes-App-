@@ -14,8 +14,8 @@ function SummaryCard({
   helper?: string | null
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-background/70 p-4">
-      <p className="font-serif text-4xl font-bold">{value}</p>
+    <div className="border-b border-hairline py-4">
+      <p className="font-sans text-4xl font-bold">{value}</p>
       <p className="mt-1 text-sm font-medium text-muted-foreground">{label}</p>
       {helper ? (
         <p className="mt-2 text-xs leading-5 text-muted-foreground">{helper}</p>

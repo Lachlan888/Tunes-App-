@@ -172,10 +172,10 @@ function PracticeIndexSwitcher({
             href={`/review/diary/index?view=${view.value}`}
             aria-selected={isActive}
             className={joinClasses(
-              "min-h-11 rounded-full border px-3 py-2 text-center text-sm font-semibold leading-tight transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:px-4 md:text-base",
+              "min-h-11 border-b-2 px-3 py-2 text-center text-sm font-semibold leading-tight transition focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--focus-ring)] md:px-4 md:text-base",
               isActive
-                ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                : "border-border bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "border-action-primary text-text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             )}
           >
             {view.label}
@@ -205,7 +205,7 @@ function PracticeIndexSearch({
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
         placeholder={currentView.searchPlaceholder}
-        className="min-h-11 w-full rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        className="min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
       />
     </label>
   )
@@ -215,11 +215,11 @@ function PracticeFocusCard({ focus }: { focus: PracticeIndexFocusSummary }) {
   const latestNote = focus.recentNotes[0] ?? null
 
   return (
-    <article className="grid gap-4">
+    <article className="grid gap-4 border-b border-hairline py-5">
       <div className="flex flex-wrap items-center gap-2">
         <Link
           href={`/review/foci/${focus.id}`}
-          className="break-words font-serif text-2xl font-bold leading-tight text-foreground underline decoration-border decoration-2 underline-offset-4 transition hover:text-primary hover:decoration-primary"
+          className="break-words font-sans text-2xl font-bold leading-tight text-foreground underline decoration-border decoration-2 underline-offset-4 transition hover:text-primary hover:decoration-primary"
         >
           {focus.title}
         </Link>
@@ -257,7 +257,7 @@ function PracticeFocusCard({ focus }: { focus: PracticeIndexFocusSummary }) {
       ) : null}
 
       {latestNote ? (
-        <p className="rounded-2xl border border-border bg-background/70 p-3 text-sm leading-6 text-muted-foreground">
+        <p className="border-l-2 border-state-practice bg-surface-note p-3 text-sm leading-6 text-muted-foreground">
           <span className="font-medium text-foreground">Latest note: </span>
           {latestNote.piece ? `${latestNote.piece.title}: ` : ""}
           {latestNote.body}
@@ -278,7 +278,7 @@ function PracticeFocusCard({ focus }: { focus: PracticeIndexFocusSummary }) {
 
 function PracticeNoteCard({ note }: { note: PracticeIndexItem }) {
   return (
-    <article className="grid gap-4">
+    <article className="grid gap-4 border-b border-hairline py-5">
       <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
         <span
           className={joinClasses(
@@ -308,12 +308,12 @@ function PracticeNoteCard({ note }: { note: PracticeIndexItem }) {
       {note.piece ? (
         <Link
           href={`/library/${note.piece.id}`}
-          className="font-serif text-2xl font-bold leading-tight text-foreground underline decoration-border decoration-2 underline-offset-4 transition hover:text-primary hover:decoration-primary"
+          className="font-sans text-2xl font-bold leading-tight text-foreground underline decoration-border decoration-2 underline-offset-4 transition hover:text-primary hover:decoration-primary"
         >
           {note.piece.title}
         </Link>
       ) : (
-        <h3 className="font-serif text-2xl font-bold leading-tight text-foreground">
+        <h3 className="font-sans text-2xl font-bold leading-tight text-foreground">
           {getKindLabel(note.kind)}
         </h3>
       )}
@@ -358,7 +358,7 @@ function PracticeNoteCard({ note }: { note: PracticeIndexItem }) {
 
 function EmptyState({ children }: { children: ReactNode }) {
   return (
-    <p className="rounded-2xl border border-border bg-card p-5 text-sm leading-6 text-muted-foreground shadow-sm md:bg-background/70 md:shadow-none">
+    <p className="border-b border-hairline bg-surface-note p-5 text-sm leading-6 text-muted-foreground">
       {children}
     </p>
   )
@@ -529,7 +529,7 @@ export default function PracticeDiaryIndex({ data, activeView }: PracticeDiaryIn
 
   return (
     <section className="grid gap-4 md:gap-5">
-      <div className="grid gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm md:rounded-3xl md:p-5">
+      <div className="grid gap-4 border-b border-hairline pb-5">
         <PracticeIndexSwitcher activeView={activeView} />
 
         <PracticeIndexSearch
@@ -541,7 +541,7 @@ export default function PracticeDiaryIndex({ data, activeView }: PracticeDiaryIn
 
       <section className="grid gap-3">
         <div className="px-1">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
             {currentView.heading}
           </h2>
         </div>
@@ -559,6 +559,7 @@ export default function PracticeDiaryIndex({ data, activeView }: PracticeDiaryIn
                 </EmptyState>
               }
               label="Practice focus areas"
+              unstyledCard
             />
           ) : data.focusSummaries.length === 0 ? (
             <EmptyState>
@@ -580,6 +581,7 @@ export default function PracticeDiaryIndex({ data, activeView }: PracticeDiaryIn
               <EmptyState>No diary notes indexed yet.</EmptyState>
             }
             label="Practice notes"
+            unstyledCard
           />
         ) : allNotes.length === 0 ? (
           <EmptyState>No diary notes indexed yet.</EmptyState>

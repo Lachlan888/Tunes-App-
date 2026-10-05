@@ -10,7 +10,7 @@ type TunePrivateNotesSectionProps = {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full rounded-control border border-hairline bg-surface-paper px-4 py-3 text-sm text-text-primary outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function TunePrivateNotesSection({
   pieceId,
@@ -19,8 +19,8 @@ export default function TunePrivateNotesSection({
   upsertUserPieceNotes,
 }: TunePrivateNotesSectionProps) {
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <section className="border-t border-hairline py-6">
+      <h2 className="text-xl font-bold tracking-tight text-text-primary">
         My notes
       </h2>
 

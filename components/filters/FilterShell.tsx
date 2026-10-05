@@ -55,7 +55,7 @@ export default function FilterShell({
       className={joinClasses(
         "relative mb-5 transition-opacity md:mb-8",
         sticky &&
-          "sticky top-14 z-20 -mx-4 border-b border-hairline bg-surface-canvas/95 px-4 pb-3 pt-3 shadow-material-rest backdrop-blur md:top-0 md:mx-0 md:rounded-object md:border md:bg-surface-paper/95 md:px-5 md:py-4",
+          "sticky top-14 z-20 -mx-4 border-y border-hairline bg-surface-canvas/95 px-4 py-3 backdrop-blur md:top-0 md:mx-0 md:px-0 md:py-4",
         isPending ? "opacity-80" : "opacity-100",
         className
       )}
@@ -63,8 +63,7 @@ export default function FilterShell({
       <form
         onSubmit={onSearchSubmit}
         className={joinClasses(
-          !sticky &&
-            "md:rounded-object md:bg-surface-paper md:p-5 md:shadow-material-rest"
+          !sticky && "border-y border-hairline py-4"
         )}
       >
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 md:flex md:gap-3">

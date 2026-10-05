@@ -37,17 +37,17 @@ function getSafeInternalPath(value: string | null | undefined) {
 }
 
 const selectClassName =
-  "w-full rounded-2xl border border-border bg-background/80 px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full rounded-object border border-border bg-background/80 px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 const textareaClassName =
-  "min-h-20 w-full rounded-2xl border border-border bg-background/80 px-3 py-2 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "min-h-20 w-full rounded-object border border-border bg-background/80 px-3 py-2 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
   const activeFeedbackItems = feedbackItems.filter((item) => !item.resolved_at)
 
   if (activeFeedbackItems.length === 0) {
     return (
-      <div className="rounded-3xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
+      <div className="border-y border-hairline py-6text-sm text-muted-foreground ">
         No unresolved beta feedback.
       </div>
     )
@@ -61,18 +61,18 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
         return (
           <article
             key={item.id}
-            className="rounded-3xl border border-border bg-card p-5 shadow-sm"
+            className="border-y border-hairline py-5"
           >
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
               <div>
                 <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <span className="rounded-control border border-border bg-background/70 px-3 py-1 text-xs font-semibold  tracking-[0.12em] text-muted-foreground">
                     {formatLabel(item.category)}
                   </span>
-                  <span className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <span className="rounded-control border border-border bg-background/70 px-3 py-1 text-xs font-semibold  tracking-[0.12em] text-muted-foreground">
                     {formatLabel(item.status)}
                   </span>
-                  <span className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <span className="rounded-control border border-border bg-background/70 px-3 py-1 text-xs font-semibold  tracking-[0.12em] text-muted-foreground">
                     {formatLabel(item.owner_priority)}
                   </span>
                 </div>
@@ -85,12 +85,12 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
                   {safePagePath ? (
                     <Link
                       href={safePagePath}
-                      className="inline-flex items-center w-fit min-h-11 rounded-control border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                      className="inline-flex items-center w-fit min-h-11 rounded-control border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground  transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                     >
                       Open page
                     </Link>
                   ) : (
-                    <span className="inline-flex w-fit rounded-full border border-border bg-background/70 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+                    <span className="inline-flex w-fit rounded-control border border-border bg-background/70 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
                       No page link
                     </span>
                   )}
@@ -111,7 +111,7 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
             </p>
 
             {item.browser || item.viewport_width || item.viewport_height ? (
-              <div className="mt-4 rounded-2xl border border-border bg-background/70 p-3 text-xs leading-5 text-muted-foreground">
+              <div className="mt-4 rounded-object border border-border bg-background/70 p-3 text-xs leading-5 text-muted-foreground">
                 {item.viewport_width && item.viewport_height ? (
                   <p>
                     Viewport: {item.viewport_width} × {item.viewport_height}
@@ -129,7 +129,7 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
 
               <div className="grid gap-3 md:grid-cols-2">
                 <label className="block">
-                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <span className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
                     Status
                   </span>
                   <select
@@ -147,7 +147,7 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
                 </label>
 
                 <label className="block">
-                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <span className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
                     Owner priority
                   </span>
                   <select
@@ -164,7 +164,7 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
               </div>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <span className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
                   Owner notes
                 </span>
                 <textarea
@@ -175,7 +175,7 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
                 />
               </label>
 
-              <label className="flex items-start gap-3 rounded-2xl border border-border bg-background/70 p-3 text-sm text-muted-foreground">
+              <label className="flex items-start gap-3 rounded-object border border-border bg-background/70 p-3 text-sm text-muted-foreground">
                 <input
                   type="checkbox"
                   name="notify_reporter"
@@ -194,7 +194,7 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
                   value="update"
                   label="Update feedback"
                   pendingLabel="Updating…"
-                  className="min-h-11 rounded-control bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className="min-h-11 rounded-control bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground  transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                 />
 
                 <SubmitButton
@@ -202,7 +202,7 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
                   value="resolve"
                   label="Resolve, notify, and archive"
                   pendingLabel="Resolving…"
-                  className="min-h-11 rounded-control border border-primary bg-background/70 px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className="min-h-11 rounded-control border border-primary bg-background/70 px-4 py-2 text-sm font-semibold text-primary  transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                 />
               </div>
             </ConfirmedActionForm>

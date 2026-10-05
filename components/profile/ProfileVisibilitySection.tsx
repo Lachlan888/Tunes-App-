@@ -42,7 +42,7 @@ function VisibilityToggle({
   description,
 }: VisibilityToggleProps) {
   return (
-    <label className="block rounded-2xl border border-border bg-background/70 p-4 shadow-sm transition hover:bg-muted">
+    <label className="block rounded-object border border-border bg-background/70 p-4  transition hover:bg-muted">
       <span className="flex items-start gap-3">
         <input
           type="checkbox"
@@ -91,8 +91,8 @@ export default function ProfileVisibilitySection({
 }: ProfileVisibilitySectionProps) {
   return (
     <div className="space-y-5">
-      <section className="rounded-3xl border border-border bg-muted p-5 shadow-sm">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <section className="rounded-object border border-border bg-muted p-5 ">
+        <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
           Practice settings
         </h3>
 
@@ -112,8 +112,8 @@ export default function ProfileVisibilitySection({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-border bg-muted p-5 shadow-sm">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <section className="rounded-object border border-border bg-muted p-5 ">
+        <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
           Public profile settings
         </h3>
 
@@ -197,7 +197,7 @@ export default function ProfileVisibilitySection({
         </div>
 
         {profile === null && (
-          <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+          <p className="mt-5 rounded-object border border-border bg-background/70 p-4 text-sm text-muted-foreground">
             These settings will be saved when you save your profile.
           </p>
         )}

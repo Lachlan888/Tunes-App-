@@ -77,19 +77,19 @@ const CONDITIONS_BY_CATEGORY: Record<BadgeCategory, ConditionOption[]> = {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full rounded-object border border-border bg-background/70 px-4 py-3 text-sm text-foreground  outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 const labelClassName =
-  "text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+  "text-sm font-semibold  tracking-[0.14em] text-muted-foreground"
 
 const panelClassName =
   "border-b border-border pb-5"
 
 const primaryButtonClassName =
-  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground  transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
 
 const dangerButtonClassName =
-  "inline-flex min-h-11 rounded-control border border-destructive bg-destructive px-5 py-2.5 text-sm font-medium text-destructive-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+  "inline-flex min-h-11 rounded-control border border-destructive bg-destructive px-5 py-2.5 text-sm font-medium text-destructive-foreground  transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
 
 function getBadge(data: CreateBadgeFormProps["data"]): Badge | null {
   if ("badge" in data && data.badge) {
@@ -265,13 +265,13 @@ export default function CreateBadgeForm({
             </p>
           </div>
 
-          <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+          <p className="mt-5 rounded-object border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
             Badges are public. Choose what earns the badge, and it will be
             awarded under your name.
           </p>
 
           {conditionIsLocked ? (
-            <p className="mt-4 rounded-2xl border border-warning bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+            <p className="mt-4 rounded-object border border-warning bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
               This badge has already been awarded to {awardCount} player
               {awardCount === 1 ? "" : "s"}, so its unlock condition is locked.
               You can still edit the name and description.
@@ -319,7 +319,7 @@ export default function CreateBadgeForm({
 
           <div className="mt-6">
             {conditionType === "know_all_tunes_in_list" ? (
-              <div className="rounded-2xl border border-border bg-background/70 p-5">
+              <div className="rounded-object border border-border bg-background/70 p-5">
                 <h3 className="text-sm font-semibold text-foreground">
                   Public list
                 </h3>
@@ -361,7 +361,7 @@ export default function CreateBadgeForm({
             ) : null}
 
             {conditionType === "know_selected_tunes" ? (
-              <div className="rounded-2xl border border-border bg-background/70 p-5">
+              <div className="rounded-object border border-border bg-background/70 p-5">
                 <h3 className="text-sm font-semibold text-foreground">
                   Selected tunes
                 </h3>
@@ -387,7 +387,7 @@ export default function CreateBadgeForm({
             ) : null}
 
             {conditionType === "known_tune_count" ? (
-              <div className="rounded-2xl border border-border bg-background/70 p-5">
+              <div className="rounded-object border border-border bg-background/70 p-5">
                 <h3 className="text-sm font-semibold text-foreground">
                   Known tune count
                 </h3>
@@ -511,7 +511,7 @@ export default function CreateBadgeForm({
             ) : null}
 
             {conditionType === "added_media_links" ? (
-              <div className="rounded-2xl border border-border bg-background/70 p-5">
+              <div className="rounded-object border border-border bg-background/70 p-5">
                 <h3 className="text-sm font-semibold text-foreground">
                   Reference media
                 </h3>
@@ -579,7 +579,7 @@ export default function CreateBadgeForm({
                     </select>
                   </label>
 
-                  <label className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">
+                  <label className="flex items-start gap-3 rounded-object border border-border bg-card p-4 text-sm text-muted-foreground">
                     <input
                       type="checkbox"
                       name="only_previously_missing_media"
@@ -605,7 +605,7 @@ export default function CreateBadgeForm({
             ) : null}
 
             {conditionType === "added_lore_entries" ? (
-              <div className="rounded-2xl border border-border bg-background/70 p-5">
+              <div className="rounded-object border border-border bg-background/70 p-5">
                 <h3 className="text-sm font-semibold text-foreground">Lore</h3>
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">
                   The badge is awarded for adding lore entries.
@@ -678,7 +678,7 @@ export default function CreateBadgeForm({
             ) : null}
 
             {conditionType === "added_missing_details" ? (
-              <div className="rounded-2xl border border-border bg-background/70 p-5">
+              <div className="rounded-object border border-border bg-background/70 p-5">
                 <h3 className="text-sm font-semibold text-foreground">
                   Missing details
                 </h3>

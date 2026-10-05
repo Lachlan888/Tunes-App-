@@ -56,7 +56,7 @@ export default async function PracticeFocusDetailPage({
           Back to focus areas
         </Link>
 
-        <h1 className="mt-4 break-words font-serif text-3xl font-bold leading-tight tracking-tight">
+        <h1 className="mt-4 break-words font-sans text-4xl font-bold leading-tight tracking-tight">
           {focus.title}
         </h1>
 
@@ -71,14 +71,14 @@ export default async function PracticeFocusDetailPage({
         <PracticeDiaryNav active="foci" />
       </section>
 
-      <section className="mb-6 hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:block">
+      <section className="mb-6 hidden border-b border-hairline pb-6 md:block">
         <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
             <Link href="/review/foci" className={buttonStyles.text}>
               Back to focus areas
             </Link>
 
-            <h1 className="mt-4 break-words font-serif text-5xl font-bold leading-tight tracking-tight">
+            <h1 className="mt-4 break-words font-sans text-5xl font-bold leading-tight tracking-tight">
               {focus.title}
             </h1>
 
@@ -95,7 +95,7 @@ export default async function PracticeFocusDetailPage({
       </section>
 
       {statusMessage ? (
-        <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
+        <div className="mb-5 border-l-4 border-state-practice bg-surface-note p-4 text-sm font-medium text-foreground md:mb-6">
           {statusMessage}
         </div>
       ) : null}

@@ -12,20 +12,17 @@ function shortDate(value: string) {
 }
 
 function InsightHeader({
-  eyebrow,
+  id,
   title,
   takeaway,
 }: {
-  eyebrow: string
+  id: string
   title: string
   takeaway: string
 }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        {eyebrow}
-      </p>
-      <h2 className="mt-1 font-serif text-2xl font-bold tracking-tight">{title}</h2>
+      <h2 id={id} className="font-sans text-2xl font-bold tracking-tight">{title}</h2>
       <p className="mt-1 text-sm leading-6 text-muted-foreground">{takeaway}</p>
     </div>
   )
@@ -42,8 +39,8 @@ export default function PersonalTrendInsights({
 
   if (!hasPracticeData && insight.stageDistribution.length === 0) {
     return (
-      <section className="border-y border-border py-7" aria-labelledby="trends-empty-title">
-        <h2 id="trends-empty-title" className="mt-2 font-serif text-2xl font-bold">
+      <section className="border-b border-hairline py-7" aria-labelledby="trends-empty-title">
+        <h2 id="trends-empty-title" className="font-sans text-2xl font-bold">
           Not enough data yet
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
@@ -62,10 +59,10 @@ export default function PersonalTrendInsights({
 
   return (
     <div className="space-y-10">
-      <section className="border-y border-border py-6" aria-labelledby="progress-title">
+      <section className="border-b border-hairline py-6" aria-labelledby="progress-title">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 id="progress-title" className="mt-1 font-serif text-3xl font-bold tracking-tight">
+            <h2 id="progress-title" className="font-sans text-3xl font-bold tracking-tight">
               {insight.needsAttention.length > 0
                 ? `${insight.needsAttention.length} tunes need attention`
                 : `${insight.activeWeeks} active weeks out of ${insight.periodWeeks}`}
@@ -74,16 +71,16 @@ export default function PersonalTrendInsights({
               {insight.totalEvents} practice event{insight.totalEvents === 1 ? "" : "s"} from {shortDate(insight.startDate)} to {shortDate(insight.endDate)}.
             </p>
           </div>
-          <nav aria-label="Trend period" className="inline-flex w-fit rounded-full border border-border bg-muted/50 p-1">
+          <nav aria-label="Trend period" className="inline-flex w-fit border-b border-hairline">
             {PERIODS.map((period) => (
               <Link
                 key={period}
                 href={`/trends?period=${period}`}
                 aria-current={period === insight.periodWeeks ? "page" : undefined}
-                className={`inline-flex min-h-11 min-w-14 items-center justify-center rounded-full px-3 text-sm font-semibold ${
+                className={`inline-flex min-h-11 min-w-14 items-center justify-center border-b-2 px-3 text-sm font-semibold ${
                   period === insight.periodWeeks
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "border-action-primary text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {period}w
@@ -95,11 +92,11 @@ export default function PersonalTrendInsights({
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         {hasPracticeData ? (
-          <section aria-labelledby="practice-volume-title">
+          <section className="min-w-0" aria-labelledby="practice-volume-title">
             <InsightHeader
-              eyebrow="Practice volume"
+              id="practice-volume-title"
               title="Weekly rhythm"
-              takeaway={`${insight.activeWeeks} of ${insight.periodWeeks} weeks included practice. Each bar also shows its exact count.`}
+              takeaway={`Practice volume · ${insight.activeWeeks} of ${insight.periodWeeks} weeks included practice. Each bar also shows its exact count.`}
             />
             <ol className="mt-5 flex h-44 items-end gap-2 border-b border-border px-1" aria-label="Practice events by week">
               {insight.weeks.map((week) => (
@@ -130,16 +127,16 @@ export default function PersonalTrendInsights({
         {insight.stageDistribution.length > 0 ? (
           <section aria-labelledby="stage-title">
             <InsightHeader
-              eyebrow="Stage distribution"
+              id="stage-title"
               title="Where your tunes sit"
-              takeaway={`${insight.stageDistribution.reduce((sum, item) => sum + item.count, 0)} tunes are currently in active practice.`}
+              takeaway={`Stage distribution · ${insight.stageDistribution.reduce((sum, item) => sum + item.count, 0)} tunes are currently in active practice.`}
             />
             <ol className="mt-5 space-y-3" aria-label="Active tunes by practice stage">
               {insight.stageDistribution.map((item) => (
                 <li key={item.stage} className="grid grid-cols-[4.5rem_1fr_2rem] items-center gap-3 text-sm">
                   <span className="font-medium">Stage {item.stage}</span>
-                  <span className="h-3 overflow-hidden rounded-full bg-muted">
-                    <span className="block h-full rounded-full bg-primary" style={{ width: `${(item.count / maxStage) * 100}%` }} />
+                  <span className="h-3 overflow-hidden rounded-control bg-muted">
+                    <span className="block h-full rounded-control bg-primary" style={{ width: `${(item.count / maxStage) * 100}%` }} />
                   </span>
                   <span className="text-right font-semibold tabular-nums">{item.count}</span>
                 </li>
@@ -157,8 +154,8 @@ export default function PersonalTrendInsights({
       <div className="grid gap-10 border-t border-border pt-8 lg:grid-cols-2">
         {insight.needsAttention.length > 0 ? (
           <section aria-labelledby="attention-title">
-            <InsightHeader eyebrow="Needs attention" title="Catch up without guessing" takeaway="These overdue tunes are ordered by due date." />
-            <ul className="mt-4 divide-y divide-border border-y border-border">
+            <InsightHeader id="attention-title" title="Catch up without guessing" takeaway="Needs attention · These overdue tunes are ordered by due date." />
+            <ul className="mt-4 divide-y divide-hairline border-t border-hairline">
               {insight.needsAttention.map((tune) => (
                 <li key={tune.pieceId} className="flex min-h-14 items-center justify-between gap-4 py-2">
                   <Link href={`/library/${tune.pieceId}`} className="font-semibold underline-offset-4 hover:underline">{tune.title}</Link>
@@ -172,7 +169,7 @@ export default function PersonalTrendInsights({
 
         {insight.exploreGap ? (
           <section aria-labelledby="gap-title">
-            <InsightHeader eyebrow="Explore a gap" title={`Try ${insight.exploreGap.label}`} takeaway={`Your repertoire has no ${insight.exploreGap.kind} match yet; the catalogue has ${insight.exploreGap.catalogueCount}.`} />
+            <InsightHeader id="gap-title" title={`Try ${insight.exploreGap.label}`} takeaway={`Explore a gap · Your repertoire has no ${insight.exploreGap.kind} match yet; the catalogue has ${insight.exploreGap.catalogueCount}.`} />
             <Link
               href={`/library?${insight.exploreGap.kind}=${encodeURIComponent(insight.exploreGap.label)}`}
               className="mt-4 inline-flex min-h-11 items-center rounded-control border border-border px-5 text-sm font-semibold hover:bg-muted justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
@@ -185,12 +182,12 @@ export default function PersonalTrendInsights({
 
       {(insight.personalStyleCoverage.length > 0 || insight.personalKeyCoverage.length > 0) ? (
         <section className="border-t border-border pt-8" aria-labelledby="coverage-title">
-          <InsightHeader eyebrow="Coverage" title="Styles and keys in your repertoire" takeaway="Counts include your Known and active Practice tunes; duplicate membership is shown once per collection source." />
+          <InsightHeader id="coverage-title" title="Styles and keys in your repertoire" takeaway="Coverage counts include your Known and active Practice tunes; duplicate membership is shown once per collection source." />
           <div className="mt-4 grid gap-6 md:grid-cols-2">
             {[{ label: "Styles", items: insight.personalStyleCoverage }, { label: "Keys", items: insight.personalKeyCoverage }].map((group) => (
               <div key={group.label}>
                 <h3 className="text-sm font-semibold">{group.label}</h3>
-                <ul className="mt-2 divide-y divide-border border-y border-border">
+                <ul className="mt-2 divide-y divide-hairline border-t border-hairline">
                   {group.items.map((item) => <li key={item.label} className="flex min-h-11 items-center justify-between"><span>{item.label}</span><strong>{item.count}</strong></li>)}
                 </ul>
               </div>

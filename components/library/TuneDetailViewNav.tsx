@@ -29,7 +29,7 @@ export default function TuneDetailViewNav({
 
   return (
     <nav aria-label="Tune detail views" className="pb-1">
-      <div className="grid grid-cols-3 gap-1 rounded-control border border-hairline bg-surface-note p-1">
+      <div className="grid grid-cols-3 border-b border-hairline">
         {views.map((view) => {
           const isActive = view.value === activeView
 
@@ -53,10 +53,10 @@ export default function TuneDetailViewNav({
                 }, 3000)
               }}
               className={joinClasses(
-                "inline-flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-control px-2 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] aria-disabled:cursor-wait aria-disabled:opacity-70 sm:gap-2 sm:px-3",
+                "inline-flex min-h-11 min-w-0 items-center justify-center gap-1 border-b-2 border-transparent px-2 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] aria-disabled:cursor-wait aria-disabled:opacity-70 sm:gap-2 sm:px-3",
                 isActive
-                  ? "bg-action-primary text-action-primary-foreground shadow-material-rest"
-                  : "text-text-muted hover:bg-surface-paper hover:text-text-primary"
+                  ? "border-action-primary text-text-primary"
+                  : "text-text-muted hover:text-text-primary"
               )}
             >
               {isPending && pendingTarget === view.value ? (

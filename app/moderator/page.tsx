@@ -55,7 +55,7 @@ function formatCategory(category: string) {
 }
 
 const textareaClassName =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full rounded-object border border-border bg-background/70 px-4 py-3 text-sm text-foreground  outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default async function ModeratorPage({
   searchParams,
@@ -80,7 +80,7 @@ export default async function ModeratorPage({
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
       {statusMessage ? (
-        <div className="mb-6 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+        <div className="mb-6 border-l-4 border-hairline py-2 pl-3 text-sm font-medium text-foreground">
           {statusMessage}
         </div>
       ) : null}
@@ -90,8 +90,8 @@ export default async function ModeratorPage({
       <section className="mb-8">
         {showSection("summary_counts") ? (
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-border bg-background/70 p-4">
-              <p className="font-serif text-4xl font-bold">
+            <div className="border-b border-hairline py-4">
+              <p className="font-sans text-4xl font-bold">
                 {pendingEditRequests.length}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -99,8 +99,8 @@ export default async function ModeratorPage({
               </p>
             </div>
 
-            <div className="rounded-2xl border border-border bg-background/70 p-4">
-              <p className="font-serif text-4xl font-bold">
+            <div className="border-b border-hairline py-4">
+              <p className="font-sans text-4xl font-bold">
                 {pendingCommentReports.length}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -108,8 +108,8 @@ export default async function ModeratorPage({
               </p>
             </div>
 
-            <div className="rounded-2xl border border-border bg-background/70 p-4">
-              <p className="font-serif text-4xl font-bold">
+            <div className="border-b border-hairline py-4">
+              <p className="font-sans text-4xl font-bold">
                 {pendingLoreReports.length}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -122,7 +122,7 @@ export default async function ModeratorPage({
 
       {showSection("tune_edit_requests") ? (
         <section className="mb-10">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
             Tune edit requests
           </h2>
 
@@ -136,13 +136,13 @@ export default async function ModeratorPage({
                 return (
                   <li
                     key={request.id}
-                    className="rounded-3xl border border-border bg-card p-6 shadow-sm"
+                    className="border-y border-hairline py-6"
                   >
                     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                       <div>
                         <Link
                           href={`/library/${request.piece_id}`}
-                          className="font-serif text-2xl font-bold underline-offset-4 hover:underline"
+                          className="font-sans text-2xl font-bold underline-offset-4 hover:underline"
                         >
                           {request.pieceTitle}
                         </Link>
@@ -151,14 +151,14 @@ export default async function ModeratorPage({
                         </p>
                       </div>
 
-                      <p className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      <p className="rounded-control border border-border bg-background/70 px-3 py-1 text-xs font-semibold  tracking-[0.12em] text-muted-foreground">
                         Pending
                       </p>
                     </div>
 
                     {request.reason ? (
-                      <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      <div className="mt-5 border-b border-hairline py-4">
+                        <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
                           Reason
                         </p>
                         <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
@@ -171,9 +171,9 @@ export default async function ModeratorPage({
                       {proposedChanges.map(([key, value]) => (
                         <div
                           key={key}
-                          className="rounded-2xl border border-border bg-background/70 p-4"
+                          className="border-b border-hairline py-4"
                         >
-                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                          <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
                             {key.replaceAll("_", " ")}
                           </p>
                           <p className="mt-2 whitespace-pre-wrap break-words text-sm font-medium">
@@ -204,7 +204,7 @@ export default async function ModeratorPage({
                         <SubmitButton
                           label="Approve request"
                           pendingLabel="Approving..."
-                          className="min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                          className="min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground  transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                         />
                       </ConfirmedActionForm>
 
@@ -228,7 +228,7 @@ export default async function ModeratorPage({
                         <SubmitButton
                           label="Reject request"
                           pendingLabel="Rejecting..."
-                          className="min-h-11 rounded-control border border-destructive bg-background/70 px-4 py-2 text-sm font-medium text-destructive shadow-sm transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                          className="min-h-11 rounded-control border border-destructive bg-background/70 px-4 py-2 text-sm font-medium text-destructive  transition hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                         />
                       </ConfirmedActionForm>
                     </div>
@@ -237,7 +237,7 @@ export default async function ModeratorPage({
               })}
             </ul>
           ) : (
-            <p className="mt-5 rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">
+            <p className="mt-5 border-y border-hairline py-5text-sm text-muted-foreground">
               No pending tune edit requests.
             </p>
           )}
@@ -246,7 +246,7 @@ export default async function ModeratorPage({
 
       {showSection("comment_reports") ? (
         <section className="mb-10">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
             Comment reports
           </h2>
 
@@ -255,13 +255,13 @@ export default async function ModeratorPage({
               {pendingCommentReports.map((report) => (
                 <li
                   key={report.id}
-                  className="rounded-3xl border border-border bg-card p-6 shadow-sm"
+                  className="border-y border-hairline py-6"
                 >
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div>
                       <Link
                         href={`/library/${report.pieceId}`}
-                        className="font-serif text-2xl font-bold underline-offset-4 hover:underline"
+                        className="font-sans text-2xl font-bold underline-offset-4 hover:underline"
                       >
                         {report.pieceTitle}
                       </Link>
@@ -271,13 +271,13 @@ export default async function ModeratorPage({
                       </p>
                     </div>
 
-                    <p className="rounded-full border border-warning bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    <p className="rounded-control border border-warning bg-background/70 px-3 py-1 text-xs font-semibold  tracking-[0.12em] text-muted-foreground">
                       {report.reason.replaceAll("_", " ")}
                     </p>
                   </div>
 
-                  <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <div className="mt-5 border-b border-hairline py-4">
+                    <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
                       Reported comment
                     </p>
                     <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
@@ -286,8 +286,8 @@ export default async function ModeratorPage({
                   </div>
 
                   {report.details ? (
-                    <div className="mt-3 rounded-2xl border border-border bg-background/70 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <div className="mt-3 border-b border-hairline py-4">
+                      <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
                         Report details
                       </p>
                       <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
@@ -314,7 +314,7 @@ export default async function ModeratorPage({
                       <SubmitButton
                         label="Hide comment"
                         pendingLabel="Hiding..."
-                        className="min-h-11 rounded-control border border-destructive bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                        className="min-h-11 rounded-control border border-destructive bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground  transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       />
                     </ConfirmedActionForm>
 
@@ -330,7 +330,7 @@ export default async function ModeratorPage({
                       <SubmitButton
                         label="Dismiss report"
                         pendingLabel="Dismissing..."
-                        className="min-h-11 rounded-control border border-primary bg-background/70 px-4 py-2 text-sm font-medium text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                        className="min-h-11 rounded-control border border-primary bg-background/70 px-4 py-2 text-sm font-medium text-primary  transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       />
                     </ConfirmedActionForm>
                   </div>
@@ -338,7 +338,7 @@ export default async function ModeratorPage({
               ))}
             </ul>
           ) : (
-            <p className="mt-5 rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">
+            <p className="mt-5 border-y border-hairline py-5text-sm text-muted-foreground">
               No pending comment reports.
             </p>
           )}
@@ -347,7 +347,7 @@ export default async function ModeratorPage({
 
       {showSection("lore_reports") ? (
         <section>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
             Lore reports
           </h2>
 
@@ -356,13 +356,13 @@ export default async function ModeratorPage({
               {pendingLoreReports.map((report) => (
                 <li
                   key={report.id}
-                  className="rounded-3xl border border-border bg-card p-6 shadow-sm"
+                  className="border-y border-hairline py-6"
                 >
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div>
                       <Link
                         href={`/library/${report.pieceId}`}
-                        className="font-serif text-2xl font-bold underline-offset-4 hover:underline"
+                        className="font-sans text-2xl font-bold underline-offset-4 hover:underline"
                       >
                         {report.pieceTitle}
                       </Link>
@@ -373,17 +373,17 @@ export default async function ModeratorPage({
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                      <p className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      <p className="rounded-control border border-border bg-background/70 px-3 py-1 text-xs font-semibold  tracking-[0.12em] text-muted-foreground">
                         {formatCategory(report.loreCategory)}
                       </p>
-                      <p className="rounded-full border border-warning bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      <p className="rounded-control border border-warning bg-background/70 px-3 py-1 text-xs font-semibold  tracking-[0.12em] text-muted-foreground">
                         {report.reason.replaceAll("_", " ")}
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <div className="mt-5 border-b border-hairline py-4">
+                    <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
                       Reported lore entry
                     </p>
                     <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
@@ -392,8 +392,8 @@ export default async function ModeratorPage({
                   </div>
 
                   {report.details ? (
-                    <div className="mt-3 rounded-2xl border border-border bg-background/70 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <div className="mt-3 border-b border-hairline py-4">
+                      <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
                         Report details
                       </p>
                       <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
@@ -405,7 +405,7 @@ export default async function ModeratorPage({
                   <div className="mt-5 flex flex-wrap gap-2">
                     <Link
                       href={`/library/${report.pieceId}`}
-                      className="min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                      className="min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground  transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                     >
                       Open tune to edit lore
                     </Link>
@@ -425,7 +425,7 @@ export default async function ModeratorPage({
                       <SubmitButton
                         label="Mark actioned"
                         pendingLabel="Saving..."
-                        className="min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                        className="min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground  transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       />
                     </ConfirmedActionForm>
 
@@ -441,7 +441,7 @@ export default async function ModeratorPage({
                       <SubmitButton
                         label="Dismiss report"
                         pendingLabel="Dismissing..."
-                        className="min-h-11 rounded-control border border-primary bg-background/70 px-4 py-2 text-sm font-medium text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                        className="min-h-11 rounded-control border border-primary bg-background/70 px-4 py-2 text-sm font-medium text-primary  transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       />
                     </ConfirmedActionForm>
                   </div>
@@ -449,7 +449,7 @@ export default async function ModeratorPage({
               ))}
             </ul>
           ) : (
-            <p className="mt-5 rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">
+            <p className="mt-5 border-y border-hairline py-5text-sm text-muted-foreground">
               No pending lore reports.
             </p>
           )}

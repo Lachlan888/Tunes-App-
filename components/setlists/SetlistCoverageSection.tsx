@@ -37,10 +37,10 @@ export default function SetlistCoverageSection({
   const existingPieceIds = items.map((item) => item.piece_id)
 
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+    <section className="border-t border-hairline pt-6">
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <h2 className="text-xl font-semibold text-foreground">
             Tunes and coverage
           </h2>
 
@@ -61,7 +61,7 @@ export default function SetlistCoverageSection({
       </div>
 
       {items.length === 0 ? (
-        <p className="rounded-2xl border border-border bg-background/70 p-5 text-sm text-muted-foreground">
+        <p className="border-y border-hairline py-5 text-sm text-muted-foreground">
           This setlist has no tunes yet.
         </p>
       ) : (

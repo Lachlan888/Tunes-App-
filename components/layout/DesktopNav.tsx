@@ -48,7 +48,7 @@ export default function DesktopNav({
   const selectedDestination = getPrimaryDestination(pathname)
 
   return (
-    <aside data-desktop-nav className="fixed inset-y-0 left-0 z-[300] hidden w-[4.75rem] border-r border-hairline bg-surface-paper md:flex md:flex-col xl:w-48">
+    <aside data-desktop-nav className="fixed inset-y-0 left-0 z-[300] hidden w-[4.75rem] border-r border-hairline bg-surface-canvas md:flex md:flex-col xl:w-48">
       <Link
         href="/"
         aria-label="Tunes home"
@@ -58,7 +58,7 @@ export default function DesktopNav({
         <span className="hidden xl:inline">Tunes</span>
       </Link>
 
-      <nav aria-label={shellKind === "internal" ? "Internal navigation" : "Primary navigation"} className="grid gap-1 p-2">
+      <nav aria-label={shellKind === "internal" ? "Internal navigation" : "Primary navigation"} className="grid gap-0 p-2">
         {shellKind === "consumer"
           ? <>
             {primaryNavItems.map((item) => {
@@ -70,13 +70,12 @@ export default function DesktopNav({
                   key={item.destination}
                   href={item.href}
                   aria-current={isSelected ? "page" : undefined}
-                  title={item.label}
                   aria-label={item.label}
                   className={joinClasses(
-                    "relative flex min-h-12 items-center justify-center gap-3 rounded-control px-3 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start",
+                    "group/rail-item relative flex min-h-12 items-center justify-center gap-3 border-l-2 border-transparent px-3 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start",
                     isSelected
-                      ? "bg-action-primary text-action-primary-foreground shadow-material-rest"
-                      : "text-text-muted hover:bg-surface-note hover:text-text-primary"
+                      ? "border-action-primary text-text-primary"
+                      : "text-text-muted hover:bg-surface-note/50 hover:text-text-primary"
                   )}
                 >
                   <Icon name={item.icon} size={21} />
@@ -89,9 +88,8 @@ export default function DesktopNav({
               <div className="mt-2 border-t border-hairline pt-2">
                 <Link
                   href="/dev/festivals"
-                  title="Festival hub preview"
                   aria-label="Festival hub preview"
-                  className="flex min-h-12 items-center justify-center gap-3 rounded-control px-3 text-sm font-semibold text-text-muted transition-colors hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start"
+                  className="group/rail-item relative flex min-h-12 items-center justify-center gap-3 border-l-2 border-transparent px-3 text-sm font-semibold text-text-muted transition-colors hover:bg-surface-note/50 hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start"
                 >
                   <Icon name="stage" size={21} />
                   <span className="hidden xl:inline">Festival hub</span>
@@ -101,19 +99,19 @@ export default function DesktopNav({
           </>
           : (
             <>
-              <Link href="/" className="flex min-h-12 items-center justify-center gap-3 rounded-control px-3 text-sm font-semibold text-text-muted hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start">
+              <Link href="/" aria-label="Back to Tunes" className="group/rail-item relative flex min-h-12 items-center justify-center gap-3 border-l-2 border-transparent px-3 text-sm font-semibold text-text-muted hover:bg-surface-note/50 hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start">
                 <Icon name="arrow-left" size={21} />
                 <span className="hidden xl:inline">Back to Tunes</span>
               </Link>
               {canModerate ? (
-                <Link href="/moderator" aria-current={pathname.startsWith("/moderator") ? "page" : undefined} className={joinClasses("relative flex min-h-12 items-center justify-center gap-3 rounded-control px-3 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start", pathname.startsWith("/moderator") ? "bg-action-primary text-action-primary-foreground" : "text-text-muted hover:bg-surface-note hover:text-text-primary")}>
+                <Link href="/moderator" aria-label="Moderator" aria-current={pathname.startsWith("/moderator") ? "page" : undefined} className={joinClasses("group/rail-item relative flex min-h-12 items-center justify-center gap-3 border-l-2 border-transparent px-3 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start", pathname.startsWith("/moderator") ? "border-action-primary text-text-primary" : "text-text-muted hover:bg-surface-note/50 hover:text-text-primary")}>
                   <Icon name="shield" size={21} />
                   <span className="hidden xl:inline">Moderator</span>
                   <RailBadge count={pendingModerationCount} />
                 </Link>
               ) : null}
               {canAccessDev ? (
-                <Link href="/dev" aria-current={pathname.startsWith("/dev") ? "page" : undefined} className={joinClasses("flex min-h-12 items-center justify-center gap-3 rounded-control px-3 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start", pathname.startsWith("/dev") ? "bg-action-primary text-action-primary-foreground" : "text-text-muted hover:bg-surface-note hover:text-text-primary")}>
+                <Link href="/dev" aria-label="Developer" aria-current={pathname.startsWith("/dev") ? "page" : undefined} className={joinClasses("group/rail-item relative flex min-h-12 items-center justify-center gap-3 border-l-2 border-transparent px-3 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start", pathname.startsWith("/dev") ? "border-action-primary text-text-primary" : "text-text-muted hover:bg-surface-note/50 hover:text-text-primary")}>
                   <Icon name="code" size={21} />
                   <span className="hidden xl:inline">Developer</span>
                 </Link>

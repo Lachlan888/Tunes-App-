@@ -32,8 +32,8 @@ export default async function ReferenceMediaPage({
   if (tuneDetail.status !== "loaded") {
     return (
       <main className="mx-auto w-full max-w-[1500px] px-4 py-6 text-foreground sm:px-6 sm:py-8">
-        <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
-          <h1 className="font-serif text-3xl font-bold">
+        <section className="border-y border-hairline py-6">
+          <h1 className="font-sans text-4xl font-bold">
             {tuneDetail.status === "not_found"
               ? "Tune not found"
               : "Couldn’t load tune"}
@@ -58,7 +58,7 @@ export default async function ReferenceMediaPage({
 
   return (
     <main className="mx-auto w-full max-w-[1500px] px-4 py-5 text-foreground sm:px-6 sm:py-8">
-      <header className="mb-6 min-w-0">
+      <header className="mb-8 min-w-0 border-b border-hairline pb-6">
         <Link
           href={returnTo ?? `/library/${tuneDetail.pieceId}`}
           className="text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
@@ -67,7 +67,7 @@ export default async function ReferenceMediaPage({
         </Link>
         <div className="mt-1 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <h1 className="break-words font-serif text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
+            <h1 className="break-words font-sans text-4xl font-bold leading-[1.04] tracking-tight text-foreground sm:text-5xl md:text-6xl">
               {tuneDetail.typedPiece.title}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">

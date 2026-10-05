@@ -19,7 +19,7 @@ type FriendsListSectionProps = {
 const DEFAULT_VISIBLE_COUNT = 4
 
 const secondaryButtonClass =
-  "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
+  "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground  transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
 
 function FriendCard({ friend }: { friend: AcceptedFriend }) {
   const label = friend.display_name || friend.username || "Unnamed player"
@@ -31,8 +31,8 @@ function FriendCard({ friend }: { friend: AcceptedFriend }) {
     <article
       className={
         profileHref
-          ? "py-4 transition hover:text-foreground focus-within:ring-2 focus-within:ring-[var(--focus-ring)] md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm md:hover:-translate-y-0.5 md:hover:bg-muted/70 md:hover:shadow-md"
-          : "py-4 transition hover:text-foreground md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm md:hover:bg-muted/70"
+          ? "px-1 py-4 transition hover:bg-surface-note/50 hover:text-foreground focus-within:ring-2 focus-within:ring-[var(--focus-ring)]"
+          : "px-1 py-4 transition hover:bg-surface-note/50 hover:text-foreground"
       }
 
     >
@@ -73,10 +73,10 @@ export default function FriendsListSection({ friends }: FriendsListSectionProps)
   const hasOverflow = friends.length > DEFAULT_VISIBLE_COUNT
 
   return (
-    <section className="mb-7 md:mb-8 md:rounded-2xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
+    <section className="mb-8 border-t border-hairline pt-6">
       <div className="mb-4 flex items-start justify-between gap-4 md:mb-5">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight text-foreground md:mt-2 md:font-serif md:text-3xl md:font-bold">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">
             Friends
           </h2>
           <p className="mt-2 hidden text-sm leading-6 text-muted-foreground md:block">
@@ -106,7 +106,7 @@ export default function FriendsListSection({ friends }: FriendsListSectionProps)
           secondaryActionLabel="Compare tunes"
         />
       ) : (
-        <div className="divide-y divide-border/70 md:grid md:grid-cols-2 md:gap-3 md:divide-y-0 xl:grid-cols-3">
+        <div className="divide-y divide-hairline border-y border-hairline md:grid md:grid-cols-2 md:divide-x md:divide-y-0 xl:grid-cols-3">
           {visibleFriends.map((friend) => (
             <FriendCard key={friend.connection_id} friend={friend} />
           ))}

@@ -30,12 +30,12 @@
   --action-destructive-foreground: #fffdf8;
 
   /* Materials */
-  --shape-radius-control: 0.75rem;
-  --shape-radius-object: 1.125rem;
-  --shape-radius-sheet: 1.5rem;
-  --shape-radius-pill: 999px;
-  --elevation-rest: 0 1px 2px rgb(37 35 31 / 0.07);
-  --elevation-raised: 0 8px 24px rgb(73 53 29 / 0.1);
+  --shape-radius-control: 0.2rem;
+  --shape-radius-object: 0.25rem;
+  --shape-radius-sheet: 0.35rem;
+  --shape-radius-pill: 0.2rem;
+  --elevation-rest: none;
+  --elevation-raised: none;
   --elevation-floating: 0 16px 48px rgb(37 35 31 / 0.2);
   --floating-surface: rgb(255 253 248 / 0.92);
   --floating-surface-opaque: #fffdf8;
@@ -145,9 +145,7 @@ html {
 
 body {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgb(211 199 181 / 0.24), transparent 34rem),
-    var(--surface-canvas);
+  background: var(--surface-canvas);
   color: var(--text-primary);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -454,12 +452,12 @@ textarea::placeholder {
   gap: .8rem;
   margin-top: 2rem;
   padding: .875rem 1.75rem;
-  border-radius: 1rem;
+  border-radius: .2rem;
   background: var(--state-practice);
   color: var(--state-practice-foreground);
   font-size: 1rem;
   font-weight: 650;
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--state-practice) 15%, transparent);
+  box-shadow: none;
   transition: background-color 150ms, transform 150ms;
 }
 .practice-start-button:hover { background: var(--state-practice-hover); transform: translateY(-1px); }
@@ -469,7 +467,7 @@ textarea::placeholder {
   outline-offset: 4px;
 }
 .practice-session-content { max-width: 42rem; margin: 0 auto; padding: 2.5rem 0 11rem; }
-.practice-tune-heading { margin-bottom: 1.75rem; text-align: center; overflow-wrap: anywhere; }
+.practice-tune-heading { margin-bottom: 1.75rem; text-align: left; overflow-wrap: anywhere; }
 .practice-reference { min-width: 0; }
 .practice-reference-workbench .aspect-video { min-height: 200px; }
 .practice-player-controls { display: flex; align-items: center; gap: .5rem; padding: .875rem 0; }
@@ -481,7 +479,7 @@ textarea::placeholder {
 .practice-pedal-trigger { display: inline-flex; align-items: center; gap: .5rem; margin-left: auto; padding: .5rem .75rem; border: 1px solid var(--hairline); color: var(--text-primary); background: var(--surface-paper); }
 .practice-reference-empty { display: flex; min-height: 15rem; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; border-radius: 1.5rem; background: color-mix(in srgb, var(--surface-paper) 70%, transparent); text-align: center; }
 .practice-rating-bar { position: fixed; right: 0; bottom: 0; left: 0; z-index: 300; padding: 1rem max(1rem, env(safe-area-inset-right)) max(1.25rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); border-top: 1px solid var(--hairline); background: var(--surface-canvas); }
-.practice-rating { display: flex; min-height: 3.5rem; min-width: 0; align-items: center; justify-content: center; gap: .625rem; padding: .75rem 1rem; border: 1px solid var(--hairline); border-radius: .875rem; background: var(--surface-paper); font-size: .9375rem; font-weight: 650; transition: background-color 150ms, border-color 150ms; }
+.practice-rating { display: flex; min-height: 3.5rem; min-width: 0; align-items: center; justify-content: center; gap: .625rem; padding: .75rem 1rem; border: 1px solid var(--hairline); border-radius: .2rem; background: var(--surface-paper); font-size: .9375rem; font-weight: 650; transition: background-color 150ms, border-color 150ms; }
 .practice-rating-failed { color: var(--state-overdue); }
 .practice-rating-shaky { color: var(--text-primary); }
 .practice-rating-solid { color: var(--state-known); }
@@ -499,4 +497,19 @@ textarea::placeholder {
 }
 @media (prefers-reduced-motion: reduce) {
   .practice-start-button, .practice-rating { transition: none; transform: none; }
+}
+
+
+/* Editorial workspace: a single canvas, ruled collections and quiet regions.
+   Keep dialog surfaces and interactive state colours intact. */
+.app-shell-content main { line-height: 1.5; }
+.app-shell-content main h1 { letter-spacing: -0.045em; }
+.app-shell-content main :is(ul, ol).divide-y > li { border-color: var(--hairline); }
+.practice-entry, .practice-finish { align-items: flex-start; text-align: left; max-width: 42rem; margin-inline: auto; }
+.practice-entry-symbol { border-radius: .2rem; }
+.practice-reference-empty { border-radius: .2rem; background: transparent; border-block: 1px solid var(--hairline); }
+.practice-player-controls button { border-radius: .2rem; }
+@media (min-width: 768px) {
+  .app-shell-content main { padding-top: 2.5rem; }
+  .workbench-split { gap: clamp(2rem, 5vw, 5rem); }
 }

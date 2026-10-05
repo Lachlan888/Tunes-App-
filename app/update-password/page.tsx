@@ -55,9 +55,9 @@ export default function UpdatePasswordPage() {
   }
 
   return (
-    <main className="mx-auto max-w-md p-8">
-      <h1 className="mb-2 text-3xl font-bold">Set new password</h1>
-      <p className="mb-6 text-gray-600">
+    <main className="mx-auto max-w-xl px-4 py-6 text-text-primary sm:px-6 lg:py-10">
+      <h1 className="mb-2 text-4xl font-bold">Set new password</h1>
+      <p className="mb-6 text-text-muted">
         Enter a new password for your Tunes App account.
       </p>
 
@@ -83,7 +83,7 @@ export default function UpdatePasswordPage() {
           </label>
           <input
             id="password"
-            className="w-full rounded border p-2"
+            className="min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3 py-2 outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             type="password"
             autoComplete="new-password"
             value={password}
@@ -101,7 +101,7 @@ export default function UpdatePasswordPage() {
           </label>
           <input
             id="confirm-password"
-            className="w-full rounded border p-2"
+            className="min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3 py-2 outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             type="password"
             autoComplete="new-password"
             value={confirmPassword}
@@ -114,7 +114,7 @@ export default function UpdatePasswordPage() {
           type="button"
           disabled={isSubmitting}
           onClick={handleUpdatePassword}
-          className="w-full rounded bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
+          className="min-h-11 w-full rounded-control bg-action-primary px-4 py-2 font-semibold text-action-primary-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "Updating password..." : "Update password"}
         </button>

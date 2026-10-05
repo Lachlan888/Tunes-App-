@@ -23,7 +23,7 @@ function LaneLink({
       href={disabled ? "/review" : getPracticeSessionHref(lane)}
       aria-disabled={disabled || undefined}
       className={joinClasses(
-        "flex min-h-20 items-center justify-between gap-4 border-b border-hairline px-1 py-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] md:rounded-object md:border md:bg-surface-paper md:px-4 md:shadow-material-rest",
+        "flex min-h-20 items-center justify-between gap-4 border-b border-hairline px-1 py-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] md:px-3",
         disabled && "pointer-events-none opacity-55"
       )}
     >
@@ -64,7 +64,7 @@ export default function ReviewQueueSection({
     <section id="review-queue" className="mt-4 scroll-mt-4 md:mt-6 md:scroll-mt-6">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-hairline pb-3">
         <div>
-          <h2 className="mt-1 font-serif text-2xl font-bold">Practise what needs attention</h2>
+          <h2 className="mt-1 font-sans text-2xl font-bold">Practise what needs attention</h2>
         </div>
         {recommendedLane ? (
           <Link href={getPracticeSessionHref(recommendedLane)} className={buttonStyles.practice}>
@@ -73,7 +73,7 @@ export default function ReviewQueueSection({
         ) : null}
       </div>
 
-      <div className="mt-2 grid md:grid-cols-2 md:gap-3">
+      <div className="mt-2 grid md:grid-cols-2 md:gap-x-6">
         <LaneLink
           lane="due-today"
           count={dueTodayCount}
@@ -91,17 +91,17 @@ export default function ReviewQueueSection({
       </div>
 
       {!recommendedLane ? (
-        <div className="mt-5 border-y border-dashed border-hairline py-5 text-sm text-text-muted md:rounded-object md:border md:bg-surface-note md:px-5">
+        <div className="mt-5 border-b border-hairline bg-surface-note px-4 py-5 text-sm text-text-muted">
           <p className="font-semibold text-text-primary">Your review lanes are clear.</p>
           <p className="mt-1 leading-6">Use a List or Focus area when you want an unscheduled practice session.</p>
         </div>
       ) : null}
 
       <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-        <Link href="/learning-lists?view=learning-queue" className="min-h-14 border-y border-hairline px-2 py-3 font-semibold text-text-muted hover:text-text-primary md:rounded-control md:border md:bg-surface-paper">
+        <Link href="/learning-lists?view=learning-queue" className="min-h-14 border-b border-hairline px-2 py-3 font-semibold text-text-muted hover:text-text-primary">
           From learning queue
         </Link>
-        <Link href="/library/practice" className="min-h-14 border-y border-hairline px-2 py-3 font-semibold text-text-muted hover:text-text-primary md:rounded-control md:border md:bg-surface-paper">
+        <Link href="/library/practice" className="min-h-14 border-b border-hairline px-2 py-3 font-semibold text-text-muted hover:text-text-primary">
           Currently in practice
         </Link>
       </div>

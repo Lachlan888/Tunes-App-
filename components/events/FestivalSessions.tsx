@@ -30,16 +30,16 @@ function formatTime(session: PublicFestivalSession) {
 
 function SessionCard({ session }: { session: PublicFestivalSession }) {
   return (
-    <article className="rounded-object border border-hairline bg-surface-paper p-5 shadow-material-rest">
-      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">
+    <article className="border-b border-hairline py-5 first:border-t">
+      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold  tracking-[0.12em] text-text-muted">
         <span>{formatTime(session)}</span>
         {session.status !== "scheduled" ? (
-          <span className="rounded-pill border border-state-due/50 bg-state-due/15 px-2 py-1 text-state-due-foreground">
+          <span className="border-l-2 border-state-due px-2 py-1 text-state-due-foreground">
             {session.status === "cancelled" ? "Cancelled" : "Programme changed"}
           </span>
         ) : null}
       </div>
-      <h3 className="mt-3 break-words font-serif text-2xl font-bold leading-tight text-text-primary">
+      <h3 className="mt-3 break-words font-sans text-2xl font-bold leading-tight text-text-primary">
         {session.title}
       </h3>
       {(session.leader_name || session.venue) ? (
@@ -49,7 +49,7 @@ function SessionCard({ session }: { session: PublicFestivalSession }) {
       ) : null}
       {session.collections.length > 0 ? (
         <div className="mt-4 border-t border-hairline pt-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">Suggested repertoire</p>
+          <p className="text-xs font-semibold  tracking-[0.12em] text-text-muted">Suggested repertoire</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {session.collections.map(({ festival_collection_id, collection }) => (
               <Link
@@ -90,7 +90,7 @@ export default function FestivalSessions({ sessions }: { sessions: PublicFestiva
   return (
     <div className="mt-5">
       <div
-        className="flex gap-2 overflow-x-auto pb-2"
+        className="flex overflow-x-auto border-b border-hairline"
         role="tablist"
         aria-label="Choose a festival session day"
       >
@@ -113,10 +113,10 @@ export default function FestivalSessions({ sessions }: { sessions: PublicFestiva
                 }
               }}
               className={joinClasses(
-                "min-h-11 shrink-0 rounded-pill border px-4 py-2 text-sm font-semibold outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
+                "min-h-11 shrink-0 border-b-2 px-4 py-2 text-sm font-semibold outline-none focus:ring-2 focus:ring-[var(--focus-ring)]",
                 selected
-                  ? "border-action-primary bg-action-primary text-action-primary-foreground"
-                  : "border-hairline bg-surface-paper text-text-primary"
+                  ? "border-action-primary text-action-primary"
+                  : "border-transparent text-text-muted"
               )}
             >
               {formatDay(day, true)}
@@ -131,7 +131,7 @@ export default function FestivalSessions({ sessions }: { sessions: PublicFestiva
         className="mt-4"
       >
         <h3 className="sr-only">{formatDay(selectedDay)}</h3>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="divide-y divide-hairline md:grid md:grid-cols-2 md:divide-x md:divide-y-0">
           {visibleSessions.map((session) => <SessionCard key={session.id} session={session} />)}
         </div>
       </section>

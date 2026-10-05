@@ -21,8 +21,8 @@ export default function TestDigestPanel() {
   )
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <div className="border-y border-hairline py-6">
+      <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
         Email digest testing
       </h2>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">

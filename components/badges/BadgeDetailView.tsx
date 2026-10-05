@@ -19,7 +19,7 @@ export default function BadgeDetailView({ data }: { data: Extract<BadgeDetailDat
       <section>
         <div className="flex items-center gap-4 border-b border-border pb-5">
           <BadgeArtwork category={badge.category} earned={Boolean(badge.viewer_award)} className="h-24 w-24 shrink-0 md:h-36 md:w-36" />
-          <div className="min-w-0"><p className="text-sm font-semibold text-state-social">{family.label}</p><h1 className="mt-1 break-words font-serif text-3xl font-bold md:text-5xl">{badge.name}</h1>
+          <div className="min-w-0"><h1 className="break-words font-sans text-4xl font-bold md:text-5xl">{badge.name}</h1><p className="mt-2 text-sm font-semibold text-state-social">{family.label}</p>
             <p className="mt-3 text-sm text-muted-foreground">Awarded by {owner?.username ? <Link href={`/users/${encodeURIComponent(owner.username)}`} className="underline">{ownerName}</Link> : ownerName}</p>
           </div>
         </div>
@@ -29,7 +29,7 @@ export default function BadgeDetailView({ data }: { data: Extract<BadgeDetailDat
         <details className="border-t border-border py-4"><summary className="min-h-11 cursor-pointer py-2 font-semibold">Recipients · {badge.recipient_count}</summary><BadgeRecipientsList awards={data.awards} /></details>
       </section>
       <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
-        <section className="rounded-object border border-border bg-surface-paper p-4"><h2 className="mb-3 font-semibold">Your badge</h2><BadgeProgressSummary viewerAward={badge.viewer_award} progress={badge.viewer_progress} /><Link href={next.href} className="badge-primary-action mt-4 inline-flex min-h-11 items-center rounded-control bg-state-social px-4 text-sm font-semibold text-state-social-foreground">{next.label}</Link></section>
+        <section className="border-y border-hairline py-4"><h2 className="mb-3 font-semibold">Your badge</h2><BadgeProgressSummary viewerAward={badge.viewer_award} progress={badge.viewer_progress} /><Link href={next.href} className="badge-primary-action mt-4 inline-flex min-h-11 items-center rounded-control bg-state-social px-4 text-sm font-semibold text-state-social-foreground">{next.label}</Link></section>
         <dl className="space-y-3 text-sm"><div><dt className="text-muted-foreground">Awarding</dt><dd>{awarding}</dd></div><div><dt className="text-muted-foreground">Visibility</dt><dd>{badge.visibility === "public" ? "Public" : badge.visibility === "unlisted" ? "Unlisted · available by direct link" : "Private · visible only to the creator"}</dd></div></dl>
       </aside>
     </div>

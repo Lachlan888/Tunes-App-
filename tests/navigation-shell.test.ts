@@ -125,7 +125,34 @@ test("secondary navigation overlays and the Home view is persisted", () => {
   assert.match(home, /useSyncExternalStore/)
 })
 
-test("mobile destination switchers sit below the shell header without duplicate headings", () => {
+test("editorial shell distinguishes current navigation and exposes secondary route state", () => {
+  const rail = readFileSync(new URL("../components/layout/DesktopNav.tsx", import.meta.url), "utf8")
+  const dock = readFileSync(new URL("../components/layout/NavigationDock.tsx", import.meta.url), "utf8")
+  const header = readFileSync(new URL("../components/layout/AppHeader.tsx", import.meta.url), "utf8")
+  const accountMenu = readFileSync(new URL("../components/layout/AccountMenu.tsx", import.meta.url), "utf8")
+
+  assert.doesNotMatch(rail, /title=\{item\.label\}/)
+  assert.doesNotMatch(rail, /data-rail-label/)
+  assert.match(rail, /aria-label=\{item\.label\}/)
+  assert.match(rail, /group\/rail-item/)
+  assert.match(rail, /border-action-primary text-text-primary/)
+  assert.match(rail, /hover:bg-surface-note\/50/)
+  assert.doesNotMatch(rail, /border-action-primary bg-surface-note\/60/)
+
+  assert.doesNotMatch(dock, /floating-material/)
+  assert.doesNotMatch(header, /floating-material/)
+  assert.match(dock, /bg-surface-canvas/)
+  assert.match(header, /bg-surface-canvas/)
+
+  assert.match(accountMenu, /function menuLinkIsActive/)
+  assert.match(accountMenu, /aria-current=\{isActive \? "page" : undefined\}/)
+  assert.match(accountMenu, /"border-l-2"/)
+  assert.match(accountMenu, /border-action-primary bg-surface-note\/50/)
+  assert.match(accountMenu, /font-sans text-sm font-bold/)
+  assert.doesNotMatch(accountMenu, /uppercase tracking-\[0\.14em\]/)
+})
+
+test("mobile destination switchers sit below the shell header and keep page headings visible", () => {
   const switcher = readFileSync(new URL("../components/ui/MobileViewSwitcher.tsx", import.meta.url), "utf8")
   const panels = readFileSync(new URL("../components/layout/ResponsivePanels.tsx", import.meta.url), "utf8")
   const homePage = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8")
@@ -150,8 +177,8 @@ test("mobile destination switchers sit below the shell header without duplicate 
   assert.match(home, /showSwitcherLabel=\{false\}/)
   assert.match(friendsSwitcher, /showSwitcherLabel=\{false\}/)
   assert.match(listNav, /sticky top-14 z-\[300\]/)
-  assert.match(lists, /<PageHeader title="Lists" className="hidden md:flex"/)
+  assert.match(lists, /<PageHeader title="Lists"/)
   assert.match(lists, /<div className="hidden md:block">/)
-  assert.match(friends, /<PageHeader title="Social" className="hidden md:flex"/)
-  assert.match(compare, /hidden font-serif text-4xl[^"]*md:block">Compare/)
+  assert.match(friends, /<PageHeader title="Social"/)
+  assert.match(compare, /font-sans text-4xl[^"]*">Compare/)
 })

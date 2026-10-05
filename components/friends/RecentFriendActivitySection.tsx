@@ -11,9 +11,9 @@ export default function RecentFriendActivitySection({
   nextCursor,
 }: RecentFriendActivitySectionProps) {
   return (
-    <section className="md:rounded-2xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
+    <section className="border-t border-hairline pt-6">
       <div className="mb-4 md:mb-5">
-        <h2 className="text-xl font-semibold tracking-tight text-foreground md:mt-2 md:font-serif md:text-3xl md:font-bold">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">
           Recent activity
         </h2>
         <p className="mt-2 hidden text-sm leading-6 text-muted-foreground md:block">

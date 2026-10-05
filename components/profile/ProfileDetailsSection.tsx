@@ -41,16 +41,16 @@ type ProfileDetailsSectionProps = {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full rounded-object border border-border bg-background/70 px-4 py-3 text-sm text-foreground  outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 const labelClassName =
-  "mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground"
+  "mb-2 block text-sm font-semibold  tracking-[0.12em] text-muted-foreground"
 
 const primaryButtonClassName =
-  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center"
+  "inline-flex min-h-11 rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground  transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-70 items-center justify-center"
 
 const secondaryButtonClassName =
-  "min-h-11 inline-flex rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+  "min-h-11 inline-flex rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground  transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
 
 export default function ProfileDetailsSection({
   nextPath,
@@ -91,10 +91,10 @@ export default function ProfileDetailsSection({
       : null
 
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+    <section className="rounded-object border border-border bg-card p-6 ">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
             Profile details
           </h2>
 
@@ -104,7 +104,7 @@ export default function ProfileDetailsSection({
             enabled.
           </p>
 
-          <p className="mt-4 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+          <p className="mt-4 rounded-object border border-border bg-background/70 px-4 py-3 text-sm text-muted-foreground">
             Signed in as{" "}
             <span className="font-medium text-foreground">
               {email ?? "Unknown"}
@@ -123,13 +123,13 @@ export default function ProfileDetailsSection({
       </div>
 
       {saved && (
-        <p className="mt-5 rounded-2xl border border-success bg-muted p-4 text-sm font-medium text-foreground shadow-sm">
+        <p className="mt-5 rounded-object border border-success bg-muted p-4 text-sm font-medium text-foreground ">
           Profile saved.
         </p>
       )}
 
       {errorMessage && (
-        <p className="mt-5 rounded-2xl border border-destructive bg-muted p-4 text-sm font-medium text-destructive shadow-sm">
+        <p className="mt-5 rounded-object border border-destructive bg-muted p-4 text-sm font-medium text-destructive ">
           {errorMessage}
         </p>
       )}

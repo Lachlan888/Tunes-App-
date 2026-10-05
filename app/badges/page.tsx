@@ -49,7 +49,7 @@ export default async function BadgesPage({ searchParams }: BadgesPageProps) {
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
       {message && showSection("status_messages") ? (
-        <div className="mb-5 rounded-2xl border border-success bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
+        <div className="mb-5 border-l-4 border-success py-2 pl-3 text-sm font-medium text-foreground md:mb-6">
           {message}
         </div>
       ) : null}
@@ -62,7 +62,7 @@ export default async function BadgesPage({ searchParams }: BadgesPageProps) {
               viewerId ? (
                 <Link
                   href="/badges/new"
-                  className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border bg-surface-paper px-5 py-2 text-center text-sm font-medium text-state-social shadow-sm transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-11 md:w-auto md:py-2.5"
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border bg-surface-paper px-5 py-2 text-center text-sm font-medium text-state-social  transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-11 md:w-auto md:py-2.5"
                 >
                   Create badge · workspace
                 </Link>
@@ -87,8 +87,8 @@ export default async function BadgesPage({ searchParams }: BadgesPageProps) {
           <BadgeBrowser badges={badges} viewerId={viewerId} />
         ) : null
       ) : showSection("empty_state") ? (
-        <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <section className="mt-8 border-y border-hairline py-6">
+          <h2 className="text-2xl font-bold text-foreground">
             No badges yet
           </h2>
         </section>

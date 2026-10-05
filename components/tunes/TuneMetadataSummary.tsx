@@ -13,7 +13,7 @@ type TuneMetadataSummaryProps = {
 
 export default function TuneMetadataSummary({
   piece,
-  className = "mt-2 break-words text-sm font-medium leading-6 text-muted-foreground",
+  className = "mt-1 break-words text-xs font-medium leading-5 text-muted-foreground",
 }: TuneMetadataSummaryProps) {
   const styleLabels = getStyleLabelsFromPiece({
     ...piece,
@@ -21,12 +21,12 @@ export default function TuneMetadataSummary({
   } as Piece)
 
   const metadataParts = [
-    piece.key ? `Key: ${piece.key}` : null,
-    styleLabels.length > 0 ? `Style: ${styleLabels.join(", ")}` : null,
-    piece.time_signature ? `Time: ${piece.time_signature}` : null,
+    piece.key,
+    styleLabels.length > 0 ? styleLabels.join(", ") : null,
+    piece.time_signature,
   ].filter(Boolean)
 
   if (metadataParts.length === 0) return null
 
-  return <p className={className}>{metadataParts.join(" | ")}</p>
+  return <p className={className}>{metadataParts.join(" · ")}</p>
 }

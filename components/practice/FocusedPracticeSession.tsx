@@ -12,6 +12,7 @@ import { completeFormalReviewInPlace } from "@/lib/actions/reviews"
 import { loadNextPracticeBatch } from "@/lib/actions/practice-session"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 import { ACTIVE_PRACTICE_SESSION_KEY, getResultingPracticeStage, type PracticeLane, type PracticeRating, type PracticeSessionResult } from "@/lib/practice-session"
+import { formatPracticeDate, getReviewIntervalDays } from "@/lib/review"
 
 const RATING_UNDO_WINDOW_MS = 3500
 const outcomes = [
@@ -172,12 +173,24 @@ export default function FocusedPracticeSession({ lane, initialQueue, queueTotal,
 
   const title = currentItem?.piece?.title ?? "Preparing your next tune"
   return (
-    <FocusModeShell eyebrow="" title="Practice" detail={`${results.length + (currentItem ? 1 : 0)} of ${results.length + queue.length + unloadedCount}`} onEnd={finish} endDisabled={Boolean(pendingRating) || saving || Boolean(submission.current)}>
+    <FocusModeShell eyebrow="" title="Practice" detail={sessionLabel ?? "One tune at a time"} onEnd={finish} endDisabled={Boolean(pendingRating) || saving || Boolean(submission.current)}>
       <article className="practice-session-content" aria-busy={loading}>
         <header className="practice-tune-heading">
           {sessionLabel ? <p className="mb-2 text-sm text-text-muted">{sessionLabel}</p> : null}
-          <h1 className="font-serif text-3xl font-semibold leading-tight tracking-tight sm:text-5xl" aria-live="polite">{title}</h1>
-          {currentItem ? <p className="mt-3 text-sm text-text-muted">{[currentItem.piece?.key, currentItem.piece?.style, currentItem.piece?.time_signature].filter(Boolean).join(" · ")}</p> : null}
+          <h1 className="font-sans text-4xl font-bold leading-tight tracking-tight sm:text-5xl" aria-live="polite">{title}</h1>
+          {currentItem ? <>
+            <p className="mt-3 text-sm text-text-muted">{[currentItem.piece?.key, currentItem.piece?.style, currentItem.piece?.time_signature].filter(Boolean).join(" · ")}</p>
+            <p className="mt-3 border-l-2 border-state-practice pl-3 text-sm font-semibold text-text-primary">
+              Stage {currentItem.stage} · {getReviewIntervalDays(currentItem.stage)}-day review
+              {currentItem.overdue_days > 0 && formatPracticeDate(currentItem.next_review_due)
+                ? ` · Overdue since ${formatPracticeDate(currentItem.next_review_due)}`
+                : currentItem.due_date_only === sessionDate
+                  ? " due today"
+                  : formatPracticeDate(currentItem.next_review_due)
+                    ? ` · Next review ${formatPracticeDate(currentItem.next_review_due)}`
+                    : ""}
+            </p>
+          </> : null}
         </header>
         {currentItem?.piece ? <PracticeReferencePlayer key={currentItem.id} piece={currentItem.piece} mediaBundle={currentItem.media_bundle} returnTo={currentHref} navigationDisabled={Boolean(pendingRating) || saving || Boolean(submission.current)} onControlsOpenChange={setControlsOpen} /> : loading ? <p role="status" className="py-12 text-center text-text-muted">Getting the next tune ready…</p> : null}
       </article>

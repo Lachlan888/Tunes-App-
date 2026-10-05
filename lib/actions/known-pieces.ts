@@ -2,67 +2,26 @@
 
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { recordMarkedKnownEvent } from "@/lib/services/activity-events"
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 
 export async function markPieceKnownForUser(
   supabase: SupabaseServerClient,
-  userId: string,
   pieceId: number
 ): Promise<"marked_known" | "already_known"> {
-  const { data: existingPractice, error: existingPracticeError } = await supabase
-    .from("user_pieces")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("piece_id", pieceId)
-    .maybeSingle()
+  const { data, error } = await supabase.rpc("mark_piece_known", {
+    p_piece_id: pieceId,
+  })
 
-  if (existingPracticeError) {
-    throw new Error(existingPracticeError.message)
+  if (error) {
+    throw new Error(error.message)
   }
 
-  if (existingPractice) {
-    const { error: deletePracticeError } = await supabase
-      .from("user_pieces")
-      .delete()
-      .eq("user_id", userId)
-      .eq("piece_id", pieceId)
-
-    if (deletePracticeError) {
-      throw new Error(deletePracticeError.message)
-    }
+  if (data !== "marked_known" && data !== "already_known") {
+    throw new Error("Unexpected known transition result")
   }
 
-  const { data: existingKnown, error: existingKnownError } = await supabase
-    .from("user_known_pieces")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("piece_id", pieceId)
-    .maybeSingle()
-
-  if (existingKnownError) {
-    throw new Error(existingKnownError.message)
-  }
-
-  if (existingKnown) {
-    return "already_known"
-  }
-
-  const { error: insertKnownError } = await supabase
-    .from("user_known_pieces")
-    .insert({
-      user_id: userId,
-      piece_id: pieceId,
-    })
-
-  if (insertKnownError) {
-    throw new Error(insertKnownError.message)
-  }
-
-  await recordMarkedKnownEvent(userId, pieceId)
-
-  return "marked_known"
+  return data
 }
 
 export async function markAsKnown(formData: FormData) {
@@ -83,7 +42,7 @@ export async function markAsKnown(formData: FormData) {
     redirect("/login")
   }
 
-  await markPieceKnownForUser(supabase, user.id, pieceId)
+  await markPieceKnownForUser(supabase, pieceId)
 
   redirect(redirectTo)
 }

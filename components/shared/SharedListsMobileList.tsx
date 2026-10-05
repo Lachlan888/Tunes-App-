@@ -18,7 +18,7 @@ export default function SharedListsMobileList({
 }: SharedListsMobileListProps) {
   return (
     <section className="md:hidden">
-      <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <h2 className="text-xl font-semibold text-foreground">
         Public lists
       </h2>
 

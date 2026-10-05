@@ -31,6 +31,10 @@ const practiceToolLinks: MenuLink[] = [
   { href: "/review/diary/index", label: "Tune index & history", icon: "list" },
 ]
 
+function menuLinkIsActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`)
+}
+
 function CountBadge({ count = 0 }: { count?: number }) {
   if (count <= 0) return null
 
@@ -141,26 +145,36 @@ export default function AccountMenu({
           )}
         >
           <div className="border-b border-hairline px-3 py-2">
-            <p className="font-serif text-base font-semibold text-text-primary">Your tunebook</p>
+            <p className="font-sans text-sm font-bold text-text-primary">Your tunebook</p>
             {accountLabel ? (
               <p className="truncate text-xs text-text-muted">{accountLabel}</p>
             ) : null}
           </div>
 
           <div className="grid gap-0.5 py-1">
-            {links.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                role="menuitem"
-                onClick={() => setIsOpen(false)}
-                className={buttonStyles.menuItem}
-              >
-                <Icon name={item.icon} />
-                <span>{item.label}</span>
-                <CountBadge count={item.count} />
-              </Link>
-            ))}
+            {links.map((item) => {
+              const isActive = menuLinkIsActive(pathname, item.href)
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  role="menuitem"
+                  aria-current={isActive ? "page" : undefined}
+                  onClick={() => setIsOpen(false)}
+                  className={joinClasses(
+                    buttonStyles.menuItem,
+                    "border-l-2",
+                    isActive
+                      ? "border-action-primary bg-surface-note/50 text-text-primary"
+                      : "border-transparent"
+                  )}
+                >
+                  <Icon name={item.icon} />
+                  <span>{item.label}</span>
+                  <CountBadge count={item.count} />
+                </Link>
+              )
+            })}
 
             <button
               ref={practiceToolsTriggerRef}
@@ -182,7 +196,10 @@ export default function AccountMenu({
               }}
               className={joinClasses(
                 buttonStyles.menuItem,
-                activePracticeHref && "bg-surface-note text-text-primary"
+                "border-l-2",
+                activePracticeHref
+                  ? "border-action-primary bg-surface-note/50 text-text-primary"
+                  : "border-transparent"
               )}
             >
               <Icon name="practice" />
@@ -204,7 +221,10 @@ export default function AccountMenu({
                     }}
                     className={joinClasses(
                       buttonStyles.menuItem,
-                      activePracticeHref === item.href && "bg-surface-note text-text-primary"
+                      "border-l-2",
+                      activePracticeHref === item.href
+                        ? "border-state-practice bg-surface-note/50 text-text-primary"
+                        : "border-transparent"
                     )}
                   >
                     <Icon name={item.icon} />
@@ -216,23 +236,33 @@ export default function AccountMenu({
           </div>
 
           <div className="border-t border-hairline pt-1">
-            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">
+            <p className="px-3 py-2 font-sans text-xs font-medium text-text-muted">
               Social
             </p>
             <div className="grid gap-0.5">
-              {socialLinks.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  role="menuitem"
-                  onClick={() => setIsOpen(false)}
-                  className={buttonStyles.menuItem}
-                >
-                  <Icon name={item.icon} />
-                  <span>{item.label}</span>
-                  <CountBadge count={item.count} />
-                </Link>
-              ))}
+              {socialLinks.map((item) => {
+                const isActive = menuLinkIsActive(pathname, item.href)
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    role="menuitem"
+                    aria-current={isActive ? "page" : undefined}
+                    onClick={() => setIsOpen(false)}
+                    className={joinClasses(
+                      buttonStyles.menuItem,
+                      "border-l-2",
+                      isActive
+                        ? "border-action-primary bg-surface-note/50 text-text-primary"
+                        : "border-transparent"
+                    )}
+                  >
+                    <Icon name={item.icon} />
+                    <span>{item.label}</span>
+                    <CountBadge count={item.count} />
+                  </Link>
+                )
+              })}
             </div>
           </div>
 
@@ -266,14 +296,14 @@ export default function AccountMenu({
           {canModerate || canAccessDev ? (
             <div className="grid gap-0.5 border-t border-hairline pt-1">
               {canModerate ? (
-                <Link href="/moderator" role="menuitem" onClick={() => setIsOpen(false)} className={buttonStyles.menuItem}>
+                <Link href="/moderator" role="menuitem" aria-current={menuLinkIsActive(pathname, "/moderator") ? "page" : undefined} onClick={() => setIsOpen(false)} className={joinClasses(buttonStyles.menuItem, "border-l-2", menuLinkIsActive(pathname, "/moderator") ? "border-action-primary bg-surface-note/50 text-text-primary" : "border-transparent")}>
                   <Icon name="shield" />
                   <span>Moderator</span>
                   <CountBadge count={pendingModerationCount} />
                 </Link>
               ) : null}
               {canAccessDev ? (
-                <Link href="/dev" role="menuitem" onClick={() => setIsOpen(false)} className={buttonStyles.menuItem}>
+                <Link href="/dev" role="menuitem" aria-current={menuLinkIsActive(pathname, "/dev") ? "page" : undefined} onClick={() => setIsOpen(false)} className={joinClasses(buttonStyles.menuItem, "border-l-2", menuLinkIsActive(pathname, "/dev") ? "border-action-primary bg-surface-note/50 text-text-primary" : "border-transparent")}>
                   <Icon name="code" />
                   <span>Developer tools</span>
                 </Link>

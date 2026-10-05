@@ -65,12 +65,12 @@ export default function BulkImportKnownTunesModal() {
         >
           <div className="flex min-h-full items-start justify-center py-8">
             <div
-              className="w-full max-w-xl rounded-3xl border border-border bg-card p-6 shadow-lg"
+              className="w-full max-w-xl rounded-sheet border border-hairline bg-surface-paper p-5 shadow-material-floating sm:p-6"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="mt-2 font-serif text-3xl font-bold text-foreground">
+                  <h2 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">
                     Bulk Import Known Tunes
                   </h2>
                 </div>
@@ -86,7 +86,7 @@ export default function BulkImportKnownTunesModal() {
               </div>
 
               <div className="space-y-4">
-                <div className="space-y-2 text-sm leading-6 text-muted-foreground">
+                <div className="space-y-2 text-sm leading-6 text-text-muted">
                   <p>
                     Upload a CSV of tunes you already know. We’ll add them to
                     your known tunes and place them in your Uploaded Tunes list.
@@ -98,9 +98,9 @@ export default function BulkImportKnownTunesModal() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-border bg-background/70 p-4 text-sm">
+                <div className="border-y border-hairline py-4 text-sm">
                   <p className="font-medium">CSV template</p>
-                  <p className="mt-1 text-muted-foreground">
+                  <p className="mt-1 text-text-muted">
                     Use these columns in this exact order: title, key, style,
                     time_signature, reference_url
                   </p>
@@ -164,7 +164,7 @@ export default function BulkImportKnownTunesModal() {
                   </div>
 
                   {selectedFileName && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-text-muted">
                       Selected file: {selectedFileName}
                     </p>
                   )}
@@ -176,7 +176,7 @@ export default function BulkImportKnownTunesModal() {
                   />
                 </form>
 
-                <p className="text-sm leading-6 text-muted-foreground">
+                <p className="text-sm leading-6 text-text-muted">
                   We’ll check the file format, match existing tunes where
                   possible, create missing tunes, add them to your known tunes,
                   and place them in Uploaded Tunes.

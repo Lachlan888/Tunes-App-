@@ -98,8 +98,8 @@ function SettingsForm({ settings, festivals }: Pick<FestivalManagerProps, "setti
   const [state, action, pending] = useActionState(updateFestivalSettingsFromForm, initialState)
   useRefreshAfterSuccess(state)
   return (
-    <form action={action} className="rounded-2xl border border-border bg-background/70 p-5">
-      <h2 className="font-serif text-2xl font-bold">Launch controls</h2>
+    <form action={action} className="rounded-object border border-border bg-background/70 p-5">
+      <h2 className="font-sans text-2xl font-bold">Launch controls</h2>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">
         Mode controls only the Home promotion. Turning it off does not unpublish a hub or alter saved lists.
       </p>
@@ -139,8 +139,8 @@ function CreateFestivalForm() {
   const [state, action, pending] = useActionState(createFestivalHubFromForm, initialState)
   useRefreshAfterSuccess(state)
   return (
-    <details className="rounded-2xl border border-border bg-background/70 p-5">
-      <summary className="cursor-pointer font-serif text-xl font-bold">Create a draft hub</summary>
+    <details className="rounded-object border border-border bg-background/70 p-5">
+      <summary className="cursor-pointer font-sans text-xl font-bold">Create a draft hub</summary>
       <form action={action} className="mt-5 grid gap-4 sm:grid-cols-2">
         <Field label="Name" name="name" required />
         <Field label="Stable slug" name="slug" placeholder="festival-name-2027" required />
@@ -165,13 +165,13 @@ function FestivalDetailsForm({ festival }: { festival: FestivalHub }) {
   const [state, action, pending] = useActionState(updateFestivalHubFromForm, initialState)
   useRefreshAfterSuccess(state)
   return (
-    <form action={action} className="grid gap-4 rounded-2xl border border-border bg-background/70 p-5 sm:grid-cols-2">
+    <form action={action} className="grid gap-4 rounded-object border border-border bg-background/70 p-5 sm:grid-cols-2">
       <input name="festival_id" type="hidden" value={festival.id} />
       <input name="curator_profile_id" type="hidden" value={festival.curator_profile_id ?? ""} />
       <div className="sm:col-span-2 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Manage and preview</p>
-          <h2 className="mt-1 font-serif text-2xl font-bold">{festival.name}</h2>
+          <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">Manage and preview</p>
+          <h2 className="mt-1 font-sans text-2xl font-bold">{festival.name}</h2>
         </div>
         {festival.lifecycle === "draft" ? (
           <span className="rounded-pill bg-muted px-3 py-1 text-xs font-semibold">Private owner preview</span>
@@ -216,7 +216,7 @@ function CollectionForm({ collection, festivalId }: { collection: OwnerCollectio
   useRefreshAfterSuccess(saveState)
   useRefreshAfterSuccess(removeState)
   return (
-    <li className="rounded-xl border border-border bg-background p-4">
+    <li className="rounded-object border border-border bg-background p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="font-semibold">{collection.learning_lists.name}</p>
@@ -261,7 +261,7 @@ function CollectionForm({ collection, festivalId }: { collection: OwnerCollectio
 
 function OwnerPreview({ festival, collections }: { festival: FestivalHub; collections: OwnerCollection[] }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-border bg-background/70" aria-label="Owner-only festival preview">
+    <section className="overflow-hidden rounded-object border border-border bg-background/70" aria-label="Owner-only festival preview">
       {festival.branding_image_url && festival.branding_alt ? (
         <div
           className="h-40 bg-cover bg-center"
@@ -277,12 +277,12 @@ function OwnerPreview({ festival, collections }: { festival: FestivalHub; collec
             {festival.lifecycle === "draft" ? "Owner-only preview while Draft" : "Owner preview of the direct hub"}
           </span>
         </div>
-        <h2 className="mt-4 font-serif text-3xl font-bold">{festival.name}</h2>
+        <h2 className="mt-4 font-sans text-3xl font-bold">{festival.name}</h2>
         <p className="mt-2 text-sm text-muted-foreground">/events/{festival.slug} · {festival.timezone}</p>
         {festival.description ? <p className="mt-4 max-w-3xl text-sm leading-6">{festival.description}</p> : null}
         {festival.curator_credit ? <p className="mt-3 text-sm text-muted-foreground">Curated by {festival.curator_credit}</p> : null}
         <div className="mt-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Collection preview</p>
+          <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">Collection preview</p>
           {collections.length > 0 ? (
             <ul className="mt-3 flex flex-wrap gap-2">
               {collections.map((collection) => (
@@ -313,10 +313,10 @@ function CollectionsPanel({
   const attachedIds = new Set(collections.map((collection) => collection.learning_list_id))
   const available = publicLists.filter((list) => !attachedIds.has(list.id))
   return (
-    <section className="rounded-2xl border border-border bg-background/70 p-5">
+    <section className="rounded-object border border-border bg-background/70 p-5">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Existing public Lists</p>
-        <h2 className="mt-1 font-serif text-2xl font-bold">Curated collections</h2>
+        <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">Existing public Lists</p>
+        <h2 className="mt-1 font-sans text-2xl font-bold">Curated collections</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           Associations control festival labels and order only. Detaching never removes tunes or changes the source list.
         </p>
@@ -353,7 +353,7 @@ function CollectionsPanel({
           ))}
         </ul>
       ) : (
-        <p className="mt-6 rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">No public lists attached yet.</p>
+        <p className="mt-6 rounded-object border border-dashed border-border p-5 text-sm text-muted-foreground">No public lists attached yet.</p>
       )}
     </section>
   )
@@ -374,7 +374,7 @@ function SessionForm({
   useRefreshAfterSuccess(state)
   const attachedIds = new Set(associations.map((association) => association.festival_collection_id))
   return (
-    <form action={action} className="grid gap-4 rounded-xl border border-border bg-background p-4 sm:grid-cols-2">
+    <form action={action} className="grid gap-4 rounded-object border border-border bg-background p-4 sm:grid-cols-2">
       <input name="festival_id" type="hidden" value={festival.id} />
       {session ? <input name="id" type="hidden" value={session.id} /> : null}
       <input name="leader_profile_id" type="hidden" value={session?.leader_profile_id ?? ""} />
@@ -465,9 +465,9 @@ function SessionsPanel({
   sessionCollections: FestivalSessionCollection[]
 }) {
   return (
-    <section className="rounded-2xl border border-border bg-background/70 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Reviewed programme intake</p>
-      <h2 className="mt-1 font-serif text-2xl font-bold">Day-by-day sessions</h2>
+    <section className="rounded-object border border-border bg-background/70 p-5">
+      <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">Reviewed programme intake</p>
+      <h2 className="mt-1 font-sans text-2xl font-bold">Day-by-day sessions</h2>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">
         From a supplied programme photo, prepare draft entries with the visible source and snapshot details, flag every unclear field or list match, then have the owner correct and uncheck the review hold before publication. Never guess missing information.
       </p>
@@ -517,7 +517,7 @@ export default function FestivalManager({ settings, festivals, collections, sess
       <SettingsForm settings={settings} festivals={festivals} />
       <CreateFestivalForm />
       {festivals.length > 0 ? (
-        <label className="rounded-2xl border border-border bg-background/70 p-5">
+        <label className="rounded-object border border-border bg-background/70 p-5">
           <span className={formStyles.label}>Hub to manage and preview</span>
           <select
             className={formStyles.select}
@@ -543,7 +543,7 @@ export default function FestivalManager({ settings, festivals, collections, sess
           />
         </>
       ) : (
-        <p className="rounded-2xl border border-dashed border-border bg-background/50 p-8 text-center text-sm text-muted-foreground">
+        <p className="rounded-object border border-dashed border-border bg-background/50 p-8 text-center text-sm text-muted-foreground">
           Create a private draft hub to begin owner preview.
         </p>
       )}

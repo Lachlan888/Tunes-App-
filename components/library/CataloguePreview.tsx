@@ -34,7 +34,7 @@ export default function CataloguePreview({
 
   return (
     <aside
-      className="catalogue-preview workbench-context rounded-object border border-hairline bg-surface-paper p-4"
+      className="catalogue-preview workbench-context border-t border-hairline py-4 lg:border-l lg:border-t-0 lg:pl-5"
       aria-labelledby="catalogue-preview-title"
       onKeyDown={(event) => {
         if (event.key === "Escape") {
@@ -48,7 +48,7 @@ export default function CataloguePreview({
           id="catalogue-preview-title"
           ref={heading}
           tabIndex={-1}
-          className="min-w-0 scroll-mt-64 break-words font-serif text-2xl font-bold focus:outline-none md:scroll-mt-8"
+          className="min-w-0 scroll-mt-64 break-words text-2xl font-bold tracking-tight focus:outline-none md:scroll-mt-8"
         >
           {piece.title}
         </h2>
@@ -80,10 +80,10 @@ export default function CataloguePreview({
         Open Tune Detail
       </Link>
 
-      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 rounded-control bg-surface-note p-3 text-sm">
+      <dl className="mt-4 grid grid-cols-2 gap-x-4 border-y border-hairline text-sm">
         {compactDetails.map(([label, field]) => (
-          <div key={field} className="min-w-0">
-            <dt className="text-xs font-medium uppercase tracking-wide text-text-muted">
+          <div key={field} className="min-w-0 py-3">
+            <dt className="text-xs font-semibold text-text-muted">
               {label}
             </dt>
             <dd className="mt-0.5 break-words font-semibold">
@@ -92,8 +92,8 @@ export default function CataloguePreview({
           </div>
         ))}
 
-        <div className="col-span-2 min-w-0 border-t border-hairline pt-3">
-          <dt className="text-xs font-medium uppercase tracking-wide text-text-muted">
+        <div className="col-span-2 min-w-0 border-t border-hairline py-3">
+          <dt className="text-xs font-semibold text-text-muted">
             Source / composer
           </dt>
           <dd className="mt-0.5 break-words font-semibold">

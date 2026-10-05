@@ -69,8 +69,8 @@ export default function PracticeEventList({
 }: PracticeEventListProps) {
   if (events.length === 0) {
     return (
-      <section className="space-y-3 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <section className="space-y-3 border-b border-hairline pb-6">
+        <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
           Reviewed tunes
         </h2>
 
@@ -84,10 +84,10 @@ export default function PracticeEventList({
   }
 
   return (
-    <section className="space-y-4 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
+    <section className="space-y-4 border-b border-hairline pb-6">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
             Reviewed tunes
           </h2>
 
@@ -115,7 +115,7 @@ export default function PracticeEventList({
             <article
               key={event.id}
               className={[
-                "-mx-4 space-y-4 px-4 py-6 md:mx-0 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 md:shadow-sm",
+                "-mx-4 space-y-4 px-4 py-6 md:mx-0 md:px-1",
                 index === 0 ? "pt-1" : "border-t border-border",
               ].join(" ")}
             >
@@ -124,7 +124,7 @@ export default function PracticeEventList({
                   {event.piece ? (
                     <Link
                       href={`/library/${event.piece.id}`}
-                      className="group inline-flex max-w-full items-baseline gap-2 font-serif text-2xl font-bold leading-tight text-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 md:text-2xl"
+                      className="group inline-flex max-w-full items-baseline gap-2 font-sans text-2xl font-bold leading-tight text-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 md:text-2xl"
                     >
                       <span className="break-words underline decoration-border decoration-2 underline-offset-4 transition group-hover:decoration-primary">
                         {title}
@@ -138,32 +138,28 @@ export default function PracticeEventList({
                       </span>
                     </Link>
                   ) : (
-                    <h3 className="font-serif text-2xl font-bold leading-tight text-foreground md:text-2xl">
+                    <h3 className="font-sans text-2xl font-bold leading-tight text-foreground md:text-2xl">
                       {title}
                     </h3>
                   )}
 
-                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <p className="mt-1 text-xs font-medium text-muted-foreground">
                     {eventType} · {formatTime(event.created_at)}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-muted-foreground">
+                  <span className="font-semibold text-foreground">
                     {outcome}
                   </span>
 
                   {typeof event.review_event?.resulting_stage === "number" ? (
-                    <span className="rounded-full border border-accent bg-accent px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-accent-foreground">
-                      Stage {event.review_event.resulting_stage}
-                    </span>
+                    <><span aria-hidden="true">·</span><span>Stage {event.review_event.resulting_stage}</span></>
                   ) : null}
 
                   {event.event_type === "free_practice" &&
                   event.practice_outcome ? (
-                    <span className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                      Diary only
-                    </span>
+                    <><span aria-hidden="true">·</span><span>Diary only</span></>
                   ) : null}
                 </div>
               </div>

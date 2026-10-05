@@ -102,12 +102,12 @@ export default function CompareDesktop(props: CompareViewProps) {
         </section>
 
         <aside className="min-w-0">
-          <section className="rounded-3xl border border-border bg-card p-5 shadow-sm lg:p-6">
+          <section className="border-y border-hairline py-5 lg:py-6">
             {canShowResults ? (
               <CompareOutcomeExperience {...props} />
             ) : (
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <h2 className="text-xl font-semibold text-foreground">
                   Common tunes
                 </h2>
 

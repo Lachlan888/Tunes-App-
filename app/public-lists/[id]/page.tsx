@@ -74,7 +74,7 @@ function StatusMessage({
 }) {
   return (
     <div
-      className={`mt-6 rounded-2xl border bg-background/70 p-4 text-sm shadow-sm ${getStatusClasses(
+      className={`mt-6 border-y py-3 text-sm ${getStatusClasses(
         tone
       )}`}
     >
@@ -252,11 +252,11 @@ export default async function PublicListDetailPage({
         </Link>
       </div>
 
-      <header className="border-b border-border/70 pb-5 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
+      <header className="border-b border-hairline pb-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-4">
-              <h1 className="min-w-0 break-words font-serif text-3xl font-bold tracking-tight text-foreground md:text-5xl">
+              <h1 className="min-w-0 break-words font-sans text-4xl font-bold tracking-tight text-foreground md:text-5xl">
                 {typedList.name}
               </h1>
 
@@ -273,7 +273,7 @@ export default async function PublicListDetailPage({
                       label="Remove bookmark"
                       pendingLabel="Removing..."
                       title="Remove bookmark"
-                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-success bg-success px-3 py-2 text-success-foreground shadow-sm transition hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-success bg-success px-3 py-2 text-success-foreground transition hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       pendingChildren={
                         <span className="inline-flex animate-pulse items-center justify-center">
                           <BookmarkIcon filled />
@@ -297,7 +297,7 @@ export default async function PublicListDetailPage({
                       label="Bookmark list"
                       pendingLabel="Bookmarking..."
                       title="Bookmark list"
-                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-primary bg-primary px-3 py-2 text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-primary bg-primary px-3 py-2 text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       pendingChildren={
                         <span className="inline-flex animate-pulse items-center justify-center">
                           <BookmarkIcon />
@@ -323,7 +323,7 @@ export default async function PublicListDetailPage({
               </span>
 
               {isViewingOwnPublicList && (
-                <span className="rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold text-muted-foreground">
+                <span className="text-xs font-semibold text-muted-foreground">
                   Your public list
                 </span>
               )}
@@ -339,14 +339,14 @@ export default async function PublicListDetailPage({
           {isViewingOwnPublicList && (
             <Link
               href={`/learning-lists/${typedList.id}`}
-              className="inline-flex min-h-11 items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:hover:-translate-y-0.5"
+              className="inline-flex min-h-11 items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
             >
               Open editable list
             </Link>
           )}
         </div>
 
-        <p className="mt-5 hidden border-t border-border/70 pt-4 text-sm leading-6 text-muted-foreground md:mt-6 md:block md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4">
+        <p className="mt-5 hidden border-t border-hairline pt-4 text-sm leading-6 text-muted-foreground md:mt-6 md:block">
           Shared lists are discovery objects. Bookmark useful lists as saved
           references, or copy tunes into your own editable lists when you want
           to organise them privately.
@@ -474,8 +474,8 @@ export default async function PublicListDetailPage({
       )}
 
       {!user ? (
-        <section className="mt-6 border-b border-border/70 pb-5 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <section className="mt-6 border-b border-hairline pb-5">
+          <h2 className="text-xl font-semibold text-foreground">
             Bookmark and copy
           </h2>
           <p className="mt-3 text-sm text-muted-foreground md:text-base">
@@ -491,13 +491,13 @@ export default async function PublicListDetailPage({
         </section>
       ) : null}
 
-      <section className="mt-7 md:mt-8 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <section className="mt-7 md:mt-8">
+        <h2 className="text-xl font-semibold text-foreground">
           Tunes
         </h2>
 
         {typedItems.length === 0 ? (
-          <p className="mt-4 border-y border-border/70 py-4 text-sm text-muted-foreground md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4">
+          <p className="mt-4 border-y border-hairline py-4 text-sm text-muted-foreground">
             This list has no tunes yet.
           </p>
         ) : (
@@ -541,12 +541,12 @@ export default async function PublicListDetailPage({
       </section>
 
       {user && !isViewingOwnPublicList ? (
-        <section className="mt-7 border-t border-border/70 pt-5 md:mt-8 md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
+        <section className="mt-7 border-t border-hairline pt-6 md:mt-8">
           <form id="selected-import-form" action={importSelectedPublicListItems}>
             <input type="hidden" name="source_list_id" value={typedList.id} />
             <input type="hidden" name="redirect_to" value={redirectTo} />
 
-            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <h2 className="text-xl font-semibold text-foreground">
               Copy selected tunes
             </h2>
 
@@ -567,7 +567,7 @@ export default async function PublicListDetailPage({
                   id="target_learning_list_id"
                   name="target_learning_list_id"
                   defaultValue=""
-                  className="mt-2 w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)] md:max-w-md md:bg-card"
+                  className="mt-2 w-full rounded-control border border-border bg-surface-paper px-4 py-3 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)] md:max-w-md"
                 >
                   <option value="" disabled>
                     Choose one of your lists
@@ -583,14 +583,14 @@ export default async function PublicListDetailPage({
                   <SubmitButton
                     label="Copy selected tunes"
                     pendingLabel="Copying..."
-                    className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto md:bg-card"
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border bg-surface-paper px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto"
                   />
                 </div>
               </>
             )}
           </form>
 
-          <details className="mt-5 rounded-2xl border border-border bg-background/70 p-4">
+          <details className="mt-5 border-y border-hairline py-4">
             <summary className="cursor-pointer text-sm font-semibold text-foreground">
               More actions
             </summary>
@@ -616,7 +616,7 @@ export default async function PublicListDetailPage({
                   <SubmitButton
                     label="Copy list"
                     pendingLabel="Copying..."
-                    className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto"
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border bg-surface-paper px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto"
                   />
                 </div>
               </form>

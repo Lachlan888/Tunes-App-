@@ -17,7 +17,13 @@ export default function FloatingTool({ title, status, onClose, children, compact
   useEffect(() => {
     const previousFocus = document.activeElement
     handle.current?.focus()
-    return () => { if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus() }
+    return () => {
+      const returnTarget =
+        previousFocus instanceof HTMLElement && previousFocus.isConnected
+          ? previousFocus
+          : document.querySelector<HTMLElement>('[aria-label="Open account menu"]')
+      returnTarget?.focus({ preventScroll: true })
+    }
   }, [])
   useEffect(() => {
     const constrain = () => { const bounds = panel.current?.getBoundingClientRect(); if (bounds) move(bounds.left, bounds.top) }

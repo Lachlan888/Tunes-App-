@@ -80,7 +80,7 @@ export default function SettingsForm({children, action, label = 'Save settings',
   }} aria-busy={pending} className="space-y-5">
     <fieldset inert={pending} className="min-w-0 space-y-5">{children}</fieldset>
     <div className="sticky bottom-[var(--navigation-dock-space,0px)] flex flex-wrap items-center gap-3 border-t border-border bg-background py-3">
-      <SubmitButton disabled={!dirty && label === 'Save settings'} label={label} pendingLabel="Saving…" forcePending={pending} className="rounded-xl bg-action-primary px-4 py-3 font-semibold text-action-primary-foreground" />
+      <SubmitButton disabled={!dirty && label === 'Save settings'} label={label} pendingLabel="Saving…" forcePending={pending} className="rounded-control bg-action-primary px-4 py-3 font-semibold text-action-primary-foreground" />
       <p role={error ? 'alert' : 'status'} aria-live="polite" className={`text-sm ${error ? 'text-destructive' : 'text-text-muted'}`}>{pending ? 'Saving…' : message || (dirty ? 'Unsaved changes' : 'All changes saved')}</p>
       {dirty && !pending && <button type="button" className="min-h-11 px-2 underline" onClick={() => {restoreSavedValues();setDirty(false);setMessage('Changes discarded.');setError(false)}}>Discard changes</button>}
     </div>

@@ -73,7 +73,7 @@ export default async function BadgeDetailPage({
         {viewerIsOwner ? (
           <Link
             href={`/badges/${encodeURIComponent(data.badge.slug)}/edit`}
-            className="inline-flex min-h-11 rounded-control border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+            className="inline-flex min-h-11 rounded-control border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground  transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
           >
             Edit badge · workspace
           </Link>
@@ -81,7 +81,7 @@ export default async function BadgeDetailPage({
       </div>
 
       {message ? (
-        <div className="mb-6 rounded-2xl border border-success bg-card p-4 text-sm font-medium text-foreground shadow-sm">
+        <div className="mb-6 border-l-4 border-success py-2 pl-3 text-sm font-medium text-foreground">
           {message}
         </div>
       ) : null}

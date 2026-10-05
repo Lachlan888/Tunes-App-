@@ -16,13 +16,13 @@ export default async function DashboardPage({searchParams}: {searchParams?:Promi
   const context = await getOptionalUserContext()
   if (!context) redirect(`/login?next=${encodeURIComponent(`/dashboard${section ? `?section=${section.id}` : ''}`)}`)
   const {user,profile,notificationPreferences,instruments} = await loadOwnProfileData()
-  const input = 'mt-1 block w-full rounded-xl border border-border bg-surface px-3 py-3'
+  const input = 'mt-1 block w-full rounded-control border border-border bg-surface px-3 py-3'
   return <main className="mx-auto max-w-3xl space-y-6 px-4 py-6 sm:px-6">
     {section && <Link className="inline-block min-h-11 text-sm underline" href="/dashboard">← Account & settings</Link>}
-    <header><h1 className="font-serif text-3xl font-bold">{section?.title ?? 'Account & settings'}</h1><p className="mt-2 text-sm text-text-muted">{section?.description ?? 'Your musical identity, preferences and account.'}</p></header>
+    <header><h1 className="font-sans text-4xl font-bold">{section?.title ?? 'Account & settings'}</h1><p className="mt-2 text-sm text-text-muted">{section?.description ?? 'Your musical identity, preferences and account.'}</p></header>
     {!section ? <>
-      <div className="rounded-2xl bg-card p-4"><p className="font-semibold">{profile?.display_name || profile?.username || 'Welcome to your tunebook'}</p>{profile?.username && <Link className="mt-2 inline-block min-h-11 py-2 text-sm underline" href={`/users/${encodeURIComponent(profile.username)}`}>View my profile</Link>}</div>
-      <nav aria-label="Settings groups" className="divide-y divide-border">{SETTINGS_SECTIONS.map(item => <Link key={item.id} href={`/dashboard?section=${item.id}`} className="flex items-center justify-between gap-4 py-5"><span><span className="block font-semibold">{item.title}</span><span className="block text-sm text-text-muted">{item.description}</span></span><span aria-hidden="true">→</span></Link>)}</nav>
+      <section className="border-t border-hairline py-4"><p className="font-semibold">{profile?.display_name || profile?.username || 'Welcome to your tunebook'}</p>{profile?.username && <Link className="mt-2 inline-block min-h-11 py-2 text-sm underline" href={`/users/${encodeURIComponent(profile.username)}`}>View my profile</Link>}</section>
+      <nav aria-label="Settings groups" className="divide-y divide-hairline border-t border-hairline">{SETTINGS_SECTIONS.map(item => <Link key={item.id} href={`/dashboard?section=${item.id}`} className="flex min-h-16 items-center justify-between gap-4 py-3"><span><span className="block font-semibold">{item.title}</span><span className="block text-sm text-text-muted">{item.description}</span></span><span aria-hidden="true">→</span></Link>)}</nav>
     </> : section.id === 'security' ? <>
       <p className="break-words text-sm">Signed in as {user.email}</p>
       <Link className="inline-block min-h-11 py-2 underline" href="/update-password">Change password</Link>

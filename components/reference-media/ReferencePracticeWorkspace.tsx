@@ -56,7 +56,7 @@ const mobileViews = [
 ] as const
 
 const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full rounded-control border border-hairline bg-surface-paper px-4 py-3 text-sm text-text-primary outline-none placeholder:text-text-muted focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 function sourceKindLabel(source: TuneMediaSource) {
   if (source.sourceType === "canonical-reference") return "Shared reference"
@@ -85,9 +85,9 @@ function RecordingSelector({
   const redirectTo = getReferencePracticeHref(pieceId, selectedSource?.id)
 
   return (
-    <section className="min-w-0 rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
+    <section className="min-w-0 border-y border-hairline py-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-lg font-bold tracking-tight text-text-primary">
           Reference track
         </h2>
         <span className="text-xs text-muted-foreground">{sources.length} available</span>
@@ -212,7 +212,7 @@ function UnavailableWorkspace({
         >
           {mediaPanel}
         </div>
-        <div className="order-1 mt-4 rounded-2xl border border-border bg-card p-5 md:order-2">
+        <div className="order-1 mt-4 border-y border-hairline py-5 md:order-2">
           <p className="font-semibold text-foreground">
             {selectedSource ? "Recording unavailable" : "Choose a recording"}
           </p>
@@ -244,11 +244,11 @@ function UnavailableWorkspace({
       <aside className="mt-5 min-w-0 space-y-5 md:mt-0">
         <section
           className={joinClasses(
-            "border-y border-border/70 py-4 md:rounded-3xl md:border md:bg-card md:p-5",
+            "border-t border-hairline py-5",
             mobileView === "sections" ? "block" : "hidden md:block"
           )}
         >
-          <h2 className="mt-1 font-serif text-2xl font-bold text-foreground">
+          <h2 className="mt-1 text-2xl font-bold tracking-tight text-text-primary">
             Whole recording
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -257,11 +257,11 @@ function UnavailableWorkspace({
         </section>
         <section
           className={joinClasses(
-            "border-y border-border/70 py-4 md:rounded-3xl md:border md:bg-card md:p-5",
+            "border-t border-hairline py-5",
             mobileView === "practice" ? "block" : "hidden md:block"
           )}
         >
-          <h2 className="mt-1 font-serif text-2xl font-bold text-foreground">
+          <h2 className="mt-1 text-2xl font-bold tracking-tight text-text-primary">
             Player unavailable
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">

@@ -74,7 +74,7 @@ const LORE_CATEGORY_LABELS: Record<PieceLoreCategory, string> = {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full rounded-control border border-hairline bg-surface-paper px-4 py-3 text-sm text-text-primary outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 function canUseModeratorTools(role: UserRole) {
   return role === "moderator" || role === "admin"
@@ -101,10 +101,10 @@ function ModalShell({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/35 px-4 py-8 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-xl">
+      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-sheet border border-hairline bg-surface-paper p-6 shadow-material-floating">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h3 className="mt-2 font-serif text-3xl font-bold tracking-tight text-foreground">
+            <h3 className="mt-2 text-3xl font-bold tracking-tight text-text-primary">
               {title}
             </h3>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
@@ -154,9 +154,9 @@ export default function PieceLoreSection({
   const isModerator = canUseModeratorTools(currentUserRole)
 
   return (
-    <section className="w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6">
+    <section className="w-full max-w-full border-t border-hairline py-6">
       <div>
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-xl font-bold tracking-tight text-text-primary">
           Sources &amp; Lore
         </h2>
 
@@ -197,11 +197,11 @@ export default function PieceLoreSection({
         <div className="mt-8 space-y-7">
           {groupedLoreEntries.map((group) => (
             <section key={group.category}>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <h3 className="text-base font-semibold text-text-primary">
                 {group.label}
               </h3>
 
-              <ul className="mt-3 space-y-3">
+              <ul className="mt-3 divide-y divide-hairline border-y border-hairline">
                 {group.entries.map((entry) => {
                   const author = profileMap[entry.user_id] ?? {
                     displayName: "Unknown player",
@@ -214,7 +214,7 @@ export default function PieceLoreSection({
                   return (
                     <li
                       key={entry.id}
-                      className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
+                      className="py-4"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
@@ -301,7 +301,7 @@ export default function PieceLoreSection({
           ))}
         </div>
       ) : (
-        <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+        <p className="mt-5 border-y border-hairline py-4 text-sm text-text-muted">
           No sources or lore yet.
         </p>
       )}
@@ -378,8 +378,8 @@ export default function PieceLoreSection({
           description="Send this lore entry to moderators for review. Explain what seems wrong, duplicated, misleading, or inappropriate."
           onClose={() => setModalMode(null)}
         >
-          <div className="mb-4 rounded-2xl border border-border bg-background/70 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <div className="mb-4 border-y border-hairline py-4">
+            <p className="text-xs font-semibold text-text-muted">
               Reported entry
             </p>
             <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground">

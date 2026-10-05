@@ -31,7 +31,7 @@ function PracticeFocusSummaryRow({
     <li className="border-b border-border py-4 last:border-b-0">
       <Link
         href={`/review/foci/${summary.focusId}`}
-        className="group block rounded-xl transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 md:-mx-2 md:p-2 md:hover:bg-card"
+        className="group block transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 md:-mx-2 md:p-2 md:hover:bg-surface-note"
       >
         <div className="flex min-w-0 items-start justify-between gap-3">
           <div className="min-w-0">
@@ -73,14 +73,14 @@ export default function PracticeFocusSummaryList({
 }: PracticeFocusSummaryListProps) {
   if (summaries.length === 0) {
     return (
-      <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+      <p className="mt-5 border-b border-hairline bg-surface-note p-4 text-sm leading-6 text-muted-foreground">
         {emptyMessage}
       </p>
     )
   }
 
   return (
-    <ul className="mt-5 rounded-2xl border border-border bg-background/70 px-4">
+    <ul className="mt-5 border-t border-hairline px-1">
       {summaries.map((summary) => (
         <PracticeFocusSummaryRow key={summary.focusId} summary={summary} />
       ))}

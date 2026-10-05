@@ -31,13 +31,13 @@ export default function PublicProfileOverview({
   return (
     <div className="min-w-0 space-y-6">
       {profile.show_repertoire_summary && repertoireSummary ? (
-        <section className="min-w-0 max-w-full md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <section className="min-w-0 max-w-full border-t border-hairline pt-5">
+          <p className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
             Repertoire
           </p>
 
           <div className="mt-3 grid grid-cols-2 gap-2 md:mt-5 md:gap-3">
-            <div className="min-w-0 rounded-xl bg-card px-4 py-3 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4">
+            <div className="min-w-0 rounded-object bg-card px-4 py-3 md:rounded-object md:border md:border-border md:bg-background/70 md:p-4">
               <p className="text-3xl font-bold leading-none text-foreground md:text-4xl">
                 {repertoireSummary.known_count}
               </p>
@@ -46,7 +46,7 @@ export default function PublicProfileOverview({
               </p>
             </div>
 
-            <div className="min-w-0 rounded-xl bg-card px-4 py-3 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4">
+            <div className="min-w-0 rounded-object bg-card px-4 py-3 md:rounded-object md:border md:border-border md:bg-background/70 md:p-4">
               <p className="text-3xl font-bold leading-none text-foreground md:text-4xl">
                 {repertoireSummary.practice_count}
               </p>
@@ -59,13 +59,13 @@ export default function PublicProfileOverview({
       ) : null}
 
       {profile.show_instruments ? (
-        <section className="min-w-0 max-w-full md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
+        <section className="min-w-0 max-w-full border-t border-hairline pt-5">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
               Instruments
             </p>
 
-            <span className="shrink-0 text-sm font-medium text-muted-foreground md:rounded-full md:border md:border-border md:bg-background/70 md:px-3 md:py-1">
+            <span className="shrink-0 text-sm font-medium text-muted-foreground md:rounded-control md:border md:border-border md:bg-background/70 md:px-3 md:py-1">
               {instruments.length} listed
             </span>
           </div>
@@ -75,7 +75,7 @@ export default function PublicProfileOverview({
               {instruments.map((instrument) => (
                 <li
                   key={instrument.id}
-                  className="max-w-full break-words rounded-full bg-card px-3 py-1.5 text-sm font-medium text-foreground md:border md:border-border md:bg-background/70"
+                  className="max-w-full break-words rounded-control bg-card px-3 py-1.5 text-sm font-medium text-foreground md:border md:border-border md:bg-background/70"
                 >
                   {instrument.instrument_name}
                 </li>
@@ -87,22 +87,22 @@ export default function PublicProfileOverview({
               description="Add instruments on your Profile page so other players know what you play."
               primaryActionHref="/dashboard?section=profile"
               primaryActionLabel="Edit Profile"
-              className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
+              className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 "
             />
           ) : (
             <EmptyState
               title="No instruments listed"
               description="This musician has not added instruments to their profile yet."
-              className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
+              className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 "
             />
           )}
         </section>
       ) : null}
 
       {profile.show_public_lists_on_profile ? (
-        <section className="min-w-0 max-w-full md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
+        <section className="min-w-0 max-w-full border-t border-hairline pt-5">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
               Featured public lists
             </p>
 
@@ -115,7 +115,7 @@ export default function PublicProfileOverview({
                 <li key={list.id}>
                   <Link
                     href={`/public-lists/${list.id}`}
-                    className="group block h-full rounded-xl bg-card p-4 transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:rounded-2xl md:border md:border-border md:bg-background/70 md:shadow-sm md:hover:-translate-y-0.5 md:hover:shadow-md"
+                    className="group block h-full border-b border-hairline py-4 transition hover:bg-surface-note/50 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                   >
                     <div className="flex h-full flex-col gap-4">
                       <div className="min-w-0 flex-1">
@@ -149,12 +149,12 @@ export default function PublicProfileOverview({
               title="No public lists yet"
               primaryActionHref="/learning-lists"
               primaryActionLabel="Manage Lists"
-              className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
+              className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 "
             />
           ) : (
             <EmptyState
               title="No public lists yet"
-              className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 md:shadow-sm"
+              className="mt-4 border-0 bg-transparent p-0 shadow-none md:mt-5 md:border md:bg-background/70 md:p-4 "
             />
           )}
         </section>

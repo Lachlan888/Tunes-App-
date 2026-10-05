@@ -38,8 +38,8 @@ export default function TunePracticeHistorySection({
   reviews,
 }: TunePracticeHistorySectionProps) {
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <section className="border-t border-hairline py-6">
+      <h2 className="text-xl font-bold tracking-tight text-text-primary">
         Practice history
       </h2>
 
@@ -48,7 +48,7 @@ export default function TunePracticeHistorySection({
       </p>
 
       {reviews.length > 0 ? (
-        <ol className="mt-5 divide-y divide-hairline rounded-object bg-surface-note px-4">
+        <ol className="mt-5 divide-y divide-hairline border-y border-hairline">
           {reviews.map((review) => (
             <li
               key={review.id}
@@ -74,21 +74,21 @@ export default function TunePracticeHistorySection({
           ))}
         </ol>
       ) : (
-        <p className="mt-5 rounded-object bg-surface-note p-4 text-sm text-text-muted">
+        <p className="mt-5 border-y border-hairline py-4 text-sm text-text-muted">
           No formal review results for this tune yet.
         </p>
       )}
 
       {notes.length === 0 ? (
-        <p className="mt-4 rounded-object bg-surface-note p-4 text-sm text-text-muted">
+        <p className="mt-4 border-y border-hairline py-4 text-sm text-text-muted">
           No diary notes for this tune yet.
         </p>
       ) : (
-        <ul className="mt-4 space-y-3">
+        <ul className="mt-4 divide-y divide-hairline border-y border-hairline">
           {notes.slice(0, 5).map((note) => (
             <li
               key={note.id}
-              className="rounded-2xl border border-border bg-background/70 p-4"
+              className="py-4"
             >
               <div className="flex flex-wrap items-center gap-2">
                 <Link
@@ -99,13 +99,13 @@ export default function TunePracticeHistorySection({
                 </Link>
 
                 {note.category_name ? (
-                  <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <span className="border-l-2 border-hairline pl-2 text-xs font-semibold text-text-muted">
                     {note.category_name}
                   </span>
                 ) : null}
 
                 {note.outcome ? (
-                  <span className="rounded-full border border-accent bg-accent/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-accent-foreground">
+                  <span className="border-l-2 border-state-practice pl-2 text-xs font-semibold text-state-practice">
                     {note.outcome === "failed"
                       ? "Rough"
                       : note.outcome === "shaky"

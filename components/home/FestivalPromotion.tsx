@@ -9,7 +9,7 @@ export default function FestivalPromotion({
 }) {
   return (
     <section
-      className="mb-6 overflow-hidden rounded-object border border-hairline bg-surface-paper shadow-material-rest"
+      className="mb-6 overflow-hidden border-b border-hairline bg-surface-note"
       aria-labelledby="home-festival-title"
     >
       {festival.branding_image_url && festival.branding_alt ? (
@@ -23,10 +23,10 @@ export default function FestivalPromotion({
       ) : null}
       <div className="p-5 md:flex md:items-center md:justify-between md:gap-6 md:p-6">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">
+          <p className="text-sm font-semibold text-text-muted">
             Festival repertoire
           </p>
-          <h2 id="home-festival-title" className="mt-2 break-words font-serif text-3xl font-bold text-text-primary">
+          <h2 id="home-festival-title" className="mt-2 break-words font-sans text-3xl font-bold text-text-primary">
             {festival.name}
           </h2>
           {festival.description ? (

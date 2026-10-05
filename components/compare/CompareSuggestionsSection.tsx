@@ -17,7 +17,7 @@ type CompareSuggestionsSectionProps = {
   overlapGroup: "all" | "strong" | "shaky"
 }
 
-function SuggestionCard({
+function SuggestionRow({
   friend,
   filterPreservedUsers,
   includePractice,
@@ -44,7 +44,7 @@ function SuggestionCard({
 
   return (
     <article
-      className="rounded-2xl border border-border bg-background/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-muted/70 hover:shadow-md focus-within:ring-2 focus-within:ring-[var(--focus-ring)]"
+      className="py-4 transition focus-within:ring-2 focus-within:ring-[var(--focus-ring)]"
 
       aria-label={`Open profile for ${label}`}
     >
@@ -84,8 +84,8 @@ function SuggestionCard({
             disabled={action.disabled}
             className={
               action.disabled
-                ? "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
-                : "inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+                ? "inline-flex min-h-11 rounded-control border border-border bg-surface-paper px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+                : "inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
             }
           />
         </div>
@@ -109,8 +109,8 @@ export default function CompareSuggestionsSection({
   }
 
   return (
-    <section className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <section className="mb-8 border-t border-hairline pt-5">
+      <h2 className="text-xl font-semibold text-foreground">
         Add a friend
       </h2>
 
@@ -118,9 +118,9 @@ export default function CompareSuggestionsSection({
         Quick suggestions from your accepted friends.
       </p>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
+      <div className="mt-4 divide-y divide-hairline border-y border-hairline">
         {compareSuggestions.map((friend) => (
-          <SuggestionCard
+          <SuggestionRow
             key={friend.user_id}
             friend={friend}
             filterPreservedUsers={filterPreservedUsers}

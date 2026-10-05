@@ -32,7 +32,7 @@ function TaskStatusIcon({ isComplete }: { isComplete: boolean }) {
 
 function TaskRow({ task }: { task: GettingStartedTask }) {
   return (
-    <li className="flex gap-3 rounded-2xl border border-border bg-background/70 p-4">
+    <li className="flex gap-3 border-b border-hairline py-4">
       <TaskStatusIcon isComplete={task.isComplete} />
 
       <div className="min-w-0 flex-1">
@@ -66,10 +66,10 @@ export default function GettingStartedSection({
   }
 
   return (
-      <section className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <section className="mb-8 border-t border-hairline pt-6">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-5">
           <div>
-            <h2 className="mt-1 font-serif text-3xl font-bold">Get started</h2>
+            <h2 className="mt-1 font-sans text-3xl font-bold">Get started</h2>
             <p className="mt-3 max-w-2xl text-muted-foreground">
               Start by adding a few tunes, making a list, or beginning
               practice. Home will update as you go.
@@ -80,11 +80,11 @@ export default function GettingStartedSection({
           </div>
 
           {state.nextTask && (
-            <div className="w-full rounded-2xl border border-border bg-background/70 p-5 sm:w-80">
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <div className="w-full border-l-2 border-action-primary bg-surface-note p-5 sm:w-80">
+              <p className="text-sm font-semibold text-muted-foreground">
                 Next step
               </p>
-              <p className="mt-2 font-serif text-xl font-bold">
+              <p className="mt-2 font-sans text-xl font-bold">
                 {state.nextTask.label}
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
@@ -108,8 +108,8 @@ export default function GettingStartedSection({
 
             return (
               <section key={group}>
-                <h3 className="mb-3 font-serif text-xl font-bold">{group}</h3>
-                <ul className="space-y-3">
+                <h3 className="mb-3 font-sans text-xl font-bold">{group}</h3>
+                <ul className="border-t border-hairline">
                   {tasks.map((task) => (
                     <TaskRow key={task.id} task={task} />
                   ))}

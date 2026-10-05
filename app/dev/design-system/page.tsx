@@ -198,10 +198,10 @@ export default async function DesignSystemPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           {routeExamples.map((example) => (
             <article key={example.label} className={cardStyles.displayCard}>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-muted">
+              <p className="text-xs font-semibold  tracking-[0.16em] text-text-muted">
                 {example.label}
               </p>
-              <h3 className="mt-3 font-serif text-xl font-semibold leading-tight">
+              <h3 className="mt-3 font-sans text-xl font-semibold leading-tight">
                 {example.title}
               </h3>
               <p className="mt-2 text-sm leading-6 text-text-muted">
@@ -246,9 +246,9 @@ export default async function DesignSystemPage() {
           {["The Kesh Jig", "Out on the Ocean", "Banish Misfortune"].map(
             (title, index) => (
               <div key={title} className="flex items-center gap-4 py-4">
-                <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+                <Skeleton className="h-10 w-10 shrink-0 rounded-control" />
                 <div className="min-w-0 flex-1">
-                  <p className="font-serif text-lg font-semibold">{title}</p>
+                  <p className="font-sans text-lg font-semibold">{title}</p>
                   <p className="text-sm text-text-muted">
                     {index === 1 ? "Jig · G major" : "Traditional tune"}
                   </p>

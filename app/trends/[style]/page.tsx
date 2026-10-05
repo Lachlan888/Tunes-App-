@@ -47,7 +47,7 @@ export default async function TrendsStylePage({ params }: TrendsStylePageProps) 
       </Link>
 
       <header className="border-b border-border pb-7">
-        <h1 className="mt-1 font-serif text-4xl font-bold tracking-tight sm:text-5xl">
+        <h1 className="mt-1 font-sans text-4xl font-bold tracking-tight sm:text-5xl">
           {resolvedStyleName}
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
@@ -58,31 +58,31 @@ export default async function TrendsStylePage({ params }: TrendsStylePageProps) 
 
       {data.coverageSummary ? (
         <section className="py-8" aria-labelledby="style-coverage-title">
-          <h2 id="style-coverage-title" className="mt-1 font-serif text-2xl font-bold">
+          <h2 id="style-coverage-title" className="font-sans text-2xl font-bold">
             {data.isAuthenticated
               ? `${personalTotal} of ${data.coverageSummary.catalogueTuneCount} catalogue tunes are in your repertoire`
               : `${data.coverageSummary.catalogueTuneCount} tunes in the catalogue`}
           </h2>
-          <dl className="mt-5 grid grid-cols-2 divide-x divide-border border-y border-border sm:grid-cols-4">
+          <dl className="mt-5 grid grid-cols-2 divide-x divide-hairline border-t border-hairline sm:grid-cols-4">
             {data.isAuthenticated ? (
               <>
                 <div className="px-3 py-4 first:pl-0">
-                  <dt className="text-xs uppercase tracking-wide text-muted-foreground">You know</dt>
-                  <dd className="mt-1 font-serif text-3xl font-bold">{data.coverageSummary.personalKnownCount}</dd>
+                  <dt className="text-xs font-semibold text-muted-foreground">You know</dt>
+                  <dd className="mt-1 font-sans text-3xl font-bold">{data.coverageSummary.personalKnownCount}</dd>
                 </div>
                 <div className="px-3 py-4">
-                  <dt className="text-xs uppercase tracking-wide text-muted-foreground">In practice</dt>
-                  <dd className="mt-1 font-serif text-3xl font-bold">{data.coverageSummary.personalPracticeCount}</dd>
+                  <dt className="text-xs font-semibold text-muted-foreground">In practice</dt>
+                  <dd className="mt-1 font-sans text-3xl font-bold">{data.coverageSummary.personalPracticeCount}</dd>
                 </div>
               </>
             ) : null}
             <div className="px-3 py-4">
-              <dt className="text-xs uppercase tracking-wide text-muted-foreground">Common key</dt>
-              <dd className="mt-1 font-serif text-3xl font-bold">{data.coverageSummary.commonKey ?? "—"}</dd>
+              <dt className="text-xs font-semibold text-muted-foreground">Common key</dt>
+              <dd className="mt-1 font-sans text-3xl font-bold">{data.coverageSummary.commonKey ?? "—"}</dd>
             </div>
             <div className="px-3 py-4">
-              <dt className="text-xs uppercase tracking-wide text-muted-foreground">Common time</dt>
-              <dd className="mt-1 font-serif text-3xl font-bold">{data.coverageSummary.commonTimeSignature ?? "—"}</dd>
+              <dt className="text-xs font-semibold text-muted-foreground">Common time</dt>
+              <dd className="mt-1 font-sans text-3xl font-bold">{data.coverageSummary.commonTimeSignature ?? "—"}</dd>
             </div>
           </dl>
           <p className="mt-3 text-xs leading-5 text-muted-foreground">
@@ -92,8 +92,8 @@ export default async function TrendsStylePage({ params }: TrendsStylePageProps) 
       ) : null}
 
       {!hasDiscoveryData ? (
-        <section className="border-y border-border py-7" aria-labelledby="style-empty-title">
-          <h2 id="style-empty-title" className="font-serif text-2xl font-bold">Not enough data yet</h2>
+        <section className="border-t border-hairline py-7" aria-labelledby="style-empty-title">
+          <h2 id="style-empty-title" className="font-sans text-2xl font-bold">Not enough data yet</h2>
           <p className="mt-2 text-sm text-muted-foreground">Browse the catalogue to find a {resolvedStyleName} tune and start building this view.</p>
           <Link href={`/library?style=${encodeURIComponent(resolvedStyleName)}`} className="mt-4 inline-flex min-h-11 items-center rounded-control bg-primary px-5 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Explore {resolvedStyleName}</Link>
         </section>
@@ -101,7 +101,7 @@ export default async function TrendsStylePage({ params }: TrendsStylePageProps) 
 
       {data.recommendedTunes.length > 0 ? (
         <section className="border-t border-border py-8" aria-labelledby="recommended-title">
-          <h2 id="recommended-title" className="mt-1 font-serif text-2xl font-bold">
+          <h2 id="recommended-title" className="font-sans text-2xl font-bold">
             {data.isAuthenticated ? "Popular tunes not in your repertoire" : "Popular starting points"}
           </h2>
           <p className="mb-5 mt-2 text-sm text-muted-foreground">Ranked by visible Known memberships; counts are not the number of all app users.</p>
@@ -111,7 +111,7 @@ export default async function TrendsStylePage({ params }: TrendsStylePageProps) 
 
       {data.topPracticeTunes.length > 0 ? (
         <section className="border-t border-border py-8" aria-labelledby="practice-title">
-          <h2 id="practice-title" className="mt-1 font-serif text-2xl font-bold">Most often in active practice</h2>
+          <h2 id="practice-title" className="font-sans text-2xl font-bold">Most often in active practice</h2>
           <p className="mb-5 mt-2 text-sm text-muted-foreground">Based on visible active Practice memberships in this style.</p>
           <TrendTuneList entries={data.topPracticeTunes} metricLabel="In practice for" userPieces={data.userPieces} userKnownPieces={data.userKnownPieces} learningLists={data.learningLists} learningListItems={data.learningListItems} redirectTo={redirectTo} />
         </section>
@@ -119,7 +119,7 @@ export default async function TrendsStylePage({ params }: TrendsStylePageProps) 
 
       {data.topPublicLists.length > 0 ? (
         <section className="border-t border-border py-8" aria-labelledby="lists-title">
-          <h2 id="lists-title" className="mt-1 font-serif text-2xl font-bold">Lists with the strongest overlap</h2>
+          <h2 id="lists-title" className="font-sans text-2xl font-bold">Lists with the strongest overlap</h2>
           <p className="mb-5 mt-2 text-sm text-muted-foreground">Ranked by the number of {resolvedStyleName} tunes in each public list.</p>
           <TrendPublicListSection entries={data.topPublicLists} />
         </section>

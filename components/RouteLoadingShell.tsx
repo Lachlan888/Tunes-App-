@@ -23,13 +23,10 @@ export default function RouteLoadingShell({
       aria-busy="true"
     >
       <section className="w-full max-w-3xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          {label}
-        </p>
-
-        <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-text-primary">
+        <h1 className="font-sans text-4xl font-bold tracking-tight text-text-primary">
           {title}
         </h1>
+        <p className="mt-2 text-xs font-medium text-muted-foreground">{label}</p>
 
         <p className="mt-2 text-sm leading-6 text-text-muted">
           {description}

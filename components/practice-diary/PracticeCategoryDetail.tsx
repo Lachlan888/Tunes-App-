@@ -46,28 +46,26 @@ function CategoryMapSummary({ data }: PracticeCategoryDetailProps) {
   ]
 
   return (
-    <section className="grid gap-3 md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
-      <div className="px-1 md:px-0">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Category map
-        </h2>
-      </div>
+    <section>
+      <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
+        Category map
+      </h2>
 
-      <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border bg-card p-3 shadow-sm md:grid-cols-3 md:gap-3 md:border-0 md:bg-background/70 md:p-0 md:shadow-none">
+      <div className="mt-3 grid grid-cols-3 divide-x divide-hairline border-y border-hairline">
         {stats.map((stat) => (
           <article
             key={stat.label}
-            className="min-w-0 border-r border-border pr-2 last:border-r-0 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4"
+            className="min-w-0 px-3 py-4 first:pl-0 last:pr-0 md:px-5"
           >
-            <p className="truncate text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground md:text-xs md:tracking-[0.14em]">
+            <p className="truncate text-xs font-medium text-muted-foreground">
               {stat.label}
             </p>
 
             <p
               className={
                 stat.isDate
-                  ? "mt-1 truncate text-base font-bold leading-tight text-foreground md:mt-2 md:font-serif md:text-4xl"
-                  : "mt-1 truncate font-serif text-2xl font-bold leading-tight text-foreground md:mt-2 md:text-4xl"
+                  ? "mt-1 truncate text-base font-bold leading-tight text-foreground md:text-2xl"
+                  : "mt-1 truncate text-2xl font-bold leading-tight text-foreground md:text-3xl"
               }
             >
               {stat.value}
@@ -82,7 +80,7 @@ function CategoryMapSummary({ data }: PracticeCategoryDetailProps) {
 function TuneSummaryRow({ tune }: { tune: PracticeCategoryTuneSummary }) {
   return (
     <li className="border-b border-border py-4 last:border-b-0">
-      <div className="flex min-w-0 items-start justify-between gap-3">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <Link
             href={`/library/${tune.piece.id}`}
@@ -116,21 +114,19 @@ function TuneSummaryRow({ tune }: { tune: PracticeCategoryTuneSummary }) {
 
 function CategoryTunesSection({ data }: PracticeCategoryDetailProps) {
   return (
-    <section className="grid gap-3 md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
-      <div className="px-1 md:px-0">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Tunes in this category
-        </h2>
-      </div>
+    <section className="border-t border-hairline pt-4">
+      <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
+        Tunes in this category
+      </h2>
 
       {data.tuneSummaries.length > 0 ? (
-        <ul className="md:rounded-2xl md:border md:border-border md:bg-background/70 md:px-4">
+        <ul className="mt-3 divide-y divide-hairline border-t border-hairline">
           {data.tuneSummaries.map((tune) => (
             <TuneSummaryRow key={tune.piece.id} tune={tune} />
           ))}
         </ul>
       ) : (
-        <p className="rounded-2xl border border-border bg-card p-5 text-sm leading-6 text-muted-foreground shadow-sm md:bg-background/70 md:shadow-none">
+        <p className="mt-3 border-y border-hairline py-5 text-sm leading-6 text-muted-foreground">
           No tune-linked notes in this category yet.
         </p>
       )}
@@ -141,7 +137,7 @@ function CategoryTunesSection({ data }: PracticeCategoryDetailProps) {
 function NoteRow({ note }: { note: PracticeCategoryDetailNote }) {
   return (
     <li className="border-b border-border py-4 last:border-b-0">
-      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
         <Link
           href={`/review/diary?view=day&date=${note.noteDate}`}
           className="underline decoration-border underline-offset-4 transition hover:text-foreground hover:decoration-primary"
@@ -171,21 +167,19 @@ function NoteRow({ note }: { note: PracticeCategoryDetailNote }) {
 
 function CategoryNotesSection({ data }: PracticeCategoryDetailProps) {
   return (
-    <section className="grid gap-3 md:rounded-3xl md:border md:border-border md:bg-card md:p-5 md:shadow-sm">
-      <div className="px-1 md:px-0">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Notes
-        </h2>
-      </div>
+    <section className="border-t border-hairline pt-4">
+      <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
+        Notes
+      </h2>
 
       {data.notes.length > 0 ? (
-        <ul className="md:rounded-2xl md:border md:border-border md:bg-background/70 md:px-4">
+        <ul className="mt-3 divide-y divide-hairline border-t border-hairline">
           {data.notes.map((note) => (
             <NoteRow key={note.id} note={note} />
           ))}
         </ul>
       ) : (
-        <p className="rounded-2xl border border-border bg-card p-5 text-sm leading-6 text-muted-foreground shadow-sm md:bg-background/70 md:shadow-none">
+        <p className="mt-3 border-y border-hairline py-5 text-sm leading-6 text-muted-foreground">
           No notes have been saved to this category yet.
         </p>
       )}

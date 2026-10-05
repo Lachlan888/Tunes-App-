@@ -20,7 +20,7 @@ export default async function HomePage() {
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 pb-5 pt-0 md:px-6 md:py-8">
-      <PageHeader title="Home" className="hidden md:flex" />
+      <PageHeader title="Home" />
 
       <HomeSummarySection
         summary={summary}

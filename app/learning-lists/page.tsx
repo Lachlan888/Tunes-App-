@@ -270,12 +270,12 @@ export default async function LearningListsPage({
   return (
     <main className="mx-auto max-w-[1500px] px-4 pb-5 pt-0 text-foreground md:px-6 md:py-8">
       <ListOriginScroll originHref={redirectTo} />
-      <PageHeader title="Lists" className="hidden md:flex" />
+      <PageHeader title="Lists" />
 
       <ListsSectionNav activeView={activeView} counts={viewCounts} />
 
       {bookmarkMessage ? (
-        <div className="mb-5 rounded-2xl border border-border bg-card p-4 text-sm font-medium text-foreground shadow-sm md:mb-6">
+        <div className="mb-5 border-y border-hairline py-3 text-sm font-medium text-foreground md:mb-6">
           {bookmarkMessage}
         </div>
       ) : null}
@@ -299,7 +299,7 @@ export default async function LearningListsPage({
       <section className="mb-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="hidden md:block">
-            <h2 className="font-serif text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
               {activeViewConfig.label}
             </h2>
           </div>
@@ -314,9 +314,9 @@ export default async function LearningListsPage({
         <form method="get" action="/learning-lists" className="mb-5 grid gap-3 border-y border-border/70 py-4 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
           <input type="hidden" name="view" value={activeView} />
           <label className="sr-only" htmlFor="list-collection-search">Search this view</label>
-          <input id="list-collection-search" name="q" defaultValue={searchQuery} placeholder={`Search ${activeViewConfig.label.toLowerCase()}`} className="min-h-11 min-w-0 w-full rounded-full border border-border bg-card px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]" />
+          <input id="list-collection-search" name="q" defaultValue={searchQuery} placeholder={`Search ${activeViewConfig.label.toLowerCase()}`} className="min-h-11 min-w-0 w-full rounded-control border border-border bg-surface-paper px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]" />
           <label className="sr-only" htmlFor="list-collection-group">Group</label>
-          <select id="list-collection-group" name="group" defaultValue={selectedGroup} className="min-h-11 min-w-0 w-full rounded-full border border-border bg-card px-4 text-sm">
+          <select id="list-collection-group" name="group" defaultValue={selectedGroup} className="min-h-11 min-w-0 w-full rounded-control border border-border bg-surface-paper px-4 text-sm">
             <option value="">All groups</option>
             {activeView === "learning-queue" ? learningLists.map((list) => <option key={list.id} value={list.id}>{list.name}</option>) : null}
             {activeView === "unsorted" ? <><option value="practice">In Practice</option><option value="known">Known</option></> : null}
@@ -363,8 +363,8 @@ export default async function LearningListsPage({
                 title="No lists yet"
                 secondaryActionHref="/library"
                 secondaryActionLabel="Browse Tunes"
-                className="bg-card p-5"
-                titleClassName="font-serif text-2xl font-bold text-foreground"
+                className="border-y border-hairline py-5"
+                titleClassName="text-2xl font-bold text-foreground"
               />
             ) : filteredListOverviews.length === 0 ? (
               <EmptyState
@@ -374,7 +374,7 @@ export default async function LearningListsPage({
               />
             ) : (
               <section>
-                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                <div className="border-t border-hairline">
                   {visibleListOverviews.map((list) => (
                     <ListOverviewCard
                       key={list.id}

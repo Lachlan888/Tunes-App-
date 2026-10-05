@@ -4,11 +4,11 @@ import { createPracticeFocus } from "@/lib/actions/practice-foci"
 
 export default function PracticeFocusCreateForm() {
   return (
-    <details className="rounded-2xl border border-border bg-card p-4 shadow-sm md:rounded-3xl md:p-6 xl:open:block">
+    <details className="border-t border-hairline pt-5 xl:open:block">
       <summary className="min-h-11 cursor-pointer list-none rounded-control focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="mt-2 font-serif text-2xl font-bold leading-tight text-foreground">
+            <h2 className="mt-2 font-sans text-2xl font-bold leading-tight text-foreground">
               Create a practice focus
             </h2>
 
@@ -32,7 +32,7 @@ export default function PracticeFocusCreateForm() {
           <input
             name="title"
             required
-            className="min-w-0 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className="min-w-0 rounded-control border border-hairline bg-surface-paper px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
             placeholder="Tempo security"
           />
         </label>
@@ -42,7 +42,7 @@ export default function PracticeFocusCreateForm() {
           <textarea
             name="description"
             rows={4}
-            className="min-w-0 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className="min-w-0 rounded-control border border-hairline bg-surface-paper px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
             placeholder="What are you trying to improve over time?"
           />
         </label>
@@ -52,7 +52,7 @@ export default function PracticeFocusCreateForm() {
           <input
             name="target_date"
             type="date"
-            className="min-w-0 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className="min-w-0 rounded-control border border-hairline bg-surface-paper px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
         </label>
 

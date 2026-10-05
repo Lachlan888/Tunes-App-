@@ -75,12 +75,12 @@ function PracticeTuneSummaryCard({ summary }: PracticeTuneSummaryCardProps) {
       : summary.latestNoteSnippet
 
   return (
-    <article className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm">
+    <article className="border-b border-hairline py-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <Link
             href={`/library/${summary.piece.id}`}
-            className="font-serif text-2xl font-bold text-foreground transition hover:text-primary"
+            className="font-sans text-2xl font-bold text-foreground transition hover:text-primary"
           >
             {summary.piece.title}
           </Link>
@@ -97,19 +97,19 @@ function PracticeTuneSummaryCard({ summary }: PracticeTuneSummaryCardProps) {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <span className="border-l-2 border-hairline px-3 py-1 text-xs font-semibold text-muted-foreground">
             {summary.eventCount}{" "}
             {pluralise(summary.eventCount, "session", "sessions")}
           </span>
 
           {summary.latestOutcome ? (
-            <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <span className="border-l-2 border-hairline px-3 py-1 text-xs font-semibold text-muted-foreground">
               {summary.latestOutcome}
             </span>
           ) : null}
 
           {typeof summary.latestStage === "number" ? (
-            <span className="rounded-full border border-accent bg-accent px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-accent-foreground">
+            <span className="border-l-2 border-state-practice px-3 py-1 text-xs font-semibold text-text-muted">
               Stage {summary.latestStage}
             </span>
           ) : null}
@@ -125,8 +125,8 @@ function PracticeTuneSummaryCard({ summary }: PracticeTuneSummaryCardProps) {
       </div>
 
       {visibleNote ? (
-        <div className="mt-3 rounded-2xl border border-border bg-card p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <div className="mt-3 border-l-2 border-state-practice bg-surface-note p-4">
+          <p className="text-xs font-semibold text-muted-foreground">
             Latest note
           </p>
 
@@ -158,7 +158,7 @@ export default function PracticeTuneSummaryList({
 
   if (summaries.length === 0) {
     return (
-      <p className="mt-5 rounded-2xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+      <p className="mt-5 border-b border-hairline bg-surface-note p-4 text-sm leading-6 text-muted-foreground">
         {emptyMessage}
       </p>
     )
@@ -174,7 +174,7 @@ export default function PracticeTuneSummaryList({
   )
 
   return (
-    <div className="mt-5 space-y-3">
+    <div className="mt-5 border-t border-hairline">
       {visibleSummaries.map((summary) => (
         <PracticeTuneSummaryCard key={summary.piece.id} summary={summary} />
       ))}

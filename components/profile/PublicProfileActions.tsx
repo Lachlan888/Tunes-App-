@@ -20,13 +20,13 @@ type PublicProfileActionsProps = {
 }
 
 const primaryButtonClass =
-  "inline-flex min-h-11 max-w-full rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+  "inline-flex min-h-11 max-w-full rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground  transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
 
 const secondaryButtonClass =
-  "inline-flex min-h-11 max-w-full rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+  "inline-flex min-h-11 max-w-full rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground  transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
 
 const textareaClassName =
-  "max-h-[22rem] min-h-28 w-full resize-none overflow-hidden rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm leading-6 text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "max-h-[22rem] min-h-28 w-full resize-none overflow-hidden rounded-object border border-border bg-background/70 px-4 py-3 text-sm leading-6 text-foreground  outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function PublicProfileActions({
   viewerId,
@@ -44,8 +44,8 @@ export default function PublicProfileActions({
 }: PublicProfileActionsProps) {
   if (isOwnProfile) {
     return (
-      <section className="min-w-0 max-w-full rounded-2xl bg-card p-4 shadow-sm md:rounded-3xl md:border md:border-border md:p-5">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <section className="min-w-0 max-w-full border-y border-hairline py-4 md:py-5">
+        <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
           Your profile
         </h2>
 
@@ -68,8 +68,8 @@ export default function PublicProfileActions({
 
   if (!viewerId) {
     return (
-      <section className="min-w-0 max-w-full rounded-2xl bg-card p-4 shadow-sm md:rounded-3xl md:border md:border-border md:p-5">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <section className="min-w-0 max-w-full border-y border-hairline py-4 md:py-5">
+        <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
           Connect
         </h2>
 
@@ -91,8 +91,8 @@ export default function PublicProfileActions({
   }
 
   return (
-    <section className="min-w-0 max-w-full rounded-2xl bg-card p-4 shadow-sm md:rounded-3xl md:border md:border-border md:p-5">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <section className="min-w-0 max-w-full border-y border-hairline py-4 md:py-5">
+      <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
         Connect
       </h2>
 
@@ -107,11 +107,11 @@ export default function PublicProfileActions({
         ) : null}
 
         {isAcceptedFriend ? (
-          <span className="inline-flex max-w-full items-center rounded-full border border-success bg-muted px-4 py-2 text-sm font-medium text-foreground">
+          <span className="inline-flex max-w-full items-center rounded-control border border-success bg-muted px-4 py-2 text-sm font-medium text-foreground">
             Friends
           </span>
         ) : hasPendingOutgoingRequest ? (
-          <span className="inline-flex max-w-full items-center rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground">
+          <span className="inline-flex max-w-full items-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground">
             Friend request sent
           </span>
         ) : hasPendingIncomingRequest && pendingIncomingConnectionId ? (
@@ -142,19 +142,19 @@ export default function PublicProfileActions({
       </div>
 
       {compareBlockedByFriendship ? (
-        <p className="mt-4 break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-3">
+        <p className="mt-4 break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-object md:border md:bg-background/70 md:p-3">
           Comparison is available once you are friends.
         </p>
       ) : null}
 
       {!showCompareDiscoverability ? (
-        <p className="mt-4 break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-3">
+        <p className="mt-4 break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-object md:border md:bg-background/70 md:p-3">
           This musician is not discoverable through Compare.
         </p>
       ) : null}
 
       <div className="mt-6 border-t border-border pt-5">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
           Message
         </h3>
 

@@ -27,19 +27,19 @@ export default async function FestivalFoundationPage() {
       </p>
 
       <section className="grid gap-3 sm:grid-cols-3" aria-label="Festival foundation status">
-        <div className="rounded-2xl border border-border bg-background/70 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Festival mode</p>
-          <p className="mt-2 font-serif text-3xl font-bold">{settings.mode_enabled ? "On" : "Off"}</p>
+        <div className="rounded-object border border-border bg-background/70 p-4">
+          <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">Festival mode</p>
+          <p className="mt-2 font-sans text-3xl font-bold">{settings.mode_enabled ? "On" : "Off"}</p>
           <p className="mt-2 text-sm text-muted-foreground">Off keeps the normal Home experience unchanged.</p>
         </div>
-        <div className="rounded-2xl border border-border bg-background/70 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Selected hub</p>
-          <p className="mt-2 font-serif text-2xl font-bold">{selectedFestival?.name ?? "None"}</p>
+        <div className="rounded-object border border-border bg-background/70 p-4">
+          <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">Selected hub</p>
+          <p className="mt-2 font-sans text-2xl font-bold">{selectedFestival?.name ?? "None"}</p>
           <p className="mt-2 text-sm text-muted-foreground">Selecting a hub will not publish it or enable festival mode.</p>
         </div>
-        <div className="rounded-2xl border border-border bg-background/70 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Festival records</p>
-          <p className="mt-2 font-serif text-3xl font-bold">{festivals.length}</p>
+        <div className="rounded-object border border-border bg-background/70 p-4">
+          <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">Festival records</p>
+          <p className="mt-2 font-sans text-3xl font-bold">{festivals.length}</p>
           <p className="mt-2 text-sm text-muted-foreground">New hubs start as private drafts.</p>
         </div>
       </section>

@@ -16,8 +16,8 @@ export default function PublicProfileHeader({
     profile.show_identity && profile.display_name && profile.display_name !== profile.username
 
   return (
-    <header className="min-w-0 max-w-full rounded-2xl bg-card p-4 shadow-sm md:rounded-3xl md:border md:border-border md:p-6">
-      <h1 className="min-w-0 max-w-full break-words font-serif text-3xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
+    <header className="min-w-0 max-w-full border-y border-hairline py-5 md:py-6">
+      <h1 className="min-w-0 max-w-full break-words font-sans text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
         {title}
       </h1>
 
@@ -34,14 +34,14 @@ export default function PublicProfileHeader({
       ) : null}
 
       {isOwnProfile ? (
-        <div className="mt-5 border-t border-border pt-4 text-sm leading-6 text-muted-foreground md:mt-6 md:rounded-2xl md:border md:bg-background/70 md:p-4">
+        <div className="mt-5 border-t border-hairline pt-4 text-sm leading-6 text-muted-foreground md:mt-6">
           This is how other musicians see your profile. Change what appears
           from your Profile settings.
         </div>
       ) : null}
 
       {!profile.show_identity ? (
-        <div className="mt-5 border-t border-border pt-4 text-sm leading-6 text-muted-foreground md:mt-6 md:rounded-2xl md:border md:bg-background/70 md:p-4">
+        <div className="mt-5 border-t border-hairline pt-4 text-sm leading-6 text-muted-foreground md:mt-6">
           This musician has chosen limited public identity visibility.
         </div>
       ) : null}

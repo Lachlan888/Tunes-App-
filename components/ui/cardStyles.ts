@@ -1,33 +1,33 @@
 export const cardStyles = {
   panel:
-    "rounded-sheet bg-surface-paper p-6 shadow-material-raised",
+    "border-t border-hairline py-6",
 
   innerPanel:
-    "rounded-object bg-surface-note p-5",
+    "border-t border-hairline py-5",
 
   displayCard:
-    "rounded-object bg-surface-paper p-5 shadow-material-rest",
+    "border-b border-hairline py-5",
 
   clickableCard:
-    "cursor-pointer rounded-object bg-surface-paper p-5 shadow-material-rest transition-[background-color,box-shadow,transform] [transition-duration:var(--motion-standard)] [transition-timing-function:var(--ease-folk)] hover:-translate-y-px hover:bg-surface-note hover:shadow-material-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-within:ring-2 focus-within:ring-[var(--focus-ring)]",
+    "cursor-pointer border-b border-hairline py-5 transition-colors [transition-duration:var(--motion-standard)] hover:bg-surface-note/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-within:ring-2 focus-within:ring-[var(--focus-ring)]",
 
   compactClickableCard:
-    "cursor-pointer rounded-object bg-surface-paper p-4 shadow-material-rest transition-[background-color,box-shadow,transform] [transition-duration:var(--motion-standard)] [transition-timing-function:var(--ease-folk)] hover:-translate-y-px hover:bg-surface-note hover:shadow-material-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-within:ring-2 focus-within:ring-[var(--focus-ring)]",
+    "cursor-pointer border-b border-hairline py-4 transition-colors [transition-duration:var(--motion-standard)] hover:bg-surface-note/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-within:ring-2 focus-within:ring-[var(--focus-ring)]",
 
   actionCard:
-    "rounded-object bg-surface-note p-5 transition-colors [transition-duration:var(--motion-standard)] hover:bg-surface-paper",
+    "border-b border-hairline py-5 transition-colors [transition-duration:var(--motion-standard)] hover:bg-surface-note/50",
 
   reviewCard:
-    "relative min-w-0 overflow-hidden rounded-object bg-surface-paper p-3 shadow-material-rest transition-[background-color,box-shadow] [transition-duration:var(--motion-standard)] hover:bg-surface-note hover:shadow-material-raised sm:p-5",
+    "relative min-w-0 overflow-hidden border-b border-hairline py-3 transition-colors [transition-duration:var(--motion-standard)] hover:bg-surface-note/50 sm:py-5",
 
   summaryCard:
-    "rounded-object bg-surface-note p-4",
+    "border-t border-hairline py-4",
 
   passiveCard:
-    "rounded-object bg-surface-paper p-5 shadow-material-rest",
+    "border-b border-hairline py-5",
 
   mobileRowToCard:
-    "border-b border-hairline py-4 last:border-b-0 md:rounded-object md:border-0 md:bg-surface-paper md:p-4 md:shadow-material-rest",
+    "border-b border-hairline py-4 last:border-b-0",
 
   modal:
     "max-h-[90vh] w-full overflow-y-auto rounded-sheet border border-hairline bg-surface-paper p-6 shadow-material-floating",
@@ -36,14 +36,14 @@ export const cardStyles = {
     "modal-scrim fixed inset-0 z-50 flex items-center justify-center p-4",
 
   statusBadge:
-    "inline-flex items-center gap-1.5 rounded-pill border border-hairline bg-surface-note px-3 py-1 text-xs font-semibold text-text-muted",
+    "inline-flex items-center gap-1.5 border-l-2 border-hairline px-2 py-1 text-xs font-semibold text-text-muted",
 
   successBadge:
-    "inline-flex items-center gap-1.5 rounded-pill border border-state-known bg-state-known px-3 py-1 text-xs font-semibold text-state-known-foreground",
+    "inline-flex items-center gap-1.5 border-l-2 border-state-known bg-state-known/10 px-2 py-1 text-xs font-semibold text-state-known",
 
   warningBadge:
-    "inline-flex items-center gap-1.5 rounded-pill border border-state-due bg-state-due px-3 py-1 text-xs font-semibold text-state-due-foreground",
+    "inline-flex items-center gap-1.5 border-l-2 border-state-due bg-state-due/10 px-2 py-1 text-xs font-semibold text-text-primary",
 
   destructiveBadge:
-    "inline-flex items-center gap-1.5 rounded-pill border border-action-destructive bg-action-destructive px-3 py-1 text-xs font-semibold text-action-destructive-foreground",
+    "inline-flex items-center gap-1.5 border-l-2 border-action-destructive bg-action-destructive/10 px-2 py-1 text-xs font-semibold text-action-destructive",
 } as const

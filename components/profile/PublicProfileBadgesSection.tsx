@@ -34,7 +34,7 @@ function BadgeLinkCard({
 
   return (
     <article
-      className="group rounded-xl bg-card p-4 transition hover:bg-muted focus-within:ring-2 focus-within:ring-[var(--focus-ring)] md:rounded-2xl md:border md:border-border md:bg-background/70 md:hover:-translate-y-0.5 md:hover:shadow-md"
+      className="group border-b border-hairline py-4 transition hover:bg-surface-note/50 focus-within:ring-2 focus-within:ring-[var(--focus-ring)]"
 
     >
       <div className="flex items-start justify-between gap-4">
@@ -95,10 +95,10 @@ export default function PublicProfileBadgesSection({
   const ownerLabel = isOwnProfile ? "You" : displayName
 
   return (
-    <section className="min-w-0 max-w-full md:rounded-3xl md:border md:border-border md:bg-card md:p-6 md:shadow-sm">
+    <section className="min-w-0 max-w-full border-t border-hairline pt-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="mt-2 break-words font-serif text-2xl font-bold leading-tight tracking-tight text-foreground md:mt-3 md:text-3xl">
+          <h2 className="mt-2 break-words font-sans text-2xl font-bold leading-tight tracking-tight text-foreground md:mt-3 md:text-3xl">
             Recognition
           </h2>
           <p className="mt-3 max-w-3xl break-words text-sm leading-6 text-muted-foreground">
@@ -118,7 +118,7 @@ export default function PublicProfileBadgesSection({
       <div className="mt-4 grid gap-5 md:mt-6 xl:grid-cols-2">
         <div>
           <div className="mb-3 flex items-baseline justify-between gap-3">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
               Badges awarded
             </h3>
             <p className="text-sm text-muted-foreground">
@@ -127,7 +127,7 @@ export default function PublicProfileBadgesSection({
           </div>
 
           {createdBadges.length === 0 ? (
-            <p className="break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-4">
+            <p className="break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-object md:border md:bg-background/70 md:p-4">
               {isOwnProfile
                 ? "You have not created any badges yet."
                 : `${displayName} has not created any badges yet.`}
@@ -151,7 +151,7 @@ export default function PublicProfileBadgesSection({
 
         <div>
           <div className="mb-3 flex items-baseline justify-between gap-3">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
               Badges received
             </h3>
             <p className="text-sm text-muted-foreground">
@@ -160,7 +160,7 @@ export default function PublicProfileBadgesSection({
           </div>
 
           {receivedBadges.length === 0 ? (
-            <p className="break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-2xl md:border md:bg-background/70 md:p-4">
+            <p className="break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-object md:border md:bg-background/70 md:p-4">
               {isOwnProfile
                 ? "You have not received any badges yet."
                 : `${displayName} has not received any badges yet.`}
