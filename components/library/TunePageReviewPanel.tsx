@@ -39,7 +39,7 @@ const FORMAL_REVIEW_OUTCOMES: ReviewOutcomeConfig[] = [
     label: "Rough",
     modalTitle: "Rough review note",
     explanation:
-      "This is a formal review. Saving will update Stage and the next review date.",
+      "This is a formal review. Saving will update the review interval and next review date.",
     className: buttonStyles.reviewRough,
     action: markFailed,
   },
@@ -49,7 +49,7 @@ const FORMAL_REVIEW_OUTCOMES: ReviewOutcomeConfig[] = [
     label: "Shaky",
     modalTitle: "Shaky review note",
     explanation:
-      "This is a formal review. Saving will update Stage and the next review date.",
+      "This is a formal review. Saving will update the review interval and next review date.",
     className: buttonStyles.reviewShaky,
     action: markShaky,
   },
@@ -59,7 +59,7 @@ const FORMAL_REVIEW_OUTCOMES: ReviewOutcomeConfig[] = [
     label: "Solid",
     modalTitle: "Solid review note",
     explanation:
-      "This is a formal review. Saving will update Stage and the next review date.",
+      "This is a formal review. Saving will update the review interval and next review date.",
     className: buttonStyles.reviewSolid,
     action: markSolid,
   },
@@ -72,7 +72,7 @@ const DIARY_PRACTICE_OUTCOMES: ReviewOutcomeConfig[] = [
     label: "Rough",
     modalTitle: "Rough practice check",
     explanation:
-      "This is a diary-only practice check. It records what happened today but does not update Stage or the next review date.",
+      "This is a diary-only practice check. It records what happened today but does not change the review interval or next review date.",
     className: buttonStyles.reviewRough,
     action: logTunePracticeCheck,
   },
@@ -82,7 +82,7 @@ const DIARY_PRACTICE_OUTCOMES: ReviewOutcomeConfig[] = [
     label: "Shaky",
     modalTitle: "Shaky practice check",
     explanation:
-      "This is a diary-only practice check. It records what happened today but does not update Stage or the next review date.",
+      "This is a diary-only practice check. It records what happened today but does not change the review interval or next review date.",
     className: buttonStyles.reviewShaky,
     action: logTunePracticeCheck,
   },
@@ -92,7 +92,7 @@ const DIARY_PRACTICE_OUTCOMES: ReviewOutcomeConfig[] = [
     label: "Solid",
     modalTitle: "Solid practice check",
     explanation:
-      "This is a diary-only practice check. It records what happened today but does not update Stage or the next review date.",
+      "This is a diary-only practice check. It records what happened today but does not change the review interval or next review date.",
     className: buttonStyles.reviewSolid,
     action: logTunePracticeCheck,
   },
@@ -297,8 +297,8 @@ export default function TunePageReviewPanel({
           }
         >
           {isFormalReview
-            ? "Formal review updates Stage and the next review date."
-            : "Diary-only check. Does not change Stage or review scheduling."}
+            ? "Formal review updates the review interval and next review date."
+            : "Diary-only check. Does not change the review interval or review scheduling."}
         </p>
       </div>
 

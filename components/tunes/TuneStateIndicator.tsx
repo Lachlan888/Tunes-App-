@@ -22,7 +22,7 @@ export default function TuneStateIndicator({
     })
 
     if (stage) {
-      labels.push({ label: `Stage ${stage}`, tone: "stage" })
+      labels.push({ label: getReviewIntervalLabel(stage), tone: "stage" })
     }
   } else if (isKnown) {
     labels.push({
@@ -49,3 +49,4 @@ export default function TuneStateIndicator({
   )
 }
 import StatusMark, { type StatusTone } from "@/components/ui/StatusMark"
+import { getReviewIntervalLabel } from "@/lib/review"

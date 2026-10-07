@@ -18,6 +18,7 @@ type ReadyCollectionProps = {
   resetHref?: string
   resetLabel?: string
   className?: string
+  itemsClassName?: string
   emptyTopRule?: boolean
 }
 
@@ -145,7 +146,7 @@ export default function PaginatedTuneCollection(
         {props.totalCount === 1 ? "" : "s"}
       </p>
 
-      <ul className="divide-y divide-hairline" role="list">
+      <ul className={props.itemsClassName ?? "divide-y divide-hairline"} role="list">
         {props.items}
       </ul>
 

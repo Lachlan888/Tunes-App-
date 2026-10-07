@@ -45,7 +45,7 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
             Find a strong place to start
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Sign in to see your weekly practice, Stage distribution, review
+            Sign in to see your weekly practice, review interval distribution, review
             consistency and repertoire gaps.
           </p>
           <Link

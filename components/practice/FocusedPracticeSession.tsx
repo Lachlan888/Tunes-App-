@@ -181,7 +181,7 @@ export default function FocusedPracticeSession({ lane, initialQueue, queueTotal,
           {currentItem ? <>
             <p className="mt-3 text-sm text-text-muted">{[currentItem.piece?.key, currentItem.piece?.style, currentItem.piece?.time_signature].filter(Boolean).join(" · ")}</p>
             <p className="mt-3 border-l-2 border-state-practice pl-3 text-sm font-semibold text-text-primary">
-              Stage {currentItem.stage} · {getReviewIntervalDays(currentItem.stage)}-day review
+              {getReviewIntervalDays(currentItem.stage)}-day review
               {` · ${formatReviewDueStatus(currentItem.next_review_due, sessionDate)}`}
             </p>
           </> : null}

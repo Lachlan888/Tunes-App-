@@ -62,5 +62,11 @@ export default function LibraryTuneCardActions({
     }] : []),
   ]
 
-  return <ContextActionMenu label={`More actions for ${piece.title}`} title={piece.title} actions={actions} />
+  return <ContextActionMenu
+    label={`Actions for ${piece.title}`}
+    title={piece.title}
+    actions={actions}
+    triggerContent={piece.title}
+    triggerClassName="inline-flex min-h-11 max-w-full items-center break-words text-left text-base font-semibold leading-tight text-text-primary decoration-action-primary decoration-2 underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] md:text-lg"
+  />
 }

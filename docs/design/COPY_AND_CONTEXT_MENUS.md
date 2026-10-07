@@ -10,17 +10,17 @@ Copy reduction must not remove information needed to make a decision. Contextual
 
 ## Explanatory-copy rules
 
-1. **Show relationships only when they exist.** In ordinary tune collections, no personal-state mark means no relationship. Do not repeat “New to me” on every otherwise unrelated tune. Keep Known, In Practice, Stage, due, saved, shared and collaborator states visible.
+1. **Show relationships only when they exist.** In ordinary tune collections, no personal-state mark means no relationship. Do not repeat “New to me” on every otherwise unrelated tune. Keep Known, In Practice, review-day interval, due, saved, shared and collaborator states visible.
 2. **Explain a visual system once.** Put a compact legend or information disclosure beside an unfamiliar collection, chart or state system instead of repeating a sentence on each item.
 3. **Put consequences at the decision point.** Copy beginning “This does not…”, “Only you…”, “Nothing else…” or “The shared tune remains…” belongs in the relevant action, disclosure or confirmation when it changes a decision. Do not repeat it across resting surfaces.
 4. **Use one useful empty state.** Prefer one short diagnosis and one recovery/creation action. Suppress dependent empty regions when an upstream requirement is missing; for example, an empty Reference view should not repeat the absence of a recording in several player sections.
 5. **Do not narrate visible data.** A chart, count or state strip should carry its own meaning through labels, position and a small legend. Do not add a paragraph that merely restates it.
-6. **Keep safety and truth explicit.** Retain Stage/day interval and actual due date, Rough/Shaky/Solid meaning at first use, privacy audience changes, Known ↔ Practice consequences, destructive action consequences, contributor attribution, moderation provenance and recovery copy where unsaved work may be at risk.
+6. **Keep safety and truth explicit.** Retain review-day interval and actual due date, Rough/Shaky/Solid meaning at first use, privacy audience changes, Known ↔ Practice consequences, destructive action consequences, contributor attribution, moderation provenance and recovery copy where unsaved work may be at risk.
 7. **Keep invisible accessibility detail.** Compact visible controls retain precise accessible names, roles, keyboard behaviour and announcements.
 
 ## Graphic replacements
 
-- Use a Stage rail or interval annotation, never a mastery percentage.
+- Use a day-interval rail or annotation, never a mastery percentage.
 - Use lock, people and globe marks for Private, Friends and Public; the text label remains available to assistive technology and in the disclosure.
 - Use play/reference, list-membership, calendar/due and relationship marks as compact metadata with a consistent order.
 - Use a small legend for Diary month colour/outcome letters and charts.
@@ -34,9 +34,9 @@ Copy reduction must not remove information needed to make a decision. Contextual
 |---|---|
 | Shell and account menu | Keep primary labels concise. Festival is absent from everyday navigation unless an eligible partner hub is enabled; owner/developer preview remains conditional. Reduce repeated grouping labels and identity copy without hiding secondary destinations. |
 | Home | One dominant next action, compact repertoire/social context and completion marks instead of onboarding paragraphs. Remove duplicate counts and descriptions. |
-| Practice | Keep the concise ready count and Start/Resume action. Explain Stage/day and outcomes once at the point of use; use graphic schedule structure for repeated state. |
+| Practice | Keep the concise ready count and Start/Resume action. Explain day intervals and outcomes once at the point of use; use graphic schedule structure for repeated state. |
 | Tunes catalogue | Title, musical metadata, real personal relationship, reference availability and compact list membership. Remove repeated “New to me” and equal-weight action strips. Show result count once. |
-| Tune Info | Consolidate repeated Practice state, empty Stage/schedule/result and instructions into one state strip and one relevant action. Use compact contributor/provenance disclosure. |
+| Tune Info | Consolidate repeated Practice state, empty interval/schedule/result and instructions into one state strip and one relevant action. Use compact contributor/provenance disclosure. |
 | Tune Reference | One empty player state and one Add recording action. Suppress unavailable whole-recording/passage regions until a source exists. |
 | Lists and list detail | Use title, visibility mark, tune count, short purpose and playing order. Do not spell out ownership/visibility repeatedly on every row. Explain the derived Learning Queue once. |
 | Compare | One primary Add musician flow; in-person and code entry are contextual alternatives. Avoid simultaneous introductory headings and instructions that state the same purpose. |
@@ -51,7 +51,7 @@ Copy reduction must not remove information needed to make a decision. Contextual
 ## Contextual-menu rules
 
 1. **Preserve an obvious primary path.** A title normally opens its detail/reader destination. A visible disclosure or overflow control opens secondary actions. A row may open a preview only when the behaviour is consistent and indicated.
-2. **Keep state outside the menu.** Known, In Practice, Stage/due, unread, visibility, selected source and collaborator state remain visible. A state mark may itself open a focused state menu.
+2. **Keep state outside the menu.** Known, In Practice, review interval/due, unread, visibility, selected source and collaborator state remain visible. A state mark may itself open a focused state menu.
 3. **Use a stable item order.** Open/view → play/reference → organise → personal state → contribute/manage → destructive actions. Separate destructive items visually.
 4. **Adapt presentation, not capability.** Desktop uses an anchored menu. Touch layouts may use a bottom sheet. Both expose the same actions and permission rules.
 5. **Do not use hidden-only gestures.** Right-click and long-press may be enhancements, never the only way to reach an action.
@@ -62,7 +62,7 @@ Copy reduction must not remove information needed to make a decision. Contextual
 | Surface | Menu scope | Keep visible |
 |---|---|---|
 | Catalogue tune row | Open tune, Preview/Reference, Add to List, Add to Practice, Mark/Move Known and permission-gated contribution actions | Tune identity, musical metadata, real relationship and reference availability |
-| Tune relationship mark | Practise now, move to Known, stop Practice and schedule detail | Current relationship, Stage and due state |
+| Tune relationship mark | Practise now, move to Known, stop Practice and schedule detail | Current relationship, review interval and due state |
 | Tune header Manage | Organisation, contribution, correction, report, moderation and removal | Info/Reference navigation and contextual primary action |
 | Reference source | Select, open externally, edit attribution, report and remove when permitted | Current source and playback transport |
 | List/list tune | Edit/share/duplicate/delete list; open/reference/organise/state/remove tune | List/tune identity, visibility/position and personal state |

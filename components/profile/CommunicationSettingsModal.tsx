@@ -47,7 +47,7 @@ const toggleOptions: ToggleOption[] = [
 ]
 
 const digestSections = [
-  { name: "digest_include_practice", label: "My practice", description: "Practice activity, Stage, and tunes needing attention." },
+  { name: "digest_include_practice", label: "My practice", description: "Practice activity, review intervals, and tunes needing attention." },
   { name: "digest_include_friends", label: "Friends", description: "A compact summary of visible activity from accepted friends." },
   { name: "digest_include_community", label: "Community", description: "New tunes and useful public reference media around Tunes." },
   { name: "digest_include_updates", label: "Replies and badges", description: "Lower-urgency personal replies and badge awards." },

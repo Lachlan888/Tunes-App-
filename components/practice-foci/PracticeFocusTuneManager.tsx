@@ -1,5 +1,6 @@
 "use client"
 
+import { getReviewIntervalLabel } from "@/lib/review"
 import { useMemo, useState } from "react"
 import SubmitButton from "@/components/SubmitButton"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
@@ -35,7 +36,7 @@ function normaliseSearch(value: string) {
 function getTuneSourceLabel(tune: FocusTuneOption) {
   if (tune.source === "known") return "Known"
 
-  return tune.stage ? `Stage ${tune.stage}` : "In practice"
+  return tune.stage ? getReviewIntervalLabel(tune.stage) : "In practice"
 }
 
 function AddTuneDesktopForm({
@@ -125,7 +126,7 @@ function MobileTunePickerSheet({
           tune.style ?? "",
           tune.time_signature ?? "",
           tune.source,
-          tune.stage ? `stage ${tune.stage}` : "",
+          tune.stage ? getReviewIntervalLabel(tune.stage) : "",
           getTuneSourceLabel(tune),
         ].join(" ")
       ).includes(normalisedSearch)

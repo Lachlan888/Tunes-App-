@@ -56,11 +56,17 @@ const base = {
 }
 async function render(state) {
   await act(async () => root.render(React.createElement(LibraryTuneCardActions, { ...base, ...state })))
-  await act(async () => document.querySelector('button[aria-label="More actions for The Reel"]').click())
+  const title = document.querySelector('button[aria-label="Actions for The Reel"]')
+  assert.ok(title, 'the tune title is the action-menu trigger')
+  assert.equal(title.textContent, 'The Reel')
+  assert.equal(document.querySelector('button[aria-label="More actions for The Reel"]'), null)
+  await act(async () => title.click())
   return [...document.querySelectorAll('[role="menu"] a, [role="menu"] button')].map((item) => item.textContent)
 }
 const newActions = await render({ isAlreadyInPractice: false, isKnown: false })
 assert.deepEqual(newActions, ["Open tune", "Add to List", "Add to Practice", "Mark Known"])
+const menuTypography = [...document.querySelectorAll('[role="menu"] a, [role="menu"] button')].map(item => item.className)
+assert.ok(menuTypography.every(className => className.includes('context-action-menu-item')), 'links and buttons use the same menu typography')
 await act(async () => [...document.querySelectorAll('[role="menu"] button')].find((item) => item.textContent === "Add to Practice").click())
 assert.equal(practiceData.get("piece_id"), "42")
 assert.equal(practiceData.get("redirect_to"), "/library?search=reel")
@@ -76,5 +82,13 @@ const knownActions = await render({ isAlreadyInPractice: false, isKnown: true })
 assert.deepEqual(knownActions, ["Open tune", "Add to List", "Move to Practice"])
 await act(async () => [...document.querySelectorAll('[role="menu"] button')].find((item) => item.textContent === "Add to List").click())
 assert.equal(listOpens, 1)
+let previewTrigger
+const beforePreviewUrl = window.location.href
+const previewActions = await render({ isAlreadyInPractice: false, isKnown: false, onPreview: trigger => { previewTrigger = trigger } })
+assert.deepEqual(previewActions, ["Open tune", "Preview recording", "Add to List", "Add to Practice", "Mark Known"])
+await act(async () => [...document.querySelectorAll('[role="menu"] button')].find((item) => item.textContent === "Preview recording").click())
+assert.equal(window.location.href, beforePreviewUrl, "preview stays on the catalogue")
+assert.equal(previewTrigger?.getAttribute("aria-label"), "Actions for The Reel")
+assert.equal(document.querySelector('[role="menu"]'), null, "preview handoff closes the menu")
 await act(async () => root.unmount())
-console.log("PASS: actual catalogue menu preserves new, Practice and Known classification paths and return URL")
+console.log("PASS: title menu preserves new, Practice and Known paths, return URL, and in-place preview")

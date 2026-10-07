@@ -5,7 +5,7 @@ Tunes is a living tunebook for traditional musicians: find and keep tunes, pract
 ## Product in one minute
 
 - **Home** shows the next useful action and a small repertoire overview.
-- **Practice** is the direct review flow. A tune's Stage names a revision interval; the UI explains the day interval and actual due date. Ratings are Rough, Shaky, and Solid.
+- **Practice** is the direct review flow. The UI shows the review interval in days and the actual due date; internal scheduling stages stay behind the scenes. Ratings are Rough, Shaky, and Solid.
 - **Practice Diary** is a focused secondary workspace for reflections, Focus Areas, and tune history. Open it from the account menu; an optional invitation appears after a session only when the user's Diary preference is on.
 - **Tunes** is the shared catalogue. A catalogue tune, a list membership, an active practice tune, and a Known tune have different meanings. Each tune has **Info** and **Reference** views; sources and folklore live in Info, playback lives in Reference.
 - **Lists** organise tunes without automatically enrolling them in Practice.

@@ -11,6 +11,7 @@ type TuneIdentityProps = {
   timeSignature?: string | null
   sourceSummary?: string | null
   personalState?: ReactNode
+  titleControl?: ReactNode
   className?: string
   headingClassName?: string
   linkClassName?: string
@@ -45,6 +46,7 @@ export default function TuneIdentity({
   timeSignature,
   sourceSummary,
   personalState,
+  titleControl,
   className,
   headingClassName = "break-words font-sans text-2xl font-bold leading-tight tracking-tight text-foreground",
   linkClassName = "decoration-primary decoration-2 underline-offset-4 hover:underline",
@@ -66,7 +68,7 @@ export default function TuneIdentity({
       {compactMobile ? (
         <div className="min-w-0 md:hidden">
           <Heading className="min-w-0 break-words text-base font-semibold leading-tight text-text-primary">
-            {linkTitle ? (
+            {titleControl ?? (linkTitle ? (
               <Link
                 href={`/library/${id}`}
                 className={`${linkClassName} break-words`}
@@ -75,7 +77,7 @@ export default function TuneIdentity({
               </Link>
             ) : (
               <span className="break-words">{title}</span>
-            )}
+            ))}
           </Heading>
           {metadata.length > 0 ? (
             <p className="mt-1 text-xs font-medium leading-5 text-text-muted">
@@ -90,13 +92,13 @@ export default function TuneIdentity({
 
       <div className={compactMobile ? "hidden md:block" : undefined}>
       <Heading className={headingClassName}>
-        {linkTitle ? (
+        {titleControl ?? (linkTitle ? (
           <Link href={`/library/${id}`} className={linkClassName}>
             {title}
           </Link>
         ) : (
           title
-        )}
+        ))}
       </Heading>
 
       {usefulAlias ? (

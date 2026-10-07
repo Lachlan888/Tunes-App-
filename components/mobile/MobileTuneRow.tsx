@@ -1,3 +1,4 @@
+import { getReviewIntervalLabel } from "@/lib/review"
 import type { ReactNode } from "react"
 import { joinClasses } from "@/components/ui/buttonStyles"
 
@@ -6,7 +7,7 @@ type MobileTuneRowProps = {
   tuneKey?: string | null
   style?: string | null
   timeSignature?: string | null
-  stage?: number | string | null
+  stage?: number | null
   status?: string | null
   note?: string | null
   action?: ReactNode
@@ -65,7 +66,7 @@ export default function MobileTuneRow({
             <div className="mt-2 flex flex-wrap gap-2">
               {stage ? (
                 <span className="rounded-full border border-border bg-card px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  Stage {stage}
+                  {getReviewIntervalLabel(stage)}
                 </span>
               ) : null}
 

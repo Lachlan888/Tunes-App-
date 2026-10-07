@@ -107,7 +107,7 @@ export default function ProfileVisibilitySection({
             checked={practiceDiaryEnabled}
             onChange={setPracticeDiaryEnabled}
             title="Enable Practice Diary"
-            description="Create a date-bound diary of reviewed tunes and practice activity. This does not change Stage, due dates, streaks, or backlog rules."
+            description="Create a date-bound diary of reviewed tunes and practice activity. This does not change review intervals, due dates, streaks, or backlog rules."
           />
         </div>
       </section>

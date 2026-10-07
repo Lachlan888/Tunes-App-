@@ -204,7 +204,7 @@ export default async function PracticeTunesPage({
         groupOptions={[
           { value: "none", label: "No grouping" },
           { value: "due", label: "Group by due" },
-          { value: "stage", label: "Group by Stage" },
+          { value: "stage", label: "Group by review interval" },
           { value: "key", label: "Group by key" },
           { value: "style", label: "Group by style" },
         ]}

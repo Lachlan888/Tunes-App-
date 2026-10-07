@@ -1,6 +1,6 @@
 import Link from "next/link"
 import type { PersonalTrendInsight } from "@/lib/loaders/trends"
-import { formatPracticeDate } from "@/lib/review"
+import { getReviewIntervalLabel, formatPracticeDate } from "@/lib/review"
 
 const PERIODS = [4, 8, 12] as const
 
@@ -130,12 +130,12 @@ export default function PersonalTrendInsights({
           <section aria-labelledby="stage-title">
             <InsightHeader
               id="stage-title"
-              title="Practice by Stage"
+              title="Practice by review interval"
             />
-            <ol className="mt-5 space-y-3" aria-label="Active tunes by practice stage">
+            <ol className="mt-5 space-y-3" aria-label="Active tunes by review interval">
               {insight.stageDistribution.map((item) => (
                 <li key={item.stage} className="grid grid-cols-[4.5rem_1fr_2rem] items-center gap-3 text-sm">
-                  <span className="font-medium">Stage {item.stage}</span>
+                  <span className="font-medium">{getReviewIntervalLabel(item.stage)}</span>
                   <span className="h-3 overflow-hidden rounded-control bg-muted">
                     <span className="block h-full rounded-control bg-primary" style={{ width: `${(item.count / maxStage) * 100}%` }} />
                   </span>
@@ -160,7 +160,7 @@ export default function PersonalTrendInsights({
               {insight.needsAttention.map((tune) => (
                 <li key={tune.pieceId} className="flex min-h-14 items-center justify-between gap-4 py-2">
                   <Link href={`/library/${tune.pieceId}`} className="font-semibold underline-offset-4 hover:underline">{tune.title}</Link>
-                  <span className="shrink-0 text-sm text-muted-foreground">Stage {tune.stage}{tune.dueDate ? ` · Due ${formatPracticeDate(tune.dueDate)}` : ""}</span>
+                  <span className="shrink-0 text-sm text-muted-foreground">{getReviewIntervalLabel(tune.stage)}{tune.dueDate ? ` · Due ${formatPracticeDate(tune.dueDate)}` : ""}</span>
                 </li>
               ))}
             </ul>

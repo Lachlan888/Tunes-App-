@@ -28,7 +28,7 @@ function createShowcaseModel(context: SessionDockContext): SessionDockModel {
       identity: {
         eyebrow: "Due today",
         title: "The Kesh",
-        detail: "Stage 3 · 3-day review due today",
+        detail: "3-day review due today",
       },
       primaryAction: {
         id: "next",
@@ -41,7 +41,7 @@ function createShowcaseModel(context: SessionDockContext): SessionDockModel {
         { id: "shaky", label: "Shaky", onInvoke: noOp, tone: "shaky" },
         { id: "solid", label: "Solid", onInvoke: noOp, tone: "solid" },
       ],
-      status: { label: "Stage 3", tone: "practice" },
+      status: { label: "3 days", tone: "practice" },
       collapsedContent: {
         actionIds: ["rough", "shaky", "solid"],
       },

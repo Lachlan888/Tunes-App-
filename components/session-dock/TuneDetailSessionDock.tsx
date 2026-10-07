@@ -1,5 +1,6 @@
 "use client"
 
+import { getReviewIntervalLabel } from "@/lib/review"
 import { useCallback, useMemo, useRef } from "react"
 import { useSessionDock } from "@/components/session-dock/SessionDockProvider"
 import type { SessionDockModel } from "@/components/session-dock/sessionDockModel"
@@ -42,7 +43,7 @@ export default function TuneDetailSessionDock({
       ? {
           id: "practice",
           label: "Open Practice",
-          ariaLabel: `Open Practice for ${title}${practiceStage ? `, currently Stage ${practiceStage}` : ""}`,
+          ariaLabel: `Open Practice for ${title}${practiceStage ? `, review interval ${getReviewIntervalLabel(practiceStage)}` : ""}`,
           href: "/review",
           tone: "practice" as const,
         }
@@ -73,7 +74,7 @@ export default function TuneDetailSessionDock({
 
     const stateLabel = isInPractice
       ? practiceStage
-        ? `Already in practice · Stage ${practiceStage}`
+        ? `Already in practice · ${getReviewIntervalLabel(practiceStage)}`
         : "Already in practice"
       : isKnown
         ? "Known"

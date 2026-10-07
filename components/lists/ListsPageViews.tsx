@@ -1,5 +1,6 @@
 "use client"
 
+import { getReviewIntervalLabel } from "@/lib/review"
 import { learningListHref, publicListHref } from "@/lib/list-return"
 import EditorialListCard from "@/components/lists/EditorialListCard"
 import { useMemo, useRef, useState } from "react"
@@ -302,7 +303,7 @@ export function UnsortedView({
                           pendingLabel={`Opening ${pieceTitle}...`}
                           className="cursor-pointer text-left font-semibold text-foreground underline underline-offset-4"
                         />
-                        <p className="mt-1 text-sm text-muted-foreground">Stage {userPiece.stage}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{getReviewIntervalLabel(userPiece.stage)}</p>
                       </div>
 
                       <button

@@ -7,6 +7,7 @@ type TuneRowProps = {
   piece: TuneCollectionIdentity
   sourceSummary?: string | null
   personalState?: ReactNode
+  titleControl?: ReactNode
   actions?: ReactNode
   supportingContent?: ReactNode
   className?: string
@@ -17,6 +18,7 @@ export default function TuneRow({
   piece,
   sourceSummary,
   personalState,
+  titleControl,
   actions,
   supportingContent,
   className = "",
@@ -41,6 +43,7 @@ export default function TuneRow({
           timeSignature={piece.time_signature}
           sourceSummary={provenance}
           personalState={personalState}
+          titleControl={titleControl}
           compactMobile={compactMobile}
           headingClassName="break-words text-base font-semibold leading-tight text-text-primary md:text-lg"
           linkClassName="inline-flex min-h-11 max-w-full items-center rounded-sm decoration-action-primary decoration-2 underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"

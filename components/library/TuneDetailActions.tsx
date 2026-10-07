@@ -1,9 +1,9 @@
 import MarkAsKnownButton from "@/components/MarkAsKnownButton"
-import PracticeProgress from "@/components/practice/PracticeProgress"
 import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeButton"
 import StartPracticeButton from "@/components/StartPracticeButton"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import type { Piece, UserKnownPiece, UserPiece } from "@/lib/types"
+import { getReviewIntervalLabel } from "@/lib/review"
 
 type TuneDetailActionsProps = {
   piece: Piece
@@ -81,19 +81,13 @@ export default function TuneDetailActions({
 
         <div className="min-w-0 py-4 sm:px-4 sm:last:pr-0">
           <p className="text-xs font-semibold text-text-muted">
-            Stage
+            Review interval
           </p>
           <p className="mt-2 min-w-0 break-words text-lg font-semibold text-foreground">
-            {currentStage ? `Stage ${currentStage}` : "No active stage"}
+            {currentStage ? getReviewIntervalLabel(currentStage) : "No review interval"}
           </p>
         </div>
       </div>
-
-      {isAlreadyInPractice && currentStage ? (
-        <div className="mt-5 min-w-0 border-t border-hairline pt-4">
-          <PracticeProgress stage={currentStage} />
-        </div>
-      ) : null}
 
       <div className="mt-5 grid gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
         {!isAlreadyInPractice ? (

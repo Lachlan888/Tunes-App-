@@ -151,6 +151,11 @@ export function getReviewIntervalDays(stage: number | null | undefined) {
   return REVIEW_INTERVALS[getSafeStage(stage) - 1]
 }
 
+export function getReviewIntervalLabel(stage: number | null | undefined) {
+  const days = getReviewIntervalDays(stage)
+  return `${days} ${days === 1 ? "day" : "days"}`
+}
+
 export function formatPracticeDate(dateValue: string | null | undefined) {
   const dateOnly = normaliseStoredDate(dateValue)
   if (!dateOnly) return null
@@ -197,5 +202,5 @@ export function getNextStageForFailed(currentStage: number | null | undefined) {
 export function getReviewOutcomePreview(stage: number | null | undefined, outcome: "failed" | "shaky" | "solid") {
   const nextStage = outcome === "failed" ? getNextStageForFailed(stage) : outcome === "shaky" ? getNextStageForShaky(stage) : getNextStageForSolid(stage)
   if (outcome === "solid" && nextStage >= 10) return "Moves to Known"
-  return `Stage ${nextStage} · ${getReviewIntervalDays(nextStage)}-day review`
+  return `${getReviewIntervalDays(nextStage)}-day review`
 }

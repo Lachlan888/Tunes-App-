@@ -12,13 +12,14 @@ const row = source("components/tunes/TuneRow.tsx")
 const identity = source("components/tunes/TuneIdentity.tsx")
 const menu = source("components/ui/ContextActionMenu.tsx")
 
-test("catalogue retains linked tune identity, musical metadata and visible relationship", () => {
-  assert.match(library, /<TuneRow[\s\S]*?compactMobile/)
+test("catalogue uses a responsive tune grid with a title action trigger and visible relationship", () => {
+  assert.match(library, /itemsClassName="grid grid-cols-1[\s\S]*?sm:grid-cols-2[\s\S]*?xl:grid-cols-3/)
+  assert.match(library, /titleControl=\{selectionMode \? undefined :/)
   assert.match(library, /personalState=\{[\s\S]*?<TuneStateIndicator/)
   assert.match(identity, /metadata\.join\(" · "\)/)
   assert.match(identity, /timeSignature/)
   assert.match(identity, /break-words/)
-  assert.match(identity, /linkTitle/)
+  assert.match(identity, /titleControl/)
 })
 
 test("catalogue secondary actions retain their routes and applicable state transitions", () => {
@@ -48,8 +49,8 @@ test("the adaptive menu has an explicit trigger, keyboard paths and a touch shee
   assert.match(menu, /aria-live="polite"/)
 })
 
-test("selection mode keeps its checkbox and removes row action menus", () => {
-  assert.match(library, /actions=\{selectionMode \? null :/)
+test("selection mode keeps its checkbox and linked titles", () => {
+  assert.match(library, /titleControl=\{selectionMode \? undefined :/)
   assert.match(library, /type="checkbox"/)
   assert.match(library, /min-h-11 min-w-11/)
   assert.match(library, /Select \{piece\.title\}/)

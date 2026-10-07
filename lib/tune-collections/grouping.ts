@@ -1,5 +1,5 @@
 import { getPrimaryStyleLabel } from "@/lib/search-filters"
-import { getToday, normaliseStoredDate } from "@/lib/review"
+import { getReviewIntervalLabel, getToday, normaliseStoredDate } from "@/lib/review"
 import type { Piece } from "@/lib/types"
 
 export type KnownTuneGrouping = "none" | "key" | "style"
@@ -23,7 +23,7 @@ export function getPracticeTuneGroupLabel(
   today = getToday()
 ) {
   if (grouping === "stage") {
-    return item.stage ? `Stage ${item.stage}` : "Stage unknown"
+    return item.stage ? getReviewIntervalLabel(item.stage) : "Interval unknown"
   }
 
   if (grouping === "due") {
@@ -48,9 +48,9 @@ export function compareTuneGroupLabels(
     return DUE_GROUP_ORDER.indexOf(first) - DUE_GROUP_ORDER.indexOf(second)
   }
   if (grouping === "stage") {
-    const firstStage = Number(first.replace("Stage ", "")) || Number.MAX_SAFE_INTEGER
-    const secondStage = Number(second.replace("Stage ", "")) || Number.MAX_SAFE_INTEGER
-    return firstStage - secondStage
+    const firstDays = Number(first.split(" ")[0]) || Number.MAX_SAFE_INTEGER
+    const secondDays = Number(second.split(" ")[0]) || Number.MAX_SAFE_INTEGER
+    return firstDays - secondDays
   }
   return first.localeCompare(second, undefined, { numeric: true })
 }

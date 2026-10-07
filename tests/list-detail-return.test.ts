@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import * as searchFilters from '../lib/search-filters.ts'
+import { getReviewIntervalLabel } from '../lib/review.ts'
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 
@@ -33,6 +34,7 @@ function load(path: string): Record<string, (props: unknown) => Element | Promis
     }) }
     if (id.startsWith('@/lib/actions/')) return new Proxy({}, { get: () => () => { throw Error('Unexpected mutation') } })
     if (id === '@/components/ui/buttonStyles') return { buttonStyles: {} }
+    if (id === '@/lib/review') return { getReviewIntervalLabel }
     if (id.startsWith('@/components/')) return { default: id.split('/').at(-1) }
     throw Error(`Unexpected dependency: ${id}`)
   }, loaded, loaded.exports)

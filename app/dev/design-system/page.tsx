@@ -20,7 +20,7 @@ const swatches = [
   ["Primary umber", "bg-action-primary", "#5B4325"],
   ["Known / Solid", "bg-state-known", "#68754A"],
   ["Practice / Reference", "bg-state-practice", "#466A78"],
-  ["Due / Stage / Shaky", "bg-state-due", "#C18B32"],
+  ["Due / interval / Shaky", "bg-state-due", "#C18B32"],
   ["Overdue / Rough", "bg-state-overdue", "#A9533E"],
   ["Social / badges", "bg-state-social", "#755B72"],
   ["Destructive", "bg-action-destructive", "#8E3934"],
@@ -29,7 +29,7 @@ const swatches = [
 const statuses: Array<[StatusTone, string]> = [
   ["known", "Known"],
   ["practice", "In practice"],
-  ["stage", "Stage 2"],
+  ["stage", "2 days"],
   ["due", "Due today"],
   ["overdue", "Overdue"],
   ["rough", "Rough"],
@@ -43,7 +43,7 @@ const routeExamples = [
   {
     label: "Home",
     title: "Continue your session",
-    copy: "The Banshee · Stage 3 · 3-day review due today",
+    copy: "The Banshee · 3-day review due today",
     tone: "due" as const,
     status: "Due today",
   },
@@ -57,7 +57,7 @@ const routeExamples = [
   {
     label: "Practice",
     title: "Cooley’s Reel",
-    copy: "Stage 3 · 3-day review due today",
+    copy: "3-day review due today",
     tone: "practice" as const,
     status: "In practice",
   },
@@ -66,7 +66,7 @@ const routeExamples = [
     title: "Thursday session set",
     copy: "8 tunes · updated yesterday",
     tone: "stage" as const,
-    status: "Stage mix",
+    status: "Review interval mix",
   },
   {
     label: "Social",
@@ -176,11 +176,11 @@ export default async function DesignSystemPage() {
             <input className={formStyles.input} placeholder="Search tunes" />
           </label>
           <label>
-            <span className={formStyles.label}>Stage</span>
+            <span className={formStyles.label}>Review interval</span>
             <select className={formStyles.select} defaultValue="2">
-              <option value="1">Stage 1</option>
-              <option value="2">Stage 2</option>
-              <option value="3">Stage 3</option>
+              <option value="1">1 day</option>
+              <option value="2">2 days</option>
+              <option value="3">3 days</option>
             </select>
           </label>
           <label>

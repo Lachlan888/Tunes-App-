@@ -1,5 +1,6 @@
 import "server-only"
 
+import { getReviewIntervalLabel } from "@/lib/review"
 import { canShowActivityForProfile } from "@/lib/loaders/friends"
 import { sendTransactionalEmail } from "@/lib/services/email"
 import { createAdminClient, getUserEmailForNotificationRecipient } from "@/lib/supabase/admin"
@@ -50,10 +51,10 @@ async function loadPractice(supabase: Supabase, userId: string, start: string, n
   }
   const practised: DigestLinkItem[] = [...counts.entries()].slice(0, 5).map(([pieceId, value]) => {
     const stage = joined(value.latest.review_events as never) as { resulting_stage: number | null } | null
-    return { label: pieces.get(pieceId)?.title ?? "Untitled tune", url: absoluteUrl(`/library/${pieceId}`), detail: `${value.count} ${value.count === 1 ? "event" : "events"}${stage?.resulting_stage ? ` · Stage ${stage.resulting_stage}` : ""}`, mediaUrl: media.get(pieceId)?.effectiveReference?.url }
+    return { label: pieces.get(pieceId)?.title ?? "Untitled tune", url: absoluteUrl(`/library/${pieceId}`), detail: `${value.count} ${value.count === 1 ? "event" : "events"}${stage?.resulting_stage ? ` · ${getReviewIntervalLabel(stage.resulting_stage)}` : ""}`, mediaUrl: media.get(pieceId)?.effectiveReference?.url }
   })
   const due = categoriseDueTunes(queue.map((row) => ({ pieceId: row.piece_id, title: (joined(row.pieces as never) as { title: string } | null)?.title ?? "Untitled tune", dueDate: String(row.next_review_due).slice(0, 10), stage: row.stage, mediaUrl: media.get(row.piece_id)?.effectiveReference?.url })), now)
-  const mapDue = (items: typeof due.overdue): DigestLinkItem[] => items.map((item) => ({ label: item.title, url: absoluteUrl(`/library/${item.pieceId}`), detail: `Stage ${item.stage ?? "—"} · ${item.dueDate}`, mediaUrl: item.mediaUrl }))
+  const mapDue = (items: typeof due.overdue): DigestLinkItem[] => items.map((item) => ({ label: item.title, url: absoluteUrl(`/library/${item.pieceId}`), detail: `${item.stage ? getReviewIntervalLabel(item.stage) : "Review date"} · ${item.dueDate}`, mediaUrl: item.mediaUrl }))
   return { days: new Set(events.map((e) => e.practice_day_id)).size, events: events.length, distinctTunes: counts.size, practised, overdue: mapDue(due.overdue), dueToday: mapDue(due.today), upcoming: mapDue(due.upcoming) }
 }
 

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import type { ReactNode } from "react"
 import { isRedirectError } from "next/dist/client/components/redirect-error"
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, useTransition } from "react"
 import { createPortal } from "react-dom"
@@ -21,6 +22,7 @@ type Props = {
   title: string
   actions: ContextAction[]
   triggerClassName?: string
+  triggerContent?: ReactNode
 }
 
 const subscribeToMount = () => () => undefined
@@ -30,7 +32,7 @@ const subscribeToPhone = (callback: () => void) => {
   return () => query.removeEventListener("change", callback)
 }
 
-export default function ContextActionMenu({ label, title, actions, triggerClassName }: Props) {
+export default function ContextActionMenu({ label, title, actions, triggerClassName, triggerContent }: Props) {
   const id = useId()
   const mounted = useSyncExternalStore(subscribeToMount, () => true, () => false)
   const isPhone = useSyncExternalStore(subscribeToPhone, () => window.matchMedia("(max-width: 767px)").matches, () => false)
@@ -154,7 +156,7 @@ export default function ContextActionMenu({ label, title, actions, triggerClassN
 
   const actionItems = actions.map((action) => {
     const className = [
-      "flex min-h-11 w-full items-center rounded-control px-3 py-2 text-left text-sm font-medium",
+      "context-action-menu-item flex min-h-11 w-full items-center rounded-control px-3 py-2 text-left",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]",
       action.destructive
         ? "border-t border-hairline text-action-destructive"
@@ -187,7 +189,7 @@ export default function ContextActionMenu({ label, title, actions, triggerClassN
           show()
         }
       }}
-    >More <span aria-hidden="true" className="ml-1 text-lg leading-none">⋯</span></button>
+    >{triggerContent ?? <>More <span aria-hidden="true" className="ml-1 text-lg leading-none">⋯</span></>}</button>
     <span role="status" aria-live="polite" className="sr-only">{message}</span>
     {mounted && open ? createPortal(<>
       {isPhone ? <div className="fixed inset-0 z-[1000] bg-black/50" onClick={close} aria-hidden="true" /> : null}

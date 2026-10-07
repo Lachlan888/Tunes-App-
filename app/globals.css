@@ -244,6 +244,13 @@ textarea {
   font: inherit;
 }
 
+.context-action-menu-item {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5rem;
+}
+
 input,
 select,
 textarea {

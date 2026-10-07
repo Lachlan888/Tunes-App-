@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { formatPracticeDate } from "@/lib/review"
+import { getReviewIntervalLabel, formatPracticeDate } from "@/lib/review"
 import type {
   PracticeDiaryMonthTuneSummary,
   PracticeDiaryWeekTuneSummary,
@@ -105,7 +105,7 @@ function PracticeTuneSummaryCard({ summary }: PracticeTuneSummaryCardProps) {
 
           {typeof summary.latestStage === "number" ? (
             <span className="text-state-practice">
-              Stage {summary.latestStage}
+              {getReviewIntervalLabel(summary.latestStage)}
             </span>
           ) : null}
         </div>

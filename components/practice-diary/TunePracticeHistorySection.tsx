@@ -1,3 +1,4 @@
+import { getReviewIntervalLabel } from "@/lib/review"
 import Link from "next/link"
 import StatusMark, { type StatusTone } from "@/components/ui/StatusMark"
 import type {
@@ -62,7 +63,7 @@ export default function TunePracticeHistorySection({
                 </StatusMark>
                 {showStage && review.resulting_stage ? (
                   <span className="text-sm font-medium text-text-primary">
-                    Stage {review.resulting_stage}
+                    {getReviewIntervalLabel(review.resulting_stage)}
                   </span>
                 ) : null}
               </div>

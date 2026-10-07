@@ -1,3 +1,4 @@
+import { getReviewIntervalLabel } from "@/lib/review"
 import Link from "next/link"
 import PracticeNoteCard from "@/components/practice-diary/PracticeNoteCard"
 import PracticeNoteForm from "@/components/practice-diary/PracticeNoteForm"
@@ -154,7 +155,7 @@ export default function PracticeEventList({
                   </span>
 
                   {typeof event.review_event?.resulting_stage === "number" ? (
-                    <><span aria-hidden="true">·</span><span>Stage {event.review_event.resulting_stage}</span></>
+                    <><span aria-hidden="true">·</span><span>{getReviewIntervalLabel(event.review_event.resulting_stage)}</span></>
                   ) : null}
 
                   {event.event_type === "free_practice" &&

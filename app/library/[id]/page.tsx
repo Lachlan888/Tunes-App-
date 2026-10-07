@@ -30,6 +30,7 @@ import { loadTuneDetailData } from "@/lib/loaders/tune-detail"
 import {
   APP_TIME_ZONE,
   formatReviewDueStatus,
+  getReviewIntervalLabel,
 } from "@/lib/review"
 import {
   getReferencePracticeHref,
@@ -143,7 +144,7 @@ function getSourceDetails(data: TuneDetailLoadedData) {
 function getPersonalState(data: TuneDetailLoadedData) {
   if (data.typedUserPiece) {
     return {
-      label: `Already in practice · Stage ${data.typedUserPiece.stage}`,
+      label: `Already in practice · ${getReviewIntervalLabel(data.typedUserPiece.stage)}`,
       tone: "practice" as const,
     }
   }

@@ -1,3 +1,4 @@
+import { getReviewIntervalLabel } from "@/lib/review"
 import Link from "next/link"
 import type { PracticeDueTune } from "@/lib/loaders/practice-diary"
 
@@ -50,7 +51,7 @@ export default function PracticeDueTuneList({
             </div>
 
             <span className="shrink-0 border-l-2 border-state-practice px-2.5 py-1 text-xs font-semibold text-text-muted">
-              Stage {dueTune.stage}
+              {getReviewIntervalLabel(dueTune.stage)}
             </span>
           </div>
         </article>

@@ -188,16 +188,7 @@ export default function LibraryList({
     const row = (
       <TuneRow
         piece={piece}
-        compactMobile
-        supportingContent={supportingContent}
-        personalState={
-          <TuneStateIndicator
-            isAlreadyInPractice={isAlreadyInPractice}
-            isKnown={isKnown}
-            stage={activeUserPiece?.stage ?? null}
-          />
-        }
-        actions={selectionMode ? null : (
+        titleControl={selectionMode ? undefined : (
           <LibraryTuneCardActions
             piece={piece}
             isAlreadyInPractice={isAlreadyInPractice}
@@ -213,6 +204,14 @@ export default function LibraryList({
             referenceHref={mediaBundle?.effectiveReference ? `/library/${piece.id}/reference-media` : undefined}
           />
         )}
+        supportingContent={supportingContent}
+        personalState={
+          <TuneStateIndicator
+            isAlreadyInPractice={isAlreadyInPractice}
+            isKnown={isKnown}
+            stage={activeUserPiece?.stage ?? null}
+          />
+        }
       />
     )
 
@@ -261,12 +260,13 @@ export default function LibraryList({
         resetHref={hasActiveFilters ? "/library" : undefined}
         resetLabel={hasActiveFilters ? "Reset filters" : undefined}
         className="border-b border-hairline"
+        itemsClassName="grid grid-cols-1 gap-x-8 sm:grid-cols-2 xl:grid-cols-3"
         emptyTopRule={false}
         items={pagePieces.map((piece) => (
           <li
             key={piece.id}
             id={`piece-${piece.id}`}
-            className="relative z-0 scroll-mt-28"
+            className="relative min-w-0 scroll-mt-28 border-b border-hairline"
           >
             {renderTuneRow(piece)}
           </li>

@@ -39,7 +39,7 @@ test("desktop reference strip exposes tune-focused practice actions", () => {
     assert.match(strip, new RegExp(label))
   }
 
-  assert.match(strip, /Learning · Stage \$\{userPiece\.stage\}/)
+  assert.match(strip, /Learning · \$\{getReviewIntervalLabel\(userPiece\.stage\)\}/)
   assert.doesNotMatch(strip, /"New to me"/)
   assert.match(strip, /action=\{userPiece \? outcome\.formalAction : logTunePracticeCheck\}/)
 })

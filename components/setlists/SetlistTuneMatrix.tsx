@@ -1,5 +1,6 @@
 "use client"
 
+import { getReviewIntervalLabel } from "@/lib/review"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import EditSetlistItemModal from "@/components/setlists/EditSetlistItemModal"
@@ -46,7 +47,7 @@ function coverageLabel(
   if (coverage.status === "known") return "Known"
 
   if (coverage.status === "practice") {
-    return coverage.stage ? `Stage ${coverage.stage}` : "Already in practice"
+    return coverage.stage ? getReviewIntervalLabel(coverage.stage) : "Already in practice"
   }
 
   return "Gap"

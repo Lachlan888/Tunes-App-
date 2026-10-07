@@ -1,5 +1,6 @@
 "use client"
 
+import { getReviewIntervalLabel } from "@/lib/review"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import AddToListAction from "@/components/AddToListAction"
@@ -70,7 +71,7 @@ export default function ReferencePracticeStrip({
   const canMarkPractised = Boolean(userPiece) || practiceDiaryEnabled
   const detail = pieceDetail(piece)
   const status = userPiece
-    ? `Learning · Stage ${userPiece.stage}`
+    ? `Learning · ${getReviewIntervalLabel(userPiece.stage)}`
     : userKnownPiece
       ? "Known"
       : null
@@ -147,7 +148,7 @@ export default function ReferencePracticeStrip({
         title={`How did ${piece.title} feel?`}
         description={
           userPiece
-            ? "This updates the tune’s stage and next review date."
+            ? "This updates the tune’s review interval and next review date."
             : "This records today’s practice without changing a review schedule."
         }
         desktopMaxWidth="md:max-w-lg"

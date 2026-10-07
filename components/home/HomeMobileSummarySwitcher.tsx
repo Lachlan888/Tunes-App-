@@ -232,7 +232,7 @@ function TodayPanel({
                   key={userPiece.user_piece_id}
                   href={`/library/${userPiece.piece_id}`}
                   title={userPiece.title}
-                  meta={`Stage ${userPiece.stage} · ${getReviewIntervalDays(userPiece.stage)}-day review`}
+                  meta={`${getReviewIntervalDays(userPiece.stage)}-day review`}
                 />
               ))}
             {learningQueuePreview.map((queueTune) => (
@@ -334,7 +334,7 @@ function RepertoirePanel({
               key={userPiece.user_piece_id}
               href={`/library/${userPiece.piece_id}`}
               title={userPiece.title}
-              meta={`Stage ${userPiece.stage} · ${getReviewIntervalDays(userPiece.stage)}-day review`}
+              meta={`${getReviewIntervalDays(userPiece.stage)}-day review`}
               detail={formatPracticeDate(userPiece.nextReviewDue) ? `Next review ${formatPracticeDate(userPiece.nextReviewDue)}` : "No review date set"}
               actionLabel="Open"
             />
