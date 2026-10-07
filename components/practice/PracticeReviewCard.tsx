@@ -94,8 +94,8 @@ export default function PracticeReviewCard({
           />
           <div className="mt-2 text-left">
             <PendingLinkButton
-              href={`/library/${userPiece.piece.id}#reference-media`}
-              label="Tune Detail"
+              href={`/library/${userPiece.piece.id}`}
+              label="Tune Info"
               pendingLabel="Opening..."
               className="text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
             />
@@ -104,13 +104,13 @@ export default function PracticeReviewCard({
             <div className="mt-3 text-left text-xs text-muted-foreground">
               {userPiece.media_bundle.additionalMedia.length} additional source
               {userPiece.media_bundle.additionalMedia.length === 1 ? "" : "s"} on
-              Tune Detail
+              Reference
             </div>
           ) : null}
         </div>
       ) : null}
 
-      <PracticeProgress stage={userPiece.stage} className="mt-5" />
+      <PracticeProgress stage={userPiece.stage} nextReviewDue={userPiece.next_review_due} className="mt-5" />
 
       <ActivePracticeFoci foci={userPiece.active_practice_foci} />
 
@@ -124,6 +124,7 @@ export default function PracticeReviewCard({
         {practiceDiaryEnabled ? (
           <DiaryReviewButtons
             userPieceId={userPiece.id}
+            stage={userPiece.stage}
             onSelectOutcome={setSelectedOutcome}
           />
         ) : (

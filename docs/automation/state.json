@@ -1,13 +1,27 @@
 {
-  "current_prompt": "P36",
-  "current_chunk": "P36-01",
-  "status": "ready",
-  "last_completed_chunk": "P35-03",
-  "next_action": "Start P36-01 Home hierarchy and counts: make the next action obvious in new, ready, overdue-only and caught-up states while preserving repertoire, Social, six primary destinations and conditional partner-festival context",
+  "current_prompt": "P44",
+  "current_chunk": "P44-01",
+  "status": "complete",
+  "last_completed_chunk": "P44-01",
+  "next_action": null,
   "base_head": "d6469c0129fb7d54a3d1c76e1adf678bb6f51cc3",
   "branch": "automation/final-chunked-runner",
-  "owned_files": [],
-  "resume_point": "P35-03 completed review schedule/count truth. Home streak reads are non-mutating and event-derived; due plus overdue drives readiness; retained review identity drives history counts. Remote migration 20261005025130 is applied with invoker security, empty search path and authenticated-only execution. Fresh targeted tests, PGlite, lint, typecheck and diff hygiene pass; earlier unchanged full suite was 318/318.",
-  "blocker": null,
-  "updated_at": "2026-10-05T13:53:14+11:00"
+  "owned_files": [
+    "components/ui/ContextActionMenu.tsx (pending/failure/focus hunks)",
+    "components/activity/ActivityReplyActions.tsx (edit-field focus hunk)",
+    "components/activity/SocialActivityFeed.tsx (own-reply menu parity hunk)",
+    "components/home/HomeSummarySection.tsx (authenticated user threading)",
+    "components/home/HomeMobileSummarySwitcher.tsx (authenticated user threading)",
+    "components/home/HomeFriendsActivityBox.tsx (prop compatibility)",
+    "components/friends/RecentFriendActivitySection.tsx (authenticated user threading)",
+    "app/page.tsx (authenticated user threading)",
+    "app/friends/page.tsx (authenticated user threading)",
+    "tests/integration/context-action-menu-interaction.mjs",
+    "tests/integration/social-feed-lifecycle.mjs",
+    "docs/automation/results/P43-03.md",
+    "docs/automation/results/P44-01.md"
+  ],
+  "resume_point": "7 Oct 12:47 UTC: P43-03 and P44-01 local gates passed after fixing shared-menu feedback/focus and live Home/Friends own-reply action parity. 341 tests, social/menu interaction harnesses, lint, typecheck, build, PGlite review/repertoire/public-list and Practice session passed. Owner manual acceptance and deployment separate; no runner work queued.",
+  "deferred_items": [],
+  "updated_at": "2026-10-07T12:46:27.790692+00:00"
 }

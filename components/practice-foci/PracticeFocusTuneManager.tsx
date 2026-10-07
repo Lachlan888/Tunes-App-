@@ -25,11 +25,7 @@ function getPieceMeta(piece: {
   style?: string | null
   time_signature?: string | null
 }) {
-  return [
-    piece.key ? `Key: ${piece.key}` : "Key unknown",
-    piece.style ? `Style: ${piece.style}` : "Style unknown",
-    piece.time_signature ? `Time: ${piece.time_signature}` : "Time unknown",
-  ].join(" · ")
+  return [piece.style, piece.key, piece.time_signature].filter(Boolean).join(" · ") || "Details not set"
 }
 
 function normaliseSearch(value: string) {
@@ -143,7 +139,6 @@ function MobileTunePickerSheet({
       mobileMode="full-screen"
       desktopMaxWidth="md:max-w-lg"
       title="Known and practice tunes"
-      description="Choose a tune to link to this focus."
       bodyClassName="min-h-0 flex-1 overflow-y-auto px-4 md:px-6"
     >
       <div className="sticky top-0 z-10 border-b border-hairline bg-surface-paper py-4">
@@ -228,12 +223,7 @@ function AddTuneMobilePicker({
           <p className="text-sm leading-6 text-muted-foreground">
             No more known or active-practice tunes are available for this focus.
           </p>
-        ) : (
-          <p className="text-sm leading-6 text-muted-foreground">
-            Choose from {availableTunes.length} known or active-practice{" "}
-            {availableTunes.length === 1 ? "tune" : "tunes"}.
-          </p>
-        )}
+        ) : null}
       </div>
 
       <MobileTunePickerSheet

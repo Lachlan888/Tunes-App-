@@ -64,7 +64,7 @@ export default async function DevPage({ searchParams }: DevPageProps) {
       ) : null}
 
       <PageHeader
-        title="Dev"
+        title="Developer tools"
         actions={
           <div className="flex flex-wrap gap-2">
             <Link href="/dev/festivals" className={buttonStyles.secondary}>
@@ -97,7 +97,7 @@ export default async function DevPage({ searchParams }: DevPageProps) {
       </section>
 
       <section className="mb-10">
-        <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">
           Feedback inbox
         </h2>
         <div className="mt-5">
@@ -106,7 +106,7 @@ export default async function DevPage({ searchParams }: DevPageProps) {
       </section>
 
       <section className="mb-10">
-        <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">
           Feature usage
         </h2>
         <div className="mt-5">
@@ -115,7 +115,7 @@ export default async function DevPage({ searchParams }: DevPageProps) {
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">
           User activity
         </h2>
         <div className="mt-5">

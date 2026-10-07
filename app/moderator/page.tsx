@@ -122,7 +122,7 @@ export default async function ModeratorPage({
 
       {showSection("tune_edit_requests") ? (
         <section className="mb-10">
-          <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
+          <h2 className="text-xl font-bold tracking-tight text-foreground">
             Tune edit requests
           </h2>
 
@@ -237,7 +237,7 @@ export default async function ModeratorPage({
               })}
             </ul>
           ) : (
-            <p className="mt-5 border-y border-hairline py-5text-sm text-muted-foreground">
+            <p className="mt-3 border-b border-hairline py-4 text-sm text-muted-foreground">
               No pending tune edit requests.
             </p>
           )}
@@ -246,7 +246,7 @@ export default async function ModeratorPage({
 
       {showSection("comment_reports") ? (
         <section className="mb-10">
-          <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
+          <h2 className="text-xl font-bold tracking-tight text-foreground">
             Comment reports
           </h2>
 
@@ -338,7 +338,7 @@ export default async function ModeratorPage({
               ))}
             </ul>
           ) : (
-            <p className="mt-5 border-y border-hairline py-5text-sm text-muted-foreground">
+            <p className="mt-3 border-b border-hairline py-4 text-sm text-muted-foreground">
               No pending comment reports.
             </p>
           )}
@@ -347,7 +347,7 @@ export default async function ModeratorPage({
 
       {showSection("lore_reports") ? (
         <section>
-          <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
+          <h2 className="text-xl font-bold tracking-tight text-foreground">
             Lore reports
           </h2>
 
@@ -449,7 +449,7 @@ export default async function ModeratorPage({
               ))}
             </ul>
           ) : (
-            <p className="mt-5 border-y border-hairline py-5text-sm text-muted-foreground">
+            <p className="mt-3 border-b border-hairline py-4 text-sm text-muted-foreground">
               No pending lore reports.
             </p>
           )}

@@ -23,7 +23,7 @@ export const REVIEW_OUTCOMES: ReviewOutcomeConfig[] = [
     action: markFailed,
     className: buttonStyles.reviewRough,
     tooltip:
-      "Use Rough when you could not recall the tune reliably. It comes back sooner.",
+      "Use Rough when you could not recall the tune reliably. It returns to an earlier Stage when available.",
   },
   {
     outcome: "shaky",
@@ -43,7 +43,7 @@ export const REVIEW_OUTCOMES: ReviewOutcomeConfig[] = [
     action: markSolid,
     className: buttonStyles.reviewSolid,
     tooltip:
-      "Use Solid when recall felt clean and confident. It moves forward to the next Stage.",
+      "Use Solid when recall felt clean and confident. It advances the Stage or moves the tune to Known.",
   },
 ]
 

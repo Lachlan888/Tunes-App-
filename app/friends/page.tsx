@@ -99,24 +99,16 @@ function SearchResultsSection({
 
       <FriendSearchForm initialQuery={searchQuery} />
 
-      {!searchQuery && friendSuggestions.suggestions.length === 0 && (
-        <EmptyState
-          title="Suggestions need a little more shared activity"
-          description="Search by name for now. Suggestions will appear when there are permitted shared styles, tunes or mutual connections."
-          className="mt-4"
-        />
-      )}
-
       {!searchQuery && friendSuggestions.suggestions.length > 0 && (
         <div className="mt-5" aria-labelledby="friend-suggestions-title">
           <h3 id="friend-suggestions-title" className="text-base font-bold text-foreground">
             Suggested musicians
           </h3>
-          <div className="mt-2 divide-y divide-hairline border-y border-hairline md:grid md:grid-cols-2 md:divide-x md:divide-y-0">
+          <div className="mt-2 divide-y divide-hairline border-y border-hairline">
             {friendSuggestions.suggestions.map((suggestion) => (
               <article
                 key={suggestion.id}
-                className="flex items-center justify-between gap-4 px-1 py-4 md:px-4"
+                className="flex items-center justify-between gap-4 px-1 py-4"
               >
                 <div className="min-w-0">
                   <p className="truncate font-medium text-foreground">
@@ -290,6 +282,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
   )
 
   const {
+    user,
     pendingIncomingRequests,
     acceptedFriends,
     searchMatches,
@@ -333,7 +326,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
   )
 
   const activityContent = (
-    <RecentFriendActivitySection items={recentFriendActivity} nextCursor={activityNextCursor} />
+    <RecentFriendActivitySection items={recentFriendActivity} nextCursor={activityNextCursor} currentUserId={user.id} />
   )
 
   const statusContent = (

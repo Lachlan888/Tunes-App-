@@ -92,8 +92,6 @@ export default function PublicProfileBadgesSection({
   isOwnProfile,
   displayName,
 }: PublicProfileBadgesSectionProps) {
-  const ownerLabel = isOwnProfile ? "You" : displayName
-
   return (
     <section className="min-w-0 max-w-full border-t border-hairline pt-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -101,10 +99,6 @@ export default function PublicProfileBadgesSection({
           <h2 className="mt-2 break-words font-sans text-2xl font-bold leading-tight tracking-tight text-foreground md:mt-3 md:text-3xl">
             Recognition
           </h2>
-          <p className="mt-3 max-w-3xl break-words text-sm leading-6 text-muted-foreground">
-            Badges {ownerLabel.toLowerCase()} award and badges{" "}
-            {isOwnProfile ? "you have" : "they have"} received.
-          </p>
         </div>
 
         <Link
@@ -118,7 +112,7 @@ export default function PublicProfileBadgesSection({
       <div className="mt-4 grid gap-5 md:mt-6 xl:grid-cols-2">
         <div>
           <div className="mb-3 flex items-baseline justify-between gap-3">
-            <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
+            <h3 className="text-base font-semibold">
               Badges awarded
             </h3>
             <p className="text-sm text-muted-foreground">
@@ -151,7 +145,7 @@ export default function PublicProfileBadgesSection({
 
         <div>
           <div className="mb-3 flex items-baseline justify-between gap-3">
-            <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
+            <h3 className="text-base font-semibold">
               Badges received
             </h3>
             <p className="text-sm text-muted-foreground">

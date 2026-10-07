@@ -22,7 +22,7 @@ export default function InviteSetlistCollaboratorForm({
   return (
     <form
       action={inviteSetlistCollaborator}
-      className="w-full max-w-md rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
+      className="min-w-0 border-t border-hairline pt-5"
     >
       <input type="hidden" name="setlist_id" value={setlistId} />
       <input type="hidden" name="redirect_to" value={redirectTo} />
@@ -32,17 +32,17 @@ export default function InviteSetlistCollaboratorForm({
       </label>
 
       {inviteOptions.length === 0 ? (
-        <p className="mt-2 rounded-xl border border-border bg-card p-3 text-sm leading-6 text-muted-foreground">
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
           No available friends to invite. Friends already in this setlist or
           already invited are hidden here.
         </p>
       ) : (
-        <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+        <div className="mt-2 flex flex-col gap-2 xl:flex-row">
           <select
             id={`setlist-${setlistId}-collaborator`}
             name="collaborator_user_id"
             required
-            className="min-w-0 flex-1 rounded-full border border-border bg-card px-4 py-2 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className="min-h-11 min-w-0 flex-1 rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)]"
           >
             <option value="">Choose a friend</option>
             {inviteOptions.map((friend) => (
@@ -55,7 +55,7 @@ export default function InviteSetlistCollaboratorForm({
           <SubmitButton
             label="Invite"
             pendingLabel="Inviting..."
-            className="min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+            className="min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           />
         </div>
       )}

@@ -1,5 +1,6 @@
 import Link from "next/link"
 import type { PersonalTrendInsight } from "@/lib/loaders/trends"
+import { formatPracticeDate } from "@/lib/review"
 
 const PERIODS = [4, 8, 12] as const
 
@@ -14,16 +15,16 @@ function shortDate(value: string) {
 function InsightHeader({
   id,
   title,
-  takeaway,
+  annotation,
 }: {
   id: string
   title: string
-  takeaway: string
+  annotation?: string
 }) {
   return (
     <div>
       <h2 id={id} className="font-sans text-2xl font-bold tracking-tight">{title}</h2>
-      <p className="mt-1 text-sm leading-6 text-muted-foreground">{takeaway}</p>
+      {annotation ? <p className="mt-1 text-sm leading-6 text-muted-foreground">{annotation}</p> : null}
     </div>
   )
 }
@@ -43,10 +44,6 @@ export default function PersonalTrendInsights({
         <h2 id="trends-empty-title" className="font-sans text-2xl font-bold">
           Not enough data yet
         </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Complete a practice session to start seeing weekly volume, consistency,
-          outcomes and movement.
-        </p>
         <Link
           href="/review"
           className="mt-4 inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
@@ -96,21 +93,26 @@ export default function PersonalTrendInsights({
             <InsightHeader
               id="practice-volume-title"
               title="Weekly rhythm"
-              takeaway={`Practice volume · ${insight.activeWeeks} of ${insight.periodWeeks} weeks included practice. Each bar also shows its exact count.`}
             />
-            <ol className="mt-5 flex h-44 items-end gap-2 border-b border-border px-1" aria-label="Practice events by week">
-              {insight.weeks.map((week) => (
-                <li key={week.weekStart} className="flex h-full min-w-0 flex-1 flex-col justify-end gap-2 text-center">
-                  <span className="text-xs font-semibold tabular-nums">{week.eventCount}</span>
-                  <span
-                    className="min-h-1 rounded-t bg-primary"
-                    style={{ height: `${Math.max((week.eventCount / maxEvents) * 100, 3)}%` }}
-                    title={`${week.eventCount} events in week starting ${shortDate(week.weekStart)}`}
-                  />
-                  <span className="truncate pb-2 text-[11px] text-muted-foreground">{shortDate(week.weekStart)}</span>
-                </li>
-              ))}
-            </ol>
+            <div className="mt-5 overflow-x-auto" role="region" aria-label="Weekly practice chart" tabIndex={0}>
+              <ol
+                className="flex h-44 items-end gap-2 border-b border-border px-1"
+                style={{ minWidth: `${insight.weeks.length * 56}px` }}
+                aria-label="Practice events by week"
+              >
+                {insight.weeks.map((week) => (
+                  <li key={week.weekStart} className="flex h-full min-w-0 flex-1 flex-col justify-end gap-2 text-center">
+                    <span className="text-xs font-semibold tabular-nums">{week.eventCount}</span>
+                    <span
+                      className="min-h-1 rounded-t bg-primary"
+                      style={{ height: `${Math.max((week.eventCount / maxEvents) * 100, 3)}%` }}
+                      title={`${week.eventCount} events in week starting ${shortDate(week.weekStart)}`}
+                    />
+                    <span className="whitespace-nowrap pb-2 text-[11px] text-muted-foreground">{shortDate(week.weekStart)}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
             <details className="mt-3 text-sm text-muted-foreground">
               <summary className="min-h-11 cursor-pointer py-3 font-semibold text-foreground">View weekly data</summary>
               <div className="overflow-x-auto">
@@ -128,8 +130,7 @@ export default function PersonalTrendInsights({
           <section aria-labelledby="stage-title">
             <InsightHeader
               id="stage-title"
-              title="Where your tunes sit"
-              takeaway={`Stage distribution · ${insight.stageDistribution.reduce((sum, item) => sum + item.count, 0)} tunes are currently in active practice.`}
+              title="Practice by Stage"
             />
             <ol className="mt-5 space-y-3" aria-label="Active tunes by practice stage">
               {insight.stageDistribution.map((item) => (
@@ -154,12 +155,12 @@ export default function PersonalTrendInsights({
       <div className="grid gap-10 border-t border-border pt-8 lg:grid-cols-2">
         {insight.needsAttention.length > 0 ? (
           <section aria-labelledby="attention-title">
-            <InsightHeader id="attention-title" title="Catch up without guessing" takeaway="Needs attention · These overdue tunes are ordered by due date." />
+            <InsightHeader id="attention-title" title="Overdue tunes" />
             <ul className="mt-4 divide-y divide-hairline border-t border-hairline">
               {insight.needsAttention.map((tune) => (
                 <li key={tune.pieceId} className="flex min-h-14 items-center justify-between gap-4 py-2">
                   <Link href={`/library/${tune.pieceId}`} className="font-semibold underline-offset-4 hover:underline">{tune.title}</Link>
-                  <span className="shrink-0 text-sm text-muted-foreground">Stage {tune.stage}</span>
+                  <span className="shrink-0 text-sm text-muted-foreground">Stage {tune.stage}{tune.dueDate ? ` · Due ${formatPracticeDate(tune.dueDate)}` : ""}</span>
                 </li>
               ))}
             </ul>
@@ -169,7 +170,7 @@ export default function PersonalTrendInsights({
 
         {insight.exploreGap ? (
           <section aria-labelledby="gap-title">
-            <InsightHeader id="gap-title" title={`Try ${insight.exploreGap.label}`} takeaway={`Explore a gap · Your repertoire has no ${insight.exploreGap.kind} match yet; the catalogue has ${insight.exploreGap.catalogueCount}.`} />
+            <InsightHeader id="gap-title" title={`Try ${insight.exploreGap.label}`} annotation={`${insight.exploreGap.catalogueCount} catalogue tunes`} />
             <Link
               href={`/library?${insight.exploreGap.kind}=${encodeURIComponent(insight.exploreGap.label)}`}
               className="mt-4 inline-flex min-h-11 items-center rounded-control border border-border px-5 text-sm font-semibold hover:bg-muted justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
@@ -182,7 +183,7 @@ export default function PersonalTrendInsights({
 
       {(insight.personalStyleCoverage.length > 0 || insight.personalKeyCoverage.length > 0) ? (
         <section className="border-t border-border pt-8" aria-labelledby="coverage-title">
-          <InsightHeader id="coverage-title" title="Styles and keys in your repertoire" takeaway="Coverage counts include your Known and active Practice tunes; duplicate membership is shown once per collection source." />
+          <InsightHeader id="coverage-title" title="Styles and keys in your repertoire" annotation="Known and active Practice; each tune counted once per source." />
           <div className="mt-4 grid gap-6 md:grid-cols-2">
             {[{ label: "Styles", items: insight.personalStyleCoverage }, { label: "Keys", items: insight.personalKeyCoverage }].map((group) => (
               <div key={group.label}>

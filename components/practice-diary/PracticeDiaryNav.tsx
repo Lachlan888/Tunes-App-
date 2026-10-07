@@ -3,30 +3,25 @@ import { joinClasses } from "@/components/ui/buttonStyles"
 import { segmentedControlStyles } from "@/components/ui/segmentedControlStyles"
 
 type PracticeDiaryNavProps = {
-  active: "review" | "diary" | "index" | "foci"
+  active: "diary" | "index" | "foci"
   compact?: boolean
 }
 
 const links = [
-  {
-    href: "/review",
-    label: "Review",
-    value: "review",
-  },
   {
     href: "/review/diary",
     label: "Diary",
     value: "diary",
   },
   {
-    href: "/review/diary/index",
-    label: "Index",
-    value: "index",
-  },
-  {
     href: "/review/foci",
     label: "Focus areas",
     value: "foci",
+  },
+  {
+    href: "/review/diary/index",
+    label: "Tune index & history",
+    value: "index",
   },
 ] as const
 
@@ -42,7 +37,7 @@ export default function PracticeDiaryNav({
           : "mt-5 inline-flex max-w-full flex-wrap justify-center md:justify-start",
         segmentedControlStyles.group
       )}
-      aria-label="Practice sections"
+      aria-label="Practice Diary sections"
     >
       {links.map((link) => {
         const isActive = active === link.value

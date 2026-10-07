@@ -94,7 +94,14 @@ export function formatFriendActivityRelativeTime(createdAt: string) {
     return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`
   }
 
-  return new Date(createdAt).toLocaleDateString("en-AU")
+  const activityDate = new Date(createdAt)
+  return new Intl.DateTimeFormat("en-AU", {
+    day: "numeric",
+    month: "short",
+    ...(activityDate.getFullYear() === new Date().getFullYear()
+      ? {}
+      : { year: "numeric" as const }),
+  }).format(activityDate)
 }
 
 function renderCommentExcerpt(body: string) {

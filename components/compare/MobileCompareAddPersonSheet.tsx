@@ -136,9 +136,11 @@ export default function MobileCompareAddPersonSheet({
     >
           <form onSubmit={addQuery} className="mt-4 flex gap-2">
             <input
+              autoFocus
+              aria-label="Search musicians by username or display name"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              className="min-w-0 flex-1 rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="min-w-0 flex-1 rounded-control border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
               placeholder="Search username or display name"
             />
 

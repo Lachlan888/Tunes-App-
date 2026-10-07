@@ -30,6 +30,7 @@ function load(path, mocks = {}) {
   return loaded.exports
 }
 const Reaction = ({ reactions }) => React.createElement('button', null, `Good craic (${reactions.length})`)
+const ReplyActions = ({ id }) => React.createElement('button', null, `Manage reply ${id}`)
 const Modal = ({ children, onClose }) => React.createElement('section', { 'aria-label': 'Discussion' }, children, React.createElement('button', { onClick: onClose }, 'Close discussion'))
 const Feed = load('components/activity/SocialActivityFeed.tsx', {
   react: React, 'react/jsx-runtime': rendererRequire('react/jsx-runtime'),
@@ -37,6 +38,7 @@ const Feed = load('components/activity/SocialActivityFeed.tsx', {
   '@/components/ui/buttonStyles': { buttonStyles: {} },
   '@/components/activity/ActivityReactionBar': { default: Reaction },
   '@/components/activity/ActivityReplyForm': { default: () => null },
+  '@/components/activity/ActivityReplyActions': { default: ReplyActions },
   '@/components/ui/ResponsiveModal': { default: Modal },
   '@/lib/friend-activity': { renderFriendActivityText: item => `Fixture ${item.id}`, formatFriendActivityRelativeTime: () => 'Fixture date' },
 }).default
@@ -48,10 +50,13 @@ const click = async text => act(async () => { assert.ok(button(text), text); but
 const respond = async (items, nextCursor, status = 200) => act(async () => pending({ ok: status === 200, status, json: async () => ({ items, nextCursor }) }))
 const longComment = `Long comment ${'detail '.repeat(80)}`
 const initial = page(200)
-initial[0] = { ...initial[0], replies: [{ id: 1, body: longComment, created_at: initial[0].created_at, author: { display_name: 'Fixture friend' } }] }
+initial[0] = { ...initial[0], replies: [
+  { id: 1, body: longComment, created_at: initial[0].created_at, author: { id: 'friend-user', display_name: 'Fixture friend' } },
+  { id: 2, body: 'My reply', created_at: initial[0].created_at, author: { id: 'current-user', display_name: 'Me' } },
+] }
 try {
   let regionNode
-  await act(async () => { tree = create(React.createElement(Feed, { items: initial, initialNextCursor: 'first', redirectTo: '/', scrollRegionLabel: 'Friend activity feed' }), { createNodeMock: node => {
+  await act(async () => { tree = create(React.createElement(Feed, { items: initial, initialNextCursor: 'first', redirectTo: '/', currentUserId: 'current-user', scrollRegionLabel: 'Friend activity feed' }), { createNodeMock: node => {
     if (node.type === 'ol') return { get children() { return rows().map(() => ({ getBoundingClientRect: () => ({ height: 50 }) })) } }
     if (node.props['aria-label'] === 'Friend activity feed') return regionNode = { scrollTo() { scrolls++ } }
     return {}
@@ -85,6 +90,7 @@ try {
   await act(async () => comment.props.onClick())
   assert.equal(tree.root.findAllByType(Modal).length, 1)
   assert.equal(tree.root.findAllByType('p').some(node => node.props.children === longComment), true, 'long comments remain available in discussion')
+  assert.deepEqual(tree.root.findAllByType(ReplyActions).map(node => node.props.id), [2], 'only the current user sees reply management in the live discussion')
   const beforeDiscussion = calls.length
   await click('Load more activity')
   assert.equal(calls.length, beforeDiscussion, 'discussion freezes paging')

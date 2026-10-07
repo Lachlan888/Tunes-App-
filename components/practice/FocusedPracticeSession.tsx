@@ -12,7 +12,7 @@ import { completeFormalReviewInPlace } from "@/lib/actions/reviews"
 import { loadNextPracticeBatch } from "@/lib/actions/practice-session"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 import { ACTIVE_PRACTICE_SESSION_KEY, getResultingPracticeStage, type PracticeLane, type PracticeRating, type PracticeSessionResult } from "@/lib/practice-session"
-import { formatPracticeDate, getReviewIntervalDays } from "@/lib/review"
+import { formatReviewDueStatus, getReviewIntervalDays, getReviewOutcomePreview } from "@/lib/review"
 
 const RATING_UNDO_WINDOW_MS = 3500
 const outcomes = [
@@ -182,13 +182,7 @@ export default function FocusedPracticeSession({ lane, initialQueue, queueTotal,
             <p className="mt-3 text-sm text-text-muted">{[currentItem.piece?.key, currentItem.piece?.style, currentItem.piece?.time_signature].filter(Boolean).join(" · ")}</p>
             <p className="mt-3 border-l-2 border-state-practice pl-3 text-sm font-semibold text-text-primary">
               Stage {currentItem.stage} · {getReviewIntervalDays(currentItem.stage)}-day review
-              {currentItem.overdue_days > 0 && formatPracticeDate(currentItem.next_review_due)
-                ? ` · Overdue since ${formatPracticeDate(currentItem.next_review_due)}`
-                : currentItem.due_date_only === sessionDate
-                  ? " due today"
-                  : formatPracticeDate(currentItem.next_review_due)
-                    ? ` · Next review ${formatPracticeDate(currentItem.next_review_due)}`
-                    : ""}
+              {` · ${formatReviewDueStatus(currentItem.next_review_due, sessionDate)}`}
             </p>
           </> : null}
         </header>
@@ -199,7 +193,7 @@ export default function FocusedPracticeSession({ lane, initialQueue, queueTotal,
           {!online ? <p role="status" className="mb-3 text-center text-sm text-text-muted">Reconnect to save your rating. Your tune is still here.</p> : null}
           {error ? <div role="alert" className="mb-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm"><p>{error}</p><button type="button" className="min-h-11 font-semibold underline underline-offset-4" disabled={!online || saving || loading} onClick={() => submission.current ? void commitRating(submission.current) : void loadMore()}>{submission.current ? "Retry saving" : "Retry loading"}</button></div> : null}
           {pendingRating || saving ? <div role="status" className="flex min-h-16 items-center justify-center gap-5"><p className="font-semibold">{saving ? "Saving…" : `${outcomes.find(item => item.id === pendingRating?.outcome)?.label} · next tune shortly`}</p>{!saving ? <button type="button" onClick={undo} className="min-h-11 px-3 font-semibold underline underline-offset-4">Undo</button> : null}</div> : (
-            <><p className="mb-3 text-center text-xs font-medium text-text-muted">How did that feel?</p><div className="grid grid-cols-3 gap-2 sm:gap-3">{outcomes.map((outcome, index) => <button key={outcome.id} type="button" data-outcome={outcome.id} disabled={!currentItem || !online || busy || controlsOpen} onClick={() => rate(outcome.id)} className={`practice-rating practice-rating-${outcome.id}`}><Icon name={outcome.icon} size={19} /><span>{outcome.label}</span><kbd className="ml-auto hidden text-xs opacity-45 sm:inline">{index + 1}</kbd></button>)}</div></>
+            <><p className="mb-3 text-center text-xs font-medium text-text-muted">How did that feel?</p><div className="grid grid-cols-3 gap-2 sm:gap-3">{outcomes.map((outcome, index) => <button key={outcome.id} type="button" data-outcome={outcome.id} disabled={!currentItem || !online || busy || controlsOpen} onClick={() => rate(outcome.id)} className={`practice-rating practice-rating-${outcome.id} px-1 sm:px-3`}><Icon name={outcome.icon} size={19} className="hidden sm:block" /><span className="flex min-w-0 flex-col items-center leading-tight sm:items-start"><span>{outcome.label}</span>{currentItem ? <span className="mt-1 text-[0.65rem] font-medium leading-3 sm:text-xs">{getReviewOutcomePreview(currentItem.stage, outcome.id)}</span> : null}</span><kbd className="ml-auto hidden text-xs opacity-45 sm:inline">{index + 1}</kbd></button>)}</div></>
           )}
         </div>
       </footer>

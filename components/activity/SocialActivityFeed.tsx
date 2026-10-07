@@ -5,6 +5,7 @@ import { mergeActivityPage, ACTIVITY_WINDOW_SIZE } from "@/lib/activity-paginati
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import ActivityReactionBar from "@/components/activity/ActivityReactionBar"
 import ActivityReplyForm from "@/components/activity/ActivityReplyForm"
+import ActivityReplyActions from "@/components/activity/ActivityReplyActions"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import {
   formatFriendActivityRelativeTime,
@@ -15,6 +16,7 @@ import {
 type SocialActivityFeedProps = {
   items: FriendActivityItem[]
   redirectTo: string
+  currentUserId: string
   emptyMessage?: string
   initialNextCursor: string | null
   scrollRegionLabel?: string
@@ -28,6 +30,7 @@ export default function SocialActivityFeed({
   items,
   initialNextCursor,
   redirectTo,
+  currentUserId,
   emptyMessage = "No recent friend activity yet.",
   scrollRegionLabel,
 }: SocialActivityFeedProps) {
@@ -104,7 +107,7 @@ export default function SocialActivityFeed({
 
             return (
               <li key={item.activity_key} className="py-3">
-                <article className="border-l-4 border-state-social pl-3">
+                <article>
                   <p className="text-sm leading-6 text-foreground">
                     {renderFriendActivityText(item)}
                   </p>
@@ -144,7 +147,7 @@ export default function SocialActivityFeed({
           desktopMaxWidth="md:max-w-lg"
         >
           <div className="space-y-5">
-            <div className="border-l-4 border-state-social pl-3 text-sm leading-6">
+            <div className="text-sm leading-6">
               {renderFriendActivityText(selectedItem)}
             </div>
 
@@ -162,6 +165,11 @@ export default function SocialActivityFeed({
                     <p className="mt-1 text-xs text-muted-foreground">
                       {replyAuthor(reply)} · {formatFriendActivityRelativeTime(reply.created_at)}
                     </p>
+                    {reply.author?.id === currentUserId ? (
+                      <div className="mt-2">
+                        <ActivityReplyActions id={reply.id} body={reply.body} redirectTo={redirectTo} />
+                      </div>
+                    ) : null}
                   </li>
                 ))}
               </ol>

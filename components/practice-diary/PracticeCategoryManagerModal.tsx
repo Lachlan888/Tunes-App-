@@ -19,7 +19,7 @@ export default function PracticeCategoryManagerModal({
 
   return (
     <>
-      <section className="border-t border-hairline pt-5">
+      <section className="pt-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">

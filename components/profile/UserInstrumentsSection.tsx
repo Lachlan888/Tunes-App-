@@ -119,7 +119,7 @@ export default function UserInstrumentsSection({
 }: UserInstrumentsSectionProps) {
   return (
     <section className="rounded-object border border-border bg-card p-6 ">
-      <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
+      <h2 className="text-xl font-semibold text-foreground">
         Instruments
       </h2>
 

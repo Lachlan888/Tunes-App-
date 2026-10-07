@@ -114,7 +114,7 @@ export default async function PublicListsPage({
   const publicListsData = await loadPublicListsData()
 
   if (publicListsData.status === "error") {
-    return <SharedListsErrorState message={publicListsData.message} />
+    return <SharedListsErrorState />
   }
 
   const availableStyles = getAvailableStyles(publicListsData.sharedLists)
@@ -194,12 +194,8 @@ export default async function PublicListsPage({
             <>
               <SharedListsMobileList lists={pagination.items} redirectTo={redirectTo} />
 
-              <section className="hidden md:block">
-                <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                  Public lists
-                </h2>
-
-                <div className="mt-4 border-t border-hairline">
+              <section aria-label="Public lists" className="hidden md:block">
+                <div className="border-t border-hairline">
                   {pagination.items.map((list) => (
                     <SharedListCard key={list.id} list={list} redirectTo={redirectTo} />
                   ))}

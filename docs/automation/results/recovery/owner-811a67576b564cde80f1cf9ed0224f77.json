@@ -1,0 +1,7 @@
+{
+  "owner_task_id": "01a10bbb-ca00-7390-a70e-2883394ef8ac",
+  "terminal_turn_status": "failed",
+  "evidence": "wait_threads latest turn 01a10bbb-d055-72a3-b402-bbddf53ba2f0 failed after model capacity error",
+  "checked_at": "2026-10-05T12:03:12.311203+00:00",
+  "lock_sha256": "3a545272599acfa3c01d9b3d03b4b9311d46b7a18420b519fd9a387eb00046ed"
+}

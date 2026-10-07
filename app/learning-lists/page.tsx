@@ -296,19 +296,9 @@ export default async function LearningListsPage({
         </p>
       ) : null}
 
-      <section className="mb-5">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div className="hidden md:block">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-              {activeViewConfig.label}
-            </h2>
-          </div>
-
-          {activeView === "my-lists" && showSection("create_list") ? (
-            <CreateListModal />
-          ) : null}
-        </div>
-      </section>
+      {activeView === "my-lists" && showSection("create_list") ? (
+        <div className="mb-5 flex justify-end"><CreateListModal /></div>
+      ) : null}
 
       {activeView !== "my-lists" ? (
         <form method="get" action="/learning-lists" className="mb-5 grid gap-3 border-y border-border/70 py-4 sm:grid-cols-[minmax(0,1fr)_auto_auto]">

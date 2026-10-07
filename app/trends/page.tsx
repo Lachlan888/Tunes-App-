@@ -35,7 +35,7 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
         <PersonalTrendInsights insight={personalInsights} />
       ) : (
         <section
-          className="border-b border-hairline py-7"
+          className="py-7"
           aria-labelledby="signed-out-trends-title"
         >
           <h2
@@ -112,7 +112,7 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
                 >
                   <span className="font-semibold">{entry.styleName}</span>
                   <span className="text-sm tabular-nums text-muted-foreground">
-                    {entry.tuneCount} tunes
+                    {entry.tuneCount} {entry.tuneCount === 1 ? "tune" : "tunes"}
                   </span>
                   <span className="hidden text-sm text-muted-foreground sm:block">
                     View →

@@ -1,10 +1,11 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import RequestTuneEditForm from "@/components/library/RequestTuneEditForm"
 import KeyPickerField from "@/components/music/KeyPickerField"
 import SubmitButton from "@/components/SubmitButton"
+import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import { directModeratorUpdatePiece } from "@/lib/actions/moderation"
 import {
@@ -54,7 +55,7 @@ function DetailRow({
       className={
         variant === "mobile"
           ? "flex min-w-0 items-center justify-between gap-4 py-3"
-          : "min-w-0 max-w-full rounded-2xl border border-border bg-background/70 p-4"
+          : "min-w-0 max-w-full border-b border-border py-3"
       }
     >
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -64,7 +65,7 @@ function DetailRow({
         className={
           variant === "mobile"
             ? "min-w-0 break-words text-right text-sm font-medium text-foreground"
-            : "mt-2 min-w-0 break-words text-sm font-medium text-foreground"
+            : "mt-1 min-w-0 break-words text-sm font-medium text-foreground"
         }
       >
         {value ?? <span className="text-muted-foreground">Missing</span>}
@@ -86,47 +87,30 @@ function ModalShell({
   onClose: () => void
   destructive?: boolean
 }) {
+  const focusDialogOnMount = useCallback((node: HTMLDivElement | null) => {
+    const dialog = node?.closest<HTMLElement>('[role="dialog"]')
+    dialog?.querySelector<HTMLElement>("button:not([disabled])")?.focus({ preventScroll: true })
+  }, [])
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/35 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-4 sm:py-8">
-      <div
-        className={`max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-3xl border bg-card p-4 shadow-xl sm:p-6 ${
-          destructive ? "border-destructive" : "border-border"
-        }`}
-      >
-        <div className="flex min-w-0 items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p
-              className={`text-sm font-semibold uppercase tracking-[0.16em] ${
-                destructive ? "text-destructive" : "text-muted-foreground"
-              }`}
-            >
-              Tune details
-            </p>
-            <h3 className="mt-2 break-words font-serif text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              {title}
-            </h3>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-              {description}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className={buttonStyles.modalClose}
-          >
-            Close
-          </button>
-        </div>
-
-        <div className="mt-6 min-w-0">{children}</div>
+    <ResponsiveModal
+      isOpen
+      onClose={onClose}
+      title={title}
+      description={description}
+      mobileMode="full-screen"
+      desktopMaxWidth="md:max-w-3xl"
+      tone={destructive ? "destructive" : "default"}
+    >
+      <div ref={focusDialogOnMount}>
+        {children}
       </div>
-    </div>
+    </ResponsiveModal>
   )
 }
 
 const inputClassName =
-  "w-full min-w-0 rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full min-w-0 rounded-control border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 const primaryButtonClass = joinClasses(buttonStyles.primary, "py-3")
 
@@ -224,7 +208,7 @@ function ComposerProfilePicker({
     : []
 
   return (
-    <div className="min-w-0 space-y-3 rounded-2xl border border-border bg-background/70 p-4">
+    <div className="min-w-0 space-y-3 border-t border-border pt-4">
       <div>
         <p className="text-sm font-semibold text-foreground">
           Linked Tunes App composer
@@ -353,7 +337,7 @@ export default function TuneCanonicalDetailsCard({
       className={
         isMobile
           ? "min-w-0 border-b border-border pb-6 last:border-b-0 last:pb-0"
-          : "w-full max-w-full overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6"
+          : "w-full max-w-full border-t border-border pt-6"
       }
     >
       <div className="min-w-0">
@@ -403,7 +387,7 @@ export default function TuneCanonicalDetailsCard({
           className={
             isMobile
               ? "mt-4 text-sm text-muted-foreground"
-              : "mt-4 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground"
+              : "mt-4 border-l-2 border-border pl-3 text-sm text-muted-foreground"
           }
         >
           {missingFields} shared detail{missingFields === 1 ? "" : "s"} still{" "}
@@ -674,7 +658,7 @@ export default function TuneCanonicalDetailsCard({
           destructive
           onClose={() => setModalMode(null)}
         >
-          <div className="min-w-0 rounded-2xl border border-border bg-background/70 p-4">
+          <div className="min-w-0 border-l-2 border-destructive pl-3">
             <p className="text-sm text-muted-foreground">
               To confirm, type this exactly:
             </p>

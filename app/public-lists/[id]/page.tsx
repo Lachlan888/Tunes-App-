@@ -17,7 +17,7 @@ import {
 } from "@/lib/loaders/public-list-detail"
 import type { TuneMediaBundle } from "@/lib/tune-media"
 import type { Piece } from "@/lib/types"
-import { paginateListItems, parseListPage } from "@/lib/list-view-state"
+import { LIST_PAGE_SIZE, paginateListItems, parseListPage } from "@/lib/list-view-state"
 
 type PublicListDetailPageProps = {
   params: Promise<{ id: string }>
@@ -102,15 +102,15 @@ function BookmarkIcon({ filled = false }: { filled?: boolean }) {
 
 function getTuneMetadata(piece: Piece) {
   return [
-    piece.key ? `Key: ${piece.key}` : null,
-    piece.style ? `Style: ${piece.style}` : null,
-    piece.time_signature ? `Time: ${piece.time_signature}` : null,
+    piece.style,
+    piece.key,
+    piece.time_signature,
   ].filter(Boolean)
 }
 
 function PublicListTuneRow({
   piece,
-  userIsSignedIn,
+  position,
   isAlreadyInPractice,
   isKnown,
   canSelectForCopy,
@@ -118,7 +118,7 @@ function PublicListTuneRow({
   mediaBundle,
 }: {
   piece: Piece
-  userIsSignedIn: boolean
+  position: number
   isAlreadyInPractice: boolean
   isKnown: boolean
   canSelectForCopy: boolean
@@ -129,12 +129,13 @@ function PublicListTuneRow({
   const checkboxId = `select-piece-${piece.id}`
 
   return (
-    <article className="grid gap-3 border-b border-border/70 py-4 last:border-b-0 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+    <article className="grid gap-3 py-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
       <div className="min-w-0">
-        <h3 className="text-lg font-semibold leading-snug text-foreground">
+        <h3 className="flex items-baseline gap-3 text-lg font-semibold leading-snug text-foreground">
+          <span className="shrink-0 text-xs font-semibold tabular-nums text-muted-foreground">{String(position).padStart(2, "0")}</span>
           <Link
             href={`/library/${piece.id}`}
-            className="decoration-primary decoration-2 underline-offset-4 hover:underline"
+            className="min-w-0 break-words decoration-primary decoration-2 underline-offset-4 hover:underline"
           >
             {piece.title}
           </Link>
@@ -176,29 +177,15 @@ function PublicListTuneRow({
         ) : null}
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        {!userIsSignedIn ? (
-          <span className="text-sm text-muted-foreground">
-            Log in to copy tunes into your own lists.
+      {isAlreadyInPractice || isKnown ? (
+        <div className="mt-1 flex items-center md:mt-0">
+          <span className={isAlreadyInPractice
+            ? "border-l-2 border-state-practice pl-2 text-xs font-semibold text-state-practice"
+            : "border-l-2 border-state-known pl-2 text-xs font-semibold text-state-known"}>
+            {isAlreadyInPractice ? "Already in practice" : "Known"}
           </span>
-        ) : (
-          <>
-            {isAlreadyInPractice ? (
-              <span className="rounded-full border border-success bg-success px-3 py-1.5 text-xs font-semibold text-success-foreground">
-                Already in practice
-              </span>
-            ) : isKnown ? (
-              <span className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                Known
-              </span>
-            ) : (
-              <span className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                New to me
-              </span>
-            )}
-          </>
-        )}
-      </div>
+        </div>
+      ) : null}
 
     </article>
   )
@@ -346,11 +333,6 @@ export default async function PublicListDetailPage({
           )}
         </div>
 
-        <p className="mt-5 hidden border-t border-hairline pt-4 text-sm leading-6 text-muted-foreground md:mt-6 md:block">
-          Shared lists are discovery objects. Bookmark useful lists as saved
-          references, or copy tunes into your own editable lists when you want
-          to organise them privately.
-        </p>
       </header>
 
       {bookmarkStatus === "bookmarked" && (
@@ -501,8 +483,8 @@ export default async function PublicListDetailPage({
             This list has no tunes yet.
           </p>
         ) : (
-          <ol className="mt-3 divide-y divide-border/70 border-y border-border/70 md:mt-5 md:divide-y-0 md:border-y-0 md:space-y-4">
-            {pagination.items.map((item) => {
+          <ol className="mt-3 divide-y divide-border/70 border-y border-border/70 md:mt-5">
+            {pagination.items.map((item, index) => {
               const piece = Array.isArray(item.pieces)
                 ? item.pieces[0]
                 : item.pieces
@@ -523,7 +505,7 @@ export default async function PublicListDetailPage({
                   <div>
                     <PublicListTuneRow
                       piece={piece}
-                      userIsSignedIn={Boolean(user)}
+                      position={(pagination.page - 1) * LIST_PAGE_SIZE + index + 1}
                       isAlreadyInPractice={isAlreadyInPractice}
                       isKnown={isKnown}
                       canSelectForCopy={canSelectForCopy}

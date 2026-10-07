@@ -169,11 +169,11 @@ export default function AddToListModal({
         </div>
 
         {!hasLists ? (
-          <p className="rounded-xl border border-border bg-muted/60 p-3 text-sm text-muted-foreground">
+          <p className="border-y border-hairline py-4 text-sm text-muted-foreground">
             You do not have any lists yet.
           </p>
         ) : (
-          <div className="max-h-72 space-y-2 overflow-y-auto pr-1 md:max-h-80">
+          <div className="max-h-72 divide-y divide-hairline overflow-y-auto border-y border-hairline md:max-h-80">
             {availableLists.map((learningList) => {
               const isAlreadyAdded = existingListIds.includes(learningList.id)
               const isSelected = selectedListIds.includes(learningList.id)
@@ -181,12 +181,12 @@ export default function AddToListModal({
               return (
                 <label
                   key={learningList.id}
-                  className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-3 text-sm transition ${
+                  className={`flex min-h-11 cursor-pointer items-start gap-3 border-l-2 px-3 py-3 text-sm transition ${
                     isAlreadyAdded
-                      ? "cursor-not-allowed border-border bg-muted/50 text-muted-foreground"
+                      ? "cursor-not-allowed border-transparent text-muted-foreground"
                       : isSelected
                         ? "border-primary bg-primary/10 text-foreground"
-                        : "border-border bg-background/60 text-foreground hover:border-primary/70"
+                        : "border-transparent text-foreground hover:bg-muted/50"
                   }`}
                 >
                   <input

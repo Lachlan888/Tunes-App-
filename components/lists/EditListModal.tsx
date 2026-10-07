@@ -5,7 +5,6 @@ import PendingLinkButton from "@/components/PendingLinkButton"
 import SubmitButton from "@/components/SubmitButton"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles } from "@/components/ui/buttonStyles"
-import { statusStyles } from "@/components/ui/statusStyles"
 import UserSearchPicker from "@/components/users/UserSearchPicker"
 import type { ListShareRecipientSearchResponse, Piece } from "@/lib/types"
 import type { LearningListShareRecipient } from "@/lib/loaders/list-detail"
@@ -29,11 +28,14 @@ type EditListModalProps = {
   revokeLearningListPrivateShare?: (formData: FormData) => Promise<void>
   shareRecipients?: LearningListShareRecipient[]
   triggerLabel?: string
+  triggerAriaLabel?: string
   triggerClassName?: string
+  controlledOpen?: boolean
+  onControlledClose?: () => void
 }
 
 const inputClass =
-  "w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+  "w-full rounded-control border border-hairline bg-surface-paper px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
 
 export default function EditListModal({
   listId,
@@ -50,9 +52,13 @@ export default function EditListModal({
   revokeLearningListPrivateShare,
   shareRecipients = [],
   triggerLabel = "Manage List",
+  triggerAriaLabel,
   triggerClassName = buttonStyles.secondary,
+  controlledOpen,
+  onControlledClose,
 }: EditListModalProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const isOpen = controlledOpen ?? internalOpen
   const [isBusy, setIsBusy] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
 
@@ -67,7 +73,8 @@ export default function EditListModal({
     if (isBusy) return
     if (isDirty && !window.confirm("Discard unsaved list changes?")) return
     setIsDirty(false)
-    setIsOpen(false)
+    if (controlledOpen !== undefined) onControlledClose?.()
+    else setInternalOpen(false)
   }
 
   const nextVisibility = visibility === "public" ? "private" : "public"
@@ -76,17 +83,18 @@ export default function EditListModal({
 
   return (
     <>
-      <button
+      {controlledOpen === undefined ? <button
         type="button"
+        aria-label={triggerAriaLabel}
         className={triggerClassName}
         onClick={() => {
           setIsBusy(false)
           setIsDirty(false)
-          setIsOpen(true)
+          setInternalOpen(true)
         }}
       >
         {triggerLabel}
-      </button>
+      </button> : null}
 
       <ResponsiveModal
         isOpen={isOpen}
@@ -103,7 +111,7 @@ export default function EditListModal({
           <section>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <h3 className="text-lg font-semibold tracking-tight text-foreground">
                   List details
                 </h3>
 
@@ -188,7 +196,7 @@ export default function EditListModal({
           searchLearningListShareRecipients &&
           revokeLearningListPrivateShare ? (
             <section>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <h3 className="text-lg font-semibold tracking-tight text-foreground">
                 Share privately
               </h3>
 
@@ -267,7 +275,7 @@ export default function EditListModal({
           ) : null}
 
           <section>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <h3 className="text-lg font-semibold tracking-tight text-foreground">
               Tunes in this list
             </h3>
 
@@ -276,11 +284,11 @@ export default function EditListModal({
                 This list has no tunes.
               </p>
             ) : (
-              <div className="mt-4 divide-y divide-border/70 border-y border-border/70 md:space-y-2 md:divide-y-0 md:border-y-0">
+              <div className="mt-4 divide-y divide-border border-y border-border">
                 {tunes.map((tune) => (
                   <div
                     key={tune.id}
-                    className="flex flex-col gap-3 py-4 md:rounded-2xl md:border md:border-border md:bg-background/70 md:p-4 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="min-w-0 text-sm">
                       <PendingLinkButton
@@ -331,8 +339,8 @@ export default function EditListModal({
             )}
           </section>
 
-          <section className={`rounded-2xl border p-4 ${statusStyles.error}`}>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em]">
+          <section className="border-t border-action-destructive/55 pt-5 text-action-destructive">
+            <h3 className="text-lg font-semibold tracking-tight">
               Danger zone
             </h3>
 

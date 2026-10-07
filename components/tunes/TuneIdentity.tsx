@@ -65,26 +65,25 @@ export default function TuneIdentity({
     <div className={className}>
       {compactMobile ? (
         <div className="min-w-0 md:hidden">
-          <Heading className="flex min-w-0 items-baseline gap-2 text-base font-semibold leading-tight text-text-primary">
+          <Heading className="min-w-0 break-words text-base font-semibold leading-tight text-text-primary">
             {linkTitle ? (
               <Link
                 href={`/library/${id}`}
-                className={`${linkClassName} min-w-0 flex-1 truncate`}
-                title={title}
+                className={`${linkClassName} break-words`}
               >
                 {title}
               </Link>
             ) : (
-              <span className="min-w-0 flex-1 truncate" title={title}>{title}</span>
+              <span className="break-words">{title}</span>
             )}
-            {tuneKey || timeSignature ? (
-              <span className="shrink-0 whitespace-nowrap text-xs font-medium text-text-muted">
-                {[tuneKey, timeSignature]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </span>
-            ) : null}
           </Heading>
+          {metadata.length > 0 ? (
+            <p className="mt-1 text-xs font-medium leading-5 text-text-muted">
+              {metadata.join(" · ")}
+            </p>
+          ) : null}
+          {usefulAlias ? <p className="mt-1 text-xs text-text-muted">Also {usefulAlias}</p> : null}
+          {sourceSummary ? <p className="mt-1 text-xs text-text-muted">{sourceSummary}</p> : null}
           {personalState ? <div className="mt-1">{personalState}</div> : null}
         </div>
       ) : null}

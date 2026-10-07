@@ -33,11 +33,14 @@ export default function AppHeader({
           <Link href="/" className="font-serif text-xl font-bold tracking-tight text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
             Tunes
           </Link>
-          {pathname === "/login" ? null : (
-            <Link href="/login" className="inline-flex min-h-11 items-center rounded-control px-3 text-sm font-semibold text-action-primary hover:bg-surface-note focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
-              Sign in
-            </Link>
-          )}
+          <div className="ml-auto flex items-center gap-2">
+            <FloatingFeedbackButton variant="header" />
+            {pathname === "/login" ? null : (
+              <Link href="/login" className="inline-flex min-h-11 items-center rounded-control px-3 text-sm font-semibold text-action-primary hover:bg-surface-note focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
+                Sign in
+              </Link>
+            )}
+          </div>
         </div>
       </header>
     )

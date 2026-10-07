@@ -6,6 +6,7 @@ import {
   safeReferenceReturn,
 } from "@/lib/reference-media-routing"
 import ReferencePracticeWorkspace from "@/components/reference-media/ReferencePracticeWorkspace"
+import TuneDetailViewNav from "@/components/library/TuneDetailViewNav"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { loadTuneDetailData } from "@/lib/loaders/tune-detail"
 import { resolveReferenceMediaSource } from "@/lib/tune-media"
@@ -70,14 +71,12 @@ export default async function ReferenceMediaPage({
             <h1 className="break-words font-sans text-4xl font-bold leading-[1.04] tracking-tight text-foreground sm:text-5xl md:text-6xl">
               {tuneDetail.typedPiece.title}
             </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {selectedSource
-                ? `${selectedSource.label} · passage-centred practice`
-                : "Add a recording to begin passage-centred practice."}
-            </p>
+            {selectedSource ? <p className="mt-2 text-sm text-muted-foreground">{selectedSource.label}</p> : null}
           </div>
         </div>
       </header>
+
+      <TuneDetailViewNav pieceId={tuneDetail.pieceId} activeView="reference" />
 
       <ReferencePracticeWorkspace
         piece={tuneDetail.typedPiece}
@@ -90,6 +89,7 @@ export default async function ReferenceMediaPage({
         learningListItems={tuneDetail.typedLearningListItems}
         practiceDiaryEnabled={tuneDetail.practiceDiaryEnabled}
         redirectTo={redirectTo}
+        currentUserId={tuneDetail.user.id}
         startLearning={startLearning}
         addToLearningList={addToLearningList}
       />

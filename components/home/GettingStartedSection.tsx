@@ -67,39 +67,8 @@ export default function GettingStartedSection({
 
   return (
       <section className="mb-8 border-t border-hairline pt-6">
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-5">
-          <div>
-            <h2 className="mt-1 font-sans text-3xl font-bold">Get started</h2>
-            <p className="mt-3 max-w-2xl text-muted-foreground">
-              Start by adding a few tunes, making a list, or beginning
-              practice. Home will update as you go.
-            </p>
-            <p className="mt-3 text-sm font-medium text-muted-foreground">
-              Progress: {state.completedCount} of {state.totalCount} complete
-            </p>
-          </div>
-
-          {state.nextTask && (
-            <div className="w-full border-l-2 border-action-primary bg-surface-note p-5 sm:w-80">
-              <p className="text-sm font-semibold text-muted-foreground">
-                Next step
-              </p>
-              <p className="mt-2 font-sans text-xl font-bold">
-                {state.nextTask.label}
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {state.nextTask.description}
-              </p>
-              <div className="mt-4">
-                <PendingLinkButton
-                  href={state.nextTask.href}
-                  label={state.nextTask.actionLabel}
-                  pendingLabel={state.nextTask.pendingLabel}
-                  className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
-                />
-              </div>
-            </div>
-          )}
+        <div className="mb-6">
+          <h2 className="font-sans text-3xl font-bold">Get started</h2>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

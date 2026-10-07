@@ -18,6 +18,7 @@ function loadAction<T>(
   }).outputText
   const calls: RpcCall[] = []
   const supabase = {
+    auth: { getUser: async () => ({ data: { user: { id: "owner" } } }) },
     rpc: async (name: string, params: Record<string, unknown>) => {
       calls.push({ name, params })
       return rpcResult
@@ -26,7 +27,7 @@ function loadAction<T>(
   const loaded = { exports: {} as T }
 
   new Function("require", "module", "exports", compiled)((id: string) => {
-    if (id === "next/navigation") return { redirect: () => undefined }
+    if (id === "next/navigation") return { redirect: (href: string) => { throw new Error(`REDIRECT:${href}`) } }
     if (id === "@/lib/review") return { getTomorrow: () => "2026-10-05" }
     if (id === "@/lib/supabase/server") return { createClient: async () => supabase }
     if (id === "@/lib/streaks") {
@@ -66,6 +67,38 @@ test("Add to practice uses the owner-scoped transition without practice side eff
     },
   ])
   assert.deepEqual(sideEffects, [])
+})
+
+test("enrolment redirects with an honest result and preserves the return route", async () => {
+  const form = new FormData()
+  form.set("piece_id", "42")
+  form.set("redirect_to", "/library/42?view=practice")
+  const added = loadAction<{ startLearning: (form: FormData) => Promise<void> }>(
+    "../lib/actions/user-pieces.ts", { data: "started", error: null }, []
+  )
+  await assert.rejects(added.startLearning(form), /REDIRECT:\/library\/42\?view=practice&practice_enrolment=added/)
+  assert.equal(added.calls.length, 1)
+
+  const already = loadAction<{ startLearning: (form: FormData) => Promise<void> }>(
+    "../lib/actions/user-pieces.ts", { data: "already_in_practice", error: null }, []
+  )
+  await assert.rejects(already.startLearning(form), /practice_enrolment=already/)
+  assert.equal(already.calls.length, 1)
+})
+
+test("failed enrolment never claims success", async () => {
+  const form = new FormData()
+  form.set("piece_id", "42")
+  form.set("redirect_to", "/library/42")
+  const rejected = loadAction<{ startLearning: (form: FormData) => Promise<void> }>(
+    "../lib/actions/user-pieces.ts", { data: null, error: { message: "write rejected" } }, []
+  )
+  await assert.rejects(rejected.startLearning(form), /REDIRECT:\/library\/42\?practice_enrolment=error/)
+  assert.equal(rejected.calls.length, 1)
+
+  form.set("piece_id", "0")
+  await assert.rejects(rejected.startLearning(form), /practice_enrolment=error/)
+  assert.equal(rejected.calls.length, 1)
 })
 
 test("Known transition delegates atomically and preserves an existing result", async () => {

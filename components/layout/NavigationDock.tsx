@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useRef, useState } from "react"
 import { getPrimaryDestination, primaryNavItems } from "@/components/layout/navItems"
 import Icon from "@/components/ui/Icon"
 import { joinClasses } from "@/components/ui/buttonStyles"
@@ -15,35 +14,13 @@ export default function NavigationDock({
   overduePracticeCount: number
   socialAttentionCount: number
 }) {
-  const [isCompact, setIsCompact] = useState(false)
-  const lastScrollYRef = useRef(0)
   const selectedDestination = getPrimaryDestination(pathname)
-
-  useEffect(() => {
-    lastScrollYRef.current = window.scrollY
-
-    function handleScroll() {
-      const currentScrollY = window.scrollY
-      const delta = currentScrollY - lastScrollYRef.current
-
-      if (currentScrollY < 48 || delta < -8) setIsCompact(false)
-      if (currentScrollY > 140 && delta > 8) setIsCompact(true)
-      lastScrollYRef.current = currentScrollY
-    }
-
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
 
   return (
     <nav
       data-mobile-nav
       aria-label="Primary navigation"
-      onFocusCapture={() => setIsCompact(false)}
-      className={joinClasses(
-        "fixed inset-x-0 bottom-0 z-[300] grid grid-cols-6 border-t border-hairline bg-surface-canvas pb-[max(0.25rem,env(safe-area-inset-bottom))] transition-[padding,border-radius] [transition-duration:var(--motion-standard)] [transition-timing-function:var(--ease-folk)] md:hidden",
-        isCompact ? "p-1" : "p-1.5"
-      )}
+      className="fixed inset-x-0 bottom-0 z-[300] grid grid-cols-6 border-t border-hairline bg-surface-canvas px-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] pt-1.5 md:hidden"
     >
       {primaryNavItems.map((item) => {
         const isSelected = selectedDestination === item.destination
@@ -67,9 +44,9 @@ export default function NavigationDock({
             )}
           >
             <Icon name={item.icon} size={20} />
-            <span className={joinClasses(isCompact && !isSelected && "sr-only")}>{item.label}</span>
+            <span>{item.label}</span>
             {badgeCount > 0 ? (
-              <span className="absolute right-1 top-1 inline-flex min-w-4 items-center justify-center rounded-pill bg-state-overdue px-1 text-[0.6rem] font-bold leading-4 text-state-overdue-foreground ring-2 ring-surface-paper">
+              <span className="absolute right-1 top-1 inline-flex min-w-4 items-center justify-center rounded-control bg-surface-note px-1 text-[0.6rem] font-semibold leading-4 text-text-primary">
                 {badgeCount > 9 ? "9+" : badgeCount}
               </span>
             ) : null}

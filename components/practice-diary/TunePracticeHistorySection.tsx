@@ -8,6 +8,7 @@ import type {
 type TunePracticeHistorySectionProps = {
   notes: TunePracticeNote[]
   reviews: TuneReviewSummary[]
+  showStage: boolean
 }
 
 function formatDate(value: string) {
@@ -36,6 +37,7 @@ function getOutcomeTone(outcome: string): StatusTone {
 export default function TunePracticeHistorySection({
   notes,
   reviews,
+  showStage,
 }: TunePracticeHistorySectionProps) {
   return (
     <section className="border-t border-hairline py-6">
@@ -58,7 +60,7 @@ export default function TunePracticeHistorySection({
                 <StatusMark tone={getOutcomeTone(review.outcome)}>
                   {getOutcomeLabel(review.outcome)}
                 </StatusMark>
-                {review.resulting_stage ? (
+                {showStage && review.resulting_stage ? (
                   <span className="text-sm font-medium text-text-primary">
                     Stage {review.resulting_stage}
                   </span>
@@ -80,7 +82,7 @@ export default function TunePracticeHistorySection({
       )}
 
       {notes.length === 0 ? (
-        <p className="mt-4 border-y border-hairline py-4 text-sm text-text-muted">
+        <p className="mt-4 py-4 text-sm text-text-muted">
           No diary notes for this tune yet.
         </p>
       ) : (

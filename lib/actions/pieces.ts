@@ -253,7 +253,7 @@ export async function createTune(formData: FormData) {
     await recordPieceDetailsAddedEvent(user.id, insertedPiece.id, addedDetailFields)
   }
 
-  redirect(`/library/${insertedPiece.id}?create_tune=success#reference-media`)
+  redirect(`/library/${insertedPiece.id}?create_tune=success`)
 }
 
 export async function removeTuneFromMyApp(formData: FormData) {

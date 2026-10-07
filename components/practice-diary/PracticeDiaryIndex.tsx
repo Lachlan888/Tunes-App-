@@ -5,6 +5,7 @@ import { useMemo, useState } from "react"
 import type { ReactNode } from "react"
 import CardPager from "@/components/ui/CardPager"
 import { joinClasses } from "@/components/ui/buttonStyles"
+import { formatPracticeDate } from "@/lib/review"
 import type {
   PracticeIndexData,
   PracticeIndexFocusSummary,
@@ -42,15 +43,7 @@ const views: {
 ]
 
 function formatDateOnly(dateOnly: string | null) {
-  if (!dateOnly) return "No notes yet"
-
-  const [year, month, day] = dateOnly.split("-")
-
-  if (!year || !month || !day) {
-    return dateOnly
-  }
-
-  return `${day}/${month}/${year}`
+  return formatPracticeDate(dateOnly) ?? "No notes yet"
 }
 
 function pluralise(count: number, singular: string, plural: string) {
@@ -92,18 +85,18 @@ function getKindLabel(kind: PracticeIndexItem["kind"]) {
 
 function getKindTone(kind: PracticeIndexItem["kind"]) {
   if (kind === "daily_reflection") {
-    return "border-primary bg-primary/10 text-foreground"
+    return "text-foreground"
   }
 
   if (kind === "review_note") {
-    return "border-accent bg-accent/30 text-accent-foreground"
+    return "text-accent-foreground"
   }
 
   if (kind === "tune_note") {
-    return "border-success bg-success/15 text-foreground"
+    return "text-foreground"
   }
 
-  return "border-border bg-muted text-muted-foreground"
+  return "text-muted-foreground"
 }
 
 function getFocusStatusLabel(status: PracticeIndexFocusSummary["status"]) {
@@ -116,14 +109,14 @@ function getFocusStatusLabel(status: PracticeIndexFocusSummary["status"]) {
 
 function getFocusStatusClasses(status: PracticeIndexFocusSummary["status"]) {
   if (status === "active") {
-    return "border-success bg-success text-success-foreground"
+    return "text-state-known"
   }
 
   if (status === "completed") {
-    return "border-primary bg-primary text-primary-foreground"
+    return "text-state-practice"
   }
 
-  return "border-border bg-muted text-muted-foreground"
+  return "text-muted-foreground"
 }
 
 function getAllNotes(data: PracticeIndexData) {
@@ -226,7 +219,7 @@ function PracticeFocusCard({ focus }: { focus: PracticeIndexFocusSummary }) {
 
         <span
           className={joinClasses(
-            "rounded-full border px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em]",
+            "text-xs font-semibold",
             getFocusStatusClasses(focus.status)
           )}
         >
@@ -257,7 +250,7 @@ function PracticeFocusCard({ focus }: { focus: PracticeIndexFocusSummary }) {
       ) : null}
 
       {latestNote ? (
-        <p className="border-l-2 border-state-practice bg-surface-note p-3 text-sm leading-6 text-muted-foreground">
+        <p className="border-l-2 border-state-practice pl-3 text-sm leading-6 text-muted-foreground">
           <span className="font-medium text-foreground">Latest note: </span>
           {latestNote.piece ? `${latestNote.piece.title}: ` : ""}
           {latestNote.body}
@@ -267,7 +260,7 @@ function PracticeFocusCard({ focus }: { focus: PracticeIndexFocusSummary }) {
       <div>
         <Link
           href={`/review/foci/${focus.id}`}
-          className="min-h-11 inline-flex rounded-control border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-action-primary underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
         >
           Open focus
         </Link>
@@ -279,18 +272,15 @@ function PracticeFocusCard({ focus }: { focus: PracticeIndexFocusSummary }) {
 function PracticeNoteCard({ note }: { note: PracticeIndexItem }) {
   return (
     <article className="grid gap-4 border-b border-hairline py-5">
-      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-muted-foreground">
         <span
-          className={joinClasses(
-            "rounded-full border px-2.5 py-1",
-            getKindTone(note.kind)
-          )}
+          className={getKindTone(note.kind)}
         >
           {getKindLabel(note.kind)}
         </span>
 
         {note.categoryName ? (
-          <span className="rounded-full border border-border bg-muted px-2.5 py-1">
+          <span>
             {note.categoryName}
           </span>
         ) : null}
@@ -298,7 +288,7 @@ function PracticeNoteCard({ note }: { note: PracticeIndexItem }) {
         {note.focus ? (
           <Link
             href={`/review/foci/${note.focus.id}`}
-            className="rounded-full border border-border bg-background/70 px-2.5 py-1 transition hover:border-primary hover:text-foreground"
+            className="underline underline-offset-4 transition hover:text-foreground"
           >
             Focus: {note.focus.title}
           </Link>
@@ -318,14 +308,14 @@ function PracticeNoteCard({ note }: { note: PracticeIndexItem }) {
         </h3>
       )}
 
-      <p className="whitespace-pre-wrap text-lg leading-8 text-foreground md:text-base md:leading-7">
+      <p className="max-w-prose whitespace-pre-wrap text-lg leading-8 text-foreground md:text-base md:leading-7">
         {note.body}
       </p>
 
       <div className="flex flex-wrap gap-2">
         <Link
           href={getNoteDayHref(note)}
-          className="inline-flex min-h-11 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+          className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
         >
           Open day
         </Link>
@@ -333,7 +323,7 @@ function PracticeNoteCard({ note }: { note: PracticeIndexItem }) {
         {note.piece ? (
           <Link
             href={`/library/${note.piece.id}`}
-            className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+            className="inline-flex min-h-11 items-center px-2 py-2 text-sm font-semibold text-muted-foreground underline underline-offset-4 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           >
             Open tune
           </Link>
@@ -342,7 +332,7 @@ function PracticeNoteCard({ note }: { note: PracticeIndexItem }) {
         {note.focus ? (
           <Link
             href={`/review/foci/${note.focus.id}`}
-            className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+            className="inline-flex min-h-11 items-center px-2 py-2 text-sm font-semibold text-muted-foreground underline underline-offset-4 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
           >
             Open focus
           </Link>
@@ -384,9 +374,9 @@ function FallbackMatches({
   if (!hasFallback) return null
 
   return (
-    <section className="grid gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm md:bg-background/70">
+    <section className="grid gap-4 border-t border-hairline pt-4">
       <div>
-        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <h3 className="text-sm font-semibold text-foreground">
           Found elsewhere
         </h3>
 
@@ -398,19 +388,19 @@ function FallbackMatches({
 
       {fallbackFoci.length > 0 ? (
         <section className="grid gap-2">
-          <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <h4 className="text-xs font-semibold text-muted-foreground">
             Focus areas
           </h4>
 
-          <ul className="rounded-2xl border border-border bg-card px-3 shadow-sm md:bg-background/70">
+          <ul className="divide-y divide-hairline">
             {fallbackFoci.map((focus) => (
               <li
                 key={focus.id}
-                className="border-b border-border py-3 last:border-b-0"
+                className="py-3"
               >
                 <Link
                   href={`/review/foci/${focus.id}`}
-                  className="block rounded-xl p-2 transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className="block py-2 transition hover:text-primary focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                 >
                   <p className="font-semibold leading-tight text-foreground underline decoration-border underline-offset-4">
                     {focus.title}
@@ -431,25 +421,25 @@ function FallbackMatches({
 
       {fallbackNotes.length > 0 ? (
         <section className="grid gap-2">
-          <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <h4 className="text-xs font-semibold text-muted-foreground">
             Notes
           </h4>
 
-          <ul className="rounded-2xl border border-border bg-card px-3 shadow-sm md:bg-background/70">
+          <ul className="divide-y divide-hairline">
             {fallbackNotes.map((note) => (
               <li
                 key={note.id}
-                className="border-b border-border py-3 last:border-b-0"
+                className="py-3"
               >
                 <Link
                   href={getNoteDayHref(note)}
-                  className="block rounded-xl p-2 transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                  className="block py-2 transition hover:text-primary focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                 >
                   <p className="line-clamp-2 text-sm leading-6 text-foreground">
                     {note.body}
                   </p>
 
-                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="mt-1 text-xs font-semibold text-muted-foreground">
                     {note.piece ? `${note.piece.title} · ` : ""}
                     {formatDateOnly(note.noteDate)}
                   </p>
@@ -541,7 +531,7 @@ export default function PracticeDiaryIndex({ data, activeView }: PracticeDiaryIn
 
       <section className="grid gap-3">
         <div className="px-1">
-          <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
+          <h2 className="sr-only">
             {currentView.heading}
           </h2>
         </div>

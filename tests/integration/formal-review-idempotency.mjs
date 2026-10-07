@@ -24,7 +24,7 @@ await db.exec(`
     resulting_stage integer not null
   );
   create table public.pieces(id bigint primary key);
-  create table public.learning_lists(id bigint primary key, user_id uuid not null);
+  create table public.learning_lists(id bigint primary key, user_id text not null);
   create table public.user_instruments(id bigint primary key, user_id uuid not null);
   create table public.user_pieces(
     id bigint primary key,
@@ -80,6 +80,7 @@ await db.exec(`
   insert into auth.users values ('${owner}'), ('${other}');
   insert into profiles(id) values ('${owner}'), ('${other}');
   insert into pieces(id) values (101), (202), (303), (404), (505);
+  insert into learning_lists(id,user_id) values (1,'${owner}'), (2,'${other}');
   insert into user_pieces(id,user_id,piece_id,stage,next_review_due,status) values
     (11,'${owner}',101,4,'2026-09-25','learning'),
     (22,'${other}',202,4,'2026-09-25','learning'),
@@ -103,6 +104,11 @@ const integrityMigration = (await readdir(migrationDirectory)).find((name) =>
 )
 assert.ok(integrityMigration, "P35-03 review schedule/count migration must exist")
 await db.exec(await readFile(new URL(integrityMigration, migrationDirectory), "utf8"))
+const listIdentityMigration = (await readdir(migrationDirectory)).find((name) =>
+  name.endsWith("_fix_repertoire_summary_list_identity.sql")
+)
+assert.ok(listIdentityMigration, "repertoire summary must support text list owner IDs")
+await db.exec(await readFile(new URL(listIdentityMigration, migrationDirectory), "utf8"))
 
 await db.exec(`
   grant usage on schema public, auth to authenticated;
@@ -162,12 +168,14 @@ await query("update user_pieces set next_review_due=$1::date - 1 where id=44", [
 await query("update user_pieces set next_review_due=$1::date + 1 where id=55", [today])
 const ownerSummary = (await query("select * from get_my_repertoire_summary()"))[0]
 assert.equal(Number(ownerSummary.practice_count), 3)
+assert.equal(Number(ownerSummary.list_count), 1)
 assert.equal(Number(ownerSummary.due_today_count), 1)
 assert.equal(Number(ownerSummary.needs_attention_count), 1)
 assert.equal(Number(ownerSummary.review_event_count), 4, "detached Known reviews remain in the owner's history count")
 
 await query("select set_config('test.user_id',$1,false)", [other])
 const otherSummary = (await query("select * from get_my_repertoire_summary()"))[0]
+assert.equal(Number(otherSummary.list_count), 1, "list counts remain account scoped")
 assert.equal(Number(otherSummary.review_event_count), 1, "review counts remain account scoped")
 
 await db.close()

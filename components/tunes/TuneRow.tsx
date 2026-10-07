@@ -28,7 +28,7 @@ export default function TuneRow({
 
   return (
     <article
-      className={`grid min-w-0 ${compactMobile ? "gap-2 py-2.5" : "gap-3 py-4"} md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-6 md:py-4 ${className}`}
+      className={`grid min-w-0 ${compactMobile ? "grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-2.5" : "gap-3 py-4"} md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-6 md:py-4 ${className}`}
     >
       <div className="min-w-0">
         <TuneIdentity
@@ -43,7 +43,7 @@ export default function TuneRow({
           personalState={personalState}
           compactMobile={compactMobile}
           headingClassName="break-words text-base font-semibold leading-tight text-text-primary md:text-lg"
-          linkClassName="rounded-sm decoration-action-primary decoration-2 underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+          linkClassName="inline-flex min-h-11 max-w-full items-center rounded-sm decoration-action-primary decoration-2 underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
         />
 
         {supportingContent ? (
@@ -54,7 +54,7 @@ export default function TuneRow({
       {actions ? (
         <div
           className={compactMobile
-            ? "grid min-w-0 grid-cols-4 items-center gap-1 md:flex md:flex-wrap md:gap-2 md:justify-end"
+            ? "flex min-w-0 flex-wrap items-center justify-end gap-1 md:flex md:flex-wrap md:gap-2 md:justify-end"
             : "flex flex-wrap items-center gap-2 md:justify-end"}
           aria-label={`Actions for ${piece.title}`}
         >

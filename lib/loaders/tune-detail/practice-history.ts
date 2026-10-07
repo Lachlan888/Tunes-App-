@@ -11,20 +11,7 @@ type ReviewEventRow = {
   id: number
   outcome: string
   resulting_stage: number | null
-  created_at: string | null
-}
-
-type PracticeReviewRow = {
-  id: number
-  created_at: string
-  review_events: ReviewEventRow | ReviewEventRow[] | null
-}
-
-function getJoinedReview(
-  value: PracticeReviewRow["review_events"]
-): ReviewEventRow | null {
-  if (!value) return null
-  return Array.isArray(value) ? value[0] ?? null : value
+  date: string
 }
 
 export async function loadTunePracticeHistory(
@@ -86,41 +73,25 @@ export async function loadTunePracticeHistory(
       .order("name", { ascending: true }),
 
     supabase
-      .from("practice_events")
-      .select(
-        `
-          id,
-          created_at,
-          review_events (
-            id,
-            outcome,
-            resulting_stage,
-            created_at
-          )
-        `
-      )
+      .from("review_events")
+      .select("id, outcome, resulting_stage, date")
       .eq("user_id", userId)
       .eq("piece_id", pieceId)
-      .not("review_event_id", "is", null)
-      .order("created_at", { ascending: false })
+      .order("date", { ascending: false })
       .limit(5),
   ])
 
-  const typedReviewHistory = (
-    (reviewHistoryResult.data ?? []) as PracticeReviewRow[]
-  ).flatMap((event): TuneReviewSummary[] => {
-    const review = getJoinedReview(event.review_events)
-    if (!review) return []
+  if (reviewHistoryResult.error) {
+    throw new Error("Tune review history could not be loaded")
+  }
 
-    return [
-      {
-        id: review.id,
-        outcome: review.outcome,
-        resulting_stage: review.resulting_stage,
-        created_at: review.created_at ?? event.created_at,
-      },
-    ]
-  })
+  const typedReviewHistory = ((reviewHistoryResult.data ?? []) as ReviewEventRow[])
+    .map((review): TuneReviewSummary => ({
+      id: review.id,
+      outcome: review.outcome,
+      resulting_stage: review.resulting_stage,
+      created_at: review.date,
+    }))
 
   return {
     typedPracticeNotes: ((practiceNotesResult.data ?? []) as PracticeNoteRow[])

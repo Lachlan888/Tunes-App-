@@ -7,7 +7,7 @@ export default function ConfirmedActionForm({ action, scope, children, className
   children: ReactNode
   className?: string
 }) {
-  return <details className={`rounded-control border border-border p-3 ${className}`}>
+  return <details className={`border-t border-hairline pt-3 ${className}`}>
     <summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold">Review action</summary>
     <p className="my-3 text-sm">{scope}</p>
     <form action={action} className="space-y-3">

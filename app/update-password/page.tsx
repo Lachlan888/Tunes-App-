@@ -56,69 +56,68 @@ export default function UpdatePasswordPage() {
 
   return (
     <main className="mx-auto max-w-xl px-4 py-6 text-text-primary sm:px-6 lg:py-10">
-      <h1 className="mb-2 text-4xl font-bold">Set new password</h1>
-      <p className="mb-6 text-text-muted">
-        Enter a new password for your Tunes App account.
-      </p>
+      <section className="border-t border-hairline py-6 sm:py-8">
+        <h1 className="font-sans text-4xl font-bold tracking-tight">Set new password</h1>
 
-      {message && (
-        <div className="mb-4 rounded-control border border-state-known/55 bg-state-known/12 p-3 text-sm text-text-primary">
-          {message}
-        </div>
-      )}
+        {message && (
+          <div role="status" className="mb-4 border-l-4 border-state-known py-2 pl-3 text-sm text-state-known">
+            {message}
+          </div>
+        )}
 
-      {errorMessage && (
-        <div className="mb-4 rounded-control border border-action-destructive/55 bg-action-destructive/10 p-3 text-sm text-action-destructive">
-          {errorMessage}
-        </div>
-      )}
+        {errorMessage && (
+          <div role="alert" className="mb-4 border-l-4 border-action-destructive py-2 pl-3 text-sm text-action-destructive">
+            {errorMessage}
+          </div>
+        )}
 
-      <div className="space-y-3">
-        <div>
-          <label
-            htmlFor="password"
-            className="mb-1 block text-sm font-medium"
-          >
-            New password
-          </label>
-          <input
-            id="password"
-            className="min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3 py-2 outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-            type="password"
-            autoComplete="new-password"
-            value={password}
+        <div className="space-y-3">
+          <div>
+            <label
+              htmlFor="password"
+              className="mb-1 block text-sm font-medium"
+            >
+              New password
+            </label>
+            <input
+              id="password"
+              className="min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3 py-2 outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              type="password"
+              autoComplete="new-password"
+              value={password}
+              disabled={isSubmitting}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="confirm-password"
+              className="mb-1 block text-sm font-medium"
+            >
+              Confirm new password
+            </label>
+            <input
+              id="confirm-password"
+              className="min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3 py-2 outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              type="password"
+              autoComplete="new-password"
+              value={confirmPassword}
+              disabled={isSubmitting}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+            />
+          </div>
+
+          <button
+            type="button"
             disabled={isSubmitting}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="confirm-password"
-            className="mb-1 block text-sm font-medium"
+            onClick={handleUpdatePassword}
+            className="min-h-11 w-full rounded-control bg-action-primary px-4 py-2 font-semibold text-action-primary-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Confirm new password
-          </label>
-          <input
-            id="confirm-password"
-            className="min-h-11 w-full rounded-control border border-hairline bg-surface-paper px-3 py-2 outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-            type="password"
-            autoComplete="new-password"
-            value={confirmPassword}
-            disabled={isSubmitting}
-            onChange={(event) => setConfirmPassword(event.target.value)}
-          />
+            {isSubmitting ? "Updating password..." : "Update password"}
+          </button>
         </div>
-
-        <button
-          type="button"
-          disabled={isSubmitting}
-          onClick={handleUpdatePassword}
-          className="min-h-11 w-full rounded-control bg-action-primary px-4 py-2 font-semibold text-action-primary-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isSubmitting ? "Updating password..." : "Update password"}
-        </button>
-      </div>
+      </section>
     </main>
   )
 }

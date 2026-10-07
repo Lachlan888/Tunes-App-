@@ -1,8 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
+import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
+import { formatPracticeDate } from "@/lib/review"
 import type {
   PracticeFocus,
   PracticeFocusStatus,
@@ -32,26 +34,18 @@ function getStatusLabel(status: PracticeFocus["status"]) {
 
 function getStatusClasses(status: PracticeFocus["status"]) {
   if (status === "active") {
-    return "border-success bg-success text-success-foreground"
+    return "text-state-known"
   }
 
   if (status === "completed") {
-    return "border-primary bg-primary text-primary-foreground"
+    return "text-state-practice"
   }
 
-  return "border-border bg-muted text-muted-foreground"
+  return "text-muted-foreground"
 }
 
 function formatDateOnly(dateOnly: string | null) {
-  if (!dateOnly) return null
-
-  const [year, month, day] = dateOnly.split("-")
-
-  if (!year || !month || !day) {
-    return dateOnly
-  }
-
-  return `${day}/${month}/${year}`
+  return formatPracticeDate(dateOnly)
 }
 
 function formatMeta(focus: PracticeFocus) {
@@ -101,9 +95,9 @@ function MobileFocusRow({
 
           <span
             className={joinClasses(
-              "shrink-0 rounded-full border px-2.5 py-1 text-[0.7rem] font-semibold",
+              "shrink-0 text-xs font-semibold",
               isSelected
-                ? "border-primary bg-primary text-primary-foreground"
+                ? "text-state-practice"
                 : getStatusClasses(focus.status)
             )}
           >
@@ -148,9 +142,9 @@ function DesktopFocusPickerRow({
 
         <span
           className={joinClasses(
-            "shrink-0 rounded-full border px-3 py-1 text-xs font-semibold",
+            "shrink-0 text-xs font-semibold",
             isSelected
-              ? "border-primary bg-primary text-primary-foreground"
+              ? "text-state-practice"
               : getStatusClasses(focus.status)
           )}
         >
@@ -178,7 +172,7 @@ function SelectedFocusCard({ focus }: { focus: PracticeFocus }) {
 
           <span
             className={joinClasses(
-              "rounded-full border px-3 py-1 text-xs font-semibold",
+              "text-xs font-semibold",
               getStatusClasses(focus.status)
             )}
           >
@@ -260,36 +254,15 @@ function FocusPickerModal({
   onClose: () => void
 }) {
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end bg-foreground/30 px-3 pb-3 md:items-center md:justify-center md:p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Choose practice focus"
+    <ResponsiveModal
+      isOpen
+      onClose={onClose}
+      mobileMode="full-screen"
+      desktopMaxWidth="md:max-w-3xl"
+      title="Choose a focus"
+      description="Choose which focus to display on this page."
+      bodyClassName="min-h-0 flex-1 overflow-y-auto px-4 py-4 md:px-6"
     >
-      <div className="max-h-[88vh] w-full overflow-hidden rounded-t-3xl border border-border bg-background shadow-xl md:max-w-3xl md:rounded-3xl">
-        <div className="sticky top-0 z-10 border-b border-border bg-background px-4 py-4 md:px-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="mt-1 font-sans text-2xl font-bold leading-tight text-foreground">
-                Choose a focus
-              </h2>
-
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Choose which focus to display on this page.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              className={buttonStyles.text}
-              onClick={onClose}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-
-        <div className="max-h-[calc(88vh-8rem)] overflow-y-auto px-4 py-4 md:px-6">
           <div className="grid gap-6">
             {groups.map((group) => (
               <section key={group.status} className="grid gap-3">
@@ -335,9 +308,7 @@ function FocusPickerModal({
               </section>
             ))}
           </div>
-        </div>
-      </div>
-    </div>
+    </ResponsiveModal>
   )
 }
 
@@ -386,13 +357,19 @@ export default function PracticeFocusList({
     activeFoci[0]?.id ?? allFoci[0]?.id ?? null
   )
   const [isPickerOpen, setIsPickerOpen] = useState(false)
+  const pickerTriggerRef = useRef<HTMLButtonElement>(null)
 
   const selectedFocus =
     allFoci.find((focus) => focus.id === selectedFocusId) ?? null
 
   function handleSelectFocus(focus: PracticeFocus) {
     setSelectedFocusId(focus.id)
+    closePicker()
+  }
+
+  function closePicker() {
     setIsPickerOpen(false)
+    requestAnimationFrame(() => pickerTriggerRef.current?.focus({ preventScroll: true }))
   }
 
   if (allFoci.length === 0) {
@@ -418,13 +395,10 @@ export default function PracticeFocusList({
             <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
               Current intention
             </h2>
-
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Choose which focus to display here.
-            </p>
           </div>
 
           <button
+            ref={pickerTriggerRef}
             type="button"
             className={`${buttonStyles.secondaryStrong} w-full sm:w-auto`}
             onClick={() => setIsPickerOpen(true)}
@@ -441,7 +415,7 @@ export default function PracticeFocusList({
           groups={groups}
           selectedFocusId={selectedFocusId}
           onSelectFocus={handleSelectFocus}
-          onClose={() => setIsPickerOpen(false)}
+          onClose={closePicker}
         />
       ) : null}
     </div>

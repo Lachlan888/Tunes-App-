@@ -73,7 +73,7 @@ export default function ReferencePracticeStrip({
     ? `Learning · Stage ${userPiece.stage}`
     : userKnownPiece
       ? "Known"
-      : "New to me"
+      : null
 
   useEffect(() => {
     const root = document.documentElement
@@ -95,9 +95,9 @@ export default function ReferencePracticeStrip({
             {piece.title}
           </p>
           <div className="mt-0.5 flex min-w-0 items-center gap-2 text-xs text-text-muted">
-            <span className="shrink-0 rounded-pill border border-hairline bg-surface-note px-2 py-1 font-semibold text-text-primary">
+            {status ? <span className="shrink-0 rounded-pill border border-hairline bg-surface-note px-2 py-1 font-semibold text-text-primary">
               {status}
-            </span>
+            </span> : null}
             {detail ? <span className="truncate">{detail}</span> : null}
           </div>
         </div>

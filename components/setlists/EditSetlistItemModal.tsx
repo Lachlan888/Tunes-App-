@@ -3,60 +3,51 @@
 import { useState } from "react"
 import KeyPickerField from "@/components/music/KeyPickerField"
 import SubmitButton from "@/components/SubmitButton"
+import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import type { SetlistItemWithCoverage } from "@/lib/types"
 
 type EditSetlistItemModalProps = {
   item: SetlistItemWithCoverage
   redirectTo: string
   updateSetlistItem: (formData: FormData) => Promise<void>
+  controlledOpen?: boolean
+  onControlledClose?: () => void
 }
 
 const inputClass =
-  "w-full rounded-2xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "w-full rounded-control border border-hairline bg-surface-paper px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function EditSetlistItemModal({
   item,
   redirectTo,
   updateSetlistItem,
+  controlledOpen,
+  onControlledClose,
 }: EditSetlistItemModalProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const isOpen = controlledOpen ?? internalOpen
 
   const title = item.piece?.title ?? "Tune"
 
   return (
     <>
-      <button
+      {controlledOpen === undefined ? <button
         type="button"
-        onClick={() => setIsOpen(true)}
-        className="min-h-11 inline-flex items-center justify-center rounded-control border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+        onClick={() => setInternalOpen(true)}
+        className="min-h-11 inline-flex items-center justify-center rounded-control border border-hairline px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-surface-note hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
       >
         Edit
-      </button>
+      </button> : null}
 
-      {isOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/35 px-4 py-8 backdrop-blur-sm">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-xl">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight">
-                  {title}
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  These details belong to this setlist only. They do not edit
-                  the shared tune record.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="rounded-lg border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
-              >
-                Close
-              </button>
-            </div>
-
-            <form action={updateSetlistItem} className="mt-6 space-y-4">
+      <ResponsiveModal
+        isOpen={isOpen}
+        onClose={() => controlledOpen === undefined ? setInternalOpen(false) : onControlledClose?.()}
+        title={title}
+        description="These details belong to this setlist only. They do not edit the shared tune record."
+        mobileMode="full-screen"
+        desktopMaxWidth="md:max-w-2xl"
+      >
+            <form action={updateSetlistItem} className="space-y-4">
               <input type="hidden" name="setlist_id" value={item.setlist_id} />
               <input
                 type="hidden"
@@ -140,12 +131,10 @@ export default function EditSetlistItemModal({
               <SubmitButton
                 label="Save tune details"
                 pendingLabel="Saving..."
-                className="w-full min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="w-full min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
               />
             </form>
-          </div>
-        </div>
-      ) : null}
+      </ResponsiveModal>
     </>
   )
 }

@@ -35,7 +35,9 @@ test("no-overlap and large-overlap paging remain bounded", () => {
   assert.deepEqual(deriveCompareOutcomeGroups(["a", "b"], []).playableTogetherIds, [])
   assert.equal(parseComparePage(undefined), 1)
   assert.equal(parseComparePage("-2"), 1)
-  assert.equal(parseComparePage("999"), 50)
+  assert.equal(parseComparePage("61"), 61)
+  assert.equal(parseComparePage("999"), 999)
+  assert.equal(parseComparePage("1001"), 1000)
 })
 
 test("in-person codes are strong, readable, short-lived and reconnectable", () => {

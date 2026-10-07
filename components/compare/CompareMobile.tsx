@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import ComparePageStatusMessages from "@/components/compare/ComparePageStatusMessages"
 import CompareInPersonSheet, {
   QrIcon,
@@ -45,6 +45,12 @@ export default function CompareMobile(props: CompareViewProps) {
 
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(hasSearchResolution)
   const [isInviteSheetOpen, setIsInviteSheetOpen] = useState(false)
+  const addButtonRef = useRef<HTMLButtonElement>(null)
+
+  function closeAddSheet() {
+    setIsAddSheetOpen(false)
+    requestAnimationFrame(() => addButtonRef.current?.focus({ preventScroll: true }))
+  }
 
   return (
     <>
@@ -68,8 +74,8 @@ export default function CompareMobile(props: CompareViewProps) {
                   {profile.display_name || profile.username || "Musician"} ×
                 </Link>
               ))}
-              <button type="button" onClick={() => setIsAddSheetOpen(true)} className="inline-flex min-h-11 rounded-control border border-primary px-4 text-sm font-semibold items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Add musician</button>
-              <button type="button" onClick={() => setIsInviteSheetOpen(true)} className="inline-flex min-h-11 rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Compare in person</button>
+              <button ref={addButtonRef} type="button" onClick={() => setIsAddSheetOpen(true)} className="inline-flex min-h-11 rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Add musician</button>
+              <button type="button" onClick={() => setIsInviteSheetOpen(true)} className="inline-flex min-h-11 rounded-control border border-primary px-4 text-sm font-semibold items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Compare in person</button>
             </div>
           </header>
           <CompareOutcomeExperience {...props} />
@@ -80,6 +86,9 @@ export default function CompareMobile(props: CompareViewProps) {
             <h1 className="font-sans text-4xl font-bold tracking-tight text-foreground md:text-6xl">
               Compare
             </h1>
+            <p className="mt-3 max-w-2xl text-base text-muted-foreground md:text-lg">
+              Find tunes you can play together with another musician.
+            </p>
           </header>
 
           <ComparePageStatusMessages
@@ -88,30 +97,32 @@ export default function CompareMobile(props: CompareViewProps) {
             primarySearchValue={primarySearchValue}
           />
 
-          <section className="mb-7">
-            <h2 className="text-xl font-semibold text-foreground">
-              Start compare
-            </h2>
+          <section className="mb-7" aria-label="Choose a musician">
+            <div className="flex flex-col gap-3 border-y border-border py-4 sm:flex-row">
+              <button
+                ref={addButtonRef}
+                type="button"
+                onClick={() => setIsAddSheetOpen(true)}
+                className="inline-flex min-h-12 rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+              >
+                Find a musician
+              </button>
 
-            <div className="mt-3 flex flex-col gap-3 border-y border-border py-4 sm:flex-row">
               <button
                 type="button"
                 onClick={() => setIsInviteSheetOpen(true)}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                className="inline-flex min-h-12 rounded-control border border-border bg-surface-paper px-5 py-3 text-sm font-medium text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
               >
                 <QrIcon />
                 <span>Compare in person</span>
               </button>
-
-              <button
-                type="button"
-                onClick={() => setIsAddSheetOpen(true)}
-                className="inline-flex min-h-12 rounded-control border border-border bg-surface-paper px-5 py-3 text-sm font-medium text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
-              >
-                Add person
-              </button>
             </div>
-            <EnterCompareCodeForm />
+            <details className="group">
+              <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
+                Have a code? Enter it here
+              </summary>
+              <EnterCompareCodeForm />
+            </details>
           </section>
 
           {matchedProfile && !canCompare ? (
@@ -168,6 +179,7 @@ export default function CompareMobile(props: CompareViewProps) {
                             group: overlapGroup,
                           })}
                           label={action.label}
+                          ariaLabel={`${action.label} ${suggestion.display_name || suggestion.username || "Unnamed player"}`}
                           pendingLabel="Loading comparison..."
                           disabled={action.disabled}
                           refresh
@@ -185,7 +197,7 @@ export default function CompareMobile(props: CompareViewProps) {
 
       <MobileCompareAddPersonSheet
         isOpen={isAddSheetOpen}
-        onClose={() => setIsAddSheetOpen(false)}
+        onClose={closeAddSheet}
         compareSuggestions={compareSuggestions}
         filterPreservedUsers={filterPreservedUsers}
         includePractice={includePractice}

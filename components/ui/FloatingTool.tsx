@@ -8,6 +8,7 @@ export default function FloatingTool({ title, status, onClose, children, compact
   const panel = useRef<HTMLElement>(null)
   const handle = useRef<HTMLButtonElement>(null)
   const drag = useRef<{ x: number; y: number; left: number; top: number } | null>(null)
+  const placed = useRef(false)
   const [position, setPosition] = useState({ left: 16, top: 80 })
   const [collapsed, setCollapsed] = useState(false)
   const move = useCallback((left: number, top: number) => {
@@ -26,7 +27,18 @@ export default function FloatingTool({ title, status, onClose, children, compact
     }
   }, [])
   useEffect(() => {
-    const constrain = () => { const bounds = panel.current?.getBoundingClientRect(); if (bounds) move(bounds.left, bounds.top) }
+    const constrain = () => {
+      const bounds = panel.current?.getBoundingClientRect()
+      if (!bounds) return
+      if (!placed.current) {
+        placed.current = true
+        if (window.innerWidth >= 768) {
+          move(window.innerWidth - bounds.width - 24, window.innerHeight - bounds.height - 24)
+          return
+        }
+      }
+      move(bounds.left, bounds.top)
+    }
     const observer = new ResizeObserver(constrain)
     if (panel.current) observer.observe(panel.current)
     window.addEventListener("resize", constrain)

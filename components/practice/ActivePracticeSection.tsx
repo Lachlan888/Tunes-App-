@@ -4,7 +4,6 @@ import RemoveFromPracticeButton from "@/components/practice/RemoveFromPracticeBu
 import TuneMediaLauncher from "@/components/reference-media/TuneMediaLauncher"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { cardStyles } from "@/components/ui/cardStyles"
-import { formatPracticeDate } from "@/lib/review"
 import type { ReviewQueueItem } from "@/lib/loaders/review"
 
 type ActivePracticeSectionProps = {
@@ -25,9 +24,7 @@ export default function ActivePracticeSection({
           Currently in practice ({totalCount})
         </summary>
 
-        <p className="mt-3 text-sm text-muted-foreground">
-          Your next 20 scheduled tunes. Browse your full Practice collection for search and paging.
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">Next 20 scheduled tunes</p>
 
         <Link href="/library/practice" className={buttonStyles.text}>Browse all Practice tunes</Link>
 
@@ -78,12 +75,9 @@ export default function ActivePracticeSection({
                         {userPiece.piece?.time_signature ?? "Unknown"}
                       </p>
 
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {formatPracticeDate(userPiece.next_review_due) ? `Next review ${formatPracticeDate(userPiece.next_review_due)}` : "No review date set"}
-                      </p>
-
                       <PracticeProgress
                         stage={userPiece.stage}
+                        nextReviewDue={userPiece.next_review_due}
                         className="mt-3 max-w-sm"
                       />
 

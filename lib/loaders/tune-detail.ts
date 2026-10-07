@@ -45,7 +45,7 @@ export type TuneDetailLoadScope = TuneDetailView
 
 export async function loadTuneDetailData(
   rawPieceId: string,
-  scope: TuneDetailLoadScope = "practice"
+  scope: TuneDetailLoadScope = "info"
 ): Promise<TuneDetailLoadResult> {
   const pieceId = Number(rawPieceId)
 
@@ -56,8 +56,8 @@ export async function loadTuneDetailData(
   const { supabase, user, role: currentUserRole } =
     await requireUserContext()
 
-  const needsComments = scope === "about"
-  const needsPracticeHistory = scope === "practice"
+  const needsComments = scope === "info"
+  const needsPracticeHistory = scope === "info"
 
   const [
     coreResult,

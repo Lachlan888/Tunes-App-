@@ -17,6 +17,7 @@ type HomeDensity = "compact" | "standard" | "spacious"
 
 type HomeMobileSummarySwitcherProps = {
   summary: HomeSummaryData
+  currentUserId: string
   recentFriendActivity: FriendActivityItem[]
   activityNextCursor: string | null
   streakSummary: StreakSummary
@@ -92,7 +93,7 @@ function MobileSectionHeading({
 }
 
 function MobilePanel({ children }: { children: React.ReactNode }) {
-  return <section className="py-4">{children}</section>
+  return <section className="border-t border-hairline py-5 first:border-t-0 first:pt-0">{children}</section>
 }
 
 function MobileStatGrid({
@@ -101,12 +102,12 @@ function MobileStatGrid({
   items: { label: string; value: number; href: string }[]
 }) {
   return (
-    <div className="grid grid-cols-2 border-b border-hairline">
+    <div className="grid grid-cols-2">
       {items.map((item) => (
         <Link
           key={item.label}
           href={item.href}
-          className="flex min-h-16 items-center justify-between gap-2 px-3 py-2 odd:border-r odd:border-hairline focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--focus-ring)]"
+          className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-3 py-2 odd:border-r odd:border-hairline focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--focus-ring)]"
         >
           <p className="text-sm font-semibold text-foreground">{item.label}</p>
 
@@ -121,7 +122,7 @@ function MobileStatGrid({
 
 function MobileEmptyBlock({ children }: { children: React.ReactNode }) {
   return (
-    <p className="border-b border-hairline py-4 text-sm leading-6 text-muted-foreground">
+    <p className="py-4 text-sm leading-6 text-muted-foreground">
       {children}
     </p>
   )
@@ -135,7 +136,7 @@ function MobileRow({
   actionLabel = "Open",
 }: MobileRowProps) {
   const content = (
-    <div className="flex items-center justify-between gap-4 border-b border-border/70 py-3 last:border-b-0">
+    <div className="flex items-center justify-between gap-4 py-3">
       <div className="min-w-0">
         <p className="line-clamp-2 text-base font-semibold leading-6 text-foreground">
           {title}
@@ -153,19 +154,19 @@ function MobileRow({
       </div>
 
       {href ? (
-        <span className="inline-flex min-h-11 shrink-0 rounded-control border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground items-center justify-center">
+        <span className="inline-flex min-h-11 shrink-0 items-center text-sm font-medium text-muted-foreground underline underline-offset-4">
           {actionLabel}
         </span>
       ) : null}
     </div>
   )
 
-  if (!href) return content
+  if (!href) return <div className="border-b border-hairline last:border-b-0">{content}</div>
 
   return (
     <Link
       href={href}
-      className="block focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+      className="block border-b border-hairline last:border-b-0 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
     >
       {content}
     </Link>
@@ -180,55 +181,52 @@ function TodayPanel({
   density: HomeDensity
 }) {
   const previewLimit = getPreviewLimit(density)
-  const continueTune = summary.dueTodayPreview[0] ?? summary.inPracticePreview[0]
+  const readyCount = summary.dueTodayCount + summary.needsAttentionCount
+  const hasRepertoire = summary.knownCount + summary.practiceCount > 0
   const queuedTune = summary.learningQueuePreview[0]
-  const continueHref = summary.dueTodayCount > 0
+  const continueHref = readyCount > 0
     ? "/review"
+    : queuedTune
+      ? `/library/${queuedTune.piece_id}`
+      : hasRepertoire
+        ? summary.practiceCount > 0 ? "/library/practice" : "/library/known"
+        : "/library"
+  const continueTitle = readyCount > 0
+    ? summary.dueTodayCount === 0 ? "Practice catch-up" : "Practice is ready"
+    : queuedTune
+      ? queuedTune.title
+      : hasRepertoire ? "You’re caught up" : "Find a tune"
+  const continueMeta = readyCount > 0
+    ? summary.dueTodayCount === 0
+      ? `${summary.needsAttentionCount} overdue tune${summary.needsAttentionCount === 1 ? "" : "s"} · oldest first`
+      : `${readyCount} tune${readyCount === 1 ? "" : "s"} ready`
+    : queuedTune
+      ? `Saved in ${queuedTune.firstListName} · choose whether to practise it`
+      : hasRepertoire ? "Your next reviews will appear here when due." : "Explore Tunes to start your repertoire."
+  const dueQueuePreview = summary.dueTodayCount > 0
+    ? summary.dueTodayPreview.slice(0, previewLimit)
     : summary.needsAttentionCount > 0
-      ? "/review"
-      : continueTune
-        ? `/library/${continueTune.piece_id}`
-        : queuedTune
-          ? `/library/${queuedTune.piece_id}`
-          : "/review"
-  const continueTitle = summary.needsAttentionCount > 0 && summary.dueTodayCount === 0
-    ? "Continue practice"
-    : continueTune?.title ?? queuedTune?.title ?? "Open today’s practice"
-  const continueMeta = summary.needsAttentionCount > 0 && summary.dueTodayCount === 0
-    ? `${summary.needsAttentionCount} overdue tune${summary.needsAttentionCount === 1 ? "" : "s"} · oldest first`
-    : continueTune
-      ? summary.dueTodayPreview[0]?.piece_id === continueTune.piece_id
-        ? `Stage ${continueTune.stage} · ${getReviewIntervalDays(continueTune.stage)}-day review due today`
-        : `Stage ${continueTune.stage} · ${getReviewIntervalDays(continueTune.stage)}-day review`
-      : queuedTune
-        ? `Next from ${queuedTune.firstListName}`
-        : "Your practice room is ready"
-  const dueQueuePreview = summary.dueTodayPreview.slice(1, Math.min(previewLimit, 3))
-  const learningQueuePreview = dueQueuePreview.length === 0
-    ? summary.learningQueuePreview.slice(continueTune || queuedTune ? 1 : 0, 2)
-    : []
+      ? summary.inPracticePreview.slice(0, previewLimit)
+      : []
+  const learningQueuePreview = readyCount === 0 ? summary.learningQueuePreview.slice(queuedTune ? 1 : 0, 2) : []
+  const hasPreview = dueQueuePreview.length > 0 || learningQueuePreview.length > 0
 
   return (
-    <div className="space-y-4">
-      <section className="border-b border-hairline py-5">
+    <div>
+      <section className="py-5">
         <h2 className="mt-2 font-sans text-2xl font-bold leading-tight text-text-primary">{continueTitle}</h2>
         <p className="mt-1 text-sm text-text-muted">{continueMeta}</p>
         <Link href={continueHref} className={`${buttonStyles.primary} mt-4`}>
-          {summary.dueTodayCount > 0 || summary.needsAttentionCount > 0
-            ? "Continue Practice"
-            : continueTune || queuedTune
-              ? "Open tune"
-              : "Start Practice"}
+          {readyCount > 0
+            ? summary.dueTodayCount === 0 ? "Catch up on Practice" : "Continue Practice"
+            : queuedTune ? "Open tune" : hasRepertoire ? "View repertoire" : "Find a tune"}
         </Link>
       </section>
 
-      <section className="space-y-2">
-        <MobileSectionHeading title="Up next" action={<Link href="/review" className={buttonStyles.text}>View practice</Link>} />
+      {hasPreview ? <section className="space-y-2 border-t border-hairline py-5">
+        <MobileSectionHeading title="Up next" action={readyCount > 0 ? <Link href="/review" className={buttonStyles.text}>View practice</Link> : null} />
 
-        {dueQueuePreview.length === 0 && learningQueuePreview.length === 0 ? (
-          <MobileEmptyBlock>No more tunes are due today.</MobileEmptyBlock>
-        ) : (
-          <div className="border-y border-border/70">
+          <div className="border-t border-hairline">
             {dueQueuePreview.map((userPiece) => (
                 <MobileRow
                   key={userPiece.user_piece_id}
@@ -246,15 +244,14 @@ function TodayPanel({
               />
             ))}
           </div>
-        )}
-      </section>
+      </section> : null}
 
-      <MobileStatGrid
+      {summary.dueTodayCount > 0 && summary.needsAttentionCount > 0 ? <section className="border-t border-hairline py-5"><MobileStatGrid
         items={[
           { label: "Due today", value: summary.dueTodayCount, href: "/review" },
-          { label: "Needs attention", value: summary.needsAttentionCount, href: "/review" },
+          { label: "Overdue", value: summary.needsAttentionCount, href: "/review" },
         ]}
-      />
+      /></section> : null}
 
     </div>
   )
@@ -267,8 +264,10 @@ function RepertoirePanel({
   summary: HomeSummaryData
   streakSummary: StreakSummary
 }) {
+  const hasTuneEntries = summary.knownCount > 0 || summary.practiceCount > 0 || summary.learningQueueCount > 0
+  const hasStreakHistory = streakSummary.current_revision_streak > 0 || streakSummary.longest_revision_streak > 0 || streakSummary.current_practice_streak > 0 || streakSummary.longest_practice_streak > 0
   return (
-    <div className="space-y-5">
+    <div>
       <MobilePanel>
         <MobileSectionHeading title="Repertoire" />
 
@@ -299,6 +298,8 @@ function RepertoirePanel({
           />
         </div>
       </MobilePanel>
+
+      {!hasTuneEntries ? <p className="text-sm leading-6 text-text-muted">Your repertoire will grow here. <Link href="/library" className={buttonStyles.text}>Browse tunes</Link></p> : <>
 
       <MobilePanel>
         <MobileSectionHeading
@@ -341,17 +342,9 @@ function RepertoirePanel({
         </div>
       </MobilePanel>
 
-      <MobilePanel>
-        <MobileSectionHeading
-          title="Known repertoire"
-          action={<Link href="/library/known" className={buttonStyles.text}>View all</Link>}
-        />
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          {summary.knownCount} tune{summary.knownCount === 1 ? "" : "s"} marked Known. Open the full repertoire to review or update them.
-        </p>
-      </MobilePanel>
+      </>}
 
-      <StreakSummarySection streakSummary={streakSummary} />
+      {hasTuneEntries || hasStreakHistory ? <StreakSummarySection streakSummary={streakSummary} /> : null}
     </div>
   )
 }
@@ -359,9 +352,11 @@ function RepertoirePanel({
 function SocialPanel({
   recentFriendActivity,
   activityNextCursor,
+  currentUserId,
 }: {
   recentFriendActivity: FriendActivityItem[]
   activityNextCursor: string | null
+  currentUserId: string
 }) {
   return (
     <div className="space-y-5">
@@ -377,6 +372,7 @@ function SocialPanel({
 
         <SocialActivityFeed
           items={recentFriendActivity}
+          currentUserId={currentUserId}
           redirectTo="/"
           initialNextCursor={activityNextCursor}
           scrollRegionLabel="Friend activity feed"
@@ -388,6 +384,7 @@ function SocialPanel({
 
 export default function HomeMobileSummarySwitcher({
   summary,
+  currentUserId,
   recentFriendActivity,
   activityNextCursor,
   streakSummary,
@@ -410,7 +407,7 @@ export default function HomeMobileSummarySwitcher({
     panels={[
       { id: "today", label: "Today", content: <TodayPanel summary={summary} density={density} /> },
       { id: "repertoire", label: "Repertoire", content: <RepertoirePanel summary={summary} streakSummary={streakSummary} /> },
-      { id: "social", label: "Social", content: <SocialPanel recentFriendActivity={recentFriendActivity} activityNextCursor={activityNextCursor} /> },
+      { id: "social", label: "Social", content: <SocialPanel recentFriendActivity={recentFriendActivity} activityNextCursor={activityNextCursor} currentUserId={currentUserId} /> },
     ]}
   />
 }

@@ -17,7 +17,7 @@ export default async function PracticeDiaryIndexPage({
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
-      <PageHeader title="Practice Index" />
+      <PageHeader title="Tune index & history" />
 
       <section className="mb-5 md:mb-6">
         <PracticeDiaryNav active="index" />

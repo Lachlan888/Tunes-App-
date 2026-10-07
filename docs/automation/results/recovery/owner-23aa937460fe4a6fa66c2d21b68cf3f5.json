@@ -1,0 +1,7 @@
+{
+  "owner_task_id": "01a10c94-f478-7ae0-bd9f-946b5cd8b50d",
+  "terminal_turn_status": "failed",
+  "evidence": "wait_threads latest turn 01a10c94-f925-7542-97f4-9485e5154400 failed; last tool marker completed",
+  "checked_at": "2026-10-05T16:03:18.691741+00:00",
+  "lock_sha256": "581182f43601d3b6aab20cef6c01b4f4dd7cdefc66aa6bdad06ff5c01bfa5d2b"
+}

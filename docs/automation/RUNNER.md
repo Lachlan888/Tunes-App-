@@ -1,4 +1,4 @@
-# Tunes hourly batch runner
+# Tunes 40-minute batch runner
 
 ## Explicit visual-review request — 4 October 2026
 
@@ -22,9 +22,11 @@ The old P1–P34/P18 queue is complete. V01 is an initial code pass, not app-wid
 
 After acquiring, read this file, CONTROL once, tiny state, active `chunks/<current_chunk>.md` and directly needed code. Consult PLAN only for ordering, independence or a necessary split. Retrieve only named requirements from Prompt Series and relevant context/audit sections. No whole-series, whole-repository, history, old-ledger or archive scans. Original feedback images need revisiting only for an actual remaining visual issue.
 
-Complete up to three related small chunks in a maximum 40-minute batch, reserving five minutes for handoff. Set `in_progress` before editing and track actually owned files/hunks. Reconcile only overlapping diffs and resume interrupted work at the saved checkpoint. Split oversized work before implementation without turning trivial setup/bookkeeping into new scheduled runs. A verification-only chunk is valid. If all its criteria are already evidenced and still valid, adopt the pass and continue within the batch budget. Never invent a pass or create a diff merely to show activity.
+Aim for at least 30 minutes of useful work when ready work exists, completing up to six related small chunks in a maximum 40-minute batch and reserving five minutes for handoff. Set `in_progress` before editing and track actually owned files/hunks. Reconcile only overlapping diffs and resume interrupted work at the saved checkpoint. After each chunk, check the small queue and continue in the same run when dependencies and time allow; do this even if the apparent stopping point arrives after only 10 minutes. Do not idle or spawn a second task to fill time. Split oversized work before implementation without turning trivial setup/bookkeeping into new scheduled runs. A verification-only chunk is valid. If all its criteria are already evidenced and still valid, adopt the pass and continue within the batch budget. Never invent a pass or create a diff merely to show activity.
 
 For a blocker, preserve the unfinished criterion, record its exact condition, stable fingerprint and minimal recheck; use CONTROL's backoff. Select independent work only if PLAN/spec dependencies allow it. When no work is runnable, transient cooldown exits quietly; genuine required human input pauses only this automation. A past tool failure, dirty worktree, changed HEAD or interrupted owner is not by itself a request for new permission.
+
+Write a concrete self-service repair or recheck into `state.json` `next_action` for anything a future run can fix, and point `resume_point` at unfinished code when needed. Follow CONTROL's one-time Gmail protocol immediately for every new genuine blocker. State who acts next and the exact action; suppress repeats for the same fingerprint. Pause only for required owner input when no independent work remains. Do not send routine progress emails from this runner; the separate daily report owns those.
 
 ## Verification and handoff
 
@@ -36,7 +38,7 @@ Before exit, save exact component/function checkpoint and passed/pending checks 
 
 ## Permissions and gates
 
-Read-only authenticated browser verification is authorised. Production form submissions/data mutations are not: use disposable test data/environment for mutation acceptance. No deployments, publishing, messages, credential disclosure, usage resets or commits. Never treat credentials being available as permission to mutate production.
+Read-only authenticated browser verification is authorised. Production form submissions/data mutations are not: use disposable test data/environment for mutation acceptance. No deployments, publishing, credential disclosure, usage resets or commits. The only authorised message is CONTROL's actionable blocker email to the owner's verified address. Never treat credentials being available as permission to mutate production.
 
 A genuinely required reviewed Supabase migration is the existing authorised exception: apply it to the linked project and verify remote migration/schema state in the SAME run. Do not invent database changes. Prompt 14 atomic_setlist_reorder is already remote version `20260909094944`; do not reapply it based on the local filename. Only consult database tooling/skills for database work.
 

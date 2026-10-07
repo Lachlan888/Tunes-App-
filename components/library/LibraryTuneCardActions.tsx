@@ -1,102 +1,66 @@
 "use client"
 
-import TuneCollectionActionButton from "@/components/tunes/TuneCollectionActionButton"
-import TuneStateIndicator from "@/components/tunes/TuneStateIndicator"
+import ContextActionMenu, { type ContextAction } from "@/components/ui/ContextActionMenu"
 import { markAsKnown } from "@/lib/actions/known-pieces"
-import type { Piece, UserPiece } from "@/lib/types"
-
-const compactSecondaryAction =
-  "inline-flex min-h-11 min-w-0 w-full items-center justify-center whitespace-nowrap rounded-control border border-hairline bg-surface-paper px-1 py-2 text-xs font-semibold text-text-primary shadow-material-rest transition-colors hover:border-action-primary/45 hover:bg-surface-note focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 md:w-auto md:px-3 md:text-sm"
-
-const compactPracticeAction =
-  "inline-flex min-h-11 min-w-0 w-full items-center justify-center whitespace-nowrap rounded-control border border-state-practice bg-state-practice px-1 py-2 text-xs font-semibold text-state-practice-foreground shadow-material-rest transition-colors hover:bg-state-practice/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 md:w-auto md:px-3 md:text-sm"
+import { removeFromPractice } from "@/lib/actions/user-pieces"
+import type { Piece } from "@/lib/types"
 
 type LibraryTuneCardActionsProps = {
   piece: Piece
-  activeUserPiece: UserPiece | null
   isAlreadyInPractice: boolean
+  activeUserPieceId?: number
   isKnown: boolean
   redirectTo: string
   onOpenAddToList: () => void
   startLearning: (formData: FormData) => Promise<void>
-  showState?: boolean
+  onPreview?: (trigger: HTMLButtonElement) => void
+  referenceHref?: string
+}
+
+function tuneActionData(pieceId: number, redirectTo: string) {
+  const data = new FormData()
+  data.set("piece_id", String(pieceId))
+  data.set("redirect_to", redirectTo)
+  return data
 }
 
 export default function LibraryTuneCardActions({
   piece,
-  activeUserPiece,
   isAlreadyInPractice,
+  activeUserPieceId,
   isKnown,
   redirectTo,
   onOpenAddToList,
   startLearning,
-  showState = true,
+  onPreview,
+  referenceHref,
 }: LibraryTuneCardActionsProps) {
-  return (
-    <div className={showState ? "flex flex-wrap items-center gap-2" : "contents"}>
-      {showState ? (
-        <TuneStateIndicator
-          isAlreadyInPractice={isAlreadyInPractice}
-          isKnown={isKnown}
-          stage={activeUserPiece?.stage ?? null}
-          showNewToMe
-        />
-      ) : null}
+  const actions: ContextAction[] = [
+    { id: "open", label: "Open tune", href: `/library/${piece.id}` },
+    ...(onPreview ? [{ id: "preview", label: "Preview recording", onSelect: onPreview, completionMessage: null }] : []),
+    ...(referenceHref ? [{ id: "reference", label: "Open Reference", href: referenceHref }] : []),
+    { id: "list", label: "Add to List", onSelect: onOpenAddToList, completionMessage: null },
+    ...(!isAlreadyInPractice ? [{
+      id: "practice", label: isKnown ? "Move to Practice" : "Add to Practice",
+      onSelect: () => startLearning(tuneActionData(piece.id, redirectTo)),
+      ...(isKnown ? { confirmMessage: "Move this tune from Known to Practice? Review scheduling will begin." } : {}),
+    }] : []),
+    ...(!isKnown ? [{
+      id: "known", label: isAlreadyInPractice ? "Move to Known" : "Mark Known",
+      onSelect: () => markAsKnown(tuneActionData(piece.id, redirectTo)),
+      ...(isAlreadyInPractice ? { confirmMessage: "Move this tune to Known? Practice scheduling will stop." } : {}),
+    }] : []),
+    ...(activeUserPieceId ? [{
+      id: "stop-practice", label: "Stop Practice",
+      onSelect: () => {
+        const data = new FormData()
+        data.set("user_piece_id", String(activeUserPieceId))
+        data.set("redirect_to", redirectTo)
+        return removeFromPractice(data)
+      },
+      confirmMessage: "Stop Practice for this tune? Review scheduling will stop. The tune remains in your lists and is not automatically marked Known.",
+    }] : []),
+  ]
 
-      <button
-        type="button"
-        className={compactSecondaryAction}
-        aria-label={`Add ${piece.title} to List`}
-        onClick={onOpenAddToList}
-      >
-        <span className="md:hidden">Add</span>
-        <span className="hidden md:inline">Add to List</span>
-      </button>
-
-      {!isAlreadyInPractice && !isKnown ? (
-        <>
-          <TuneCollectionActionButton
-            action={startLearning}
-            fields={{ piece_id: piece.id, redirect_to: redirectTo }}
-            label="Add to Practice"
-            mobileLabel="Practice"
-            pendingLabel="Starting..."
-            mobilePendingLabel="Starting"
-            ariaLabel={`Add to Practice for ${piece.title}`}
-            className={compactPracticeAction}
-          />
-
-          <TuneCollectionActionButton
-            action={markAsKnown}
-            fields={{ piece_id: piece.id, redirect_to: redirectTo }}
-            label="Mark Known"
-            mobileLabel="Known"
-            pendingLabel="Saving..."
-            mobilePendingLabel="Saving"
-            ariaLabel={`Mark ${piece.title} Known`}
-            className={compactSecondaryAction}
-          />
-        </>
-      ) : (
-        <>
-          <button
-            type="button"
-            className={`${compactPracticeAction} md:hidden`}
-            disabled
-            aria-label={`Add to Practice for ${piece.title} — ${isAlreadyInPractice ? "already in practice" : "already known"}`}
-          >
-            Practice
-          </button>
-          <button
-            type="button"
-            className={`${compactSecondaryAction} md:hidden`}
-            disabled
-            aria-label={`Mark ${piece.title} Known — ${isAlreadyInPractice ? "already in practice" : "already known"}`}
-          >
-            Known
-          </button>
-        </>
-      )}
-    </div>
-  )
+  return <ContextActionMenu label={`More actions for ${piece.title}`} title={piece.title} actions={actions} />
 }

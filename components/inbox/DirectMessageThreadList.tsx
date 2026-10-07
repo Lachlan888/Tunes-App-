@@ -14,7 +14,7 @@ export default function DirectMessageThreadList({
 }) {
   if (threads.length === 0) {
     return (
-      <p className="border-y border-dashed border-border py-5 text-sm text-muted-foreground">
+      <p className="border-b border-hairline py-5 text-sm text-muted-foreground">
         No direct messages yet.
       </p>
     )
@@ -28,24 +28,26 @@ export default function DirectMessageThreadList({
 
         return (
           <details key={thread.otherUser.id} className="group py-3">
-            <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   {thread.unreadCount > 0 ? (
                     <span className="h-2.5 w-2.5 shrink-0 rounded-control bg-state-social" aria-label="Unread messages" />
                   ) : null}
-                  <h2 className="truncate font-semibold">{label}</h2>
+                  <h3 className="truncate font-semibold">{label}</h3>
                 </div>
                 <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
                   {latest?.isOutgoing ? "You: " : ""}{latest?.body ?? "Open conversation"}
                 </p>
               </div>
               <span className="shrink-0 text-xs font-semibold text-muted-foreground">
-                {thread.unreadCount > 0 ? `${thread.unreadCount} new` : "Open"}
+                {thread.unreadCount > 0 ? `${thread.unreadCount} new` : (
+                  <><span className="group-open:hidden">Open</span><span className="hidden group-open:inline">Close</span></>
+                )}
               </span>
             </summary>
 
-            <div className="ml-4 mt-3 border-l-2 border-state-social pl-4">
+            <div className="ml-4 mt-3 border-l border-hairline pl-4">
               {thread.totalMessageCount > thread.messages.length ? (
                 <p className="mb-3 text-xs text-muted-foreground">
                   Showing the latest {thread.messages.length} of {thread.totalMessageCount} messages.
@@ -56,7 +58,7 @@ export default function DirectMessageThreadList({
                   <li key={message.id} className="text-sm">
                     <p className="whitespace-pre-wrap leading-6">{message.body}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {message.isOutgoing ? "You" : label} · {new Date(message.created_at).toLocaleString("en-AU")}
+                      {message.isOutgoing ? "You" : label} · {new Date(message.created_at).toLocaleString("en-AU", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Australia/Melbourne" })}
                     </p>
                   </li>
                 ))}

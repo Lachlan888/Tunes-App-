@@ -41,7 +41,7 @@ export default async function PracticeCategoryDetailPage({
         <PracticeDiaryNav active="index" />
       </section>
 
-      <section className="mb-6 hidden border-b border-hairline pb-6 md:block">
+      <section className="mb-6 hidden pb-6 md:block">
         <Link href="/review/diary/index" className={buttonStyles.text}>
           Back to index
         </Link>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import ConnectionStatus from "@/components/resilience/ConnectionStatus"
 import InternalShell from "@/components/layout/InternalShell"
 import AppHeader from "@/components/layout/AppHeader"
@@ -13,6 +13,7 @@ import SessionDockProvider, {
   SessionDockNavigation,
 } from "@/components/session-dock/SessionDockProvider"
 import { getPageTitle, getShellKind } from "@/components/layout/navItems"
+import { getPracticeEnrolmentStatus } from "@/lib/practice-session"
 
 type AppShellProps = {
   children: React.ReactNode
@@ -40,8 +41,10 @@ export default function AppShell({
   environment,
 }: AppShellProps) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const shellKind = getShellKind(pathname, isSignedIn)
   const pageTitle = getPageTitle(pathname)
+  const enrolmentStatus = getPracticeEnrolmentStatus(searchParams.get("practice_enrolment") ?? "")
 
   useEffect(() => {
     if (shellKind !== "consumer") return
@@ -103,6 +106,11 @@ export default function AppShell({
         className={shellKind === "signed-out" ? "min-h-[calc(100vh-4rem)]" : "app-shell-content min-h-screen md:pl-[var(--app-rail-width)]"}
       >
         <ConnectionStatus />
+        {shellKind === "consumer" && enrolmentStatus ? (
+          <div role={enrolmentStatus.tone === "error" ? "alert" : "status"} className={`mx-auto mt-4 max-w-5xl border-l-2 px-5 py-2 text-sm font-medium sm:px-8 ${enrolmentStatus.tone === "error" ? "border-action-destructive text-action-destructive" : enrolmentStatus.tone === "success" ? "border-state-practice text-text-primary" : "border-hairline text-text-muted"}`}>
+            {enrolmentStatus.message}
+          </div>
+        ) : null}
         {children}
       </div>
       {shellKind === "consumer" ? (
@@ -117,7 +125,7 @@ export default function AppShell({
       </>}
       {isSignedIn && shellKind === "consumer" ? <PracticeMetronome variant="hidden" /> : null}
       {/* Keep feedback visible throughout the beta period. */}
-      {isSignedIn && shellKind === "consumer" ? <FloatingFeedbackButton variant="floating" /> : null}
+      <FloatingFeedbackButton variant="floating" isSignedIn={isSignedIn} hideTrigger={!isSignedIn || shellKind !== "consumer"} />
     </SessionDockProvider>
   )
 }

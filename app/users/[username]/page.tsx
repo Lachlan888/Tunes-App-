@@ -191,13 +191,13 @@ export default async function PublicProfilePage({ params, searchParams }: {
       <div className="min-w-0 space-y-6">
         {query.tab === 'overview' ? <>
           <PublicProfileOverview profile={profile} instruments={data.instruments} publicLists={data.publicLists} repertoireSummary={data.summary} isOwnProfile={isOwnProfile} listsHref={href({tab:'lists',page:1,q:''})} />
-          {data.featuredTunes.length > 0 && <section><h2 className="font-semibold">Composed tunes</h2><div className="divide-y divide-border">{data.featuredTunes.map(tune => <TuneRow key={tune.id} piece={tune} />)}</div><Link className="text-sm underline" href={href({tab:'repertoire',group:'composed',page:1})}>Browse composed tunes</Link></section>}
-          {data.activity.length > 0 && <section><h2 className="font-semibold">Recent musical contributions</h2><ul className="divide-y divide-border">{data.activity.map(event => <li key={event.id} className="py-3 text-sm">{({piece_created:'Added a tune',piece_details_added:'Added tune details',piece_lore_added:'Shared tune lore',piece_media_link_added:'Shared a recording',piece_sheet_music_link_added:'Shared sheet music'} as Record<string,string>)[event.event_type]}{event.title && event.piece_id && <> · <Link className="underline" href={`/library/${event.piece_id}`}>{event.title}</Link></>} <time className="text-text-muted" dateTime={event.created_at}>· {event.created_at.slice(0,10)}</time></li>)}</ul></section>}
-          {data.sharedTunes.length > 0 && <section><h2 className="font-semibold">A few tunes you share</h2><div className="divide-y divide-border">{data.sharedTunes.map(tune => <TuneRow key={tune.id} piece={tune} />)}</div><Link className="text-sm underline" href={href({tab:'repertoire',page:1,q:''})}>Browse their repertoire</Link></section>}
+          {data.featuredTunes.length > 0 && <section><h2 className="text-xl font-semibold">Composed tunes</h2><div className="divide-y divide-border">{data.featuredTunes.map(tune => <TuneRow key={tune.id} piece={tune} />)}</div><Link className="text-sm underline" href={href({tab:'repertoire',group:'composed',page:1})}>Browse composed tunes</Link></section>}
+          {data.activity.length > 0 && <section><h2 className="text-xl font-semibold">Recent musical contributions</h2><ul className="divide-y divide-border">{data.activity.map(event => <li key={event.id} className="py-3 text-sm">{({piece_created:'Added a tune',piece_details_added:'Added tune details',piece_lore_added:'Shared tune lore',piece_media_link_added:'Shared a recording',piece_sheet_music_link_added:'Shared sheet music'} as Record<string,string>)[event.event_type]}{event.title && event.piece_id && <> · <Link className="underline" href={`/library/${event.piece_id}`}>{event.title}</Link></>} <time className="text-text-muted" dateTime={event.created_at}>· {new Date(event.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Australia/Melbourne' })}</time></li>)}</ul></section>}
+          {data.sharedTunes.length > 0 && <section><h2 className="text-xl font-semibold">A few tunes you share</h2><div className="divide-y divide-border">{data.sharedTunes.map(tune => <TuneRow key={tune.id} piece={tune} />)}</div><Link className="text-sm underline" href={href({tab:'repertoire',page:1,q:''})}>Browse their repertoire</Link></section>}
           {data.canCompare && <Link className="inline-block underline" href={`/compare?user=${encodeURIComponent(username)}`}>Find tunes you can play together</Link>}
           {(data.createdBadges.length > 0 || data.receivedBadges.length > 0) && <><PublicProfileBadgesSection createdBadges={data.createdBadges} receivedBadges={data.receivedBadges} isOwnProfile={isOwnProfile} displayName={displayName} /><Link className="block text-sm underline" href={href({tab:'badges',page:1})}>Browse all public badges</Link></>}
         </> : <>
-          <h2 className="text-xl font-semibold capitalize">{query.tab}</h2>
+          <h2 className="sr-only capitalize">{query.tab}</h2>
           <form action={`/users/${encodeURIComponent(username)}`} className="flex flex-wrap items-end gap-3">
             <input type="hidden" name="tab" value={query.tab} />
             {query.preview && <input type="hidden" name="preview" value="public" />}
@@ -209,12 +209,11 @@ export default async function PublicProfilePage({ params, searchParams }: {
             {!inventoryVisible ? <p className="text-sm text-text-muted">This collection is not shared with this view.</p> : <>
               {isOwnProfile && !profile.show_repertoire_to_friends && query.group !== 'composed' && <p className="text-sm text-text-muted">Only you can browse this repertoire here. Sharing with friends is off.</p>}
               {data.overlap !== null && <p className="text-sm">You share {data.overlap} of the tunes on this page.</p>}
-              <div className="divide-y divide-border">{data.tunes.map(tune => <TuneRow key={tune.id} piece={tune} personalState={query.group === 'composed' ? 'Composed' : query.group === 'practice' ? 'In practice' : 'Known'} />)}</div>
+              <div className="divide-y divide-border">{data.tunes.map(tune => <TuneRow key={tune.id} piece={tune} />)}</div>
               {!data.tunes.length && <p>No matching tunes. Try another search or collection.</p>}
             </>}
           </>}
           {query.tab === 'lists' && <>
-            <p className="text-sm text-text-muted">Public lists shared by this musician.</p>
             <ul className="divide-y divide-border">{data.publicLists.map(list => <li key={list.id} className="py-4"><Link className="font-semibold underline" href={`/public-lists/${list.id}`}>{list.name}</Link><p className="line-clamp-2 text-sm text-text-muted">{list.description}</p><p className="mt-1 text-sm">{list.tune_count} tunes</p></li>)}</ul>
             {!data.publicLists.length && <p>No matching public lists shared here.</p>}
           </>}

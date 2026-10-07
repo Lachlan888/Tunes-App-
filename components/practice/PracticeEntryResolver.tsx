@@ -5,7 +5,6 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { usePrivateSessionStorage } from "@/components/resilience/PrivateSessionProvider"
 import { ACTIVE_PRACTICE_SESSION_KEY, getResumablePracticeHref } from "@/lib/practice-session"
-import Icon from "@/components/ui/Icon"
 
 export default function PracticeEntryResolver({ today, readyCount, activeCount }: {
   today: string
@@ -34,11 +33,10 @@ export default function PracticeEntryResolver({ today, readyCount, activeCount }
   const available = readyCount > 0 || Boolean(resumeHref)
   return (
     <section className="practice-entry" aria-labelledby="practice-entry-title">
-      <div className="practice-entry-symbol" aria-hidden="true"><Icon name={available ? "practice" : "check"} size={30} /></div>
       <h1 id="practice-entry-title" className="font-sans text-5xl font-bold tracking-tight sm:text-6xl">{available ? "Practice" : activeCount > 0 ? "All caught up" : "Your practice starts here"}</h1>
-      <p className="mt-4 text-base leading-7 text-text-muted sm:text-lg">
-        {resumeHref ? "Pick up where you left off." : readyCount > 0 ? `${readyCount} tune${readyCount === 1 ? "" : "s"} ready. One at a time.` : activeCount > 0 ? "Your next tunes will be here when they’re due." : "Add tunes to Practice and we’ll take care of what’s next."}
-      </p>
+      {!resumeHref && readyCount > 0 ? <p className="mt-4 text-base leading-7 text-text-muted sm:text-lg">
+        {readyCount} tune{readyCount === 1 ? "" : "s"} ready
+      </p> : null}
       {available ? (
         <button type="button" onClick={start} disabled={starting} className="practice-start-button">
           <svg aria-hidden="true" width="17" height="19" viewBox="0 0 17 19" fill="currentColor"><path d="M2 1.5a1 1 0 0 0-1.5.86v14.28a1 1 0 0 0 1.5.86l12.3-7.14a1 1 0 0 0 0-1.72L2 1.5Z" /></svg>

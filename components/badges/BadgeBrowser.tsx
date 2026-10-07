@@ -614,7 +614,7 @@ export default function BadgeBrowser({
       />
 
       <button type="button" onClick={() => setIsMobileFilterOpen(true)} className="min-h-11 rounded-control border border-border px-4 text-sm font-semibold md:hidden">Search and filter · {filteredBadges.length} badges</button>
-      <div className="hidden border-y border-hairline py-5 md:block">
+      <div className="hidden py-5 md:block">
         <BadgeFilters {...filterProps} />
 
         <div className="mt-5 border-t border-border pt-4 text-sm text-muted-foreground">
@@ -634,7 +634,7 @@ export default function BadgeBrowser({
 
       {filteredBadges.length > 0 ? (
         <>
-          <div className="divide-y divide-hairline">
+          <div>
             {pageBadges.map((badge) => <BadgeCard key={badge.id} badge={badge} />)}
           </div>
           <nav aria-label="Badge pages" className="flex items-center justify-between gap-3 text-sm">

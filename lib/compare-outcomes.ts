@@ -71,5 +71,6 @@ export function parseComparePage(value: string | string[] | undefined) {
   const raw = Array.isArray(value) ? value[0] : value
   const parsed = Number(raw)
   if (!Number.isInteger(parsed) || parsed < 1) return 1
-  return Math.min(parsed, 50)
+  // Known and Practice reads can each include 10,000 rows; 20 rows per view need 1,000 pages.
+  return Math.min(parsed, 1000)
 }

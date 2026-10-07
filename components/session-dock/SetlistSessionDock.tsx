@@ -82,7 +82,7 @@ export default function SetlistSessionDock({ payload, userId, initialItemId }: {
   }), [currentItem, currentIndex, items.length, moveTo, nextItem, positionKey, setlist.id, setlist.name])
   useSessionDock(`setlist-performance:${setlist.id}`, model)
 
-  return <FocusModeShell eyebrow="PERFORMANCE MODE" title={setlist.name} detail={`${Math.max(0, currentIndex + 1)} of ${items.length} tunes`} exitHref={`/setlists/${setlist.id}`}>
+  return <FocusModeShell eyebrow="PERFORMANCE MODE" title={setlist.name} detail={`${Math.max(0, currentIndex + 1)} of ${items.length} tune${items.length === 1 ? "" : "s"}`} exitHref={`/setlists/${setlist.id}`}>
     <nav aria-label="Emergency navigation" className="flex gap-5 py-3 text-sm underline underline-offset-4"><Link className="inline-flex min-h-11 items-center" href="/setlists">All Setlists</Link><Link className="inline-flex min-h-11 items-center" href="/">Home</Link></nav>
     {notice ? <p role="status" className="border-y border-hairline py-3 text-sm">{notice}</p> : null}
     <section className="py-8 sm:py-12" aria-label="Current tune">

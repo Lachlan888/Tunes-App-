@@ -17,12 +17,8 @@ export default function SharedListsMobileList({
   redirectTo = "/public-lists",
 }: SharedListsMobileListProps) {
   return (
-    <section className="md:hidden">
-      <h2 className="text-xl font-semibold text-foreground">
-        Public lists
-      </h2>
-
-      <div className="mt-2 divide-y divide-border/70 border-y border-border/70">
+    <section aria-label="Public lists" className="md:hidden">
+      <div className="divide-y divide-border/70 border-y border-border/70">
         {lists.map((list) => {
           const ownerHref = list.ownerUsername
             ? `/users/${encodeURIComponent(list.ownerUsername)}`
@@ -35,14 +31,14 @@ export default function SharedListsMobileList({
               className="flex min-w-0 items-center justify-between gap-3 py-4"
             >
               <div className="min-w-0">
-                <h3 className="truncate text-base font-semibold text-foreground">
+                <h2 className="truncate text-base font-semibold text-foreground">
                   <Link
                     href={listHref}
                     className="underline-offset-4 hover:text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                   >
                     {list.name}
                   </Link>
-                </h3>
+                </h2>
 
                 <p className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
                   <span className="min-w-0 truncate">

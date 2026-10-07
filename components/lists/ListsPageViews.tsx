@@ -7,6 +7,7 @@ import AddToListModal from "@/components/AddToListModal"
 import PendingLinkButton from "@/components/PendingLinkButton"
 import SubmitButton from "@/components/SubmitButton"
 import { buttonStyles } from "@/components/ui/buttonStyles"
+import ContextActionMenu from "@/components/ui/ContextActionMenu"
 import { useSessionDock } from "@/components/session-dock/SessionDockProvider"
 import type { SessionDockModel } from "@/components/session-dock/sessionDockModel"
 import type {
@@ -150,8 +151,7 @@ export function LearningQueueView({
   if (learningQueueTunes.length === 0) {
     return (
       <div className="border-y border-dashed border-hairline py-5 text-sm text-muted-foreground">
-        Tunes you add to lists but have not started practising or marked Known
-        will appear here.
+        Tunes saved in your lists appear here until you add them to Practice or mark them Known. Saving a list does not start Practice.
       </div>
     )
   }
@@ -159,7 +159,7 @@ export function LearningQueueView({
   return (
     <>
       <div className="mb-3 flex items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">Stage and next action stay visible without opening each tune.</p>
+        <p className="text-sm text-muted-foreground">From your saved list items; these tunes are not yet in Practice or Known.</p>
         <button type="button" onClick={() => { setSelectedIds([]); setIsSelecting((value) => !value) }} className={buttonStyles.secondary} aria-pressed={isSelecting}>
           {isSelecting ? "Cancel select" : "Select"}
         </button>
@@ -217,7 +217,7 @@ export function LearningQueueView({
 
                 <SubmitButton
                   label="Add to Practice"
-                  pendingLabel="Starting..."
+                  pendingLabel="Adding..."
                   className={buttonStyles.primary}
                 />
               </form> : null}
@@ -302,10 +302,7 @@ export function UnsortedView({
                           pendingLabel={`Opening ${pieceTitle}...`}
                           className="cursor-pointer text-left font-semibold text-foreground underline underline-offset-4"
                         />
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          Stage {userPiece.stage} · In Practice but not in any
-                          list
-                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">Stage {userPiece.stage}</p>
                       </div>
 
                       <button
@@ -355,9 +352,6 @@ export function UnsortedView({
                           pendingLabel={`Opening ${pieceTitle}...`}
                           className="cursor-pointer text-left font-semibold text-foreground underline underline-offset-4"
                         />
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          Known but not in any list
-                        </p>
                       </div>
 
                       <button
@@ -415,19 +409,37 @@ export function SavedSharedView({
     )
   }
 
-  return <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+  return <div className="border-t border-hairline">
     {bookmarkedSharedLists.map(list => <EditorialListCard key={`saved-${list.id}`} id={list.id} title={list.name} href={publicListHref(list.id, redirectTo)}>
       <p className="text-sm font-semibold">Saved public list</p>
       <p className="text-sm text-text-muted">By {list.ownerLabel} · {tuneCountLabel(list.tuneCount)}</p>
       {list.description && <p className="text-sm leading-6">{list.description}</p>}
-      <div className="mt-auto flex flex-wrap gap-2"><PendingLinkButton href={publicListHref(list.id, redirectTo)} label="Read the list" pendingLabel="Opening..." className={buttonStyles.primary} />
-      <form action={unbookmarkPublicList}><input type="hidden" name="learning_list_id" value={list.id} /><input type="hidden" name="redirect_to" value={redirectTo} /><SubmitButton label="Remove bookmark" pendingLabel="Removing..." className={buttonStyles.secondary} /></form></div>
+      <div className="mt-auto flex flex-wrap gap-2">
+        <PendingLinkButton href={publicListHref(list.id, redirectTo)} label="Open" pendingLabel="Opening..." className={buttonStyles.primary} />
+        <ContextActionMenu
+          label={`More actions for ${list.name}`}
+          title={list.name}
+          actions={[
+            {
+              id: "remove-bookmark",
+              label: "Remove bookmark",
+              destructive: true,
+              onSelect: async () => {
+                const formData = new FormData()
+                formData.set("learning_list_id", String(list.id))
+                formData.set("redirect_to", redirectTo)
+                await unbookmarkPublicList(formData)
+              },
+            },
+          ]}
+        />
+      </div>
     </EditorialListCard>)}
     {directSharedLists.map(list => <EditorialListCard key={`shared-${list.id}`} id={list.id} title={list.name} href={learningListHref(list.id, redirectTo)}>
       <p className="text-sm font-semibold">Shared with you</p>
       <p className="text-sm text-text-muted">Shared by {list.ownerLabel} · {tuneCountLabel(list.tuneCount)}</p>
       {list.description && <p className="text-sm leading-6">{list.description}</p>}
-      <div className="mt-auto"><PendingLinkButton href={learningListHref(list.id, redirectTo)} label="Read the list" pendingLabel="Opening..." className={buttonStyles.primary} /></div>
+      <div className="mt-auto"><PendingLinkButton href={learningListHref(list.id, redirectTo)} label="Open" pendingLabel="Opening..." className={buttonStyles.primary} /></div>
     </EditorialListCard>)}
   </div>
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useSessionDock } from "@/components/session-dock/SessionDockProvider"
 import {
   SESSION_DOCK_CONTEXTS,
@@ -28,7 +28,7 @@ function createShowcaseModel(context: SessionDockContext): SessionDockModel {
       identity: {
         eyebrow: "Due today",
         title: "The Kesh",
-        detail: "Stage 3",
+        detail: "Stage 3 · 3-day review due today",
       },
       primaryAction: {
         id: "next",
@@ -41,17 +41,9 @@ function createShowcaseModel(context: SessionDockContext): SessionDockModel {
         { id: "shaky", label: "Shaky", onInvoke: noOp, tone: "shaky" },
         { id: "solid", label: "Solid", onInvoke: noOp, tone: "solid" },
       ],
-      progress: {
-        label: "Queue progress",
-        current: 4,
-        total: 12,
-        value: 4,
-        max: 12,
-      },
       status: { label: "Stage 3", tone: "practice" },
       collapsedContent: {
         actionIds: ["rough", "shaky", "solid"],
-        showProgress: true,
       },
       expandedContent: {
         title: "The Kesh practice tools",
@@ -183,7 +175,6 @@ function createShowcaseModel(context: SessionDockContext): SessionDockModel {
       { id: "reference", label: "Reference", onInvoke: noOp },
       { id: "overflow", label: "More", onInvoke: noOp },
     ],
-    status: { label: "Not in practice", tone: "neutral" },
     collapsedContent: { actionIds: ["practice"] },
     expandedContent: {
       title: "The Maid Behind the Bar tools",
@@ -197,12 +188,24 @@ function createShowcaseModel(context: SessionDockContext): SessionDockModel {
 export default function SessionDockShowcase() {
   const [context, setContext] =
     useState<SessionDockContext>("tune-detail")
+  const [isVisible, setIsVisible] = useState(false)
+  const sectionRef = useRef<HTMLElement>(null)
   const model = useMemo(() => createShowcaseModel(context), [context])
 
-  useSessionDock("design-system-session-dock", model)
+  useEffect(() => {
+    const section = sectionRef.current
+    if (!section) return
+    const observer = new IntersectionObserver(([entry]) => {
+      setIsVisible(entry.isIntersecting)
+    }, { threshold: 0.2 })
+    observer.observe(section)
+    return () => observer.disconnect()
+  }, [])
+
+  useSessionDock("design-system-session-dock", isVisible ? model : null)
 
   return (
-    <section className="mb-12">
+    <section ref={sectionRef} className="mb-12">
       <h2 className="font-serif text-2xl font-semibold text-text-primary">
         Adaptive Session Dock
       </h2>

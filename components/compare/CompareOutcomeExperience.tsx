@@ -73,14 +73,14 @@ export default function CompareOutcomeExperience(props: Props) {
 
   return (
     <div className="compare-workbench">
-      <section className="compare-summary border-y border-hairline py-5" aria-labelledby="playable-now-title">
+      <section className="compare-summary border-b border-hairline pb-5" aria-labelledby="playable-now-title">
         <h2 id="playable-now-title" className="mt-1 text-3xl font-bold text-text-primary md:text-4xl">
           You can play {outcomeGroups.playableTogetherIds.length} tune{outcomeGroups.playableTogetherIds.length === 1 ? "" : "s"} together now
         </h2>
         <p className="mt-2 text-sm text-text-muted">
-          This is repertoire overlap, not a score. Private practice detail is shown only where each musician has allowed comparison.
+          Shared repertoire is shown only when each musician allows comparison.
         </p>
-        <dl className="mt-5 grid grid-cols-2 gap-4 border-y border-hairline py-4 md:grid-cols-3">
+        <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-hairline pt-4 md:grid-cols-3">
           <div className="py-2"><dt className="text-xs font-semibold uppercase tracking-wider text-text-muted">Solid or Known</dt><dd className="mt-1 text-3xl font-bold">{outcomeGroups.sharedStrongIds.length}</dd></div>
           <div className="py-2"><dt className="text-xs font-semibold uppercase tracking-wider text-text-muted">Shared, building</dt><dd className="mt-1 text-3xl font-bold">{outcomeGroups.sharedShakyIds.length}</dd></div>
           <div className="col-span-2 py-2 md:col-span-1"><dt className="text-xs font-semibold uppercase tracking-wider text-text-muted">Teaching possibilities</dt><dd className="mt-1 text-sm font-semibold">{teachCounts.map(({ name, count }) => `${name}: ${count}`).join(" · ")}</dd></div>
@@ -97,7 +97,7 @@ export default function CompareOutcomeExperience(props: Props) {
       ) : (
         <EmptyState
           title="No overlap yet"
-          description="There is nothing to score here. Add another musician or include active Practice tunes to look for a starting point."
+          description="Add another musician or include active Practice tunes to find a starting point."
           secondaryActionHref="/friends"
           secondaryActionLabel="Find musicians"
         />

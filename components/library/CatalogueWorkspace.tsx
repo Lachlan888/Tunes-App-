@@ -190,6 +190,7 @@ export default function CatalogueWorkspace({
         availableTimeSignatures={availableTimeSignatures}
         hasActiveFilters={hasActiveFilters}
         totalCount={totalCount}
+        showResultsStatement={false}
         countItems={filterOptionPieces}
         prospectiveCountExact={filterOptionPieces.length < filterFacetLimit}
         sticky
@@ -235,7 +236,6 @@ export default function CatalogueWorkspace({
         activeConstraints={activeConstraints}
         selectionMode={isSelectionMode}
         selectedPieceIds={selectedPieceIds}
-        previewPieceId={previewPiece?.id}
         onPreview={(piece, trigger) => {
           previewTrigger.current = trigger
           setPreviewPieceId(piece.id)

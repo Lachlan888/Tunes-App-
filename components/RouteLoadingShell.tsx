@@ -1,18 +1,14 @@
 import { LoadingState } from "@/components/ui/Skeleton"
 
 type RouteLoadingShellProps = {
-  label: string
   title: string
-  description: string
   primarySectionTitle: string
   secondarySectionTitle?: string
   mode?: "single" | "split"
 }
 
 export default function RouteLoadingShell({
-  label,
   title,
-  description,
   primarySectionTitle,
   secondarySectionTitle,
   mode = "single",
@@ -26,12 +22,6 @@ export default function RouteLoadingShell({
         <h1 className="font-sans text-4xl font-bold tracking-tight text-text-primary">
           {title}
         </h1>
-        <p className="mt-2 text-xs font-medium text-muted-foreground">{label}</p>
-
-        <p className="mt-2 text-sm leading-6 text-text-muted">
-          {description}
-        </p>
-
         <div
           className={`mt-6 grid gap-4 ${
             mode === "split" ? "md:grid-cols-2" : ""

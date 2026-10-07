@@ -1,12 +1,14 @@
-import { getReviewIntervalDays } from "@/lib/review"
+import { formatReviewDueStatus, getReviewIntervalDays } from "@/lib/review"
 
 type PracticeProgressProps = {
   stage: number | null | undefined
+  nextReviewDue?: string | null
   className?: string
 }
 
 export default function PracticeProgress({
   stage,
+  nextReviewDue,
   className = "",
 }: PracticeProgressProps) {
   const safeStage = Math.min(Math.max(stage ?? 1, 1), 10)
@@ -18,9 +20,7 @@ export default function PracticeProgress({
         Stage {safeStage} <span aria-hidden="true">·</span>{" "}
         {intervalDays}-day review
       </p>
-      <p className="mt-1 text-xs leading-5 text-muted-foreground">
-        This stage sets the interval after the next review result.
-      </p>
+      {nextReviewDue !== undefined ? <p className="mt-1 text-xs leading-5 text-muted-foreground">{formatReviewDueStatus(nextReviewDue)}</p> : null}
     </div>
   )
 }

@@ -46,6 +46,7 @@ type PieceSearchFiltersProps = {
   hasActiveFilters: boolean
   preservedParams?: Record<string, PreservedParamValue>
   totalCount?: number
+  showResultsStatement?: boolean
   countItems?: PieceFilterOption[]
   prospectiveCountExact?: boolean
   sticky?: boolean
@@ -116,6 +117,7 @@ export default function PieceSearchFilters({
   hasActiveFilters,
   preservedParams = {},
   totalCount,
+  showResultsStatement = true,
   countItems = [],
   prospectiveCountExact = true,
   sticky = false,
@@ -361,7 +363,7 @@ export default function PieceSearchFilters({
       onClearFilters={handleClearAppliedFilters}
       sticky={sticky}
       resultsStatement={
-        totalCount === undefined
+        !showResultsStatement || totalCount === undefined
           ? undefined
           : formatTuneResultsStatement(totalCount, appliedFilterCount)
       }

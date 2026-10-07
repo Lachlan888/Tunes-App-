@@ -98,7 +98,7 @@ function SettingsForm({ settings, festivals }: Pick<FestivalManagerProps, "setti
   const [state, action, pending] = useActionState(updateFestivalSettingsFromForm, initialState)
   useRefreshAfterSuccess(state)
   return (
-    <form action={action} className="rounded-object border border-border bg-background/70 p-5">
+    <form action={action} className="border-t border-hairline py-6">
       <h2 className="font-sans text-2xl font-bold">Launch controls</h2>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">
         Mode controls only the Home promotion. Turning it off does not unpublish a hub or alter saved lists.
@@ -126,6 +126,7 @@ function SettingsForm({ settings, festivals }: Pick<FestivalManagerProps, "setti
             </option>
           ))}
         </select>
+        <span className="mt-1 block text-sm text-muted-foreground">Selecting a hub does not publish it or turn festival mode on.</span>
       </label>
       <button className={joinClasses(buttonStyles.primary, "mt-5")} disabled={pending} type="submit">
         {pending ? "Saving…" : "Save launch controls"}
@@ -139,7 +140,7 @@ function CreateFestivalForm() {
   const [state, action, pending] = useActionState(createFestivalHubFromForm, initialState)
   useRefreshAfterSuccess(state)
   return (
-    <details className="rounded-object border border-border bg-background/70 p-5">
+    <details className="border-y border-hairline py-5">
       <summary className="cursor-pointer font-sans text-xl font-bold">Create a draft hub</summary>
       <form action={action} className="mt-5 grid gap-4 sm:grid-cols-2">
         <Field label="Name" name="name" required />
@@ -165,7 +166,7 @@ function FestivalDetailsForm({ festival }: { festival: FestivalHub }) {
   const [state, action, pending] = useActionState(updateFestivalHubFromForm, initialState)
   useRefreshAfterSuccess(state)
   return (
-    <form action={action} className="grid gap-4 rounded-object border border-border bg-background/70 p-5 sm:grid-cols-2">
+    <form action={action} className="grid gap-4 border-t border-hairline py-6 sm:grid-cols-2">
       <input name="festival_id" type="hidden" value={festival.id} />
       <input name="curator_profile_id" type="hidden" value={festival.curator_profile_id ?? ""} />
       <div className="sm:col-span-2 flex flex-wrap items-start justify-between gap-3">
@@ -174,7 +175,7 @@ function FestivalDetailsForm({ festival }: { festival: FestivalHub }) {
           <h2 className="mt-1 font-sans text-2xl font-bold">{festival.name}</h2>
         </div>
         {festival.lifecycle === "draft" ? (
-          <span className="rounded-pill bg-muted px-3 py-1 text-xs font-semibold">Private owner preview</span>
+          <span className="border-b border-state-due px-1 py-1 text-xs font-semibold text-text-primary">Private owner preview</span>
         ) : (
           <Link className={buttonStyles.secondary} href={`/events/${festival.slug}`}>Open public hub</Link>
         )}
@@ -216,7 +217,7 @@ function CollectionForm({ collection, festivalId }: { collection: OwnerCollectio
   useRefreshAfterSuccess(saveState)
   useRefreshAfterSuccess(removeState)
   return (
-    <li className="rounded-object border border-border bg-background p-4">
+    <li className="border-b border-hairline py-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="font-semibold">{collection.learning_lists.name}</p>
@@ -261,7 +262,7 @@ function CollectionForm({ collection, festivalId }: { collection: OwnerCollectio
 
 function OwnerPreview({ festival, collections }: { festival: FestivalHub; collections: OwnerCollection[] }) {
   return (
-    <section className="overflow-hidden rounded-object border border-border bg-background/70" aria-label="Owner-only festival preview">
+    <section className="overflow-hidden border-y border-hairline" aria-label="Owner-only festival preview">
       {festival.branding_image_url && festival.branding_alt ? (
         <div
           className="h-40 bg-cover bg-center"
@@ -270,9 +271,9 @@ function OwnerPreview({ festival, collections }: { festival: FestivalHub; collec
           style={{ backgroundImage: `url(${festival.branding_image_url})` }}
         />
       ) : null}
-      <div className="p-5">
+      <div className="py-5">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-pill bg-muted px-3 py-1 text-xs font-semibold capitalize">{festival.lifecycle}</span>
+          <span className="border-b border-state-due px-1 py-1 text-xs font-semibold capitalize">{festival.lifecycle}</span>
           <span className="text-xs font-semibold text-muted-foreground">
             {festival.lifecycle === "draft" ? "Owner-only preview while Draft" : "Owner preview of the direct hub"}
           </span>
@@ -286,7 +287,7 @@ function OwnerPreview({ festival, collections }: { festival: FestivalHub; collec
           {collections.length > 0 ? (
             <ul className="mt-3 flex flex-wrap gap-2">
               {collections.map((collection) => (
-                <li key={collection.id} className="rounded-pill border border-border px-3 py-2 text-sm">
+                <li key={collection.id} className="border-b border-hairline px-1 py-2 text-sm">
                   {collection.display_title ?? collection.learning_lists.name}
                   {collection.tradition_label ? ` · ${collection.tradition_label}` : ""}
                 </li>
@@ -313,7 +314,7 @@ function CollectionsPanel({
   const attachedIds = new Set(collections.map((collection) => collection.learning_list_id))
   const available = publicLists.filter((list) => !attachedIds.has(list.id))
   return (
-    <section className="rounded-object border border-border bg-background/70 p-5">
+    <section className="border-t border-hairline py-6">
       <div>
         <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">Existing public Lists</p>
         <h2 className="mt-1 font-sans text-2xl font-bold">Curated collections</h2>
@@ -353,7 +354,7 @@ function CollectionsPanel({
           ))}
         </ul>
       ) : (
-        <p className="mt-6 rounded-object border border-dashed border-border p-5 text-sm text-muted-foreground">No public lists attached yet.</p>
+        <p className="mt-6 border-t border-hairline py-5 text-sm text-muted-foreground">No public lists attached yet.</p>
       )}
     </section>
   )
@@ -374,7 +375,7 @@ function SessionForm({
   useRefreshAfterSuccess(state)
   const attachedIds = new Set(associations.map((association) => association.festival_collection_id))
   return (
-    <form action={action} className="grid gap-4 rounded-object border border-border bg-background p-4 sm:grid-cols-2">
+    <form action={action} className="grid gap-4 border-t border-hairline py-5 sm:grid-cols-2">
       <input name="festival_id" type="hidden" value={festival.id} />
       {session ? <input name="id" type="hidden" value={session.id} /> : null}
       <input name="leader_profile_id" type="hidden" value={session?.leader_profile_id ?? ""} />
@@ -409,7 +410,7 @@ function SessionForm({
         {collections.length > 0 ? (
           <div className="grid gap-2 sm:grid-cols-2">
             {collections.map((collection) => (
-              <label key={collection.id} className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
+              <label key={collection.id} className="flex items-start gap-3 border-b border-hairline py-3 text-sm">
                 <input
                   className={formStyles.checkbox}
                   name="festival_collection_ids"
@@ -428,7 +429,7 @@ function SessionForm({
           <p className="text-sm text-muted-foreground">Attach public collections before matching session repertoire.</p>
         )}
       </fieldset>
-      <label className="sm:col-span-2 flex items-start gap-3 rounded-lg bg-muted/50 p-3">
+      <label className="sm:col-span-2 flex items-start gap-3 border-l-4 border-state-due py-2 pl-3">
         <input
           className={formStyles.checkbox}
           name="needs_review"
@@ -465,7 +466,7 @@ function SessionsPanel({
   sessionCollections: FestivalSessionCollection[]
 }) {
   return (
-    <section className="rounded-object border border-border bg-background/70 p-5">
+    <section className="border-t border-hairline py-6">
       <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">Reviewed programme intake</p>
       <h2 className="mt-1 font-sans text-2xl font-bold">Day-by-day sessions</h2>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -517,7 +518,7 @@ export default function FestivalManager({ settings, festivals, collections, sess
       <SettingsForm settings={settings} festivals={festivals} />
       <CreateFestivalForm />
       {festivals.length > 0 ? (
-        <label className="rounded-object border border-border bg-background/70 p-5">
+        <label className="border-b border-hairline py-5">
           <span className={formStyles.label}>Hub to manage and preview</span>
           <select
             className={formStyles.select}
@@ -543,7 +544,7 @@ export default function FestivalManager({ settings, festivals, collections, sess
           />
         </>
       ) : (
-        <p className="rounded-object border border-dashed border-border bg-background/50 p-8 text-center text-sm text-muted-foreground">
+        <p className="border-y border-hairline py-8 text-center text-sm text-muted-foreground">
           Create a private draft hub to begin owner preview.
         </p>
       )}

@@ -164,6 +164,30 @@ test("settings form persists an off-mode selection without publishing or enablin
   assert.deepEqual(update?.[1], { mode_enabled: false, selected_festival_id: 7 })
 })
 
+test("owner can enable or deactivate only the selected hub through settings", async () => {
+  for (const enabled of [true, false]) {
+    const fixture = database({ festival_settings: { data: { mode_enabled: enabled, selected_festival_id: 7 }, error: null } })
+    const actions = moduleFrom("../lib/actions/festivals.ts", {
+      "next/cache": { revalidatePath() {} },
+      "@/lib/auth/roles": {
+        requireAppAdmin: async () => ({ adminRole: "owner", user: { id: "owner" }, supabase: fixture.db }),
+      },
+      "@/lib/festivals/validation": validation,
+    })
+    const form = new FormData()
+    if (enabled) form.set("mode_enabled", "true")
+    form.set("selected_festival_id", "7")
+    const state = await actions.updateFestivalSettingsFromForm(
+      { status: "idle", message: null, field: null }, form
+    ) as { status: string }
+    assert.equal(state.status, "success")
+    assert.deepEqual(fixture.writes[0].calls.find((call) => call[0] === "update")?.[1], {
+      mode_enabled: enabled,
+      selected_festival_id: 7,
+    })
+  }
+})
+
 test("metadata edit writes the validated hub only", async () => {
   const fixture = database({ festival_hubs: { data: { id: 3, slug: "fixture-festival" }, error: null } })
   const actions = moduleFrom("../lib/actions/festivals.ts", {

@@ -24,7 +24,8 @@ type ResponsiveModalProps = {
   footer?: ReactNode
   mobileMode?: ResponsiveModalMode
   tone?: ResponsiveModalTone
-  desktopPlacement?: "center" | "side"
+  desktopPlacement?: "center" | "side" | "anchor"
+  desktopAnchorPosition?: { top?: number; bottom?: number; left: number }
   desktopMaxWidth?: string
   bodyClassName?: string
   panelClassName?: string
@@ -50,6 +51,7 @@ export default function ResponsiveModal({
   mobileMode = "sheet",
   tone = "default",
   desktopPlacement = "center",
+  desktopAnchorPosition,
   desktopMaxWidth = "md:max-w-xl",
   bodyClassName = "min-h-0 min-w-0 flex-1 overflow-y-auto p-4 md:p-6",
   panelClassName = "",
@@ -136,6 +138,9 @@ export default function ResponsiveModal({
       document.removeEventListener("keydown", keepFocusInside)
       // Wait for the remaining dialog and its controls to finish updating.
       queueMicrotask(() => {
+        // React may replay effects while this dialog is still mounted. In that
+        // case, restoring the trigger would move focus behind an open dialog.
+        if (dialog.isConnected) return
         if (previouslyFocused?.isConnected && previouslyFocused !== document.body && !previouslyFocused.matches(":disabled")) {
           previouslyFocused.focus({ preventScroll: true })
           return
@@ -165,7 +170,7 @@ export default function ResponsiveModal({
 
   const modalContent = (
     <div
-      className={joinClasses("modal-scrim fixed inset-0 z-[1000] flex min-w-0 items-end justify-center overflow-hidden p-0", desktopPlacement === "side" ? "md:items-stretch md:justify-end" : "md:items-center md:p-4")}
+      className={joinClasses("modal-scrim fixed inset-0 z-[1000] flex min-w-0 items-end justify-center overflow-hidden p-0", desktopPlacement === "side" ? "md:items-stretch md:justify-end" : desktopPlacement === "anchor" ? "md:items-start md:justify-start md:!bg-transparent" : "md:items-center md:p-4")}
       onClick={(event) => {
         if (event.target !== event.currentTarget) return
 
@@ -184,11 +189,13 @@ export default function ResponsiveModal({
         className={joinClasses(
           "flex min-h-0 min-w-0 flex-col overflow-hidden border bg-surface-paper shadow-material-floating transition-transform [transition-duration:var(--motion-deliberate)] [transition-timing-function:var(--ease-folk)] md:max-h-[90vh] md:w-full md:rounded-sheet",
           desktopPlacement === "side" && "md:!h-dvh md:!max-h-none md:!rounded-r-none",
+          desktopPlacement === "anchor" && "md:absolute md:max-h-[90vh] md:rounded-object",
           desktopMaxWidth,
           mobilePanelClass,
           toneClasses,
           panelClassName
         )}
+        style={desktopPlacement === "anchor" ? desktopAnchorPosition : undefined}
         onClick={(event) => event.stopPropagation()}
         onMouseDown={(event) => event.stopPropagation()}
         onPointerDown={(event) => event.stopPropagation()}

@@ -92,8 +92,7 @@ export default function TuneDetailSessionDock({
       collapsedContent: { actionIds: ["practice"] },
       expandedContent: {
         title: `${title} tools`,
-        description:
-          "Practice, reference and infrequent tune actions stay attached to this tune.",
+        showIdentity: false,
         actionIds: ["practice", "reference", "overflow"],
       },
       persistence: {

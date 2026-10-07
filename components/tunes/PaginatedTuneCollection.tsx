@@ -18,6 +18,7 @@ type ReadyCollectionProps = {
   resetHref?: string
   resetLabel?: string
   className?: string
+  emptyTopRule?: boolean
 }
 
 type LoadingCollectionProps = {
@@ -123,6 +124,7 @@ export default function PaginatedTuneCollection(
             cursorPageIsEmpty ? "Previous page" : props.resetLabel
           }
           className={props.className}
+          showTopRule={props.emptyTopRule}
         />
         <CollectionPagination
           label={props.label}

@@ -125,12 +125,20 @@ test("catalogue UI wires staged filters, selection dock, and progressive creatio
     new URL("../components/library/PieceSearchFilters.tsx", import.meta.url),
     "utf8"
   )
+  const filterSection = readFileSync(
+    new URL("../components/filters/FilterSection.tsx", import.meta.url),
+    "utf8"
+  )
   const workspace = readFileSync(
     new URL("../components/library/CatalogueWorkspace.tsx", import.meta.url),
     "utf8"
   )
   const libraryList = readFileSync(
     new URL("../components/library/LibraryList.tsx", import.meta.url),
+    "utf8"
+  )
+  const libraryLoading = readFileSync(
+    new URL("../app/library/loading.tsx", import.meta.url),
     "utf8"
   )
   const cataloguePreview = readFileSync(
@@ -143,6 +151,10 @@ test("catalogue UI wires staged filters, selection dock, and progressive creatio
   )
 
   assert.match(filters, /setDraftKeys/)
+  assert.match(filterSection, /border-t border-hairline/)
+  assert.doesNotMatch(filterSection, /rounded-object border border-hairline bg-surface-paper/)
+  assert.match(filters, /showResultsStatement\?: boolean/)
+  assert.match(workspace, /showResultsStatement=\{false\}/)
   assert.match(filters, /handleApplyFilters/)
   assert.match(filters, /cancelPanel/)
   assert.match(filters, /router\.push\(href\)/)
@@ -154,6 +166,11 @@ test("catalogue UI wires staged filters, selection dock, and progressive creatio
   assert.match(workspace, /sessionStorage/)
   assert.match(workspace, /Add to List/)
   assert.doesNotMatch(libraryList, /CardPager/)
+  assert.match(libraryList, /className="border-b border-hairline"/)
+  assert.match(libraryList, /emptyTopRule=\{false\}/)
+  assert.match(libraryList, /"No matching tunes"/)
+  assert.match(libraryList, /activeConstraints\.join\(" · "\)/)
+  assert.match(libraryLoading, /title="Loading tunes"/)
   assert.match(cataloguePreview, /grid grid-cols-2/)
   assert.match(cataloguePreview, /max-w-80/)
   assert.match(cataloguePreview, /key=\{piece\.id\}/)

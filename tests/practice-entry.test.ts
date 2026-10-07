@@ -13,10 +13,12 @@ test("Practice entry has one start/resume action and no competing administration
   assert.match(entry, /session=ready&run=/)
   assert.match(entry, /getResumablePracticeHref/)
 })
-test("diary, focus and history remain available through account tools", () => {
+test("one account Diary entry leads to its three local sections", () => {
   const menu = read("components/layout/AccountMenu.tsx")
-  for (const href of ["/review/diary", "/review/foci", "/review/diary/index"]) assert.ok(menu.includes(href))
-  assert.match(menu, /Practice tools/)
+  const diaryNav = read("components/practice-diary/PracticeDiaryNav.tsx")
+  assert.match(menu, /href: "\/review\/diary", label: "Practice Diary"/)
+  assert.doesNotMatch(menu, /href: "\/review\/foci"|href: "\/review\/diary\/index"/)
+  for (const href of ["/review/diary", "/review/foci", "/review/diary/index"]) assert.ok(diaryNav.includes(href))
 })
 test("entry counts and the navigation badge include all ready tunes", () => {
   assert.match(read("app/review/page.tsx"), /readyCount=\{data.dueTodayCount \+ data.catchUpCount\}/)

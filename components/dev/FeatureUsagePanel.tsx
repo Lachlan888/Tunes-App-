@@ -22,15 +22,28 @@ function formatEventType(value: string) {
 export default function FeatureUsagePanel({ rows }: FeatureUsagePanelProps) {
   if (rows.length === 0) {
     return (
-      <div className="border-y border-hairline py-6text-sm text-muted-foreground ">
+      <div className="border-y border-hairline py-6 text-sm text-muted-foreground">
         No usage events yet.
       </div>
     )
   }
 
   return (
-    <div className="border-y border-hairline">
-      <div className="overflow-x-auto">
+    <>
+      <ul className="divide-y divide-hairline border-y border-hairline md:hidden">
+        {rows.map((row) => (
+          <li key={row.eventType} className="py-4">
+            <div className="flex items-baseline justify-between gap-4">
+              <span className="font-medium">{formatEventType(row.eventType)}</span>
+              <span className="shrink-0 font-semibold tabular-nums">{row.count}</span>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {row.uniqueUsers} unique {row.uniqueUsers === 1 ? "user" : "users"} · Last seen {formatDate(row.lastSeen)}
+            </p>
+          </li>
+        ))}
+      </ul>
+      <div className="hidden border-y border-hairline md:block">
         <table className="w-full min-w-[680px] border-collapse text-left text-sm">
           <thead className="border-b border-border bg-background/70 text-xs  tracking-[0.14em] text-muted-foreground">
             <tr>
@@ -56,6 +69,6 @@ export default function FeatureUsagePanel({ rows }: FeatureUsagePanelProps) {
           </tbody>
         </table>
       </div>
-    </div>
+    </>
   )
 }

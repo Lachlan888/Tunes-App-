@@ -2,12 +2,13 @@
 
 import { useMemo, useState } from "react"
 import AddToListModal from "@/components/AddToListModal"
+import ContextActionMenu, { type ContextAction } from "@/components/ui/ContextActionMenu"
 import PaginatedTuneCollection from "@/components/tunes/PaginatedTuneCollection"
-import TuneCollectionActionButton from "@/components/tunes/TuneCollectionActionButton"
 import TuneRow from "@/components/tunes/TuneRow"
 import TuneStateIndicator from "@/components/tunes/TuneStateIndicator"
 import { removeTuneFromMyApp } from "@/lib/actions/pieces"
-import { removeFromPractice } from "@/lib/actions/user-pieces"
+import { markAsKnown } from "@/lib/actions/known-pieces"
+import { removeFromPractice, startLearning } from "@/lib/actions/user-pieces"
 import { normaliseStoredDate } from "@/lib/review"
 import {
   compareTuneGroupLabels,
@@ -60,14 +61,11 @@ function formatDueDate(dateValue: string | null | undefined) {
   }).format(new Date(`${dateOnly}T00:00:00Z`))
 }
 
-const secondaryButtonClass =
-  "inline-flex min-h-11 items-center justify-center rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm font-semibold text-text-muted transition-colors hover:border-action-primary/45 hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
-
-const removeButtonClass =
-  "inline-flex min-h-11 items-center justify-center rounded-control border border-hairline bg-surface-paper px-3 py-2 text-sm font-semibold text-text-muted transition-colors hover:border-action-primary/45 hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
-
-const destructiveButtonClass =
-  "inline-flex min-h-11 items-center justify-center rounded-control border border-action-destructive bg-surface-paper px-3 py-2 text-sm font-semibold text-action-destructive transition-colors hover:bg-action-destructive/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+function actionData(fields: Record<string, string | number>) {
+  const data = new FormData()
+  for (const [key, value] of Object.entries(fields)) data.set(key, String(value))
+  return data
+}
 
 export default function RepertoireTuneList({
   mode,
@@ -140,6 +138,33 @@ export default function RepertoireTuneList({
       new Set(listItemsForPiece.map((item) => item.learning_lists.name))
     )
 
+    const actions: ContextAction[] = [
+      { id: "open", label: "Open tune", href: `/library/${piece.id}` },
+      { id: "reference", label: "Open Reference", href: `/library/${piece.id}/reference-media` },
+      { id: "list", label: "Add to List", onSelect: () => { setSelectedPiece(piece); setSelectedListId("") }, completionMessage: null },
+      ...(mode === "practice" ? [{
+        id: "known", label: "Move to Known",
+        onSelect: () => markAsKnown(actionData({ piece_id: piece.id, redirect_to: redirectTo })),
+        confirmMessage: "Move this tune to Known? Practice scheduling will stop.",
+      }] : [{
+        id: "practice", label: "Move to Practice",
+        onSelect: () => startLearning(actionData({ piece_id: piece.id, redirect_to: redirectTo })),
+        confirmMessage: "Move this tune from Known to Practice? Review scheduling will begin.",
+      }]),
+      ...(mode === "practice" && practiceItem ? [{
+        id: "stop-practice",
+        label: "Stop Practice",
+        onSelect: () => removeFromPractice(actionData({ user_piece_id: practiceItem.id, redirect_to: redirectTo })),
+        confirmMessage: "Stop Practice for this tune? Review scheduling will stop. The tune will remain in any lists, the shared tune will not be deleted, and stopping Practice does not automatically mark it Known.",
+      }] : [{
+        id: "remove",
+        label: "Remove from app",
+        destructive: true,
+        onSelect: () => removeTuneFromMyApp(actionData({ piece_id: piece.id, redirect_to: redirectTo })),
+        confirmMessage: `Remove "${piece.title}" from my app? This removes it from all of your lists, removes Known state, and stops Practice scheduling. The shared tune remains available to other users.`,
+      }]),
+    ]
+
     return (
       <li key={key}>
         <TuneRow
@@ -164,43 +189,7 @@ export default function RepertoireTuneList({
               </div>
             ) : null
           }
-          actions={
-            <>
-              <button
-                type="button"
-                className={secondaryButtonClass}
-                onClick={() => {
-                  setSelectedPiece(piece)
-                  setSelectedListId("")
-                }}
-              >
-                Add to List
-              </button>
-
-              {mode === "practice" && practiceItem ? (
-                <TuneCollectionActionButton
-                  action={removeFromPractice}
-                  fields={{
-                    user_piece_id: practiceItem.id,
-                    redirect_to: redirectTo,
-                  }}
-                  label="Stop Practice"
-                  pendingLabel="Stopping..."
-                  confirmMessage="Stop Practice for this tune? Review scheduling will stop. The tune will remain in any lists, the shared tune will not be deleted, and stopping Practice does not automatically mark it Known."
-                  className={removeButtonClass}
-                />
-              ) : (
-                <TuneCollectionActionButton
-                  action={removeTuneFromMyApp}
-                  fields={{ piece_id: piece.id, redirect_to: redirectTo }}
-                  label="Remove from app"
-                  pendingLabel="Removing..."
-                  confirmMessage={`Remove "${piece.title}" from my app? This removes it from all of your lists, removes Known state, and stops Practice scheduling. The shared tune remains available to other users.`}
-                  className={destructiveButtonClass}
-                />
-              )}
-            </>
-          }
+          actions={<ContextActionMenu label={`More actions for ${piece.title}`} title={piece.title} actions={actions} />}
         />
       </li>
     )
@@ -236,7 +225,7 @@ export default function RepertoireTuneList({
             : undefined
         }
         resetLabel={hasActiveFilters ? "Reset filters" : undefined}
-        className="border-y border-hairline"
+        className="border-b border-hairline"
         items={
           groupBy === "none"
             ? items.map(renderItem)

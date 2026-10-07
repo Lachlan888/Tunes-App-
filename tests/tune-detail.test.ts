@@ -2,23 +2,30 @@ import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import test from "node:test"
 import {
+  getLegacyTuneDetailHash,
   getTuneDetailHref,
   resolveTuneDetailView,
 } from "../lib/tune-detail-view.ts"
 
-test("tune detail URLs have three stable views and a Practice default", () => {
-  assert.equal(resolveTuneDetailView(undefined), "practice")
-  assert.equal(resolveTuneDetailView("practice"), "practice")
+test("tune detail has Info and Reference with legacy views redirected to Info", () => {
+  assert.equal(resolveTuneDetailView(undefined), "info")
+  assert.equal(resolveTuneDetailView("info"), "info")
+  assert.equal(resolveTuneDetailView("practice"), "info")
   assert.equal(resolveTuneDetailView("reference"), "reference")
-  assert.equal(resolveTuneDetailView("about"), "about")
-  assert.equal(resolveTuneDetailView(["about", "reference"]), "about")
-  assert.equal(resolveTuneDetailView("community"), "about")
-  assert.equal(resolveTuneDetailView("overview"), "practice")
-  assert.equal(resolveTuneDetailView("unexpected"), "practice")
+  assert.equal(resolveTuneDetailView("about"), "info")
+  assert.equal(resolveTuneDetailView(["about", "reference"]), "info")
+  assert.equal(resolveTuneDetailView("community"), "info")
+  assert.equal(resolveTuneDetailView("overview"), "info")
+  assert.equal(resolveTuneDetailView("unexpected"), "info")
+  assert.equal(getTuneDetailHref(42, "info"), "/library/42")
   assert.equal(getTuneDetailHref(42, "reference"), "/library/42/reference-media")
+  assert.equal(getLegacyTuneDetailHash("practice"), "#practice")
+  assert.equal(getLegacyTuneDetailHash("about"), "#catalogue")
+  assert.equal(getLegacyTuneDetailHash("community"), "#community")
+  assert.equal(getLegacyTuneDetailHash("overview"), "")
 })
 
-test("the tune identity, three views and Session Dock keep one action hierarchy", () => {
+test("the tune identity, two views and Session Dock keep one action hierarchy", () => {
   const page = readFileSync(
     new URL("../app/library/[id]/page.tsx", import.meta.url),
     "utf8"
@@ -36,21 +43,20 @@ test("the tune identity, three views and Session Dock keep one action hierarchy"
   )
 
   assert.match(page, /<TuneIdentity/)
-  assert.match(page, /sourceSummary=/)
-  assert.match(page, /activeView === "practice"/)
+  assert.match(page, /<DetailValue label="Source">/)
+  assert.match(page, /<InfoView/)
   assert.match(page, /activeView === "reference"/)
-  assert.match(page, /activeView === "about"/)
+  assert.doesNotMatch(page, /<AboutView/)
   assert.match(page, /resolveReferenceMediaSource/)
   assert.match(page, /redirect\(getReferencePracticeHref/)
   assert.doesNotMatch(page, /function ReferenceView/)
   assert.match(page, /typedReviewHistory/)
-  assert.match(page, /Add to Practice/)
   assert.match(page, /Already in practice/)
   assert.doesNotMatch(navigation, /label: "Overview"/)
   assert.doesNotMatch(navigation, /label: "Community"/)
-  assert.match(navigation, /label: "Practice"/)
+  assert.match(navigation, /label: "Info"/)
   assert.match(navigation, /label: "Reference"/)
-  assert.match(navigation, /label: "About"/)
+  assert.doesNotMatch(navigation, /label: "About"/)
   assert.match(sessionDock, /isInPractice/)
   assert.match(sessionDock, /label: "Open Practice"/)
   assert.match(sessionDock, /label: "Add to Practice"/)
@@ -146,10 +152,9 @@ test("view-scoped loading keeps shared identity data stable", () => {
     "utf8"
   )
 
-  assert.match(loader, /needsComments = scope === "about"/)
-  assert.match(loader, /needsPracticeHistory = scope === "practice"/)
+  assert.match(loader, /needsComments = scope === "info"/)
+  assert.match(loader, /needsPracticeHistory = scope === "info"/)
   assert.match(loader, /loadTuneLinks/)
   assert.match(practiceHistory, /typedReviewHistory/)
-  assert.match(practiceHistory, /review_event_id/)
   assert.match(practiceHistory, /resulting_stage/)
 })

@@ -3,10 +3,9 @@
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 import EditSetlistItemModal from "@/components/setlists/EditSetlistItemModal"
-import SubmitButton from "@/components/SubmitButton"
+import ContextActionMenu, { type ContextAction } from "@/components/ui/ContextActionMenu"
 import TuneRow from "@/components/tunes/TuneRow"
 import TuneStateIndicator from "@/components/tunes/TuneStateIndicator"
-import { buttonStyles } from "@/components/ui/buttonStyles"
 import type { SetlistItemWithCoverage } from "@/lib/types"
 
 type ReorderResult = {
@@ -39,7 +38,8 @@ export default function SetlistOrderManager({
   const [version, setVersion] = useState(initialVersion)
   const [serverVersion, setServerVersion] = useState(initialVersion)
   const [draggedId, setDraggedId] = useState<number | null>(null)
-  const [message, setMessage] = useState("Drag a row, or use the Move buttons.")
+  const [editingItemId, setEditingItemId] = useState<number | null>(null)
+  const [message, setMessage] = useState("Drag a row or use More to change its order.")
   const [isPending, startTransition] = useTransition()
 
   if (serverVersion !== initialVersion) {
@@ -93,6 +93,22 @@ export default function SetlistOrderManager({
         {items.map((item, index) => {
           const ownState = item.coverage.find((row) => row.user_id === currentUserId)
           if (!item.piece) return null
+          const supportingDetails = [item.performance_key ? `Performance key ${item.performance_key}` : null, item.notes ? item.notes.slice(0, 100) : null].filter(Boolean).join(" · ")
+          const title = item.piece.title
+          const actions: ContextAction[] = [
+            { id: "open", label: "Open tune", href: `/library/${item.piece_id}` },
+            { id: "reference", label: "Open Reference", href: `/library/${item.piece_id}/reference-media` },
+            { id: "edit", label: "Edit performance details", onSelect: () => setEditingItemId(item.id), completionMessage: null },
+            ...(!isPending && index > 0 ? [{ id: "up", label: "Move up", onSelect: () => move(item.id, index - 1), completionMessage: null }] : []),
+            ...(!isPending && index < items.length - 1 ? [{ id: "down", label: "Move down", onSelect: () => move(item.id, index + 1), completionMessage: null }] : []),
+            { id: "remove", label: "Remove from setlist", destructive: true, confirmMessage: `Remove "${title}" from this setlist?`, onSelect: () => {
+              const data = new FormData()
+              data.set("setlist_id", String(setlistId))
+              data.set("setlist_item_id", String(item.id))
+              data.set("redirect_to", redirectTo)
+              return removeTuneFromSetlist(data)
+            } },
+          ]
           return (
             <li
               key={item.id}
@@ -107,20 +123,8 @@ export default function SetlistOrderManager({
               <TuneRow
                 piece={item.piece}
                 personalState={<TuneStateIndicator isKnown={ownState?.status === "known"} isAlreadyInPractice={ownState?.status === "practice"} stage={ownState?.stage} showNewToMe={!ownState || ownState.status === "gap"} />}
-                supportingContent={<span>{[item.performance_key ? `Performance key ${item.performance_key}` : item.piece.key ? `Key ${item.piece.key}` : "Key not set", item.piece.type ?? item.piece.style, item.notes ? item.notes.slice(0, 100) : null].filter(Boolean).join(" · ")}</span>}
-                actions={
-                  <>
-                    <button type="button" aria-label={`Move ${item.piece.title} up`} disabled={isPending || index === 0} onClick={() => move(item.id, index - 1)} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-hairline px-3 text-sm font-semibold disabled:opacity-40">Move up</button>
-                    <button type="button" aria-label={`Move ${item.piece.title} down`} disabled={isPending || index === items.length - 1} onClick={() => move(item.id, index + 1)} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-hairline px-3 text-sm font-semibold disabled:opacity-40">Move down</button>
-                    <EditSetlistItemModal item={item} redirectTo={redirectTo} updateSetlistItem={updateSetlistItem} />
-                    <form action={removeTuneFromSetlist} onSubmit={(event) => { if (!window.confirm(`Remove "${item.piece?.title}" from this setlist?`)) event.preventDefault() }}>
-                      <input type="hidden" name="setlist_id" value={setlistId} />
-                      <input type="hidden" name="setlist_item_id" value={item.id} />
-                      <input type="hidden" name="redirect_to" value={redirectTo} />
-                      <SubmitButton label="Remove" pendingLabel="Removing…" className={buttonStyles.destructiveSecondary} />
-                    </form>
-                  </>
-                }
+                supportingContent={supportingDetails ? <span>{supportingDetails}</span> : undefined}
+                actions={<><ContextActionMenu label={`More setlist actions for ${title}`} title={title} actions={actions} /><EditSetlistItemModal item={item} redirectTo={redirectTo} updateSetlistItem={updateSetlistItem} controlledOpen={editingItemId === item.id} onControlledClose={() => setEditingItemId(null)} /></>}
               />
             </li>
           )

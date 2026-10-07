@@ -7,6 +7,7 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner"
 type PendingLinkButtonProps = {
   href: string
   label: string
+  ariaLabel?: string
   pendingLabel?: string
   className?: string
   refresh?: boolean
@@ -16,6 +17,7 @@ type PendingLinkButtonProps = {
 export default function PendingLinkButton({
   href,
   label,
+  ariaLabel,
   pendingLabel,
   className = "",
   refresh = false,
@@ -27,6 +29,7 @@ export default function PendingLinkButton({
   return (
     <button
       type="button"
+      aria-label={ariaLabel}
       data-navigation-href={href}
       disabled={disabled || isPending}
       onClick={() => {

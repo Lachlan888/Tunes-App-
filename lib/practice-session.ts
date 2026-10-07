@@ -151,3 +151,9 @@ export function clampPracticeSessionPosition(position: number, itemCount: number
   if (!Number.isInteger(position) || position < 0) return 0
   return Math.min(position, Math.max(0, itemCount - 1))
 }
+export function getPracticeEnrolmentStatus(status: string): { tone: "success" | "neutral" | "error"; message: string } | null {
+  if (status === "added") return { tone: "success", message: "Added to Practice. Your first review is scheduled for tomorrow." }
+  if (status === "already") return { tone: "neutral", message: "Already in Practice. No new review was recorded." }
+  if (status === "error") return { tone: "error", message: "Couldn’t add this tune to Practice. Try again." }
+  return null
+}

@@ -63,6 +63,15 @@ function safeString(value: unknown) {
   return typeof value === "string" ? value : null
 }
 
+function formatMetricDate(value: string) {
+  return new Date(value).toLocaleDateString("en-AU", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "Australia/Melbourne",
+  })
+}
+
 function getStringFromKeys(row: AnyRow, keys: string[]) {
   for (const key of keys) {
     const value = row[key]
@@ -421,7 +430,7 @@ function buildFeatureFamilyVisualisation(
         value: data.count,
         secondaryValue: data.users.size,
         secondaryLabel: "users",
-        helper: data.lastSeen ? `Last seen ${data.lastSeen}` : null,
+        helper: data.lastSeen ? `Last seen ${formatMetricDate(data.lastSeen)}` : null,
       }))
       .sort((a, b) => b.value - a.value),
   }
@@ -443,7 +452,7 @@ function buildFeatureUsageVisualisation(
       value: row.count,
       secondaryValue: row.uniqueUsers,
       secondaryLabel: "users",
-      helper: row.lastSeen ? `Last seen ${row.lastSeen}` : null,
+      helper: row.lastSeen ? `Last seen ${formatMetricDate(row.lastSeen)}` : null,
     })),
   }
 }

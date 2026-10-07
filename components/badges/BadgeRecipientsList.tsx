@@ -18,11 +18,8 @@ export default function BadgeRecipientsList({
 }: BadgeRecipientsListProps) {
   if (awards.length === 0) {
     return (
-      <section className="rounded-object border border-border bg-card p-6 ">
-        <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
-          Recipients
-        </h2>
-        <p className="mt-4 rounded-object border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+      <section className="pb-4">
+        <p className="text-sm text-muted-foreground">
           No one has received this badge yet.
         </p>
       </section>
@@ -30,19 +27,15 @@ export default function BadgeRecipientsList({
   }
 
   return (
-    <section className="rounded-object border border-border bg-card p-6 ">
-      <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
-        Recipients
-      </h2>
-
-      <ul className="mt-5 space-y-3">
+    <section className="pb-4">
+      <ul className="divide-y divide-hairline border-t border-hairline">
         {awards.map((award) => {
           const href = profileHref(award.recipient_profile)
 
           return (
             <li
               key={award.id}
-              className="rounded-object border border-border bg-background/70 p-4"
+              className="py-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>

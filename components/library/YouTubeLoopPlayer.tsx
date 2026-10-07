@@ -468,7 +468,11 @@ export default function YouTubeLoopPlayer({
     }).catch((error: unknown) => {
       if (cancelled) return
       setIsReady(false)
-      setPlayerError(error instanceof Error ? error.message : "This recording could not be loaded.")
+      setPlayerError(
+        error instanceof Error && error.message.includes("did not respond")
+          ? error.message
+          : "This recording could not be loaded."
+      )
     })
 
     return () => {
@@ -1364,17 +1368,17 @@ export default function YouTubeLoopPlayer({
                 <span className="font-mono text-xs text-[#ef765f]">{formatTime(loopEnd, true)}</span>
               </div>
 
-              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <div className="mt-4 border-t border-white/10">
                 {([
                   { id: "in", label: "Loop In", value: formatTime(loopStart, true), onMinus: () => adjustBoundary("start", -nudgeAmount), onPlus: () => adjustBoundary("start", nudgeAmount) },
                   { id: "speed", label: "Speed", value: `${Math.round(playbackRate * 100)}%`, onMinus: () => stepPlaybackRate(-1), onPlus: () => stepPlaybackRate(1) },
                   { id: "out", label: "Loop Out", value: formatTime(loopEnd, true), onMinus: () => adjustBoundary("end", -nudgeAmount), onPlus: () => adjustBoundary("end", nudgeAmount) },
                 ] as const).map((control) => (
-                  <div key={control.id} className="rounded-lg border border-white/10 bg-[#141713] p-2">
-                    <p className="text-center text-xs font-semibold text-[#b8bba9]">{control.label}</p>
-                    <div className="mt-2 grid grid-cols-[2.75rem_1fr_2.75rem] items-center gap-1">
+                  <div key={control.id} className="grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-2 border-b border-white/10 py-2">
+                    <p className="text-xs font-semibold text-[#b8bba9]">{control.label}</p>
+                    <div className="grid min-w-0 grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-1">
                       <button type="button" aria-label={`Decrease ${control.label}`} disabled={control.id === "speed" ? !isReady : !hasValidLoop} onClick={control.onMinus} className="min-h-11 min-w-11 rounded-md border border-white/15 text-lg hover:bg-[#30342d] disabled:opacity-35">−</button>
-                      <span className="truncate text-center font-mono text-sm text-[#c7e58e]">{control.value}</span>
+                      <span className="whitespace-nowrap text-center font-mono text-sm text-[#c7e58e]">{control.value}</span>
                       <button type="button" aria-label={`Increase ${control.label}`} disabled={control.id === "speed" ? !isReady : !hasValidLoop} onClick={control.onPlus} className="min-h-11 min-w-11 rounded-md border border-white/15 text-lg hover:bg-[#30342d] disabled:opacity-35">+</button>
                     </div>
                   </div>
@@ -1418,7 +1422,7 @@ export default function YouTubeLoopPlayer({
       >
         <section className="reference-player flex min-w-0 flex-col md:sticky md:top-6">
           {playerError ? (
-            <div className="rounded-2xl border border-border bg-card p-5">
+            <div className="border-y border-hairline py-5">
               <p className="font-semibold text-foreground">Recording unavailable</p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 {playerError} {presentation === "session" ? mediaPanel ? "Open Loop pedal to choose another recording, or open the source directly." : "You can open the source directly or continue practising." : "Choose another recording below, or open the source directly."}

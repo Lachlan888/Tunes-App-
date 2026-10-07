@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useCallback, useState } from "react"
-import SubmitButton from "@/components/SubmitButton"
+import ContextActionMenu, { type ContextAction } from "@/components/ui/ContextActionMenu"
 import ResponsiveModal from "@/components/ui/ResponsiveModal"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import {
@@ -10,6 +10,7 @@ import {
   deletePracticeFocus,
 } from "@/lib/actions/practice-foci"
 import type { PracticeFocus } from "@/lib/loaders/practice-foci"
+import { formatPracticeDate } from "@/lib/review"
 
 type FocusActionMenuProps = {
   focus: PracticeFocus
@@ -40,15 +41,7 @@ function getStatusClasses(status: PracticeFocus["status"]) {
 }
 
 function formatDateOnly(dateOnly: string | null) {
-  if (!dateOnly) return "Undated"
-
-  const [year, month, day] = dateOnly.split("-")
-
-  if (!year || !month || !day) {
-    return dateOnly
-  }
-
-  return `${day}/${month}/${year}`
+  return formatPracticeDate(dateOnly) ?? "Undated"
 }
 
 function formatFocusMeta(focus: PracticeFocus) {
@@ -166,91 +159,6 @@ function FocusPickerModal({
   )
 }
 
-function FocusActionsSheet({
-  focus,
-  redirectTo,
-  isEditing,
-  onToggleEdit,
-  onOpenPicker,
-  onClose,
-}: {
-  focus: PracticeFocus
-  redirectTo: string
-  isEditing: boolean
-  onToggleEdit: () => void
-  onOpenPicker: () => void
-  onClose: () => void
-  }) {
-  return (
-    <ResponsiveModal
-      isOpen
-      onClose={onClose}
-      desktopMaxWidth="md:max-w-md"
-      title={focus.title}
-      description="Change this focus or its linked workflow."
-    >
-        <div className="grid gap-3">
-          <button
-            type="button"
-            className={`${buttonStyles.secondaryStrong} w-full`}
-            onClick={() => {
-              onOpenPicker()
-            }}
-          >
-            Change focus
-          </button>
-
-          <button
-            type="button"
-            className={`${buttonStyles.secondary} w-full`}
-            onClick={() => {
-              onToggleEdit()
-              onClose()
-            }}
-          >
-            {isEditing ? "Close edit" : "Edit focus"}
-          </button>
-
-          {focus.status === "active" ? (
-            <form action={archivePracticeFocus} className="w-full">
-              <input type="hidden" name="focus_id" value={focus.id} />
-              <input type="hidden" name="redirect_to" value={redirectTo} />
-
-              <SubmitButton
-                label="Archive focus"
-                pendingLabel="Archiving..."
-                className={`${buttonStyles.secondary} w-full`}
-              />
-            </form>
-          ) : null}
-
-          <form
-            action={deletePracticeFocus}
-            className="w-full border-t border-destructive/30 pt-3"
-            onSubmit={(event) => {
-              const confirmed = window.confirm(
-                `Delete "${focus.title}" permanently? This cannot be undone.`
-              )
-
-              if (!confirmed) {
-                event.preventDefault()
-              }
-            }}
-          >
-            <input type="hidden" name="focus_id" value={focus.id} />
-            <input type="hidden" name="redirect_to" value="/review/foci" />
-
-            <SubmitButton
-              label="Delete focus"
-              pendingLabel="Deleting..."
-              className={`${buttonStyles.destructiveSecondary} w-full`}
-            />
-          </form>
-      </div>
-    </ResponsiveModal>
-  )
-}
-
 export default function FocusActionMenu({
   focus,
   allFoci,
@@ -258,40 +166,33 @@ export default function FocusActionMenu({
   isEditing,
   onToggleEdit,
 }: FocusActionMenuProps) {
-  const [isActionsOpen, setIsActionsOpen] = useState(false)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   const openPicker = useCallback(() => setIsPickerOpen(true), [])
   const closePicker = useCallback(() => setIsPickerOpen(false), [])
-  const closeActions = useCallback(() => setIsActionsOpen(false), [])
+  const focusData = (destination: string) => {
+    const data = new FormData()
+    data.set("focus_id", String(focus.id))
+    data.set("redirect_to", destination)
+    return data
+  }
+  const actions: ContextAction[] = [
+    { id: "change", label: "Change focus", onSelect: openPicker, completionMessage: null },
+    { id: "edit", label: isEditing ? "Close edit" : "Edit focus", onSelect: onToggleEdit, completionMessage: null },
+    ...(focus.status === "active" ? [{ id: "archive", label: "Archive focus", onSelect: () => archivePracticeFocus(focusData(redirectTo)) }] : []),
+    {
+      id: "delete",
+      label: "Delete focus",
+      destructive: true,
+      confirmMessage: `Delete "${focus.title}" permanently? This cannot be undone.`,
+      onSelect: () => deletePracticeFocus(focusData("/review/foci")),
+    },
+  ]
 
   return (
     <>
-      <section className="grid gap-3 border-b border-hairline pb-5 md:flex md:items-center md:justify-between">
-        <div className="hidden md:block">
-          <p className="text-sm leading-6 text-muted-foreground">
-            {formatFocusMeta(focus)}
-          </p>
-        </div>
-
-        <button
-          type="button"
-          className={`${buttonStyles.secondaryStrong} w-full md:w-auto`}
-          onClick={() => setIsActionsOpen(true)}
-        >
-          Focus actions
-        </button>
+      <section className="grid gap-3 border-b border-hairline pb-5 md:flex md:items-center md:justify-end">
+        <ContextActionMenu label={`Focus actions for ${focus.title}`} title={focus.title} actions={actions} triggerClassName={`${buttonStyles.secondaryStrong} w-full md:w-auto`} />
       </section>
-
-      {isActionsOpen ? (
-        <FocusActionsSheet
-          focus={focus}
-          redirectTo={redirectTo}
-          isEditing={isEditing}
-          onToggleEdit={onToggleEdit}
-          onOpenPicker={openPicker}
-          onClose={closeActions}
-        />
-      ) : null}
 
       {isPickerOpen ? (
         <FocusPickerModal

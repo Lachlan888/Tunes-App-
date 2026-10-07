@@ -42,13 +42,9 @@ function renderCountText(
 }
 
 function getPieceMetadata(piece: Piece) {
-  return [
-    piece.key ? `Key: ${piece.key}` : null,
-    piece.style ? `Style: ${piece.style}` : null,
-    piece.time_signature ? `Time: ${piece.time_signature}` : null,
-  ]
+  return [piece.style, piece.key, piece.time_signature]
     .filter(Boolean)
-    .join(" | ")
+    .join(" · ")
 }
 
 function getUniqueListLinks(listItemsForPiece: LearningListItemForPiece[]) {
@@ -155,7 +151,7 @@ export default function TrendTuneList({
 
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
                   {isAlreadyInPractice ? (
-                    <span className="rounded-control border border-success bg-success px-4 py-2 text-sm font-medium text-success-foreground">
+                    <span className="inline-flex min-h-11 items-center border-l-2 border-state-practice px-3 text-sm font-semibold text-state-practice">
                       Already in practice
                     </span>
                   ) : (
@@ -164,7 +160,7 @@ export default function TrendTuneList({
                       <input type="hidden" name="redirect_to" value={redirectTo} />
                       <SubmitButton
                         label="Add to Practice"
-                        pendingLabel="Starting..."
+                        pendingLabel="Adding..."
                         className="inline-flex min-h-11 items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                       />
                     </form>
@@ -172,7 +168,7 @@ export default function TrendTuneList({
 
                   {!isAlreadyInPractice &&
                     (isKnown ? (
-                      <span className="rounded-control border border-state-known bg-state-known px-4 py-2 text-sm font-medium text-state-known-foreground">
+                      <span className="inline-flex min-h-11 items-center border-l-2 border-state-known px-3 text-sm font-semibold text-state-known">
                         Known
                       </span>
                     ) : (

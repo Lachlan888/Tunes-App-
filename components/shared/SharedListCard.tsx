@@ -26,8 +26,7 @@ export default function SharedListCard({ list, redirectTo = "/public-lists" }: S
 
   return (
     <EditorialListCard id={list.id} title={list.name} href={listHref}>
-          <p className="text-sm font-semibold">{list.isOwnedByCurrentUser ? "Your public list" : "Public list"}</p>
-          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium text-muted-foreground">
             <span>
               By{" "}
               {ownerHref ? (
@@ -51,18 +50,17 @@ export default function SharedListCard({ list, redirectTo = "/public-lists" }: S
                 <span>{displayedStyle}</span>
               </>
             ) : null}
+            {list.isOwnedByCurrentUser ? <span className="font-semibold text-text-primary">Yours</span> : null}
           </div>
 
-          <p className="mt-4 line-clamp-3 text-sm leading-6 text-foreground">
-            {list.description || `A ${displayedStyle ? `${displayedStyle.toLowerCase()} ` : ""}collection curated for players looking for their next session.`}
-          </p>
+          {list.description ? <p className="line-clamp-3 text-sm leading-6 text-foreground">{list.description}</p> : null}
 
-          <div data-card-action className="mt-5">
+          <div data-card-action>
             <PendingLinkButton
               href={listHref}
               label="Read the list"
               pendingLabel="Opening..."
-              className="min-h-11 inline-flex items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+              className="inline-flex min-h-11 items-center text-sm font-semibold text-action-primary underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
             />
           </div>
     </EditorialListCard>

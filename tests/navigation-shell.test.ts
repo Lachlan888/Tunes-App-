@@ -26,7 +26,6 @@ test("nested routes select their primary destination", () => {
   const routes = {
     "/": "home",
     "/review/session": "practice",
-    "/review/diary/index": "practice",
     "/library/tune-id": "tunes",
     "/library/tune-id/reference-media": "tunes",
     "/learning-lists/list-id": "lists",
@@ -34,7 +33,6 @@ test("nested routes select their primary destination", () => {
     "/friends/person-id": "social",
     "/users/person-id": "social",
     "/compare/person-id": "compare",
-    "/inbox/thread-id": "social",
   } as const
 
   for (const [pathname, destination] of Object.entries(routes)) {
@@ -42,6 +40,12 @@ test("nested routes select their primary destination", () => {
   }
 
   assert.equal(getPrimaryDestination("/dashboard"), null)
+  assert.equal(getPrimaryDestination("/review/diary/index"), null)
+  assert.equal(getPrimaryDestination("/review/foci"), null)
+  assert.equal(getPrimaryDestination("/inbox/thread-id"), null)
+  assert.equal(getPrimaryDestination("/setlists"), null)
+  assert.equal(getPrimaryDestination("/badges"), null)
+  assert.equal(getPrimaryDestination("/trends"), null)
   assert.equal(getPrimaryDestination("/dev"), null)
 })
 
@@ -106,21 +110,16 @@ test("secondary navigation overlays and the Home view is persisted", () => {
 
   assert.match(accountMenu, /floating-material absolute/)
   assert.match(accountMenu, /Account & settings/)
-  assert.match(accountMenu, /Social/)
+  assert.match(accountMenu, /label: "Inbox"/)
   assert.doesNotMatch(accountMenu, /label: "Friends"/)
   assert.doesNotMatch(accountMenu, /Compare repertoires/)
   assert.match(accountMenu, /canModerate \?/)
   assert.match(accountMenu, /canAccessDev \?/)
-  assert.match(accountMenu, /Practice tools/)
+  assert.match(accountMenu, /label: "Practice Diary"/)
   assert.match(accountMenu, /aria-haspopup="menu"/)
-  assert.match(accountMenu, /aria-expanded=\{isPracticeToolsOpen\}/)
-  assert.match(accountMenu, /event\.key === "ArrowRight"/)
-  assert.match(accountMenu, /event\.key === "ArrowLeft"/)
-  assert.match(accountMenu, /aria-current=\{activePracticeHref === item\.href \? "page" : undefined\}/)
-  for (const href of ["/review/diary", "/review/foci", "/review/diary/index"]) {
-    assert.match(accountMenu, new RegExp(`href: "${href}"`))
-  }
-  assert.doesNotMatch(accountMenu, /href: "\/review", label: "Practice tools"/)
+  assert.match(accountMenu, /isPracticeDiaryActive/)
+  assert.match(accountMenu, /href: "\/review\/diary", label: "Practice Diary"/)
+  assert.doesNotMatch(accountMenu, /href: "\/review\/foci"|href: "\/review\/diary\/index"|Practice tools/)
   assert.match(home, /tunes\.home\.mobile-view/)
   assert.match(home, /useSyncExternalStore/)
 })
@@ -178,7 +177,7 @@ test("mobile destination switchers sit below the shell header and keep page head
   assert.match(friendsSwitcher, /showSwitcherLabel=\{false\}/)
   assert.match(listNav, /sticky top-14 z-\[300\]/)
   assert.match(lists, /<PageHeader title="Lists"/)
-  assert.match(lists, /<div className="hidden md:block">/)
+  assert.match(lists, /<ListsSectionNav activeView=/)
   assert.match(friends, /<PageHeader title="Social"/)
   assert.match(compare, /font-sans text-4xl[^"]*">Compare/)
 })

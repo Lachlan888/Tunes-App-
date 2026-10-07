@@ -334,11 +334,11 @@ textarea::placeholder {
 @media (prefers-reduced-motion: no-preference) { .badge-award-moment { animation: badge-arrive 180ms ease-out; } }
 @media (forced-colors: active) { .badge-art { color: CanvasText; } .badge-art path, .badge-art circle { fill: Canvas; } .badge-art path[fill="none"] { fill: none; } }
 
-/* Scoped link contrast for the badge and internal workspace controls. */
-.badge-primary-action,
-.internal-workspace a[aria-current="page"] { color: var(--state-social-foreground); }
+/* Badge action contrast. Internal navigation uses its component state styles. */
+.badge-primary-action { color: var(--state-social-foreground); }
+.internal-workspace a[aria-current="page"] { color: var(--state-social); }
 .internal-workspace main { padding-top: 1.25rem; }
-.internal-workspace main h1 { font-family: var(--font-sans); font-size: 1.875rem; }
+.internal-workspace main h1 { font-size: clamp(2.25rem, 4vw, 3.5rem); }
 
 /* Responsive workspaces share content and state across rail/dock breakpoints. */
 :root { --app-rail-width: 0px; }
@@ -425,24 +425,14 @@ textarea::placeholder {
 :root[data-focus-mode="practice"] [data-floating-feedback] { display: none; }
 .practice-entry, .practice-finish {
   display: flex;
-  min-height: min(72dvh, 46rem);
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1rem;
-  text-align: center;
+  align-items: flex-start;
+  max-width: 42rem;
+  margin-inline: auto;
+  text-align: left;
 }
-.practice-entry-symbol {
-  display: grid;
-  width: 4.5rem;
-  height: 4.5rem;
-  margin-bottom: 1.75rem;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--state-practice) 20%, transparent);
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--state-practice) 7%, var(--surface-canvas));
-  color: var(--state-practice);
-}
+.practice-entry { justify-content: flex-start; padding: clamp(2rem, 6vw, 4rem) 0; }
+.practice-finish { min-height: min(72dvh, 46rem); justify-content: center; padding: 3rem 1rem; }
 .practice-start-button {
   display: inline-flex;
   min-height: 3.5rem;
@@ -458,9 +448,9 @@ textarea::placeholder {
   font-size: 1rem;
   font-weight: 650;
   box-shadow: none;
-  transition: background-color 150ms, transform 150ms;
+  transition: background-color 150ms;
 }
-.practice-start-button:hover { background: var(--state-practice-hover); transform: translateY(-1px); }
+.practice-start-button:hover { background: var(--state-practice-hover); }
 .practice-start-button:disabled { opacity: .65; }
 .practice-start-button:focus-visible, .practice-rating:focus-visible, .practice-player-controls button:focus-visible {
   outline: 2px solid var(--focus-ring);
@@ -493,7 +483,7 @@ textarea::placeholder {
   .practice-player-controls button { font-size: .8125rem; }
   .practice-pedal-trigger { padding-inline: .5rem; }
   .practice-rating { gap: .4rem; padding-inline: .5rem; }
-  .practice-entry, .practice-finish { min-height: 65dvh; padding-inline: 0; }
+  .practice-finish { min-height: 65dvh; padding-inline: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .practice-start-button, .practice-rating { transition: none; transform: none; }
@@ -505,8 +495,6 @@ textarea::placeholder {
 .app-shell-content main { line-height: 1.5; }
 .app-shell-content main h1 { letter-spacing: -0.045em; }
 .app-shell-content main :is(ul, ol).divide-y > li { border-color: var(--hairline); }
-.practice-entry, .practice-finish { align-items: flex-start; text-align: left; max-width: 42rem; margin-inline: auto; }
-.practice-entry-symbol { border-radius: .2rem; }
 .practice-reference-empty { border-radius: .2rem; background: transparent; border-block: 1px solid var(--hairline); }
 .practice-player-controls button { border-radius: .2rem; }
 @media (min-width: 768px) {

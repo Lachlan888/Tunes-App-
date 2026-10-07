@@ -2,7 +2,6 @@ import Link from "next/link"
 import EmptyState from "@/components/EmptyState"
 import SessionDockShowcase from "@/components/session-dock/SessionDockShowcase"
 import { buttonStyles } from "@/components/ui/buttonStyles"
-import { cardStyles } from "@/components/ui/cardStyles"
 import { formStyles } from "@/components/ui/formStyles"
 import PageHeader from "@/components/ui/PageHeader"
 import RecoveryState from "@/components/ui/RecoveryState"
@@ -44,7 +43,7 @@ const routeExamples = [
   {
     label: "Home",
     title: "Continue your session",
-    copy: "The Banshee · Stage 3 · due today",
+    copy: "The Banshee · Stage 3 · 3-day review due today",
     tone: "due" as const,
     status: "Due today",
   },
@@ -58,7 +57,7 @@ const routeExamples = [
   {
     label: "Practice",
     title: "Cooley’s Reel",
-    copy: "Active queue · 4 of 12",
+    copy: "Stage 3 · 3-day review due today",
     tone: "practice" as const,
     status: "In practice",
   },
@@ -71,10 +70,17 @@ const routeExamples = [
   },
   {
     label: "Social",
-    title: "You share 24 tunes",
-    copy: "A useful starting point for your next session",
+    title: "Recent activity",
+    copy: "A friend practised The Banshee",
     tone: "social" as const,
     status: "Community",
+  },
+  {
+    label: "Compare",
+    title: "24 tunes in common",
+    copy: "Known repertoire · 2 musicians",
+    tone: "social" as const,
+    status: "Shared",
   },
 ] as const
 
@@ -84,15 +90,14 @@ export default async function DesignSystemPage() {
   return (
     <main className="mx-auto max-w-[1200px] px-4 py-8 text-text-primary md:px-6 md:py-10">
       <PageHeader
-        title="Semantic folk design system"
+        title="Tunes editorial system"
         backHref="/dev"
         backLabel="Back to Dev"
       />
 
       <p className="mb-10 max-w-3xl text-base leading-7 text-text-muted">
-        A protected working preview for the foundation shared by Home, Tunes,
-        Practice, Lists and Social. Resize the viewport to inspect phone and
-        desktop behaviour.
+        A protected working preview for the type, colour, rows and practice
+        controls used across Tunes.
       </p>
 
       <section className="mb-12">
@@ -101,11 +106,11 @@ export default async function DesignSystemPage() {
           description="Components consume semantic jobs; hex values live only in the global token layer."
           variant="editorial"
         />
-        <div className="grid gap-px overflow-hidden rounded-object border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
           {swatches.map(([label, className, value]) => (
             <div
               key={label}
-              className="flex items-center gap-3 bg-surface-paper p-4"
+              className="flex items-center gap-3 border-b border-hairline py-4"
             >
               <span
                 className={`h-10 w-10 shrink-0 rounded-control border border-black/10 ${className}`}
@@ -141,7 +146,7 @@ export default async function DesignSystemPage() {
       <section className="mb-12">
         <SectionHeader
           title="Actions and controls"
-          description="Compact radii for controls; pills are reserved for the status marks above."
+          description="Compact radii for controls; labelled colour marks show state."
           variant="editorial"
         />
         <div className="flex flex-wrap gap-3">
@@ -192,22 +197,22 @@ export default async function DesignSystemPage() {
       <section className="mb-12">
         <SectionHeader
           title="Representative route inheritance"
-          description="Opaque reading surfaces, hairline rhythm and semantic states across the five primary areas."
+          description="Aligned rows, compact metadata and semantic states across the six primary destinations."
           variant="editorial"
         />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="divide-y divide-hairline border-y border-hairline">
           {routeExamples.map((example) => (
-            <article key={example.label} className={cardStyles.displayCard}>
-              <p className="text-xs font-semibold  tracking-[0.16em] text-text-muted">
+            <article key={example.label} className="grid gap-2 py-5 sm:grid-cols-[8rem_minmax(0,1fr)_auto] sm:items-start sm:gap-5">
+              <p className="text-sm font-semibold text-text-muted">
                 {example.label}
               </p>
-              <h3 className="mt-3 font-sans text-xl font-semibold leading-tight">
+              <div><h3 className="font-sans text-xl font-semibold leading-tight">
                 {example.title}
               </h3>
-              <p className="mt-2 text-sm leading-6 text-text-muted">
+              <p className="mt-1 text-sm leading-6 text-text-muted">
                 {example.copy}
-              </p>
-              <StatusMark className="mt-4" tone={example.tone}>
+              </p></div>
+              <StatusMark tone={example.tone}>
                 {example.status}
               </StatusMark>
             </article>

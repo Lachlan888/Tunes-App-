@@ -11,6 +11,7 @@ export default async function HomePage() {
     loadFestivalPromotion(),
   ])
   const {
+    user,
     summary,
     recentFriendActivity,
     activityNextCursor,
@@ -23,6 +24,7 @@ export default async function HomePage() {
       <PageHeader title="Home" />
 
       <HomeSummarySection
+        currentUserId={user.id}
         summary={summary}
         recentFriendActivity={recentFriendActivity}
         activityNextCursor={activityNextCursor}

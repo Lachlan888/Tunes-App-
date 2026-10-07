@@ -2,8 +2,6 @@ import type { BacklogTier } from "@/lib/types"
 
 const REVIEW_INTERVALS = [1, 2, 3, 7, 14, 30, 60, 90, 120, 360] as const
 
-const STAGE_PROGRESS_PERCENTAGES = [0, 18, 32, 43, 55, 65, 74, 82, 89, 100] as const
-
 export const APP_TIME_ZONE = "Australia/Melbourne"
 
 function getAppDateParts() {
@@ -167,6 +165,15 @@ export function formatPracticeDate(dateValue: string | null | undefined) {
   }).format(new Date(Date.UTC(year, month - 1, day)))
 }
 
+export function formatReviewDueStatus(dateValue: string | null | undefined, today = getToday()) {
+  const dateOnly = normaliseStoredDate(dateValue)
+  const dateLabel = formatPracticeDate(dateValue)
+  if (!dateOnly || !dateLabel) return "No review date set"
+  if (dateOnly < today) return `Overdue since ${dateLabel}`
+  if (dateOnly === today) return "Due today"
+  return `Next review ${dateLabel}`
+}
+
 export function getNextReviewDateFromStage(stage: number) {
   const safeStage = getSafeStage(stage)
   const intervalDays = REVIEW_INTERVALS[safeStage - 1]
@@ -187,7 +194,8 @@ export function getNextStageForFailed(currentStage: number | null | undefined) {
   return Math.max(safeCurrentStage - 2, 1)
 }
 
-export function getProgressTowardsKnown(stage: number | null | undefined) {
-  const safeStage = getSafeStage(stage)
-  return STAGE_PROGRESS_PERCENTAGES[safeStage - 1]
+export function getReviewOutcomePreview(stage: number | null | undefined, outcome: "failed" | "shaky" | "solid") {
+  const nextStage = outcome === "failed" ? getNextStageForFailed(stage) : outcome === "shaky" ? getNextStageForShaky(stage) : getNextStageForSolid(stage)
+  if (outcome === "solid" && nextStage >= 10) return "Moves to Known"
+  return `Stage ${nextStage} · ${getReviewIntervalDays(nextStage)}-day review`
 }

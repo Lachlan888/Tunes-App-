@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import EditSetlistItemModal from "@/components/setlists/EditSetlistItemModal"
+import ContextActionMenu, { type ContextAction } from "@/components/ui/ContextActionMenu"
 import SubmitButton from "@/components/SubmitButton"
 import UserIdentityLink from "@/components/UserIdentityLink"
 import { buttonStyles } from "@/components/ui/buttonStyles"
@@ -171,7 +172,7 @@ function MyStatusDropdown({
               <input type="hidden" name="redirect_to" value={redirectTo} />
               <SubmitButton
                 label="Add to Practice"
-                pendingLabel="Starting..."
+                pendingLabel="Adding..."
                 className={buttonStyles.menuItem}
               />
             </form>
@@ -291,6 +292,7 @@ export default function SetlistTuneMatrix({
   updateSetlistItem,
 }: SetlistTuneMatrixProps) {
   const [openStatusItemId, setOpenStatusItemId] = useState<number | null>(null)
+  const [editingItemId, setEditingItemId] = useState<number | null>(null)
 
   useEffect(() => {
     if (openStatusItemId === null) return
@@ -331,6 +333,22 @@ export default function SetlistTuneMatrix({
           (row) => row.user_id === currentUserId
         )
         const isStatusOpen = openStatusItemId === item.id
+        const setlistActionData = (extra: Record<string, string>) => {
+          const data = new FormData()
+          data.set("setlist_id", String(item.setlist_id))
+          data.set("setlist_item_id", String(item.id))
+          data.set("redirect_to", redirectTo)
+          for (const [key, value] of Object.entries(extra)) data.set(key, value)
+          return data
+        }
+        const setlistActions: ContextAction[] = [
+          { id: "open", label: "Open tune", href: `/library/${item.piece_id}` },
+          { id: "reference", label: "Open Reference", href: `/library/${item.piece_id}/reference-media` },
+          { id: "edit", label: "Edit performance details", onSelect: () => setEditingItemId(item.id), completionMessage: null },
+          ...(index > 0 ? [{ id: "earlier", label: "Move earlier", onSelect: () => moveSetlistItem(setlistActionData({ direction: "up" })) }] : []),
+          ...(index < items.length - 1 ? [{ id: "later", label: "Move later", onSelect: () => moveSetlistItem(setlistActionData({ direction: "down" })) }] : []),
+          { id: "remove", label: "Remove from setlist", destructive: true, confirmMessage: `Remove "${title}" from this setlist?`, onSelect: () => removeTuneFromSetlist(setlistActionData({})) },
+        ]
 
         return (
           <article
@@ -400,81 +418,14 @@ export default function SetlistTuneMatrix({
 
               {canEdit ? (
                 <div className="flex flex-wrap gap-2 xl:justify-end">
-                  <form action={moveSetlistItem}>
-                    <input
-                      type="hidden"
-                      name="setlist_id"
-                      value={item.setlist_id}
-                    />
-                    <input
-                      type="hidden"
-                      name="setlist_item_id"
-                      value={item.id}
-                    />
-                    <input type="hidden" name="direction" value="up" />
-                    <input type="hidden" name="redirect_to" value={redirectTo} />
-                    <SubmitButton
-                      label="↑"
-                      pendingLabel="..."
-                      className={buttonStyles.secondary}
-                    />
-                  </form>
-
-                  <form action={moveSetlistItem}>
-                    <input
-                      type="hidden"
-                      name="setlist_id"
-                      value={item.setlist_id}
-                    />
-                    <input
-                      type="hidden"
-                      name="setlist_item_id"
-                      value={item.id}
-                    />
-                    <input type="hidden" name="direction" value="down" />
-                    <input type="hidden" name="redirect_to" value={redirectTo} />
-                    <SubmitButton
-                      label="↓"
-                      pendingLabel="..."
-                      className={buttonStyles.secondary}
-                    />
-                  </form>
-
+                  <ContextActionMenu label={`More setlist actions for ${title}`} title={title} actions={setlistActions} />
                   <EditSetlistItemModal
                     item={item}
                     redirectTo={redirectTo}
                     updateSetlistItem={updateSetlistItem}
+                    controlledOpen={editingItemId === item.id}
+                    onControlledClose={() => setEditingItemId(null)}
                   />
-
-                  <form
-                    action={removeTuneFromSetlist}
-                    onSubmit={(event) => {
-                      const confirmed = window.confirm(
-                        `Remove "${title}" from this setlist?`
-                      )
-
-                      if (!confirmed) {
-                        event.preventDefault()
-                      }
-                    }}
-                  >
-                    <input
-                      type="hidden"
-                      name="setlist_id"
-                      value={item.setlist_id}
-                    />
-                    <input
-                      type="hidden"
-                      name="setlist_item_id"
-                      value={item.id}
-                    />
-                    <input type="hidden" name="redirect_to" value={redirectTo} />
-                    <SubmitButton
-                      label="Remove from setlist"
-                      pendingLabel="Removing..."
-                      className={buttonStyles.destructiveSecondary}
-                    />
-                  </form>
                 </div>
               ) : null}
             </div>

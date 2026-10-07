@@ -12,10 +12,6 @@ export default function PracticeFocusCreateForm() {
               Create a practice focus
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Use focus areas for bigger goals, like right-hand looseness,
-              session tempo, Australian tunes in D, or festival set prep.
-            </p>
           </div>
 
           <span className="inline-flex min-h-11 rounded-control border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm md:hidden items-center justify-center">

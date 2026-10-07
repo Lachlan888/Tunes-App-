@@ -646,25 +646,12 @@ export async function loadHomepageData() {
       row.requester_id === user.id ? row.addressee_id : row.requester_id
     )
 
-  const [activityPage, reviewEventResult] = await withServerTiming(
+  const activityPage = await withServerTiming(
     "homepage.activity-and-review",
-    () => Promise.all([
-      loadFriendActivityPage(supabase, acceptedFriendIds, user.id),
-
-      supabase
-        .from("review_events")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id),
-
-    ])
+    () => loadFriendActivityPage(supabase, acceptedFriendIds, user.id)
   )
 
-  if (reviewEventResult.error) {
-    throw new Error(reviewEventResult.error.message)
-  }
-
-  const reviewEventCount =
-    repertoireSummary?.review_event_count ?? reviewEventResult.count ?? 0
+  const reviewEventCount = repertoireSummary?.review_event_count ?? 0
 
   const gettingStartedState = buildGettingStartedState({
     profile: (profile ?? null) as HomepageProfileRow | null,

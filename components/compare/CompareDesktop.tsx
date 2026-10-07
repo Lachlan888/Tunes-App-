@@ -102,21 +102,19 @@ export default function CompareDesktop(props: CompareViewProps) {
         </section>
 
         <aside className="min-w-0">
-          <section className="border-y border-hairline py-5 lg:py-6">
-            {canShowResults ? (
-              <CompareOutcomeExperience {...props} />
-            ) : (
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">
-                  Common tunes
-                </h2>
+          {canShowResults ? (
+            <CompareOutcomeExperience {...props} />
+          ) : (
+            <section className="border-y border-hairline py-5 lg:py-6">
+              <h2 className="text-xl font-semibold text-foreground">
+                Common tunes
+              </h2>
 
-                <p className="mt-3 text-sm text-muted-foreground md:text-base">
-                  Add players to see your shared tunes.
-                </p>
-              </div>
-            )}
-          </section>
+              <p className="mt-3 text-sm text-muted-foreground md:text-base">
+                Add players to see your shared tunes.
+              </p>
+            </section>
+          )}
         </aside>
       </div>
     </>

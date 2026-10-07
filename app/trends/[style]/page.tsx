@@ -50,10 +50,7 @@ export default async function TrendsStylePage({ params }: TrendsStylePageProps) 
         <h1 className="mt-1 font-sans text-4xl font-bold tracking-tight sm:text-5xl">
           {resolvedStyleName}
         </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-          Compare your repertoire with the visible catalogue and community
-          memberships. Private users and private lists are not included.
-        </p>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">Visible catalogue and permitted community memberships; private lists are excluded.</p>
       </header>
 
       {data.coverageSummary ? (
@@ -63,31 +60,28 @@ export default async function TrendsStylePage({ params }: TrendsStylePageProps) 
               ? `${personalTotal} of ${data.coverageSummary.catalogueTuneCount} catalogue tunes are in your repertoire`
               : `${data.coverageSummary.catalogueTuneCount} tunes in the catalogue`}
           </h2>
-          <dl className="mt-5 grid grid-cols-2 divide-x divide-hairline border-t border-hairline sm:grid-cols-4">
+          <dl className="mt-5 grid grid-cols-2 gap-x-5 gap-y-1 border-t border-hairline sm:grid-cols-4">
             {data.isAuthenticated ? (
               <>
-                <div className="px-3 py-4 first:pl-0">
+                <div className="py-4">
                   <dt className="text-xs font-semibold text-muted-foreground">You know</dt>
                   <dd className="mt-1 font-sans text-3xl font-bold">{data.coverageSummary.personalKnownCount}</dd>
                 </div>
-                <div className="px-3 py-4">
+                <div className="py-4">
                   <dt className="text-xs font-semibold text-muted-foreground">In practice</dt>
                   <dd className="mt-1 font-sans text-3xl font-bold">{data.coverageSummary.personalPracticeCount}</dd>
                 </div>
               </>
             ) : null}
-            <div className="px-3 py-4">
+            <div className="py-4">
               <dt className="text-xs font-semibold text-muted-foreground">Common key</dt>
               <dd className="mt-1 font-sans text-3xl font-bold">{data.coverageSummary.commonKey ?? "—"}</dd>
             </div>
-            <div className="px-3 py-4">
+            <div className="py-4">
               <dt className="text-xs font-semibold text-muted-foreground">Common time</dt>
               <dd className="mt-1 font-sans text-3xl font-bold">{data.coverageSummary.commonTimeSignature ?? "—"}</dd>
             </div>
           </dl>
-          <p className="mt-3 text-xs leading-5 text-muted-foreground">
-            Personal counts use your Known and active Practice memberships. Catalogue count is the current visible {resolvedStyleName} set; community rankings use only memberships allowed by privacy rules.
-          </p>
         </section>
       ) : null}
 

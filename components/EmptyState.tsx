@@ -13,6 +13,7 @@ type EmptyStateProps = {
   secondaryActionHref?: string
   secondaryActionLabel?: string
   className?: string
+  showTopRule?: boolean
   titleClassName?: string
   icon?: IconName
   children?: React.ReactNode
@@ -27,7 +28,8 @@ export default function EmptyState({
   secondaryActionHref,
   secondaryActionLabel,
   className = "",
-  titleClassName = "font-serif text-xl font-semibold text-text-primary",
+  showTopRule = true,
+  titleClassName,
   icon = "music",
   children,
 }: EmptyStateProps) {
@@ -37,18 +39,24 @@ export default function EmptyState({
   return (
     <div
       className={joinClasses(
-        "rounded-object bg-surface-note p-5",
+        showTopRule ? "border-t border-hairline py-7" : "py-7",
         className
       )}
     >
-      <span className="mb-4 inline-grid h-10 w-10 place-items-center rounded-full bg-surface-paper text-action-primary shadow-material-rest">
-        <Icon name={icon} size={20} />
-      </span>
-
-      <Heading className={titleClassName}>{title}</Heading>
+      <div className="flex items-start gap-3">
+        <span className="mt-1 text-action-primary" aria-hidden="true">
+          <Icon name={icon} size={20} />
+        </span>
+        <Heading className={joinClasses(
+          Heading === "h1"
+            ? "font-sans text-4xl font-bold leading-tight tracking-tight text-text-primary sm:text-5xl"
+            : "font-sans text-2xl font-bold leading-tight tracking-tight text-text-primary",
+          titleClassName
+        )}>{title}</Heading>
+      </div>
 
       {description ? (
-        <p className="mt-2 text-sm leading-6 text-text-muted">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-text-muted">
           {description}
         </p>
       ) : null}

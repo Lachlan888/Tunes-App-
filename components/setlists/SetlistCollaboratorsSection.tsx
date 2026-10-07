@@ -56,8 +56,8 @@ export default function SetlistCollaboratorsSection({
 }: SetlistCollaboratorsSectionProps) {
   return (
     <section className="border-t border-hairline pt-5">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-        <div>
+      <div className="flex min-w-0 flex-col gap-5">
+        <div className="min-w-0">
           <h2 className="text-xl font-semibold text-foreground">
             Collaborators
           </h2>

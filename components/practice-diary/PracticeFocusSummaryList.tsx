@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { formatPracticeDate } from "@/lib/review"
 import type { PracticeDiaryFocusSummary } from "@/lib/loaders/practice-diary"
 
 type PracticeFocusSummaryListProps = {
@@ -7,13 +8,7 @@ type PracticeFocusSummaryListProps = {
 }
 
 function formatDateOnly(dateOnly: string) {
-  const [year, month, day] = dateOnly.split("-")
-
-  if (!year || !month || !day) {
-    return dateOnly
-  }
-
-  return `${day}/${month}/${year}`
+  return formatPracticeDate(dateOnly) ?? dateOnly
 }
 
 function pluralise(count: number, singular: string, plural: string) {
@@ -57,7 +52,7 @@ function PracticeFocusSummaryRow({
 
           <span
             aria-hidden="true"
-            className="inline-flex min-h-11 shrink-0 rounded-control border border-border bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground transition group-hover:border-primary group-hover:bg-card group-hover:text-primary items-center justify-center"
+            className="inline-flex min-h-11 shrink-0 items-center text-xs font-semibold text-muted-foreground transition group-hover:text-primary"
           >
             Open
           </span>

@@ -26,10 +26,14 @@ function RailBadge({ count }: { count: number }) {
   if (count <= 0) return null
 
   return (
-    <span className="absolute right-1.5 top-1.5 inline-flex min-w-4 items-center justify-center rounded-pill bg-state-overdue px-1 text-[0.6rem] font-bold leading-4 text-state-overdue-foreground xl:static xl:ml-auto">
+    <span className="absolute right-1 top-1 inline-flex min-w-4 items-center justify-center rounded-control bg-surface-note px-1 text-[0.6rem] font-semibold leading-4 text-text-primary xl:static xl:ml-auto">
       {count > 99 ? "99+" : count}
     </span>
   )
+}
+
+function RailLabel({ children }: { children: React.ReactNode }) {
+  return <span className="pointer-events-none absolute left-full z-[310] ml-2 hidden whitespace-nowrap rounded-control border border-hairline bg-surface-paper px-2 py-1 text-xs font-semibold text-text-primary shadow-sm group-hover/rail-item:block group-focus-visible/rail-item:block xl:static xl:ml-0 xl:block xl:border-0 xl:bg-transparent xl:p-0 xl:text-sm xl:shadow-none">{children}</span>
 }
 
 export default function DesktopNav({
@@ -46,6 +50,7 @@ export default function DesktopNav({
   if (shellKind === "signed-out") return null
 
   const selectedDestination = getPrimaryDestination(pathname)
+  const isFestivalPreviewSelected = pathname === "/dev/festivals"
 
   return (
     <aside data-desktop-nav className="fixed inset-y-0 left-0 z-[300] hidden w-[4.75rem] border-r border-hairline bg-surface-canvas md:flex md:flex-col xl:w-48">
@@ -79,7 +84,7 @@ export default function DesktopNav({
                   )}
                 >
                   <Icon name={item.icon} size={21} />
-                  <span className="hidden xl:inline">{item.label}</span>
+                  <RailLabel>{item.label}</RailLabel>
                   <RailBadge count={badgeCount} />
                 </Link>
               )
@@ -89,10 +94,16 @@ export default function DesktopNav({
                 <Link
                   href="/dev/festivals"
                   aria-label="Festival hub preview"
-                  className="group/rail-item relative flex min-h-12 items-center justify-center gap-3 border-l-2 border-transparent px-3 text-sm font-semibold text-text-muted transition-colors hover:bg-surface-note/50 hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start"
+                  aria-current={isFestivalPreviewSelected ? "page" : undefined}
+                  className={joinClasses(
+                    "group/rail-item relative flex min-h-12 items-center justify-center gap-3 border-l-2 px-3 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start",
+                    isFestivalPreviewSelected
+                      ? "border-action-primary text-text-primary"
+                      : "border-transparent text-text-muted hover:bg-surface-note/50 hover:text-text-primary"
+                  )}
                 >
                   <Icon name="stage" size={21} />
-                  <span className="hidden xl:inline">Festival hub</span>
+                  <RailLabel>Festival hub</RailLabel>
                 </Link>
               </div>
             ) : null}
@@ -101,19 +112,19 @@ export default function DesktopNav({
             <>
               <Link href="/" aria-label="Back to Tunes" className="group/rail-item relative flex min-h-12 items-center justify-center gap-3 border-l-2 border-transparent px-3 text-sm font-semibold text-text-muted hover:bg-surface-note/50 hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start">
                 <Icon name="arrow-left" size={21} />
-                <span className="hidden xl:inline">Back to Tunes</span>
+                <RailLabel>Back to Tunes</RailLabel>
               </Link>
               {canModerate ? (
                 <Link href="/moderator" aria-label="Moderator" aria-current={pathname.startsWith("/moderator") ? "page" : undefined} className={joinClasses("group/rail-item relative flex min-h-12 items-center justify-center gap-3 border-l-2 border-transparent px-3 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start", pathname.startsWith("/moderator") ? "border-action-primary text-text-primary" : "text-text-muted hover:bg-surface-note/50 hover:text-text-primary")}>
                   <Icon name="shield" size={21} />
-                  <span className="hidden xl:inline">Moderator</span>
+                  <RailLabel>Moderator</RailLabel>
                   <RailBadge count={pendingModerationCount} />
                 </Link>
               ) : null}
               {canAccessDev ? (
                 <Link href="/dev" aria-label="Developer" aria-current={pathname.startsWith("/dev") ? "page" : undefined} className={joinClasses("group/rail-item relative flex min-h-12 items-center justify-center gap-3 border-l-2 border-transparent px-3 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start", pathname.startsWith("/dev") ? "border-action-primary text-text-primary" : "text-text-muted hover:bg-surface-note/50 hover:text-text-primary")}>
                   <Icon name="code" size={21} />
-                  <span className="hidden xl:inline">Developer</span>
+                  <RailLabel>Developer</RailLabel>
                 </Link>
               ) : null}
             </>

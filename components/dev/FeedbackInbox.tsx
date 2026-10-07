@@ -47,32 +47,32 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
 
   if (activeFeedbackItems.length === 0) {
     return (
-      <div className="border-y border-hairline py-6text-sm text-muted-foreground ">
+      <div className="border-y border-hairline py-6 text-sm text-muted-foreground">
         No unresolved beta feedback.
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className="border-t border-hairline">
       {activeFeedbackItems.map((item) => {
         const safePagePath = getSafeInternalPath(item.page_path)
 
         return (
           <article
             key={item.id}
-            className="border-y border-hairline py-5"
+            className="border-b border-hairline py-5"
           >
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
               <div>
                 <div className="flex flex-wrap gap-2">
-                  <span className="rounded-control border border-border bg-background/70 px-3 py-1 text-xs font-semibold  tracking-[0.12em] text-muted-foreground">
+                  <span className="text-xs font-semibold text-muted-foreground">
                     {formatLabel(item.category)}
                   </span>
-                  <span className="rounded-control border border-border bg-background/70 px-3 py-1 text-xs font-semibold  tracking-[0.12em] text-muted-foreground">
+                  <span className="text-xs font-semibold text-muted-foreground">
                     {formatLabel(item.status)}
                   </span>
-                  <span className="rounded-control border border-border bg-background/70 px-3 py-1 text-xs font-semibold  tracking-[0.12em] text-muted-foreground">
+                  <span className="text-xs font-semibold text-muted-foreground">
                     {formatLabel(item.owner_priority)}
                   </span>
                 </div>
@@ -85,12 +85,12 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
                   {safePagePath ? (
                     <Link
                       href={safePagePath}
-                      className="inline-flex items-center w-fit min-h-11 rounded-control border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground  transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
+                      className="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
                     >
                       Open page
                     </Link>
                   ) : (
-                    <span className="inline-flex w-fit rounded-control border border-border bg-background/70 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+                    <span className="inline-flex min-h-11 items-center text-sm text-muted-foreground">
                       No page link
                     </span>
                   )}
@@ -111,7 +111,7 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
             </p>
 
             {item.browser || item.viewport_width || item.viewport_height ? (
-              <div className="mt-4 rounded-object border border-border bg-background/70 p-3 text-xs leading-5 text-muted-foreground">
+              <div className="mt-4 border-t border-hairline py-3 text-xs leading-5 text-muted-foreground">
                 {item.viewport_width && item.viewport_height ? (
                   <p>
                     Viewport: {item.viewport_width} × {item.viewport_height}
@@ -175,7 +175,7 @@ export default function FeedbackInbox({ feedbackItems }: FeedbackInboxProps) {
                 />
               </label>
 
-              <label className="flex items-start gap-3 rounded-object border border-border bg-background/70 p-3 text-sm text-muted-foreground">
+              <label className="flex items-start gap-3 text-sm text-muted-foreground">
                 <input
                   type="checkbox"
                   name="notify_reporter"

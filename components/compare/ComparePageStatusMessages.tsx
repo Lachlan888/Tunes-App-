@@ -47,12 +47,6 @@ export default function ComparePageStatusMessages({
         </CompareStatusMessage>
       ) : null}
 
-      {error === "missing_search" ? (
-        <CompareStatusMessage tone="neutral">
-          Search for a player to start comparing.
-        </CompareStatusMessage>
-      ) : null}
-
       {error === "user_not_found" ? (
         <CompareStatusMessage tone="error">
           No player found for “{primarySearchValue}”.

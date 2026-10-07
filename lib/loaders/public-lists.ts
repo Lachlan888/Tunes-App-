@@ -84,7 +84,7 @@ function formatDominantStyle(stylesPresent: string[]) {
   return "Mixed"
 }
 
-export async function loadPublicListsData(): Promise<PublicListsLoadResult> {
+async function loadPublicListsDataInner(): Promise<PublicListsLoadResult> {
   const supabase = await createClient()
 
   const {
@@ -209,5 +209,16 @@ export async function loadPublicListsData(): Promise<PublicListsLoadResult> {
   return {
     status: "loaded",
     sharedLists,
+  }
+}
+
+export async function loadPublicListsData(): Promise<PublicListsLoadResult> {
+  try {
+    return await loadPublicListsDataInner()
+  } catch {
+    return {
+      status: "error",
+      message: "Public lists could not be loaded.",
+    }
   }
 }

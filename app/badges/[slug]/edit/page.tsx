@@ -90,10 +90,6 @@ export default async function EditBadgePage({
           Edit Badge
         </h1>
 
-        <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
-          Update the public wording for this badge. If the badge has not been
-          awarded yet, you can also change its unlock condition.
-        </p>
       </section>
 
       <CreateBadgeForm data={data} mode="edit" />

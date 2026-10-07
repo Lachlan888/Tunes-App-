@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { formatPracticeDate } from "@/lib/review"
 import type {
   PracticeDiaryMonthTuneSummary,
   PracticeDiaryWeekTuneSummary,
@@ -25,13 +26,7 @@ const INITIAL_VISIBLE_TUNES = 5
 const NOTE_PREVIEW_CHARACTER_LIMIT = 180
 
 function formatDateOnly(dateOnly: string) {
-  const [year, month, day] = dateOnly.split("-")
-
-  if (!year || !month || !day) {
-    return dateOnly
-  }
-
-  return `${day}/${month}/${year}`
+  return formatPracticeDate(dateOnly) ?? dateOnly
 }
 
 function pluralise(count: number, singular: string, plural: string) {
@@ -96,20 +91,20 @@ function PracticeTuneSummaryCard({ summary }: PracticeTuneSummaryCardProps) {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <span className="border-l-2 border-hairline px-3 py-1 text-xs font-semibold text-muted-foreground">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold text-muted-foreground">
+          <span>
             {summary.eventCount}{" "}
             {pluralise(summary.eventCount, "session", "sessions")}
           </span>
 
           {summary.latestOutcome ? (
-            <span className="border-l-2 border-hairline px-3 py-1 text-xs font-semibold text-muted-foreground">
+            <span>
               {summary.latestOutcome}
             </span>
           ) : null}
 
           {typeof summary.latestStage === "number" ? (
-            <span className="border-l-2 border-state-practice px-3 py-1 text-xs font-semibold text-text-muted">
+            <span className="text-state-practice">
               Stage {summary.latestStage}
             </span>
           ) : null}
@@ -125,7 +120,7 @@ function PracticeTuneSummaryCard({ summary }: PracticeTuneSummaryCardProps) {
       </div>
 
       {visibleNote ? (
-        <div className="mt-3 border-l-2 border-state-practice bg-surface-note p-4">
+        <div className="mt-3 border-l-2 border-state-practice pl-3">
           <p className="text-xs font-semibold text-muted-foreground">
             Latest note
           </p>

@@ -20,13 +20,13 @@ type PublicProfileActionsProps = {
 }
 
 const primaryButtonClass =
-  "inline-flex min-h-11 max-w-full rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground  transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+  "inline-flex min-h-11 max-w-full items-center justify-center rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 const secondaryButtonClass =
-  "inline-flex min-h-11 max-w-full rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground  transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] items-center justify-center"
+  "inline-flex min-h-11 max-w-full items-center justify-center rounded-control border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 const textareaClassName =
-  "max-h-[22rem] min-h-28 w-full resize-none overflow-hidden rounded-object border border-border bg-background/70 px-4 py-3 text-sm leading-6 text-foreground  outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+  "max-h-[22rem] min-h-28 w-full resize-none overflow-hidden rounded-object border border-border bg-background px-4 py-3 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
 
 export default function PublicProfileActions({
   viewerId,
@@ -44,15 +44,10 @@ export default function PublicProfileActions({
 }: PublicProfileActionsProps) {
   if (isOwnProfile) {
     return (
-      <section className="min-w-0 max-w-full border-y border-hairline py-4 md:py-5">
-        <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
+      <section className="min-w-0 max-w-full border-t border-hairline py-4 md:py-5">
+        <h2 className="text-xl font-semibold">
           Your profile
         </h2>
-
-        <p className="mt-3 break-words text-sm leading-6 text-muted-foreground">
-          Edit your name, bio, instruments, visibility, and public repertoire
-          settings from your private profile page.
-        </p>
 
         <div className="mt-5">
           <PendingLinkButton
@@ -68,8 +63,8 @@ export default function PublicProfileActions({
 
   if (!viewerId) {
     return (
-      <section className="min-w-0 max-w-full border-y border-hairline py-4 md:py-5">
-        <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
+      <section className="min-w-0 max-w-full border-t border-hairline py-4 md:py-5">
+        <h2 className="text-xl font-semibold">
           Connect
         </h2>
 
@@ -91,8 +86,8 @@ export default function PublicProfileActions({
   }
 
   return (
-    <section className="min-w-0 max-w-full border-y border-hairline py-4 md:py-5">
-      <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
+    <section className="min-w-0 max-w-full border-t border-hairline py-4 md:py-5">
+      <h2 className="text-xl font-semibold">
         Connect
       </h2>
 
@@ -107,11 +102,11 @@ export default function PublicProfileActions({
         ) : null}
 
         {isAcceptedFriend ? (
-          <span className="inline-flex max-w-full items-center rounded-control border border-success bg-muted px-4 py-2 text-sm font-medium text-foreground">
+          <span className="inline-flex min-h-11 max-w-full items-center py-2 text-sm font-semibold text-state-known">
             Friends
           </span>
         ) : hasPendingOutgoingRequest ? (
-          <span className="inline-flex max-w-full items-center rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground">
+          <span className="inline-flex min-h-11 max-w-full items-center py-2 text-sm font-medium text-muted-foreground">
             Friend request sent
           </span>
         ) : hasPendingIncomingRequest && pendingIncomingConnectionId ? (
@@ -142,19 +137,19 @@ export default function PublicProfileActions({
       </div>
 
       {compareBlockedByFriendship ? (
-        <p className="mt-4 break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-object md:border md:bg-background/70 md:p-3">
+        <p className="mt-4 break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground">
           Comparison is available once you are friends.
         </p>
       ) : null}
 
       {!showCompareDiscoverability ? (
-        <p className="mt-4 break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground md:rounded-object md:border md:bg-background/70 md:p-3">
+        <p className="mt-4 break-words border-t border-border pt-3 text-sm leading-6 text-muted-foreground">
           This musician is not discoverable through Compare.
         </p>
       ) : null}
 
       <div className="mt-6 border-t border-border pt-5">
-        <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
+        <h3 className="text-base font-semibold">
           Message
         </h3>
 

@@ -6,11 +6,13 @@ import YouTubeLoopPlayer, {
   type ReferencePracticeView,
 } from "@/components/library/YouTubeLoopPlayer"
 import ReferencePracticeStrip from "@/components/reference-media/ReferencePracticeStrip"
+import ContextActionMenu, { type ContextAction } from "@/components/ui/ContextActionMenu"
 import MobileViewSwitcher from "@/components/ui/MobileViewSwitcher"
 import { buttonStyles, joinClasses } from "@/components/ui/buttonStyles"
 import { useSessionDock } from "@/components/session-dock/SessionDockProvider"
 import type { SessionDockModel } from "@/components/session-dock/sessionDockModel"
-import { addPieceMediaLink } from "@/lib/actions/media-links"
+import { addPieceMediaLink, removePieceMediaLink } from "@/lib/actions/media-links"
+import { getReferenceSourceCapabilities } from "@/lib/reference-source-actions"
 import {
   getLoopsForSource,
   getReferenceMediaSources,
@@ -36,6 +38,7 @@ type ReferencePracticeWorkspaceProps = {
   learningListItems: Array<{ learning_list_id: number; piece_id: number }> | null
   practiceDiaryEnabled: boolean
   redirectTo: string
+  currentUserId: string
   startLearning: (formData: FormData) => Promise<void>
   addToLearningList: (formData: FormData) => Promise<void>
 }
@@ -76,21 +79,43 @@ function RecordingSelector({
   sources,
   selectedSource,
   onSelect,
+  currentUserId,
+  returnTo,
 }: {
   pieceId: number
   sources: TuneMediaSource[]
   selectedSource: TuneMediaSource | null
   onSelect: (source: TuneMediaSource) => void
+  currentUserId: string
+  returnTo: string | null
 }) {
-  const redirectTo = getReferencePracticeHref(pieceId, selectedSource?.id)
+  const redirectTo = getReferencePracticeHref(pieceId, selectedSource?.id, returnTo)
+  const { externalHref, removableMediaId } = getReferenceSourceCapabilities(selectedSource, currentUserId)
+  const sourceActions: ContextAction[] = selectedSource ? [
+    ...(externalHref ? [{ id: "open", label: "Open source externally", href: externalHref, external: true }] : []),
+    ...(removableMediaId ? [{
+      id: "remove", label: "Remove my recording", destructive: true,
+      confirmMessage: "Remove this recording from the shared tune? Other players will no longer see it.",
+      onSelect: () => {
+        const data = new FormData()
+        data.set("piece_id", String(pieceId))
+        data.set("media_link_id", String(removableMediaId))
+        data.set("redirect_to", getReferencePracticeHref(pieceId, null, returnTo))
+        return removePieceMediaLink(data)
+      },
+    }] : []),
+  ] : []
 
   return (
-    <section className="min-w-0 border-y border-hairline py-4">
+    <section className="min-w-0 border-b border-hairline py-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-bold tracking-tight text-text-primary">
           Reference track
         </h2>
-        <span className="text-xs text-muted-foreground">{sources.length} available</span>
+        <div className="flex items-center gap-2">
+          {sources.length > 0 ? <span className="text-xs text-muted-foreground">{sources.length} available</span> : null}
+          {sourceActions.length > 0 && selectedSource ? <ContextActionMenu label={`More actions for ${selectedSource.label}`} title={selectedSource.label} actions={sourceActions} /> : null}
+        </div>
       </div>
 
       {sources.length > 0 ? (
@@ -199,10 +224,14 @@ function UnavailableWorkspace({
     [piece.id, piece.title, selectedSource]
   )
 
-  useSessionDock(`reference-media:${piece.id}`, dockModel)
+  useSessionDock(`reference-media:${piece.id}`, selectedSource ? dockModel : null)
+
+  if (!selectedSource) {
+    return <div className="max-w-[42rem]">{mediaPanel}</div>
+  }
 
   return (
-    <div className="reference-workbench md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,1fr)] md:items-start md:gap-6">
+    <div className="reference-workbench md:grid md:grid-cols-[minmax(0,42rem)] md:items-start">
       <section className="reference-player flex min-w-0 flex-col md:sticky md:top-6">
         <div
           className={joinClasses(
@@ -212,26 +241,18 @@ function UnavailableWorkspace({
         >
           {mediaPanel}
         </div>
-        <div className="order-1 mt-4 border-y border-hairline py-5 md:order-2">
-          <p className="font-semibold text-foreground">
-            {selectedSource ? "Recording unavailable" : "Choose a recording"}
-          </p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            {selectedSource
-              ? "This source cannot play in the in-app practice player. Its information remains available while you choose another recording."
-              : "Add a recording to begin passage-centred practice."}
-          </p>
-          {selectedSource ? (
-            <a
-              href={selectedSource.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${buttonStyles.secondary} mt-4`}
-            >
-              Open source
-            </a>
-          ) : null}
-        </div>
+        {selectedSource ? <div className="order-1 mt-4 py-5 md:order-2">
+          <p className="font-semibold text-foreground">Recording unavailable</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">This source cannot play in the in-app practice player. Its information remains available while you choose another recording.</p>
+          <a
+            href={selectedSource.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${buttonStyles.secondary} mt-4`}
+          >
+            Open source
+          </a>
+        </div> : null}
         <MobileViewSwitcher
           value={mobileView}
           options={mobileViews}
@@ -241,10 +262,10 @@ function UnavailableWorkspace({
         />
       </section>
 
-      <aside className="mt-5 min-w-0 space-y-5 md:mt-0">
+      <aside className="mt-5 min-w-0 space-y-5 md:hidden">
         <section
           className={joinClasses(
-            "border-t border-hairline py-5",
+            "py-5 md:border-t md:border-hairline",
             mobileView === "sections" ? "block" : "hidden md:block"
           )}
         >
@@ -257,7 +278,7 @@ function UnavailableWorkspace({
         </section>
         <section
           className={joinClasses(
-            "border-t border-hairline py-5",
+            "py-5 md:border-t md:border-hairline",
             mobileView === "practice" ? "block" : "hidden md:block"
           )}
         >
@@ -286,6 +307,7 @@ export default function ReferencePracticeWorkspace({
   redirectTo,
   startLearning,
   addToLearningList,
+  currentUserId,
 }: ReferencePracticeWorkspaceProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -320,6 +342,8 @@ export default function ReferencePracticeWorkspace({
       sources={sources}
       selectedSource={selectedSource}
       onSelect={selectSource}
+      currentUserId={currentUserId}
+      returnTo={returnTo}
     />
   )
 

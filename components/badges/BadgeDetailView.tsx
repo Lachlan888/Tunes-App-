@@ -13,6 +13,8 @@ export default function BadgeDetailView({ data }: { data: Extract<BadgeDetailDat
   const family = badgeFamilies[badge.category]
   const next = data.viewerId ? badgeNextAction(badge) : { label: "Sign in to see your progress", href: `/login?next=${encodeURIComponent(`/badges/${badge.slug}`)}` }
   const awarding = badge.awarding_mode === "auto_when_eligible" ? "Automatically when eligible" : badge.awarding_mode === "requestable" ? "By the creator, following a request" : "By the creator"
+  const normaliseSummary = (value: string | null | undefined) => value?.trim().replace(/[.!?]+$/, "")
+  const showCommentary = badge.commentary && normaliseSummary(badge.commentary) !== normaliseSummary(badge.description) && normaliseSummary(badge.commentary) !== normaliseSummary(badge.condition_summary)
   return <>
     <BadgeAwardMoment badges={[badge]} viewerId={data.viewerId} />
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
@@ -24,12 +26,12 @@ export default function BadgeDetailView({ data }: { data: Extract<BadgeDetailDat
           </div>
         </div>
         <p className="my-5 whitespace-pre-line text-base leading-7">{badge.description || badge.commentary || "A little recognition for your musical life."}</p>
-        {badge.commentary && badge.commentary !== badge.description ? <p className="mb-5 whitespace-pre-line text-sm italic">{badge.commentary}</p> : null}
-        <section className="border-t border-border py-4"><h2 className="font-semibold">What it recognises</h2><p className="mt-2 text-sm leading-6">{badge.condition_summary || "Recognition chosen by the badge creator."}</p></section>
+        {showCommentary ? <p className="mb-5 whitespace-pre-line text-sm italic">{badge.commentary}</p> : null}
+        <section className="border-t border-border py-4"><h2 className="text-xl font-semibold">What it recognises</h2><p className="mt-2 text-sm leading-6">{badge.condition_summary || "Recognition chosen by the badge creator."}</p></section>
         <details className="border-t border-border py-4"><summary className="min-h-11 cursor-pointer py-2 font-semibold">Recipients · {badge.recipient_count}</summary><BadgeRecipientsList awards={data.awards} /></details>
       </section>
       <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
-        <section className="border-y border-hairline py-4"><h2 className="mb-3 font-semibold">Your badge</h2><BadgeProgressSummary viewerAward={badge.viewer_award} progress={badge.viewer_progress} /><Link href={next.href} className="badge-primary-action mt-4 inline-flex min-h-11 items-center rounded-control bg-state-social px-4 text-sm font-semibold text-state-social-foreground">{next.label}</Link></section>
+        <section className="border-y border-hairline py-4"><h2 className="mb-3 text-xl font-semibold">Your badge</h2><BadgeProgressSummary viewerAward={badge.viewer_award} progress={badge.viewer_progress} /><Link href={next.href} className="badge-primary-action mt-4 inline-flex min-h-11 items-center rounded-control bg-state-social px-4 text-sm font-semibold text-state-social-foreground">{next.label}</Link></section>
         <dl className="space-y-3 text-sm"><div><dt className="text-muted-foreground">Awarding</dt><dd>{awarding}</dd></div><div><dt className="text-muted-foreground">Visibility</dt><dd>{badge.visibility === "public" ? "Public" : badge.visibility === "unlisted" ? "Unlisted · available by direct link" : "Private · visible only to the creator"}</dd></div></dl>
       </aside>
     </div>

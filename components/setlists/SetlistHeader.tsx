@@ -1,12 +1,13 @@
 import type { Setlist, SetlistMember } from "@/lib/types"
 import { setlistMemberInitials } from "@/lib/setlist-performance"
+import { formatPracticeDate } from "@/lib/review"
 
 export default function SetlistHeader({ setlist, members, tuneCount }: {
   setlist: Setlist; members: SetlistMember[]; tuneCount: number
 }) {
   return <header className="border-b border-hairline pb-5">
     <h1 className="break-words font-sans text-4xl font-bold md:text-5xl">{setlist.name}</h1>
-    <p className="mt-2 text-sm text-text-muted">{[`${tuneCount} tunes`, setlist.event_date, setlist.location].filter(Boolean).join(" · ")}</p>
+    <p className="mt-2 text-sm text-text-muted">{[`${tuneCount} ${tuneCount === 1 ? "tune" : "tunes"}`, formatPracticeDate(setlist.event_date), setlist.location].filter(Boolean).join(" · ")}</p>
     {setlist.description ? <p className="mt-3 max-w-3xl whitespace-pre-wrap text-sm">{setlist.description}</p> : null}
     <ul aria-label="Collaborators" className="mt-4 flex flex-wrap gap-3">
       {members.map(member => <li key={member.id} className="flex items-center gap-2 text-sm">

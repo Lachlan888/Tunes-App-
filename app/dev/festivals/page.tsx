@@ -13,7 +13,7 @@ export default async function FestivalFoundationPage() {
   )
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-8 text-foreground">
+    <main className="mx-auto max-w-5xl px-4 py-6 text-foreground md:px-6 md:py-8">
       <PageHeader
         title="Festival hub"
         actions={
@@ -23,24 +23,21 @@ export default async function FestivalFoundationPage() {
         }
       />
       <p className="-mt-2 mb-6 max-w-2xl text-sm leading-6 text-muted-foreground">
-        Owner-only editing and private preview for reusable festival hubs. New hubs remain Draft until explicitly published.
+        Owner-only editing and preview.
       </p>
 
-      <section className="grid gap-3 sm:grid-cols-3" aria-label="Festival foundation status">
-        <div className="rounded-object border border-border bg-background/70 p-4">
-          <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">Festival mode</p>
+      <section className="grid gap-5 border-t border-hairline sm:grid-cols-3" aria-label="Festival foundation status">
+        <div className="border-b border-hairline py-4">
+          <p className="text-sm font-semibold text-muted-foreground">Festival mode</p>
           <p className="mt-2 font-sans text-3xl font-bold">{settings.mode_enabled ? "On" : "Off"}</p>
-          <p className="mt-2 text-sm text-muted-foreground">Off keeps the normal Home experience unchanged.</p>
         </div>
-        <div className="rounded-object border border-border bg-background/70 p-4">
-          <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">Selected hub</p>
+        <div className="border-b border-hairline py-4">
+          <p className="text-sm font-semibold text-muted-foreground">Selected hub</p>
           <p className="mt-2 font-sans text-2xl font-bold">{selectedFestival?.name ?? "None"}</p>
-          <p className="mt-2 text-sm text-muted-foreground">Selecting a hub will not publish it or enable festival mode.</p>
         </div>
-        <div className="rounded-object border border-border bg-background/70 p-4">
-          <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">Festival records</p>
+        <div className="border-b border-hairline py-4">
+          <p className="text-sm font-semibold text-muted-foreground">Festival records</p>
           <p className="mt-2 font-sans text-3xl font-bold">{festivals.length}</p>
-          <p className="mt-2 text-sm text-muted-foreground">New hubs start as private drafts.</p>
         </div>
       </section>
 

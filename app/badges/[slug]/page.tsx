@@ -62,7 +62,7 @@ export default async function BadgeDetailPage({
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-6 text-foreground md:px-6 md:py-8">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 md:pr-44">
         <Link
           href="/badges"
           className="text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"

@@ -1,6 +1,5 @@
 import Link from "next/link"
-import SubmitButton from "@/components/SubmitButton"
-import { archiveNotification, markNotificationRead } from "@/lib/actions/activity-interactions"
+import InboxItemActions from "@/components/inbox/InboxItemActions"
 import type { InboxItem } from "@/lib/loaders/inbox"
 
 function actorName(item: InboxItem) {
@@ -47,7 +46,7 @@ export default function InboxItemList({
 }) {
   if (items.length === 0) {
     return (
-      <p className="border-y border-dashed border-border py-5 text-sm text-muted-foreground">
+      <p className="border-b border-hairline py-5 text-sm text-muted-foreground">
         {emptyMessage}
       </p>
     )
@@ -67,22 +66,13 @@ export default function InboxItemList({
                     <p className="text-sm font-medium leading-6">{notificationText(item)}</p>
                     {item.activity_context ? <p className="mt-1 text-sm text-muted-foreground">{item.activity_context.summary}</p> : null}
                     {item.body_preview && item.body_preview !== "good_craic" ? <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{item.body_preview}</p> : null}
-                    <time dateTime={item.created_at} className="mt-2 block text-xs text-muted-foreground">{new Date(item.created_at).toLocaleString("en-AU")}</time>
+                    <time dateTime={item.created_at} className="mt-2 block text-xs text-muted-foreground">{new Date(item.created_at).toLocaleString("en-AU", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Australia/Melbourne" })}</time>
                   </div>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2 pl-3 sm:pl-0">
                 <Link href={contextHref(item)} className="inline-flex min-h-11 items-center rounded-control border border-border px-3 text-sm font-semibold hover:bg-muted justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">Open</Link>
-                {isUnread ? (
-                  <form action={markNotificationRead}>
-                    <input type="hidden" name="notification_id" value={item.id} />
-                    <SubmitButton label="Mark read" pendingLabel="Saving..." className="inline-flex min-h-11 items-center px-2 text-sm font-semibold text-state-social underline underline-offset-4" />
-                  </form>
-                ) : null}
-                <form action={archiveNotification}>
-                  <input type="hidden" name="notification_id" value={item.id} />
-                  <SubmitButton label="Archive" pendingLabel="Archiving..." className="inline-flex min-h-11 items-center px-2 text-sm text-muted-foreground underline underline-offset-4" />
-                </form>
+                <InboxItemActions id={item.id} href={contextHref(item)} isUnread={isUnread} title={notificationText(item)} />
               </div>
             </article>
           </li>

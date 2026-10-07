@@ -194,6 +194,7 @@ export default async function PracticeTunesPage({
         availableTimeSignatures={timeSignatures}
         hasActiveFilters={hasActiveFilters}
         totalCount={totalCount}
+        showResultsStatement={false}
         countItems={filterOptionPieces}
         prospectiveCountExact={
           filterOptionPieces.length < REPERTOIRE_FILTER_FACET_SCAN_LIMIT

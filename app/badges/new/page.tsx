@@ -66,10 +66,6 @@ export default async function NewBadgePage({
           Create Badge
         </h1>
 
-        <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
-          Create a public badge and choose what earns it. When someone meets
-          the condition, the badge is awarded under your name.
-        </p>
       </section>
 
       <CreateBadgeForm data={data} mode="create" />

@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import RemoveTuneFromListButton from "@/components/RemoveTuneFromListButton"
+import ContextActionMenu, { type ContextAction } from "@/components/ui/ContextActionMenu"
 import TuneRow from "@/components/tunes/TuneRow"
 import TuneStateIndicator from "@/components/tunes/TuneStateIndicator"
+import { removeTuneFromList } from "@/lib/actions/lists"
 import type { Piece } from "@/lib/types"
 
 type ManagedItem = {
@@ -29,7 +30,7 @@ export default function ListOrderManager({
 }) {
   const [items, setItems] = useState(initialItems)
   const [draggedId, setDraggedId] = useState<number | null>(null)
-  const [message, setMessage] = useState("Drag a row, or use Move up and Move down.")
+  const [message, setMessage] = useState("Drag a row or use More to change its order.")
   const [isPending, startTransition] = useTransition()
 
   function save(nextItems: ManagedItem[], previousItems: ManagedItem[]) {
@@ -57,7 +58,27 @@ export default function ListOrderManager({
     <>
       <p className="mt-2 text-sm text-muted-foreground" aria-live="polite">{message}</p>
       <ul className="mt-3 divide-y divide-border/70 border-y border-border/70">
-        {items.map((item, index) => (
+        {items.map((item, index) => {
+          const actions: ContextAction[] = [
+            { id: "open", label: "Open tune", href: `/library/${item.piece.id}` },
+            { id: "reference", label: "Open Reference", href: `/library/${item.piece.id}/reference-media` },
+            ...(!isPending && index > 0 ? [{ id: "up", label: "Move up", onSelect: () => move(item.id, index - 1), completionMessage: null }] : []),
+            ...(!isPending && index < items.length - 1 ? [{ id: "down", label: "Move down", onSelect: () => move(item.id, index + 1), completionMessage: null }] : []),
+            {
+              id: "remove",
+              label: "Remove from this list",
+              destructive: true,
+              confirmMessage: `Remove "${item.piece.title}" from this list? This only removes the list membership. Known state, Practice state, other lists, and the shared tune will not be changed.`,
+              onSelect: () => {
+                const data = new FormData()
+                data.set("learning_list_id", String(listId))
+                data.set("piece_id", String(item.piece.id))
+                data.set("redirect_to", redirectTo)
+                return removeTuneFromList(data)
+              },
+            },
+          ]
+          return (
           <li
             key={item.id}
             draggable={!isPending}
@@ -69,18 +90,13 @@ export default function ListOrderManager({
           >
             <TuneRow
               piece={item.piece}
-              supportingContent={<span>Position {positionOffset + index + 1} · Drag to reorder</span>}
+              supportingContent={<span>Position {positionOffset + index + 1}</span>}
               personalState={<TuneStateIndicator isAlreadyInPractice={item.isAlreadyInPractice} isKnown={item.isKnown} stage={item.stage} />}
-              actions={
-                <div className="flex flex-wrap items-center gap-2">
-                  <button type="button" disabled={isPending || index === 0} onClick={() => move(item.id, index - 1)} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-border bg-card px-4 text-sm font-semibold disabled:opacity-50">Move up</button>
-                  <button type="button" disabled={isPending || index === items.length - 1} onClick={() => move(item.id, index + 1)} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-border bg-card px-4 text-sm font-semibold disabled:opacity-50">Move down</button>
-                  <RemoveTuneFromListButton listId={listId} pieceId={item.piece.id} tuneTitle={item.piece.title} redirectTo={redirectTo} className="min-h-11 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] rounded-control border border-destructive px-4 text-sm font-semibold text-destructive" />
-                </div>
-              }
+              actions={<ContextActionMenu label={`More actions for ${item.piece.title} in this list`} title={item.piece.title} actions={actions} />}
             />
           </li>
-        ))}
+          )
+        })}
       </ul>
     </>
   )

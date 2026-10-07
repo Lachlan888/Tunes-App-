@@ -42,21 +42,111 @@ for (const [scenario, current, best] of [["populated", 4, 9], ["new user", 0, 0]
       streakSummary: { current_revision_streak: current, longest_revision_streak: best, current_practice_streak: current, longest_practice_streak: best },
       recentFriendActivity: [], activityNextCursor: null, density: "standard",
     }))
-    assert.equal((html.match(/>Streaks</g) ?? []).length, 1)
-    assert.ok(html.indexOf('data-panel="repertoire"') < html.indexOf('>Streaks<'))
-    assert.ok(html.indexOf('>Streaks<') < html.indexOf('data-panel="social"'))
+    assert.equal((html.match(/>Streaks</g) ?? []).length, current || best ? 1 : 0)
+    if (current || best) {
+      assert.ok(html.indexOf('data-panel="repertoire"') < html.indexOf('>Streaks<'))
+      assert.ok(html.indexOf('>Streaks<') < html.indexOf('data-panel="social"'))
+    }
     assert.doesNotMatch(html, /Practice schedule &amp; recognition|next scheduled tunes/)
-    assert.equal((html.match(new RegExp(`>Best ${best}<`, "g")) ?? []).length, 2)
-    assert.equal((html.slice(html.indexOf(">Streaks<")).match(new RegExp(`>${current}</p>`, "g")) ?? []).length, 2)
-    assert.match(html, /href="\/review"/)
-    assert.match(html, />Learning queue</)
-    assert.match(html, />Currently practising</)
-    assert.match(html, />Known repertoire</)
+    if (current || best) {
+      assert.equal((html.match(new RegExp(`>Best ${best}<`, "g")) ?? []).length, 2)
+      assert.equal((html.slice(html.indexOf(">Streaks<")).match(new RegExp(`>${current}</p>`, "g")) ?? []).length, 2)
+    }
+    assert.match(html, /href="\/library"[^>]*>Find a tune/)
     assert.match(html, /href="\/learning-lists\?view=learning-queue"/)
     assert.match(html, /href="\/library\/practice"/)
     assert.match(html, /href="\/library\/known"/)
   })
 }
+
+const emptySummary = {
+  dueTodayPreview: [], inPracticePreview: [], learningQueuePreview: [],
+  dueTodayCount: 0, needsAttentionCount: 0, knownCount: 0,
+  practiceCount: 0, learningQueueCount: 0, listCount: 0,
+  badgeSummary: { receivedCount: 0 },
+}
+
+function todayMarkup(summary: Record<string, unknown>) {
+  const html = renderToStaticMarkup(React.createElement(Home, {
+    summary: { ...emptySummary, ...summary },
+    streakSummary: { current_revision_streak: 0, longest_revision_streak: 0, current_practice_streak: 0, longest_practice_streak: 0 },
+    recentFriendActivity: [], activityNextCursor: null, density: "standard",
+  }))
+  return html.slice(html.indexOf('data-panel="today"'), html.indexOf('data-panel="repertoire"'))
+}
+
+test("Home sends a new player to find a tune, not an empty practice room", () => {
+  const html = todayMarkup({})
+  assert.match(html, /Find a tune/)
+  assert.match(html, /href="\/library"/)
+  assert.doesNotMatch(html, /Start Practice|No more tunes are due today/)
+})
+
+test("Home gives an empty repertoire one diagnosis while retaining destination links", () => {
+  const html = renderToStaticMarkup(React.createElement(Home, {
+    summary: emptySummary,
+    streakSummary: { current_revision_streak: 0, longest_revision_streak: 0, current_practice_streak: 0, longest_practice_streak: 0 },
+    recentFriendActivity: [], activityNextCursor: null, density: "standard",
+  }))
+  const repertoire = html.slice(html.indexOf('data-panel="repertoire"'), html.indexOf('data-panel="social"'))
+  assert.match(repertoire, /href="\/library\/known"/)
+  assert.match(repertoire, /href="\/library\/practice"/)
+  assert.match(repertoire, /href="\/learning-lists\?view=learning-queue"/)
+  assert.match(repertoire, /href="\/badges"/)
+  assert.match(repertoire, /href="\/library"/)
+  assert.doesNotMatch(repertoire, /No tunes are currently|0 tunes marked Known|No recent/)
+})
+
+test("Home makes due and overdue work one clear Practice action", () => {
+  const due = todayMarkup({ dueTodayCount: 2, needsAttentionCount: 3, practiceCount: 5,
+    dueTodayPreview: [{ piece_id: 1, user_piece_id: 1, title: "The Silver Spear", stage: 3, nextReviewDue: "2026-10-05" }] })
+  assert.match(due, /5 tunes ready/)
+  assert.match(due, /href="\/review"[^>]*>Continue Practice/)
+  assert.doesNotMatch(due, /No more tunes are due today/)
+
+  const overdue = todayMarkup({ needsAttentionCount: 3, practiceCount: 3,
+    inPracticePreview: [{ piece_id: 2, user_piece_id: 2, title: "The Banshee", stage: 4, nextReviewDue: "2026-10-01" }] })
+  assert.match(overdue, /3 overdue tunes/)
+  assert.match(overdue, /href="\/review"[^>]*>Catch up on Practice/)
+  assert.doesNotMatch(overdue, /No more tunes are due today/)
+  assert.doesNotMatch(overdue, />Due today<\/p><p[^>]*>0<\/p>/)
+})
+
+test("Home sends caught-up players to repertoire without implying review work", () => {
+  const html = todayMarkup({ knownCount: 2, practiceCount: 1,
+    inPracticePreview: [{ piece_id: 3, user_piece_id: 3, title: "Cooley’s", stage: 2, nextReviewDue: "2026-10-08" }] })
+  assert.match(html, /You’re caught up/)
+  assert.match(html, /href="\/library\/practice"/)
+  assert.doesNotMatch(html, /Start Practice|No more tunes are due today/)
+})
+
+test("Home repertoire gives adjacent sections one boundary instead of a stat-grid closing rule", () => {
+  const html = renderToStaticMarkup(React.createElement(Home, {
+    summary: { ...emptySummary, knownCount: 2, practiceCount: 1, learningQueueCount: 1 },
+    streakSummary: { current_revision_streak: 0, longest_revision_streak: 0, current_practice_streak: 0, longest_practice_streak: 0 },
+    recentFriendActivity: [], activityNextCursor: null, density: "standard",
+  }))
+  const repertoire = html.slice(html.indexOf('data-panel="repertoire"'), html.indexOf('data-panel="social"'))
+  const gridClasses = repertoire.match(/<div class="([^"]*)"><a href="\/library\/known"/)?.[1]
+  assert.ok(gridClasses, "the repertoire count grid should render")
+  assert.doesNotMatch(gridClasses, /\bborder-[by]\b/, "the count grid should not close an adjacent section")
+  const beforeQueue = repertoire.slice(0, repertoire.indexOf("Learning queue"))
+  const queueSectionClasses = [...beforeQueue.matchAll(/<section class="([^"]*)"/g)].at(-1)?.[1]
+  assert.match(queueSectionClasses ?? "", /\bborder-t\b/, "the next section should own the single boundary")
+})
+
+test("Getting Started keeps task links without a competing next-action panel", () => {
+  const GettingStarted = load("components/home/GettingStartedSection.tsx", {
+    "@/components/PendingLinkButton": { default: ({ href, label }: { href: string; label: string }) => React.createElement("a", { href }, label), __esModule: true },
+  }).default
+  const task = { id: "add_tunes", group: "Repertoire setup", label: "Import or add tunes", description: "Add a tune", href: "/library", actionLabel: "Find tunes", pendingLabel: "Opening", isComplete: false }
+  const html = renderToStaticMarkup(React.createElement(GettingStarted, {
+    state: { shouldShow: true, completedCount: 0, totalCount: 1, nextTask: task, tasks: [task] },
+  }))
+  assert.match(html, /href="\/library"/)
+  assert.equal((html.match(/Find tunes/g) ?? []).length, 1)
+  assert.doesNotMatch(html, /Next step|Progress:/)
+})
 
 const loader = load("lib/loaders/homepage.ts", {
   "@/lib/loaders/friends": {}, "@/lib/review": {}, "@/lib/streaks": {},

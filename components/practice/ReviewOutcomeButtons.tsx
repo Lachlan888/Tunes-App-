@@ -2,6 +2,7 @@
 
 import SubmitButton from "@/components/SubmitButton"
 import Icon from "@/components/ui/Icon"
+import { getReviewOutcomePreview } from "@/lib/review"
 import {
   getReviewButtonClassName,
   REVIEW_OUTCOMES,
@@ -17,6 +18,7 @@ type DirectReviewFormsProps = {
 
 type DiaryReviewButtonsProps = {
   userPieceId: number
+  stage: number
   onSelectOutcome: (outcome: ReviewOutcomeConfig) => void
 }
 
@@ -76,7 +78,7 @@ function ReviewOutcomeTooltip({
   return (
     <span
       className={[
-        "pointer-events-none absolute bottom-full z-30 mb-2 hidden w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-foreground px-3 py-2 text-center text-xs font-medium leading-5 text-background shadow-lg group-hover:block",
+        "pointer-events-none absolute bottom-full z-30 mb-2 hidden w-64 max-w-[calc(100vw-2rem)] rounded-control border border-border bg-foreground px-3 py-2 text-center text-xs font-medium leading-5 text-background shadow-material-floating group-hover:block group-focus-within:block",
         getTooltipPositionClassName(alignment),
       ].join(" ")}
     >
@@ -122,7 +124,7 @@ export function DirectReviewForms({
               className={getReviewButtonClassName(reviewOutcome.className)}
             >
               <Icon name={reviewOutcome.icon} size={16} />
-              <span>{reviewOutcome.label}</span>
+              <span className="flex flex-col gap-1"><span>{reviewOutcome.label}</span><span className="text-[0.65rem] font-medium leading-3">{getReviewOutcomePreview(stage, reviewOutcome.outcome)}</span></span>
             </SubmitButton>
 
             <ReviewOutcomeTooltip
@@ -138,6 +140,7 @@ export function DirectReviewForms({
 
 export function DiaryReviewButtons({
   userPieceId,
+  stage,
   onSelectOutcome,
 }: DiaryReviewButtonsProps) {
   return (
@@ -157,7 +160,7 @@ export function DiaryReviewButtons({
               onClick={() => onSelectOutcome(reviewOutcome)}
             >
               <Icon name={reviewOutcome.icon} size={16} />
-              <span>{reviewOutcome.label}</span>
+              <span className="flex flex-col gap-1"><span>{reviewOutcome.label}</span><span className="text-[0.65rem] font-medium leading-3">{getReviewOutcomePreview(stage, reviewOutcome.outcome)}</span></span>
             </button>
 
             <ReviewOutcomeTooltip

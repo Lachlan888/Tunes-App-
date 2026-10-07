@@ -179,6 +179,7 @@ export default async function KnownTunesPage({
         availableTimeSignatures={timeSignatures}
         hasActiveFilters={hasActiveFilters}
         totalCount={totalCount}
+        showResultsStatement={false}
         countItems={filterOptionPieces}
         prospectiveCountExact={
           filterOptionPieces.length < REPERTOIRE_FILTER_FACET_SCAN_LIMIT

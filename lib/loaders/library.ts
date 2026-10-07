@@ -145,6 +145,42 @@ export async function loadLibraryData({
   const { supabase, user, role: currentUserRole } = await requireUserContext()
   const catalogueStartedAt = performance.now()
   const safePageSize = normaliseTuneCollectionPageSize(pageSize)
+  const request = resolveTuneCollectionRequest({ sort, after, before })
+
+  async function loadCataloguePage(stylePieceIds: number[] | null) {
+    let countQuery = supabase
+      .from("pieces")
+      .select("id", { count: "exact", head: true })
+    let piecesQuery = supabase.from("pieces").select(PIECE_COLLECTION_SELECT)
+
+    if (searchQuery) {
+      countQuery = countQuery.ilike("title", `%${searchQuery}%`)
+      piecesQuery = piecesQuery.ilike("title", `%${searchQuery}%`)
+    }
+    if (selectedKeys.length > 0) {
+      countQuery = countQuery.in("key", selectedKeys)
+      piecesQuery = piecesQuery.in("key", selectedKeys)
+    }
+    if (selectedTimeSignatures.length > 0) {
+      countQuery = countQuery.in("time_signature", selectedTimeSignatures)
+      piecesQuery = piecesQuery.in("time_signature", selectedTimeSignatures)
+    }
+    if (stylePieceIds) {
+      countQuery = countQuery.in("id", stylePieceIds)
+      piecesQuery = piecesQuery.in("id", stylePieceIds)
+    }
+    piecesQuery = applyPieceCollectionCursor({
+      query: piecesQuery,
+      sort,
+      direction: request.direction,
+      cursor: request.cursor,
+      pageSize: safePageSize,
+    })
+
+    return withServerTiming("library.catalogue-page", () =>
+      Promise.all([countQuery, piecesQuery])
+    )
+  }
 
   let filterOptionPiecesQuery = supabase.from("pieces").select(`
     key,
@@ -170,11 +206,7 @@ export async function loadLibraryData({
     FILTER_FACET_SCAN_LIMIT
   )
 
-  const [
-    { data: filterOptionRows, error: filterOptionError },
-    { data: learningLists, error: learningListsError },
-    { data: styleRows, error: stylesError },
-  ] = await withServerTiming("library.filters-and-lists", () =>
+  const filtersAndListsPromise = withServerTiming("library.filters-and-lists", () =>
     Promise.all([
       filterOptionPiecesQuery,
       supabase
@@ -189,6 +221,19 @@ export async function loadLibraryData({
         .order("sort_order", { ascending: true }),
     ])
   )
+  // Only a style filter needs the style catalogue before the page query.
+  const independentPagePromise = selectedStyles.length === 0
+    ? loadCataloguePage(null)
+    : null
+  const [filterResults, independentPageResults] = independentPagePromise
+    ? await Promise.all([filtersAndListsPromise, independentPagePromise])
+    : [await filtersAndListsPromise, null]
+
+  const [
+    { data: filterOptionRows, error: filterOptionError },
+    { data: learningLists, error: learningListsError },
+    { data: styleRows, error: stylesError },
+  ] = filterResults
 
   if (filterOptionError) throw new Error(filterOptionError.message)
   if (learningListsError) throw new Error(learningListsError.message)
@@ -199,7 +244,6 @@ export async function loadLibraryData({
     selectedStyles,
     styleOptions,
   })
-  const request = resolveTuneCollectionRequest({ sort, after, before })
 
   if (stylePieceIds?.length === 0) {
     return {
@@ -229,41 +273,10 @@ export async function loadLibraryData({
     }
   }
 
-  let countQuery = supabase
-    .from("pieces")
-    .select("id", { count: "exact", head: true })
-  let piecesQuery = supabase.from("pieces").select(PIECE_COLLECTION_SELECT)
-
-  if (searchQuery) {
-    countQuery = countQuery.ilike("title", `%${searchQuery}%`)
-    piecesQuery = piecesQuery.ilike("title", `%${searchQuery}%`)
-  }
-  if (selectedKeys.length > 0) {
-    countQuery = countQuery.in("key", selectedKeys)
-    piecesQuery = piecesQuery.in("key", selectedKeys)
-  }
-  if (selectedTimeSignatures.length > 0) {
-    countQuery = countQuery.in("time_signature", selectedTimeSignatures)
-    piecesQuery = piecesQuery.in("time_signature", selectedTimeSignatures)
-  }
-  if (stylePieceIds) {
-    countQuery = countQuery.in("id", stylePieceIds)
-    piecesQuery = piecesQuery.in("id", stylePieceIds)
-  }
-  piecesQuery = applyPieceCollectionCursor({
-    query: piecesQuery,
-    sort,
-    direction: request.direction,
-    cursor: request.cursor,
-    pageSize: safePageSize,
-  })
-
   const [
     { count: totalPieceCount, error: countError },
     { data: pieceRows, error: piecesError },
-  ] = await withServerTiming("library.catalogue-page", () =>
-    Promise.all([countQuery, piecesQuery])
-  )
+  ] = independentPageResults ?? await loadCataloguePage(stylePieceIds)
 
   if (countError) throw new Error(countError.message)
   if (piecesError) throw new Error(piecesError.message)

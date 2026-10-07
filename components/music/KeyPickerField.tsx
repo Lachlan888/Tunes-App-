@@ -60,7 +60,7 @@ export default function KeyPickerField({
         disabled={disabled}
       />
 
-      <div className="rounded-2xl border border-border bg-background/70 p-3 shadow-sm">
+      <div className="border-y border-hairline py-3">
         <div className="grid gap-3 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <label className="grid gap-1.5">
             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -70,7 +70,7 @@ export default function KeyPickerField({
               value={root}
               disabled={disabled}
               onChange={(event) => setRoot(event.target.value as KeyRoot | "")}
-              className="h-11 w-full rounded-xl border border-border bg-card px-3 text-sm font-medium text-foreground outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-11 w-full rounded-control border border-hairline bg-surface-paper px-3 text-sm font-medium text-foreground outline-none transition focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <option value="">{placeholder}</option>
               {KEY_ROOTS.map((keyRoot) => (
@@ -85,7 +85,7 @@ export default function KeyPickerField({
             <legend className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Tonality
             </legend>
-            <div className="grid grid-cols-3 gap-1 rounded-xl border border-border bg-card p-1">
+            <div className="grid grid-cols-3 gap-1">
               {tonalityOptions.map((option) => {
                 const isSelected = tonality === option.value
 
@@ -95,10 +95,10 @@ export default function KeyPickerField({
                     type="button"
                     disabled={disabled || !root}
                     onClick={() => setTonality(option.value)}
-                    className={`min-h-9 rounded-lg px-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50 ${
+                    className={`min-h-11 rounded-control border px-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50 ${
                       isSelected && root
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:bg-background/70 hover:text-foreground"
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-hairline bg-surface-paper text-muted-foreground hover:bg-surface-note hover:text-foreground"
                     }`}
                   >
                     {option.label}

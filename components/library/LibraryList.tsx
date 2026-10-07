@@ -42,7 +42,6 @@ type LibraryListProps = {
   selectedPieceIds?: number[]
   onToggleSelection?: (piece: Piece) => void
   onPreview?: (piece: Piece, trigger: HTMLButtonElement) => void
-  previewPieceId?: number
 }
 
 function buildPieceRedirectTo(redirectTo: string, pieceId: number) {
@@ -132,7 +131,6 @@ export default function LibraryList({
   selectedPieceIds = [],
   onToggleSelection,
   onPreview,
-  previewPieceId,
 }: LibraryListProps) {
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
   const [selectedListId, setSelectedListId] = useState("")
@@ -197,16 +195,13 @@ export default function LibraryList({
             isAlreadyInPractice={isAlreadyInPractice}
             isKnown={isKnown}
             stage={activeUserPiece?.stage ?? null}
-            showNewToMe
           />
         }
         actions={selectionMode ? null : (
-          <>
-          {onPreview ? <button type="button" aria-label={`Preview ${piece.title}`} aria-pressed={previewPieceId === piece.id} onClick={event => onPreview(piece, event.currentTarget)} className="inline-flex min-h-11 min-w-0 w-full items-center justify-center whitespace-nowrap rounded-control border border-hairline px-1 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] md:w-auto md:px-3 md:text-sm">Preview</button> : null}
           <LibraryTuneCardActions
             piece={piece}
-            activeUserPiece={activeUserPiece}
             isAlreadyInPractice={isAlreadyInPractice}
+            activeUserPieceId={activeUserPiece?.id}
             isKnown={isKnown}
             redirectTo={pieceRedirectTo}
             onOpenAddToList={() => {
@@ -214,9 +209,9 @@ export default function LibraryList({
               setSelectedListId("")
             }}
             startLearning={startLearning}
-            showState={false}
+            onPreview={onPreview ? trigger => onPreview(piece, trigger) : undefined}
+            referenceHref={mediaBundle?.effectiveReference ? `/library/${piece.id}/reference-media` : undefined}
           />
-          </>
         )}
       />
     )
@@ -255,17 +250,18 @@ export default function LibraryList({
         nextHref={nextHref}
         emptyTitle={
           hasActiveFilters
-            ? "No tunes match this search"
+            ? "No matching tunes"
             : "No tunes in the library yet"
         }
         emptyDescription={
           hasActiveFilters && activeConstraints.length > 0
-            ? `Active constraints: ${activeConstraints.join("; ")}. Clear filters to see the full catalogue.`
+            ? activeConstraints.join(" · ")
             : undefined
         }
         resetHref={hasActiveFilters ? "/library" : undefined}
         resetLabel={hasActiveFilters ? "Reset filters" : undefined}
-        className="border-y border-hairline"
+        className="border-b border-hairline"
+        emptyTopRule={false}
         items={pagePieces.map((piece) => (
           <li
             key={piece.id}

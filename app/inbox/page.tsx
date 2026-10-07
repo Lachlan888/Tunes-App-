@@ -50,7 +50,7 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
         </p>
       ) : null}
 
-      <nav aria-label="Inbox categories" className="mb-8 flex border-b border-hairline">
+      <nav aria-label="Inbox categories" className="mb-8 flex gap-3 border-b border-hairline">
         <Link
           href="/inbox?tab=activity"
           aria-current={tab === "activity" ? "page" : undefined}
@@ -70,7 +70,6 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
       {tab === "messages" ? (
         <section aria-labelledby="messages-title">
           <h2 id="messages-title" className="mt-1 text-2xl font-bold">Conversations</h2>
-          <p className="mb-5 mt-2 text-sm text-muted-foreground">Open a person to read the latest messages and reply.</p>
           <DirectMessageThreadList threads={data.messageThreads} />
         </section>
       ) : (

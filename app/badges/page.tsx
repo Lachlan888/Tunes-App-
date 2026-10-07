@@ -57,12 +57,12 @@ export default async function BadgesPage({ searchParams }: BadgesPageProps) {
       <PageHeader
         title="Badges"
         actions={
-          <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-end">
+          <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:pt-16">
             {showSection("create_badge") ? (
               viewerId ? (
                 <Link
                   href="/badges/new"
-                  className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border bg-surface-paper px-5 py-2 text-center text-sm font-medium text-state-social  transition hover:-translate-y-0.5 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:min-h-11 md:w-auto md:py-2.5"
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-control border border-border bg-surface-paper px-5 py-2 text-center text-sm font-medium text-state-social transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] md:w-auto md:py-2.5"
                 >
                   Create badge · workspace
                 </Link>

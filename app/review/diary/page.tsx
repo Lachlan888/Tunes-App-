@@ -10,7 +10,7 @@ import {
   loadPracticeDiaryWeekData,
   requirePracticeDiaryEnabled,
 } from "@/lib/loaders/practice-diary"
-import { getToday } from "@/lib/review"
+import { formatPracticeDate, getToday } from "@/lib/review"
 import { getSafePracticeReturnHref } from "@/lib/practice-session"
 import Link from "next/link"
 
@@ -85,20 +85,20 @@ export default async function PracticeDiaryPage({
 
   const period = diaryData
     ? {
-        label: diaryData.selectedDate === diaryData.today ? "Today" : diaryData.selectedDate,
+        label: diaryData.selectedDate === diaryData.today ? "Today" : formatPracticeDate(diaryData.selectedDate) ?? diaryData.selectedDate,
         previousDate: diaryData.previousDate,
         currentDate: diaryData.today,
         nextDate: diaryData.nextDate,
       }
     : weekData
       ? {
-          label: `${weekData.weekStartDate} – ${weekData.weekEndDate}`,
+          label: `${formatPracticeDate(weekData.weekStartDate)} – ${formatPracticeDate(weekData.weekEndDate)}`,
           previousDate: weekData.previousWeekDate,
           currentDate: weekData.currentWeekDate,
           nextDate: weekData.nextWeekDate,
         }
       : {
-          label: monthData?.monthStartDate.slice(0, 7) ?? selectedDate.slice(0, 7),
+          label: new Intl.DateTimeFormat("en-AU", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${monthData?.monthStartDate ?? selectedDate}T00:00:00Z`)),
           previousDate: monthData?.previousMonthDate ?? selectedDate,
           currentDate: monthData?.currentMonthDate ?? selectedDate,
           nextDate: monthData?.nextMonthDate ?? selectedDate,
@@ -110,9 +110,8 @@ export default async function PracticeDiaryPage({
 
       {fromSession ? (
         <section className="mb-5 border-l-4 border-state-practice bg-surface-note px-4 py-4" aria-labelledby="session-reflection-prompt">
-          <p className="text-sm font-semibold text-text-muted">Practice complete</p>
-          <h2 id="session-reflection-prompt" className="mt-1 font-sans text-2xl font-bold">Add an optional reflection</h2>
-          <p className="mt-2 text-sm leading-6 text-text-muted">Use today’s Session summary below, or return without writing a note. Your review results are already saved.</p>
+          <h2 id="session-reflection-prompt" className="font-sans text-2xl font-bold">Add an optional reflection</h2>
+          <p className="mt-2 text-sm leading-6 text-text-muted">Your reviews are saved.</p>
           <Link href={returnTo} className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">Return without a reflection</Link>
         </section>
       ) : null}

@@ -123,29 +123,6 @@ export default async function LearningListDetailPage({
       </div>
 
 
-      <div className="mb-6 mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {isOwner ? (
-          <nav aria-label="List detail mode" className="inline-flex border-b border-hairline">
-            <Link href={viewHref} aria-current={mode === "reader" ? "page" : undefined} className={`min-h-11 border-b-2 px-4 py-2 text-sm font-semibold ${mode === "reader" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
-              Reader
-            </Link>
-            <Link href={manageHref} aria-current={mode === "manage" ? "page" : undefined} className={`min-h-11 border-b-2 px-4 py-2 text-sm font-semibold ${mode === "manage" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
-              Manage
-            </Link>
-          </nav>
-        ) : (
-          <p className="text-sm text-muted-foreground">Read-only shared list</p>
-        )}
-
-        {activeTuneCount > 0 ? (
-          <Link href={`/review?session=list&list_id=${typedList.id}`} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
-            Start Practice · {activeTuneCount}
-          </Link>
-        ) : (
-          <span className="text-sm text-muted-foreground">Start a tune in Practice to use this list as a session.</span>
-        )}
-      </div>
-
       {removeTuneStatus === "success" && (
         <StatusMessage tone="success">Tune removed from your app.</StatusMessage>
       )}
@@ -313,6 +290,29 @@ export default async function LearningListDetailPage({
         </div>
       </header>
 
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {isOwner ? (
+          <nav aria-label="List detail mode" className="inline-flex border-b border-hairline">
+            <Link href={viewHref} aria-current={mode === "reader" ? "page" : undefined} className={`min-h-11 border-b-2 px-4 py-2 text-sm font-semibold ${mode === "reader" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+              Reader
+            </Link>
+            <Link href={manageHref} aria-current={mode === "manage" ? "page" : undefined} className={`min-h-11 border-b-2 px-4 py-2 text-sm font-semibold ${mode === "manage" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+              Manage
+            </Link>
+          </nav>
+        ) : (
+          <p className="text-sm text-muted-foreground">Read-only shared list</p>
+        )}
+
+        {activeTuneCount > 0 ? (
+          <Link href={`/review?session=list&list_id=${typedList.id}`} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
+            Start Practice · {activeTuneCount}
+          </Link>
+        ) : (
+          <span className="text-sm text-muted-foreground">Start a tune in Practice to use this list as a session.</span>
+        )}
+      </div>
+
       <section className="mt-7 md:mt-8">
         <h2 className="text-xl font-semibold text-foreground">
           {mode === "manage" ? "Manage order and membership" : "Tunes in playing order"}
@@ -341,7 +341,7 @@ export default async function LearningListDetailPage({
           />
         ) : (
           <ol className="mt-3 divide-y divide-border/70 border-y border-border/70">
-            {pagination.items.map(({ item, piece }) => {
+            {pagination.items.map(({ item, piece }, index) => {
               const activePieceState = activePieceStates.get(piece.id) ?? null
               const isAlreadyInPractice = Boolean(activePieceState)
               const isKnown = knownPieceIds.has(piece.id)
@@ -349,6 +349,7 @@ export default async function LearningListDetailPage({
                 <li key={item.id}>
                   <TuneRow
                     piece={piece}
+                    supportingContent={<span>Position {(pagination.page - 1) * LIST_PAGE_SIZE + index + 1}</span>}
                     personalState={<TuneStateIndicator isAlreadyInPractice={isAlreadyInPractice} isKnown={isKnown} stage={activePieceState?.stage ?? null} />}
                   />
                 </li>

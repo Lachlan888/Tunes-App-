@@ -46,8 +46,8 @@ export async function loadTuneUserState(
   typedPublicTuneLists: PublicTuneListSummary[]
   practiceDiaryEnabled: boolean
 }> {
-  const needsPublicLists = scope === "about"
-  const needsPracticeDiary = scope === "practice"
+  const needsPublicLists = scope === "info"
+  const needsPracticeDiary = scope === "info"
 
   const [
     userPieceMetadataResult,

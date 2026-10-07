@@ -1,23 +1,23 @@
 const controlBase =
-  "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-control border px-4 py-2 text-sm font-semibold shadow-material-rest transition-[background-color,border-color,color,box-shadow,transform] [transition-duration:var(--motion-standard)] [transition-timing-function:var(--ease-folk)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-surface-canvas disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+  "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-control border px-4 py-2 text-sm font-semibold transition-[background-color,border-color,color] [transition-duration:var(--motion-standard)] [transition-timing-function:var(--ease-folk)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-surface-canvas disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
 
 const compactControlBase =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-control border px-3 py-2 text-sm font-semibold shadow-material-rest transition-[background-color,border-color,color,box-shadow,transform] [transition-duration:var(--motion-standard)] [transition-timing-function:var(--ease-folk)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-surface-canvas disabled:cursor-not-allowed disabled:opacity-60"
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-control border px-3 py-2 text-sm font-semibold transition-[background-color,border-color,color] [transition-duration:var(--motion-standard)] [transition-timing-function:var(--ease-folk)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-surface-canvas disabled:cursor-not-allowed disabled:opacity-60"
 
 export const buttonStyles = {
-  primary: `${controlBase} border-action-primary bg-action-primary text-action-primary-foreground hover:-translate-y-px hover:bg-action-primary-hover hover:shadow-material-raised active:translate-y-0`,
+  primary: `${controlBase} border-action-primary bg-action-primary text-action-primary-foreground hover:bg-action-primary-hover`,
 
   secondary: `${controlBase} border-hairline bg-surface-paper text-text-muted hover:border-action-primary/45 hover:bg-surface-note hover:text-text-primary`,
 
   secondaryStrong: `${controlBase} border-hairline bg-surface-paper text-text-primary hover:border-action-primary/45 hover:bg-surface-note`,
 
-  practice: `${controlBase} border-state-practice bg-state-practice text-state-practice-foreground hover:-translate-y-px hover:bg-state-practice-hover hover:shadow-material-raised active:translate-y-0`,
+  practice: `${controlBase} border-state-practice bg-state-practice text-state-practice-foreground hover:bg-state-practice-hover`,
 
-  social: `${controlBase} border-state-social bg-state-social text-state-social-foreground hover:-translate-y-px hover:bg-state-social-hover hover:shadow-material-raised active:translate-y-0`,
+  social: `${controlBase} border-state-social bg-state-social text-state-social-foreground hover:bg-state-social-hover`,
 
-  due: `${controlBase} border-state-due bg-state-due text-state-due-foreground hover:-translate-y-px hover:bg-state-due/88 hover:shadow-material-raised active:translate-y-0`,
+  due: `${controlBase} border-state-due bg-state-due text-state-due-foreground hover:bg-state-due/88`,
 
-  destructive: `${controlBase} border-action-destructive bg-action-destructive text-action-destructive-foreground hover:-translate-y-px hover:bg-action-destructive-hover hover:shadow-material-raised active:translate-y-0`,
+  destructive: `${controlBase} border-action-destructive bg-action-destructive text-action-destructive-foreground hover:bg-action-destructive-hover`,
 
   destructiveSecondary: `${controlBase} border-action-destructive bg-surface-paper text-action-destructive hover:bg-action-destructive/10`,
 
@@ -47,13 +47,13 @@ export const buttonStyles = {
   modalClose: `${compactControlBase} border-hairline bg-surface-paper text-text-muted hover:bg-surface-note hover:text-text-primary`,
 
   reviewRough:
-    "inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-control border border-state-overdue bg-state-overdue px-2 py-2 text-sm font-semibold text-state-overdue-foreground shadow-material-rest transition-[background-color,box-shadow,transform] [transition-duration:var(--motion-standard)] hover:-translate-y-px hover:bg-state-overdue-hover hover:shadow-material-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[104px] sm:px-4",
+    "inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-control border border-state-overdue bg-state-overdue px-2 py-2 text-sm font-semibold text-state-overdue-foreground transition-colors [transition-duration:var(--motion-standard)] hover:bg-state-overdue-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[104px] sm:px-4",
 
   reviewShaky:
-    "inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-control border border-state-due bg-state-due px-2 py-2 text-sm font-semibold text-state-due-foreground shadow-material-rest transition-[background-color,box-shadow,transform] [transition-duration:var(--motion-standard)] hover:-translate-y-px hover:bg-state-due/88 hover:shadow-material-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[104px] sm:px-4",
+    "inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-control border border-state-due bg-state-due px-2 py-2 text-sm font-semibold text-state-due-foreground transition-colors [transition-duration:var(--motion-standard)] hover:bg-state-due/88 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[104px] sm:px-4",
 
   reviewSolid:
-    "inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-control border border-state-known bg-state-known px-2 py-2 text-sm font-semibold text-state-known-foreground shadow-material-rest transition-[background-color,box-shadow,transform] [transition-duration:var(--motion-standard)] hover:-translate-y-px hover:bg-state-known-hover hover:shadow-material-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[104px] sm:px-4",
+    "inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-control border border-state-known bg-state-known px-2 py-2 text-sm font-semibold text-state-known-foreground transition-colors [transition-duration:var(--motion-standard)] hover:bg-state-known-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[104px] sm:px-4",
 } as const
 
 export type ButtonVariant = keyof typeof buttonStyles

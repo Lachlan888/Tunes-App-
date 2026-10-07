@@ -8,11 +8,25 @@ test("practice stages expose their real review-day interval", () => {
     review as typeof review & { getReviewIntervalDays(stage: number | null | undefined): number }
   ).getReviewIntervalDays
 
-  assert.equal(getReviewIntervalDays(1), 1)
-  assert.equal(getReviewIntervalDays(5), 14)
-  assert.equal(getReviewIntervalDays(10), 360)
+  assert.deepEqual(Array.from({ length: 10 }, (_, index) => getReviewIntervalDays(index + 1)), [1, 2, 3, 7, 14, 30, 60, 90, 120, 360])
   assert.equal(getReviewIntervalDays(99), 360)
   assert.equal(getReviewIntervalDays(null), 1)
+})
+
+test("due status distinguishes overdue, today, future and missing dates", () => {
+  assert.equal(review.formatReviewDueStatus("2026-10-02", "2026-10-05"), "Overdue since 2 Oct")
+  assert.equal(review.formatReviewDueStatus("2026-10-05T23:00:00Z", "2026-10-05"), "Due today")
+  assert.equal(review.formatReviewDueStatus("2026-10-17", "2026-10-05"), "Next review 17 Oct")
+  assert.equal(review.formatReviewDueStatus(null, "2026-10-05"), "No review date set")
+})
+
+test("rating previews name the next interval and the Known transition", () => {
+  assert.equal(review.getReviewOutcomePreview(1, "failed"), "Stage 1 · 1-day review")
+  assert.equal(review.getReviewOutcomePreview(6, "failed"), "Stage 4 · 7-day review")
+  assert.equal(review.getReviewOutcomePreview(6, "shaky"), "Stage 6 · 30-day review")
+  assert.equal(review.getReviewOutcomePreview(6, "solid"), "Stage 7 · 60-day review")
+  assert.equal(review.getReviewOutcomePreview(9, "solid"), "Moves to Known")
+  assert.equal(review.getReviewOutcomePreview(10, "solid"), "Moves to Known")
 })
 
 test("practice dates render as human date-only labels", () => {

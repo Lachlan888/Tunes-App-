@@ -25,7 +25,7 @@ export default function PracticePeriodHeader({
   nextDate,
 }: PracticePeriodHeaderProps) {
   return (
-    <section aria-label="Diary period controls" className="border-b border-hairline py-4 md:py-5">
+    <section aria-label="Diary period controls" className="py-4 md:py-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <nav aria-label="Choose period" className="grid grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 sm:flex">
           <Link href={href(activeView, previousDate)} aria-label={`Previous ${activeView}`} className="flex min-h-11 min-w-11 items-center justify-center rounded-control border border-hairline bg-surface-paper px-3 font-semibold text-foreground hover:bg-surface-note focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">←</Link>

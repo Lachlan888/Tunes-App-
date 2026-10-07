@@ -26,15 +26,14 @@ export default function SetlistReadView({
         {items.map((item, index) => {
           const ownState = item.coverage.find((row) => row.user_id === currentUserId)
           if (!item.piece) return null
-          const key = item.performance_key ?? item.piece.key
-          const type = item.piece.type ?? item.piece.style
+          const supportingDetails = [item.performance_key ? `Performance key ${item.performance_key}` : null, item.notes ? item.notes.slice(0, 120) : null].filter(Boolean).join(" · ")
           return (
             <li key={item.id} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-2">
               <span className="pt-5 text-lg font-bold tabular-nums text-text-muted">{index + 1}</span>
               <TuneRow
                 piece={item.piece}
                 personalState={<TuneStateIndicator isKnown={ownState?.status === "known"} isAlreadyInPractice={ownState?.status === "practice"} stage={ownState?.stage} showNewToMe={!ownState || ownState.status === "gap"} />}
-                supportingContent={<span>{[key ? `Key ${key}` : "Key not set", type, item.notes ? item.notes.slice(0, 120) : null].filter(Boolean).join(" · ")}</span>}
+                supportingContent={supportingDetails ? <span>{supportingDetails}</span> : undefined}
               />
             </li>
           )

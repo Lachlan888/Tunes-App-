@@ -12,10 +12,27 @@ import {
   getPracticeSessionHref,
   getResumablePracticeHref,
   getPracticeSessionSuggestion,
+  getPracticeEnrolmentStatus,
   getResultingPracticeStage,
   parsePracticeLane,
   removeRatedPracticeItem,
 } from "../lib/practice-session.ts"
+
+test("practice enrolment reports an action result without claiming a review", () => {
+  assert.deepEqual(getPracticeEnrolmentStatus("added"), {
+    tone: "success",
+    message: "Added to Practice. Your first review is scheduled for tomorrow.",
+  })
+  assert.deepEqual(getPracticeEnrolmentStatus("already"), {
+    tone: "neutral",
+    message: "Already in Practice. No new review was recorded.",
+  })
+  assert.deepEqual(getPracticeEnrolmentStatus("error"), {
+    tone: "error",
+    message: "Couldn’t add this tune to Practice. Try again.",
+  })
+  assert.equal(getPracticeEnrolmentStatus("unknown"), null)
+})
 
 test("list practice is a first-class session lane", () => {
   assert.equal(parsePracticeLane("list"), "list")

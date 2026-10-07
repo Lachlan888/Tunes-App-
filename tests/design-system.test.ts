@@ -109,14 +109,21 @@ test("reference loop controls keep named groups and 44px phone targets", () => {
   assert.match(player, /className="grid h-11 w-11 place-items-center/)
 })
 
-test("visible practice navigation uses the source-of-truth Focus areas name", () => {
+test("Practice Diary keeps its secondary sections in local navigation", () => {
   const accountMenu = readFileSync(
     join(process.cwd(), "components/layout/AccountMenu.tsx"),
     "utf8"
   )
+  const diaryNav = readFileSync(
+    join(process.cwd(), "components/practice-diary/PracticeDiaryNav.tsx"),
+    "utf8"
+  )
 
-  assert.match(accountMenu, /label: "Focus areas"/)
-  assert.doesNotMatch(accountMenu, /label: "Focus Areas"/)
+  assert.match(accountMenu, /label: "Practice Diary"/)
+  assert.doesNotMatch(accountMenu, /label: "Focus areas"|label: "Tune index & history"/)
+  assert.match(diaryNav, /label: "Focus areas"/)
+  assert.match(diaryNav, /label: "Tune index & history"/)
+  assert.doesNotMatch(diaryNav, /href: "\/review",/)
 })
 
 test("focused Practice keeps beta feedback reachable without covering ratings", () => {
@@ -299,7 +306,7 @@ test("Diary and Focus overlays use the shared accessible modal and flat editoria
     assert.doesNotMatch(source, /fixed inset-0|rounded-3xl|shadow-xl|font-serif|uppercase/)
   }
   assert.doesNotMatch(focusActions, /onOpenPicker\(\)[\s\S]{0,80}onClose\(\)/)
-  assert.match(focusActions, /const closeActions = useCallback/)
+  assert.match(focusActions, /ContextActionMenu/)
   assert.match(focusActions, /const closePicker = useCallback/)
 
   for (const source of [categoryManager, noteForm, reviewNote]) {
@@ -341,7 +348,6 @@ test("Diary category detail and saved notes use flat editorial rows", () => {
     assert.doesNotMatch(source, /rounded-(?:xl|2xl|3xl|full)|shadow-sm|font-serif|uppercase/)
   }
   assert.match(categoryDetail, /divide-x divide-hairline/)
-  assert.match(categoryDetail, /flex-col gap-3 sm:flex-row/)
   assert.match(noteCard, /border-l-2 border-state-practice/)
 })
 
@@ -438,6 +444,8 @@ test("Lists, setlists and Compare use flat editorial regions outside purposeful 
   const setlist = readFileSync(join(process.cwd(), "app/setlists/[id]/page.tsx"), "utf8")
   const setlistMatrix = readFileSync(join(process.cwd(), "components/setlists/SetlistTuneMatrix.tsx"), "utf8")
   const compare = readFileSync(join(process.cwd(), "components/compare/CompareOutcomeExperience.tsx"), "utf8")
+  const compareDesktop = readFileSync(join(process.cwd(), "components/compare/CompareDesktop.tsx"), "utf8")
+  const compareGroup = readFileSync(join(process.cwd(), "components/compare/CurrentCompareGroupSection.tsx"), "utf8")
   const compareMobile = readFileSync(join(process.cwd(), "components/compare/CompareMobile.tsx"), "utf8")
   const publicListNotFound = readFileSync(join(process.cwd(), "app/public-lists/[id]/not-found.tsx"), "utf8")
 
@@ -445,7 +453,10 @@ test("Lists, setlists and Compare use flat editorial regions outside purposeful 
   assert.match(setlist, /aria-label="Setlist detail mode"/)
   assert.doesNotMatch(setlistMatrix, /rounded-2xl border border-border bg-background\/70 p-4 shadow-sm/)
   assert.doesNotMatch(setlistMatrix, /font-serif text-2xl/)
-  assert.match(compare, /border-y border-hairline/)
+  assert.match(compare, /compare-summary border-b border-hairline/)
+  assert.match(compare, /grid grid-cols-2 gap-4 border-t border-hairline/)
+  assert.doesNotMatch(compareDesktop, /<section className="border-y border-hairline py-5 lg:py-6">[\s\S]*?<CompareOutcomeExperience/)
+  assert.match(compareGroup, /divide-y divide-hairline border-t border-hairline/)
   assert.equal(compareMobile.match(/md:text-6xl/g)?.length, 2)
   assert.doesNotMatch(publicListNotFound, /rounded-full/)
 })
@@ -522,7 +533,8 @@ test("developer metric columns can shrink inside a phone viewport", () => {
 
   assert.match(
     metricVisualiser,
-    /className="min-w-0 rounded-object border border-border bg-background\/70 p-5"/
+    /<div className="min-w-0">/
   )
-  assert.match(metricVisualiser, /className="min-w-0 space-y-4"/)
+  assert.match(metricVisualiser, /className="break-words text-sm font-semibold text-foreground"/)
+  assert.doesNotMatch(metricVisualiser, /rounded-object border border-border bg-background\/70/)
 })

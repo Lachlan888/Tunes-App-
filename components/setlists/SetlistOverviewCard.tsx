@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { formatPracticeDate } from "@/lib/review"
 import type { SetlistOverview } from "@/lib/types"
 
 function pluralise(count: number, singular: string, plural = `${singular}s`) {
@@ -6,6 +7,8 @@ function pluralise(count: number, singular: string, plural = `${singular}s`) {
 }
 
 export default function SetlistOverviewCard({ setlist }: { setlist: SetlistOverview }) {
+  const eventDate = formatPracticeDate(setlist.event_date)
+
   return (
     <article className="grid gap-3 border-b border-hairline py-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-6">
       <div className="min-w-0">
@@ -19,7 +22,7 @@ export default function SetlistOverviewCard({ setlist }: { setlist: SetlistOverv
         </div>
         <p className="mt-2 text-sm text-text-muted">
           {pluralise(setlist.tuneCount, "tune")} · {pluralise(setlist.memberCount, "musician")}
-          {setlist.event_date ? ` · ${setlist.event_date}` : ""}
+          {eventDate ? ` · ${eventDate}` : ""}
           {setlist.location ? ` · ${setlist.location}` : ""}
         </p>
         {setlist.collaboratorLabels.length > 0 ? (

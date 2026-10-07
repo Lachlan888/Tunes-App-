@@ -1,12 +1,7 @@
 import Link from "next/link"
-import SubmitButton from "@/components/SubmitButton"
 import ActivityReactionBar from "@/components/activity/ActivityReactionBar"
 import ActivityReplyForm from "@/components/activity/ActivityReplyForm"
-import { buttonStyles } from "@/components/ui/buttonStyles"
-import {
-  deleteActivityReply,
-  updateActivityReply,
-} from "@/lib/actions/activity-interactions"
+import ActivityReplyActions from "@/components/activity/ActivityReplyActions"
 import {
   formatFriendActivityRelativeTime,
   type FriendActivityItem,
@@ -76,62 +71,7 @@ export default async function ActivityInteractionPanel({
                   </p>
 
                   {canManageReply ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <details className="rounded-control border border-border bg-background/70 px-3 py-1">
-                        <summary className="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center rounded-control text-xs font-medium text-muted-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
-                          Edit
-                        </summary>
-
-                        <form
-                          action={updateActivityReply}
-                          className="mt-3 min-w-64 space-y-2"
-                        >
-                          <input
-                            type="hidden"
-                            name="activity_reply_id"
-                            value={reply.id}
-                          />
-                          <input
-                            type="hidden"
-                            name="redirect_to"
-                            value={redirectTo}
-                          />
-
-                          <textarea
-                            name="body"
-                            rows={3}
-                            defaultValue={reply.body}
-                            required
-                            className="w-full rounded-2xl border border-border bg-background/90 px-3 py-2 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
-                          />
-
-                          <SubmitButton
-                            label="Save edit"
-                            pendingLabel="Saving..."
-                            className={buttonStyles.primary}
-                          />
-                        </form>
-                      </details>
-
-                      <form action={deleteActivityReply}>
-                        <input
-                          type="hidden"
-                          name="activity_reply_id"
-                          value={reply.id}
-                        />
-                        <input
-                          type="hidden"
-                          name="redirect_to"
-                          value={redirectTo}
-                        />
-
-                        <SubmitButton
-                          label="Delete"
-                          pendingLabel="Deleting..."
-                          className={buttonStyles.destructiveSecondary}
-                        />
-                      </form>
-                    </div>
+                    <ActivityReplyActions id={reply.id} body={reply.body} redirectTo={redirectTo} />
                   ) : null}
                 </div>
               </div>

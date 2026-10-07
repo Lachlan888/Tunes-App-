@@ -30,13 +30,13 @@ export default function FilterSection({
       <fieldset
         aria-label={titleWithCount}
         className={joinClasses(
-          "min-w-0 rounded-object border border-hairline bg-surface-paper p-4",
+          "min-w-0 border-t border-hairline py-3",
           className
         )}
         disabled={disabled}
       >
         <details open={defaultOpen || Boolean(count)}>
-          <summary className="min-h-11 cursor-pointer rounded-control py-2 text-sm font-semibold uppercase tracking-[0.14em] text-text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
+          <summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
             {titleWithCount}
           </summary>
           {content}
@@ -48,12 +48,12 @@ export default function FilterSection({
   return (
     <fieldset
       className={joinClasses(
-        "min-w-0 rounded-2xl border border-border bg-background/70 p-4",
+        "min-w-0 border-t border-hairline py-3",
         className
       )}
       disabled={disabled}
     >
-      <legend className="px-1 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <legend className="pr-3 text-sm font-semibold text-text-primary">
         {titleWithCount}
       </legend>
       {content}

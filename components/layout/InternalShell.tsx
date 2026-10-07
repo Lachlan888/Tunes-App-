@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import FloatingFeedbackButton from "@/components/feedback/FloatingFeedbackButton"
 
 export default function InternalShell({ children, canModerate, canAccessDev, environment }: {
   children: React.ReactNode
@@ -20,10 +21,13 @@ export default function InternalShell({ children, canModerate, canAccessDev, env
     <header className="border-b border-border bg-surface-note px-4 py-3 md:px-6">
       <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-2">
         <div><p className="font-semibold">Tunes · Internal workspace</p><p className="text-xs text-muted-foreground">{environment} · Badge creator{canModerate ? " · Moderator" : ""}{canAccessDev ? " · App admin" : ""}</p></div>
-        <Link href="/badges" className="inline-flex min-h-11 items-center text-sm underline">Back to Tunes</Link>
+        <div className="flex items-center gap-2">
+          <FloatingFeedbackButton variant="header" />
+          <Link href="/badges" className="inline-flex min-h-11 items-center text-sm underline">Back to Tunes</Link>
+        </div>
       </div>
-      <nav aria-label="Internal navigation" className="mx-auto mt-2 flex max-w-[1500px] flex-wrap gap-1">
-        {links.map(link => <Link key={link.href} href={link.href} aria-current={pathname === link.href ? "page" : undefined} className={`inline-flex min-h-11 items-center rounded-control px-3 text-sm font-medium ${pathname === link.href ? "bg-state-social text-state-social-foreground" : "hover:bg-muted"}`}>{link.label}</Link>)}
+      <nav aria-label="Internal navigation" className="mx-auto mt-2 flex max-w-[1500px] flex-wrap gap-x-3 border-b border-hairline">
+        {links.map(link => <Link key={link.href} href={link.href} aria-current={pathname === link.href ? "page" : undefined} className={`inline-flex min-h-11 items-center border-b-2 px-1 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] ${pathname === link.href ? "border-state-social text-state-social" : "border-transparent text-text-muted hover:text-text-primary"}`}>{link.label}</Link>)}
       </nav>
     </header>
     <div id="main-content" tabIndex={-1}>{children}</div>

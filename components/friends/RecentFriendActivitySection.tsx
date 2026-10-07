@@ -4,11 +4,13 @@ import type { FriendActivityItem } from "@/lib/friend-activity"
 type RecentFriendActivitySectionProps = {
   items: FriendActivityItem[]
   nextCursor: string | null
+  currentUserId: string
 }
 
 export default function RecentFriendActivitySection({
   items,
   nextCursor,
+  currentUserId,
 }: RecentFriendActivitySectionProps) {
   return (
     <section className="border-t border-hairline pt-6">
@@ -23,6 +25,7 @@ export default function RecentFriendActivitySection({
 
       <SocialActivityFeed
         items={items}
+        currentUserId={currentUserId}
         initialNextCursor={nextCursor}
         redirectTo="/friends"
         scrollRegionLabel="Friend activity feed"

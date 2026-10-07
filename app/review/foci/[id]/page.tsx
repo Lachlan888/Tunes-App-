@@ -60,18 +60,12 @@ export default async function PracticeFocusDetailPage({
           {focus.title}
         </h1>
 
-        {focus.description ? (
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            {focus.description}
-          </p>
-        ) : null}
-
         {focus.status === "active" ? <Link href={`/review?session=focus&focus_id=${focus.id}`} className={`${buttonStyles.primary} mt-4`}>Practise this focus</Link> : null}
 
         <PracticeDiaryNav active="foci" />
       </section>
 
-      <section className="mb-6 hidden border-b border-hairline pb-6 md:block">
+      <section className="mb-6 hidden pb-6 md:block">
         <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
             <Link href="/review/foci" className={buttonStyles.text}>
@@ -82,11 +76,6 @@ export default async function PracticeFocusDetailPage({
               {focus.title}
             </h1>
 
-            {focus.description ? (
-              <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
-                {focus.description}
-              </p>
-            ) : null}
             {focus.status === "active" ? <Link href={`/review?session=focus&focus_id=${focus.id}`} className={`${buttonStyles.primary} mt-5`}>Practise this focus</Link> : null}
           </div>
         </div>

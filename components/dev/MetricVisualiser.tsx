@@ -11,15 +11,6 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat("en-AU").format(value)
 }
 
-function getInitials(label: string) {
-  return label
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("")
-}
-
 function getShare(value: number, total: number) {
   if (total <= 0) return 0
   return Math.round((value / total) * 100)
@@ -56,7 +47,7 @@ export default function MetricVisualiser({
   }
 
   return (
-    <section className="border-y border-hairline">
+    <section className="border-b border-hairline">
       <div className="border-b border-border bg-card-strong/70 p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
@@ -127,17 +118,13 @@ export default function MetricVisualiser({
           No rows for this metric yet.
         </div>
       ) : (
-        <div className="grid gap-6 p-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]">
-          <div className="min-w-0 rounded-object border border-border bg-background/70 p-5">
+        <div className="p-5">
+          <div className="min-w-0">
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
                   Ranked chart
                 </h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Top {visibleRows.length} rows by{" "}
-                  {selectedVisualisation.primaryLabel.toLowerCase()}.
-                </p>
               </div>
             </div>
 
@@ -151,16 +138,21 @@ export default function MetricVisualiser({
                   <div key={row.id}>
                     <div className="mb-2 flex items-center justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-primary text-xs font-bold text-primary-foreground">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-hairline text-xs font-bold text-muted-foreground">
                           {index + 1}
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-foreground">
+                          <p className="break-words text-sm font-semibold text-foreground">
                             {row.label}
                           </p>
                           {row.helper ? (
-                            <p className="truncate text-xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                               {row.helper}
+                            </p>
+                          ) : null}
+                          {row.secondaryValue !== null && row.secondaryValue !== undefined ? (
+                            <p className="text-xs text-muted-foreground">
+                              {formatNumber(row.secondaryValue)} {row.secondaryLabel ?? ""}
                             </p>
                           ) : null}
                         </div>
@@ -176,9 +168,9 @@ export default function MetricVisualiser({
                       </div>
                     </div>
 
-                    <div className="h-5 overflow-hidden rounded-control border border-border bg-card-strong">
+                    <div className="h-3 overflow-hidden bg-surface-note">
                       <div
-                        className="h-full rounded-control bg-primary "
+                        className="h-full bg-primary"
                         style={{ width: `${width}%` }}
                       />
                     </div>
@@ -188,81 +180,6 @@ export default function MetricVisualiser({
             </div>
           </div>
 
-          <div className="min-w-0 space-y-4">
-            <div className="rounded-object border border-border bg-background/70 p-5">
-              <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
-                Distribution
-              </h3>
-
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                {visibleRows.slice(0, 6).map((row) => {
-                  const share = getShare(row.value, totalValue)
-
-                  return (
-                    <div
-                      key={row.id}
-                      className="rounded-object border border-border bg-card p-4"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-primary text-xs font-bold text-primary-foreground">
-                          {getInitials(row.label)}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold">
-                            {row.label}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {share}% share
-                          </p>
-                        </div>
-                      </div>
-
-                      <p className="mt-3 font-sans text-3xl font-bold">
-                        {formatNumber(row.value)}
-                      </p>
-
-                      {row.secondaryValue !== null &&
-                      row.secondaryValue !== undefined ? (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {formatNumber(row.secondaryValue)}{" "}
-                          {row.secondaryLabel ?? ""}
-                        </p>
-                      ) : null}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            <div className="rounded-object border border-border bg-background/70 p-5">
-              <h3 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
-                Details
-              </h3>
-
-              <div className="mt-4 divide-y divide-border">
-                {visibleRows.map((row) => (
-                  <div
-                    key={row.id}
-                    className="flex items-center justify-between gap-3 py-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{row.label}</p>
-                      {row.secondaryValue !== null &&
-                      row.secondaryValue !== undefined ? (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {formatNumber(row.secondaryValue)}{" "}
-                          {row.secondaryLabel ?? ""}
-                        </p>
-                      ) : null}
-                    </div>
-                    <p className="font-sans text-xl font-bold">
-                      {formatNumber(row.value)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
       )}
     </section>

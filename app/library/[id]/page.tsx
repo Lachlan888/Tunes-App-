@@ -29,9 +29,7 @@ import type {
 import { loadTuneDetailData } from "@/lib/loaders/tune-detail"
 import {
   APP_TIME_ZONE,
-  getOverdueDays,
-  isDueExactlyToday,
-  isOverdue,
+  formatReviewDueStatus,
 } from "@/lib/review"
 import {
   getReferencePracticeHref,
@@ -43,6 +41,8 @@ import {
 } from "@/lib/tune-detail-status"
 import {
   getTuneDetailHref,
+  getLegacyTuneDetailHash,
+  isLegacyTuneDetailView,
   resolveTuneDetailView,
   type TuneDetailSearchParam,
 } from "@/lib/tune-detail-view"
@@ -148,7 +148,7 @@ function getPersonalState(data: TuneDetailLoadedData) {
     }
   }
   if (data.typedUserKnownPiece) return { label: "Known", tone: "known" as const }
-  return { label: "Not in practice", tone: "neutral" as const }
+  return null
 }
 
 function formatDate(value: string | null | undefined) {
@@ -262,60 +262,37 @@ function TunePageOptions({ data, redirectTo }: { data: TuneDetailLoadedData; red
 }
 
 function TuneHeader({ data, aliases, redirectTo }: { data: TuneDetailLoadedData; aliases: string[]; redirectTo: string }) {
-  const source = getSourceDetails(data)
   const personalState = getPersonalState(data)
 
   return (
     <header className="border-b border-hairline pb-6">
       <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <TuneIdentity id={data.pieceId} title={data.typedPiece.title} alternateTitles={aliases.join("; ")} tuneType={data.typedPiece.type} style={data.typedPiece.style} tuneKey={data.typedPiece.key} sourceSummary={`${source.source} · ${source.confidence}`} personalState={<StatusMark tone={personalState.tone}>{personalState.label}</StatusMark>} className="min-w-0 flex-1" headingLevel="h1" linkTitle={false} headingClassName="break-words font-sans text-4xl font-bold leading-[1.04] tracking-tight text-text-primary sm:text-5xl md:text-6xl" />
+        <TuneIdentity id={data.pieceId} title={data.typedPiece.title} alternateTitles={aliases.join("; ")} tuneType={data.typedPiece.type} style={data.typedPiece.style} tuneKey={data.typedPiece.key} personalState={personalState ? <StatusMark tone={personalState.tone}>{personalState.label}</StatusMark> : null} className="min-w-0 flex-1" headingLevel="h1" linkTitle={false} headingClassName="break-words font-sans text-4xl font-bold leading-[1.04] tracking-tight text-text-primary sm:text-5xl md:text-6xl" />
         <TunePageOptions data={data} redirectTo={redirectTo} />
       </div>
     </header>
   )
 }
 
-function getDueSummary(data: TuneDetailLoadedData) {
-  const due = data.typedUserPiece?.next_review_due
-  if (!data.typedUserPiece) return "Starts after you add this tune to Practice"
-  if (!due) return "No review scheduled"
-  if (isDueExactlyToday(due)) return "Due today"
-  if (isOverdue(due)) {
-    const days = getOverdueDays(due)
-    return `${days} ${days === 1 ? "day" : "days"} overdue`
-  }
-  return `Due ${formatDate(due)}`
-}
-
-function PracticeView({ data, redirectTo }: { data: TuneDetailLoadedData; redirectTo: string }) {
+function PersonalPracticeSection({ data }: { data: TuneDetailLoadedData }) {
   const latestReview = data.typedReviewHistory[0] ?? null
-  const personalState = getPersonalState(data)
 
   return (
-    <div className="workbench-split tune-practice-workbench">
-      <section className={`${panelClassName} workbench-context`}>
-        <SectionHeader title="Practice" description="Your current stage, schedule and latest result for this tune." actions={<StatusMark tone={personalState.tone}>{personalState.label}</StatusMark>} />
-        <dl className="grid gap-x-6 md:grid-cols-3">
-          <DetailValue label="Stage">{data.typedUserPiece ? `Stage ${data.typedUserPiece.stage}` : "No active stage"}</DetailValue>
-          <DetailValue label="Review schedule">{getDueSummary(data)}</DetailValue>
-          <DetailValue label="Last result">
-            {latestReview ? <span className="flex flex-wrap items-center gap-2"><StatusMark tone={getOutcomeTone(latestReview.outcome)}>{getOutcomeLabel(latestReview.outcome)}</StatusMark><span>{formatDate(latestReview.created_at)}</span></span> : "No result yet"}
-          </DetailValue>
+      <section className="py-6">
+        <SectionHeader title="Practice" />
+        <dl className="grid gap-x-6 md:grid-cols-2">
+          {data.typedUserPiece ? <DetailValue label="Review schedule">{formatReviewDueStatus(data.typedUserPiece.next_review_due)}</DetailValue> : null}
+          {latestReview ? <DetailValue label="Last result">
+            <span className="flex flex-wrap items-center gap-2"><StatusMark tone={getOutcomeTone(latestReview.outcome)}>{getOutcomeLabel(latestReview.outcome)}</StatusMark><span>{formatDate(latestReview.created_at)}</span></span>
+          </DetailValue> : null}
         </dl>
         {data.typedUserPiece ? (
           <>
             <PracticeProgress stage={data.typedUserPiece.stage} className="mt-5 border-t border-hairline pt-4" />
             <PendingLinkButton href="/review" label="Open Practice queue" pendingLabel="Opening Practice..." className={`${buttonStyles.practice} mt-5`} />
           </>
-        ) : (
-          <p className="mt-5 text-sm leading-6 text-text-muted">Use <strong className="text-text-primary">Add to Practice</strong> to include this tune in your schedule. Once added, <strong className="text-text-primary">Open Practice</strong> takes you to your session.</p>
-        )}
+        ) : null}
       </section>
-      <div className="min-w-0 space-y-5">
-        <TunePrivateNotesSection pieceId={data.pieceId} redirectTo={redirectTo} userPieceMetadata={data.typedUserPieceMetadata} upsertUserPieceNotes={upsertUserPieceNotes} />
-        <TunePracticeHistorySection notes={data.typedPracticeNotes} reviews={data.typedReviewHistory} />
-      </div>
-    </div>
   )
 }
 
@@ -329,7 +306,7 @@ function PublicListAppearances({ publicLists }: { publicLists: PublicTuneListSum
     <ul className="mt-3 flex flex-wrap gap-2">
       {publicLists.map((list) => <li key={list.id}><Link href={`/public-lists/${list.id}`} className="inline-flex min-h-11 max-w-full items-center border-b border-hairline px-3 py-2 text-sm font-semibold text-text-primary hover:border-action-primary/45"><span className="truncate">{list.name}</span><span className="ml-2 shrink-0 text-xs text-text-muted">{getProfileName(list)}</span></Link></li>)}
     </ul>
-  ) : <p className="mt-2 text-sm text-text-muted">No public-list appearances yet.</p>
+  ) : null
 }
 
 function CommunitySummary({ data }: { data: TuneDetailLoadedData }) {
@@ -343,27 +320,27 @@ function CommunitySummary({ data }: { data: TuneDetailLoadedData }) {
         {sourceEntries.length > 0 ? <ul className="mt-4 space-y-3">{sourceEntries.map((entry) => <li key={entry.id} className="border-t border-hairline pt-3 first:border-t-0 first:pt-0"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">{entry.category.replaceAll("_", " ")}</p><p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-text-primary">{entry.entry_text}</p><p className="mt-1 text-xs text-text-muted">Added by {data.profileMap[entry.user_id]?.displayName || "Unknown player"}</p></li>)}</ul> : <p className="mt-4 text-sm text-text-muted">No source or folklore entries yet.</p>}
       </div>
       <div className="border-t border-hairline py-4">
-        <h3 className="font-semibold text-text-primary">Recent discussion</h3><p className="mt-1 text-sm text-text-muted">Community comments · contributor attributed</p>
+        <h3 className="font-semibold text-text-primary">Recent discussion</h3>
         {recentComments.length > 0 ? <ul className="mt-4 space-y-3">{recentComments.map((comment) => <li key={comment.id} className="border-t border-hairline pt-3 first:border-t-0 first:pt-0"><p className="line-clamp-3 whitespace-pre-wrap break-words text-sm leading-6 text-text-primary">{comment.body}</p><p className="mt-1 text-xs text-text-muted">{data.profileMap[comment.user_id]?.displayName || "Unknown player"} · {formatDate(comment.created_at)}</p></li>)}</ul> : <p className="mt-4 text-sm text-text-muted">No comments yet.</p>}
       </div>
     </div>
   )
 }
 
-function AboutView({ data, aliases }: { data: TuneDetailLoadedData; aliases: string[] }) {
+function CatalogueContext({ data, aliases }: { data: TuneDetailLoadedData; aliases: string[] }) {
   const source = getSourceDetails(data)
   const relatedTunes = data.typedPieceLoreEntries.filter((entry) => entry.category === "tune_family")
 
   return (
     <div className="space-y-5">
-      <section className={panelClassName}>
-        <SectionHeader title="About" description="Provenance, aliases, related tune notes and secondary catalogue metadata." />
+      <section id="catalogue" className={panelClassName}>
+        <SectionHeader title="Catalogue" />
         <div className="grid gap-5 lg:grid-cols-2">
-          <div className="border-t border-hairline py-4"><h3 className="font-semibold text-text-primary">Provenance</h3><dl className="mt-2"><DetailValue label="Source">{source.source}</DetailValue><DetailValue label="Confidence">{source.confidence}</DetailValue><DetailValue label="Basis">{source.detail}</DetailValue></dl></div>
+          <div className="py-4"><h3 className="font-semibold text-text-primary">Provenance</h3><dl className="mt-2"><DetailValue label="Source">{source.source}</DetailValue><DetailValue label="Confidence">{source.confidence}</DetailValue><DetailValue label="Basis">{source.detail}</DetailValue></dl><TuneAttributionSummary data={data} /></div>
           <TuneInlineDetails piece={data.typedPiece} styleOptions={data.styleOptions} currentUserRole={data.currentUserRole} composerDisplayValue={data.composerProfile ? source.source : data.typedPiece.composer} />
         </div>
-        <div className="mt-5 border-t border-hairline pt-4"><h3 className="font-semibold text-text-primary">Catalogue context</h3><dl className="mt-2"><DetailValue label="Aliases">{aliases.length > 0 ? aliases.join(" · ") : "No aliases recorded"}</DetailValue><DetailValue label="Related tunes">{relatedTunes.length > 0 ? relatedTunes.map((entry) => entry.entry_text).join(" · ") : "No tune-family links recorded"}</DetailValue><DetailValue label="Catalogue record">#{data.pieceId} · added {formatDate(data.typedPiece.created_at)}</DetailValue></dl><TuneAttributionSummary data={data} /></div>
-        <div className="mt-5 border-t border-hairline pt-5"><h3 className="font-semibold text-text-primary">Community</h3><p className="mt-1 text-sm leading-6 text-text-muted">Public lists, source notes and discussion remain attributed to their contributors.</p><PublicListAppearances publicLists={data.typedPublicTuneLists} /><CommunitySummary data={data} /></div>
+        <div className="mt-5 border-t border-hairline pt-4"><h3 className="font-semibold text-text-primary">Catalogue context</h3><dl className="mt-2"><DetailValue label="Aliases">{aliases.length > 0 ? aliases.join(" · ") : "No aliases recorded"}</DetailValue><DetailValue label="Related tunes">{relatedTunes.length > 0 ? relatedTunes.map((entry) => entry.entry_text).join(" · ") : "No tune-family links recorded"}</DetailValue><DetailValue label="Catalogue record">#{data.pieceId} · added {formatDate(data.typedPiece.created_at)}</DetailValue></dl></div>
+        <div id="community" className="mt-5 border-t border-hairline pt-5"><h3 className="font-semibold text-text-primary">Community</h3><PublicListAppearances publicLists={data.typedPublicTuneLists} /><CommunitySummary data={data} /></div>
       </section>
       <details className={panelClassName}>
         <summary className="cursor-pointer text-sm font-semibold text-text-primary">Contribute lore or join the discussion</summary>
@@ -372,6 +349,19 @@ function AboutView({ data, aliases }: { data: TuneDetailLoadedData; aliases: str
       </details>
     </div>
   )
+}
+
+function InfoView({ data, aliases, redirectTo }: { data: TuneDetailLoadedData; aliases: string[]; redirectTo: string }) {
+  const hasHistory = data.typedPracticeNotes.length > 0 || data.typedReviewHistory.length > 0
+  const hasPracticeSummary = Boolean(data.typedUserPiece || data.typedReviewHistory.length)
+  return <div id="practice" className="min-w-0 space-y-4">
+    {hasPracticeSummary ? <PersonalPracticeSection data={data} /> : null}
+    <div className={`grid gap-5 ${hasHistory ? "lg:grid-cols-2" : "max-w-prose"}`}>
+      <TunePrivateNotesSection pieceId={data.pieceId} redirectTo={redirectTo} userPieceMetadata={data.typedUserPieceMetadata} upsertUserPieceNotes={upsertUserPieceNotes} showTopRule={hasPracticeSummary} />
+      {hasHistory ? <TunePracticeHistorySection notes={data.typedPracticeNotes} reviews={data.typedReviewHistory} showStage={Boolean(data.typedUserPiece)} /> : null}
+    </div>
+    <CatalogueContext data={data} aliases={aliases} />
+  </div>
 }
 
 export default async function PiecePage({ params, searchParams }: PiecePageProps) {
@@ -384,6 +374,14 @@ export default async function PiecePage({ params, searchParams }: PiecePageProps
   if (tuneDetail.status === "load_error") throw new Error(`Could not load tune ${tuneDetail.pieceId}`)
 
   if (activeView === "reference") redirect(getReferencePracticeHref(tuneDetail.pieceId, getSingleSearchParamValue(resolvedSearchParams?.media), getSingleSearchParamValue(resolvedSearchParams?.return_to)))
+
+  if (isLegacyTuneDetailView(resolvedSearchParams?.view)) {
+    const params = new URLSearchParams()
+    for (const [key, value] of Object.entries(resolvedSearchParams ?? {})) {
+      if (key !== "view" && value != null) params.set(key, Array.isArray(value) ? value[0] : value)
+    }
+    redirect(`${getTuneDetailHref(tuneDetail.pieceId, "info")}${params.size ? `?${params}` : ""}${getLegacyTuneDetailHash(resolvedSearchParams?.view)}`)
+  }
 
   const redirectTo = getTuneDetailHref(tuneDetail.pieceId, activeView)
   const aliases = getAliases(tuneDetail)
@@ -402,8 +400,7 @@ export default async function PiecePage({ params, searchParams }: PiecePageProps
       <div className="mt-3"><TuneHeader data={tuneDetail} aliases={aliases} redirectTo={redirectTo} /></div>
       <div className="mt-4"><TuneDetailViewNav pieceId={tuneDetail.pieceId} activeView={activeView} /></div>
       <div className="mt-5 min-w-0">
-        {activeView === "practice" ? <PracticeView data={tuneDetail} redirectTo={redirectTo} /> : null}
-        {activeView === "about" ? <AboutView data={tuneDetail} aliases={aliases} /> : null}
+        <InfoView data={tuneDetail} aliases={aliases} redirectTo={redirectTo} />
       </div>
     </main>
   )

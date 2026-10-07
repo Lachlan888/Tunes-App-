@@ -5,11 +5,13 @@ import type { FriendActivityItem } from "@/lib/friend-activity"
 type HomeFriendsActivityBoxProps = {
   items: FriendActivityItem[]
   nextCursor: string | null
+  currentUserId: string
 }
 
 export default function HomeFriendsActivityBox({
   items,
   nextCursor,
+  currentUserId,
 }: HomeFriendsActivityBoxProps) {
   return (
     <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
@@ -30,6 +32,7 @@ export default function HomeFriendsActivityBox({
 
       <SocialActivityFeed
         items={items}
+        currentUserId={currentUserId}
         initialNextCursor={nextCursor}
         redirectTo="/"
         scrollRegionLabel="Friend activity feed"

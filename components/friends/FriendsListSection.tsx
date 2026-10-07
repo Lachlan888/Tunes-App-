@@ -21,7 +21,7 @@ const DEFAULT_VISIBLE_COUNT = 4
 const secondaryButtonClass =
   "inline-flex min-h-11 rounded-control border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground  transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 items-center justify-center"
 
-function FriendCard({ friend }: { friend: AcceptedFriend }) {
+function FriendRow({ friend }: { friend: AcceptedFriend }) {
   const label = friend.display_name || friend.username || "Unnamed player"
   const profileHref = friend.username
     ? `/users/${encodeURIComponent(friend.username)}`
@@ -79,10 +79,6 @@ export default function FriendsListSection({ friends }: FriendsListSectionProps)
           <h2 className="text-2xl font-bold tracking-tight text-foreground">
             Friends
           </h2>
-          <p className="mt-2 hidden text-sm leading-6 text-muted-foreground md:block">
-            Musicians you are connected with for repertoire comparison and
-            relevant activity.
-          </p>
         </div>
 
         {hasOverflow && (
@@ -99,16 +95,16 @@ export default function FriendsListSection({ friends }: FriendsListSectionProps)
       {friends.length === 0 ? (
         <EmptyState
           title="No friends yet"
-          description="Search for a musician, send a request, then compare your repertoire once connected."
+          description="Connect with a musician to compare repertoire."
           primaryActionHref="/friends"
           primaryActionLabel="Search people"
           secondaryActionHref="/compare"
           secondaryActionLabel="Compare tunes"
         />
       ) : (
-        <div className="divide-y divide-hairline border-y border-hairline md:grid md:grid-cols-2 md:divide-x md:divide-y-0 xl:grid-cols-3">
+        <div className="divide-y divide-hairline border-y border-hairline">
           {visibleFriends.map((friend) => (
-            <FriendCard key={friend.connection_id} friend={friend} />
+            <FriendRow key={friend.connection_id} friend={friend} />
           ))}
         </div>
       )}

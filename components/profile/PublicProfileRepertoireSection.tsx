@@ -50,7 +50,7 @@ function getViewerStateLabel(state: PublicProfileRepertoireTune["viewer_state"])
   if (state === "known_by_me") return "Known by me"
   if (state === "in_my_practice") return "In my practice"
   if (state === "in_my_lists") return "In my lists"
-  return "New to me"
+  return null
 }
 
 function getProfileStateLabel(
@@ -209,18 +209,13 @@ export default function PublicProfileRepertoireSection({
           <h2 className="mt-2 break-words font-sans text-2xl font-bold leading-tight tracking-tight text-foreground md:text-3xl">
             {isOwnProfile ? "Your repertoire" : `${profileName}’s repertoire`}
           </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-            {isOwnProfile
-              ? profile.show_repertoire_to_friends
-                ? "Accepted friends can browse these tunes from your public profile."
-                : "You can see this here, but it is hidden from friends until you opt in."
-              : "Browse tunes your friend knows or is practising, then add useful ones to one of your own lists."}
-          </p>
+          {isOwnProfile ? <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+            {profile.show_repertoire_to_friends
+              ? "Accepted friends can browse these tunes."
+              : "Hidden from friends until you opt in."}
+          </p> : null}
         </div>
 
-        <span className="w-fit rounded-control border border-border bg-background/70 px-3 py-1 text-sm font-medium text-muted-foreground">
-          {tunes.length} tune{tunes.length === 1 ? "" : "s"}
-        </span>
       </div>
 
       {tunes.length === 0 ? (
@@ -394,9 +389,11 @@ export default function PublicProfileRepertoireSection({
                         {getProfileStateLabel(tune.profile_state, profileName)}
                       </span>
 
-                      <span className="rounded-control border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground">
-                        {getViewerStateLabel(tune.viewer_state)}
-                      </span>
+                      {getViewerStateLabel(tune.viewer_state) ? (
+                        <span className="rounded-control border border-border bg-background/70 px-3 py-1.5 text-sm font-medium text-muted-foreground">
+                          {getViewerStateLabel(tune.viewer_state)}
+                        </span>
+                      ) : null}
 
                       {canAddToList ? (
                         <button

@@ -59,9 +59,6 @@ export default function HomeBadgesPanel({
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Badges
           </p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Recognition you have received and badges you award.
-          </p>
         </div>
 
         <Link

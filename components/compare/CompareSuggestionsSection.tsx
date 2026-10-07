@@ -79,6 +79,7 @@ function SuggestionRow({
               group: overlapGroup,
             })}
             label={action.label}
+            ariaLabel={`${action.label} ${label}`}
             pendingLabel="Loading..."
             refresh
             disabled={action.disabled}

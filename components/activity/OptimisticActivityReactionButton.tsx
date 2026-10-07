@@ -49,12 +49,12 @@ export default function OptimisticActivityReactionButton({
   }
 
   const buttonClassName = isActive
-    ? "inline-flex items-center gap-2 rounded-full border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-default"
-    : "inline-flex items-center gap-2 rounded-full border border-border bg-background/70 px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-default"
+    ? "inline-flex min-h-11 items-center gap-2 rounded-control border border-state-social bg-state-social px-3 py-2 text-sm font-semibold text-state-social-foreground transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-default"
+    : "inline-flex min-h-11 items-center gap-2 rounded-control border border-hairline px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:bg-surface-note/50 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-default"
 
   const countClassName = isActive
-    ? "rounded-full bg-background/20 px-2 py-0.5 text-[11px] font-bold leading-none text-primary-foreground"
-    : "rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-bold leading-none text-foreground"
+    ? "text-xs font-bold leading-none text-state-social-foreground"
+    : "text-xs font-bold leading-none text-foreground"
 
   return (
     <div className="flex flex-col items-start gap-2">

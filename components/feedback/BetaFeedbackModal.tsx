@@ -82,8 +82,8 @@ export default function BetaFeedbackModal({
           <input type="hidden" name="viewport_width" value={viewportWidth} />
           <input type="hidden" name="viewport_height" value={viewportHeight} />
 
-          <div className="rounded-object border border-border bg-background/70 p-3 text-xs leading-5 text-muted-foreground">
-            <p className="font-semibold  tracking-[0.14em]">
+          <div className="border-b border-hairline pb-3 text-xs leading-5 text-muted-foreground">
+            <p className="font-semibold">
               Captured page
             </p>
             <p className="mt-1 break-all">{pagePath}</p>
@@ -141,10 +141,10 @@ export default function BetaFeedbackModal({
 
           {state.message ? (
             <div
-              className={`rounded-object border p-3 text-sm font-medium ${
+              className={`border-l-4 py-2 pl-3 text-sm font-medium ${
                 state.status === "success"
-                  ? "border-success bg-success/10 text-foreground"
-                  : "border-destructive bg-destructive/10 text-foreground"
+                  ? "border-state-known text-foreground"
+                  : "border-action-destructive text-action-destructive"
               }`}
             >
               {state.message}

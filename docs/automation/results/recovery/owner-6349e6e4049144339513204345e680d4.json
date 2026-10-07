@@ -1,0 +1,7 @@
+{
+  "owner_task_id": "01a10b83-20a7-78e0-b8f2-3f9d4e771848",
+  "terminal_turn_status": "failed",
+  "evidence": "wait_threads latest turn 01a10b83-2658-7610-b631-3706041956eb failed; latest command completed",
+  "checked_at": "2026-10-05T11:26:20.592772+00:00",
+  "lock_sha256": "a6f163650347e11a2f9d40cb7adf4ca1a9d48972038be5797a894f3d7fbf68b9"
+}

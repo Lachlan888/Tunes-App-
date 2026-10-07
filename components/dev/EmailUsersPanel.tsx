@@ -57,9 +57,9 @@ export default function EmailUsersPanel({
   }
 
   return (
-    <div className="rounded-object border border-border bg-card p-6 ">
+    <div className="border-b border-hairline pb-6">
       <div className="max-w-3xl">
-        <h2 className="text-sm font-semibold  tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">
           Email users
         </h2>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -139,8 +139,8 @@ export default function EmailUsersPanel({
           />
         </label>
 
-        <fieldset className="rounded-object border border-border bg-background/50 p-4">
-          <legend className="px-1 text-xs font-semibold  tracking-[0.14em] text-muted-foreground">
+        <fieldset className="border-t border-hairline pt-4">
+          <legend className="pr-2 text-xs font-semibold tracking-[0.14em] text-muted-foreground">
             Optional CTA
           </legend>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -232,7 +232,17 @@ export default function EmailUsersPanel({
           Recent broadcasts
         </h3>
         {recentBroadcasts.length ? (
-          <div className="mt-4 overflow-x-auto rounded-object border border-border">
+          <div className="mt-4">
+            <ul className="divide-y divide-hairline border-y border-hairline md:hidden">
+              {recentBroadcasts.map((broadcast) => (
+                <li key={broadcast.id} className="py-4 text-sm">
+                  <p className="break-words font-medium">{broadcast.subject}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{formatDate(broadcast.created_at)} · {audienceLabel[broadcast.audience]}</p>
+                  <p className="mt-2 text-xs">Sent {broadcast.sent_count} · Failed {broadcast.failed_count}</p>
+                </li>
+              ))}
+            </ul>
+            <div className="hidden overflow-x-auto border-y border-hairline md:block">
             <table className="min-w-full divide-y divide-border text-left text-sm">
               <thead className="bg-muted/60 text-xs  tracking-wide text-muted-foreground">
                 <tr>
@@ -245,7 +255,7 @@ export default function EmailUsersPanel({
               </thead>
               <tbody className="divide-y divide-border">
                 {recentBroadcasts.map((broadcast) => (
-                  <tr key={broadcast.id} className="bg-card">
+                  <tr key={broadcast.id}>
                     <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
                       {formatDate(broadcast.created_at)}
                     </td>
@@ -265,6 +275,7 @@ export default function EmailUsersPanel({
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         ) : (
           <p className="mt-3 text-sm text-muted-foreground">

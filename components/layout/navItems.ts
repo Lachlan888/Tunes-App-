@@ -40,17 +40,10 @@ export const socialNavItems: NavItem[] = [
   { href: "/inbox", label: "Inbox", icon: "inbox" },
 ]
 
-const practicePrefixes = ["/review", "/practice-diary", "/practice-foci"]
+const practicePrefixes = ["/review"]
 const tunePrefixes = ["/library", "/repertoire"]
 const listPrefixes = ["/learning-lists", "/public-lists"]
-const socialPrefixes = [
-  "/friends",
-  "/setlists",
-  "/badges",
-  "/trends",
-  "/inbox",
-  "/users",
-]
+const socialPrefixes = ["/friends", "/users"]
 
 function matchesPrefix(pathname: string, prefix: string) {
   return pathname === prefix || pathname.startsWith(`${prefix}/`)
@@ -64,6 +57,8 @@ export function navItemIsActive(pathname: string, href: string) {
 
 export function getPrimaryDestination(pathname: string): PrimaryDestination | null {
   if (pathname === "/") return "home"
+  // The Diary and Focus areas live in the account menu, not the Practice rail item.
+  if (matchesPrefix(pathname, "/review/diary") || matchesPrefix(pathname, "/review/foci")) return null
   if (practicePrefixes.some((prefix) => matchesPrefix(pathname, prefix))) return "practice"
   if (tunePrefixes.some((prefix) => matchesPrefix(pathname, prefix))) return "tunes"
   if (listPrefixes.some((prefix) => matchesPrefix(pathname, prefix))) return "lists"

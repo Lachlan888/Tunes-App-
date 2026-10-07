@@ -325,7 +325,7 @@ export default function SessionDock({
       >
         <div className="grid gap-5">
           {model.expandedContent.showIdentity !== false ? (
-            <div className="rounded-object border border-hairline bg-surface-note p-4">
+            <div className="border-y border-hairline py-4">
               <p className="font-serif text-xl font-semibold text-text-primary">
                 {model.identity.title}
               </p>

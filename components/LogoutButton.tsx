@@ -6,7 +6,7 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner"
 import { joinClasses } from "@/components/ui/buttonStyles"
 import { createClient } from "@/lib/supabase/client"
 
-export default function LogoutButton({ className }: { className?: string }) {
+export default function LogoutButton({ className, menuItem = false }: { className?: string; menuItem?: boolean }) {
   const [isPending, setIsPending] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
   const supabase = createClient()
@@ -38,10 +38,13 @@ export default function LogoutButton({ className }: { className?: string }) {
     <span>
     <button
       type="button"
+      role={menuItem ? "menuitem" : undefined}
       disabled={isPending}
       onClick={handleLogout}
       className={joinClasses(
-        "rounded-control border border-hairline px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60",
+        menuItem
+          ? "border-0"
+          : "rounded-control border border-hairline px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-surface-note hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60",
         className
       )}
     >

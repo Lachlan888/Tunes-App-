@@ -7,6 +7,7 @@ import FocusActionMenu from "@/components/practice-foci/FocusActionMenu"
 import PracticeFocusTuneManager from "@/components/practice-foci/PracticeFocusTuneManager"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { updatePracticeFocus } from "@/lib/actions/practice-foci"
+import { formatPracticeDate } from "@/lib/review"
 import type {
   FocusTuneOption,
   PracticeFocus,
@@ -22,15 +23,7 @@ type PracticeFocusDetailProps = {
 }
 
 function formatDateOnly(dateOnly: string | null) {
-  if (!dateOnly) return "Undated"
-
-  const [year, month, day] = dateOnly.split("-")
-
-  if (!year || !month || !day) {
-    return dateOnly
-  }
-
-  return `${day}/${month}/${year}`
+  return formatPracticeDate(dateOnly) ?? "Undated"
 }
 
 function FocusEditPanel({
@@ -43,7 +36,7 @@ function FocusEditPanel({
   onCancel: () => void
 }) {
   return (
-    <section className="grid gap-4">
+    <section className="grid max-w-3xl gap-4">
       <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
         Edit focus
       </h2>
@@ -108,15 +101,12 @@ function RecentFocusNotes({
   recentNotes: PracticeFocusRecentNote[]
 }) {
   return (
-    <section className="grid gap-3 border-t border-hairline pt-6">
+    <section className="grid gap-3">
       <div>
         <h2 className="font-sans text-xl font-bold tracking-tight text-foreground">
           Evidence
         </h2>
 
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Results and observations saved against this intention.
-        </p>
       </div>
 
       {recentNotes.length === 0 ? (
@@ -173,10 +163,10 @@ export default function PracticeFocusDetail({
 
   return (
     <section className="grid gap-7 md:gap-6">
-      <section className="grid gap-5 border-y border-border py-5 sm:grid-cols-3">
-        <div><p className="text-sm font-bold text-foreground">Intent</p><p className="mt-2 text-sm leading-6 text-foreground">{focus.description || "Add a short intention so each practice session has a clear purpose."}</p></div>
+      <section className="grid gap-5 border-b border-border pb-5 sm:grid-cols-3">
+        <div><p className="text-sm font-bold text-foreground">Intent</p><p className="mt-2 text-sm leading-6 text-foreground">{focus.description || "Not set"}</p></div>
         <div><p className="text-sm font-bold text-foreground">Evidence</p><p className="mt-2 text-sm leading-6 text-foreground">{recentNotes.length} linked {recentNotes.length === 1 ? "note" : "notes"} across {focus.tunes.length} {focus.tunes.length === 1 ? "tune" : "tunes"}.</p></div>
-        <div><p className="text-sm font-bold text-foreground">Next review</p><p className="mt-2 text-sm leading-6 text-foreground">{focus.target_date ? formatDateOnly(focus.target_date) : "No review date set — add one when this focus needs a checkpoint."}</p></div>
+        <div><p className="text-sm font-bold text-foreground">Next review</p><p className="mt-2 text-sm leading-6 text-foreground">{focus.target_date ? formatDateOnly(focus.target_date) : "Not set"}</p></div>
       </section>
 
       <FocusActionMenu
@@ -188,7 +178,7 @@ export default function PracticeFocusDetail({
       />
 
       {isEditing ? (
-        <section className="border-t border-hairline pt-6">
+        <section>
           <FocusEditPanel
             focus={focus}
             redirectTo={redirectTo}

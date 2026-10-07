@@ -7,6 +7,7 @@ import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 const ts = require('typescript')
 type Element = { type: string; props: Record<string, unknown> }
+let detailItems = Array.from({ length: 25 }, (_, i) => ({ id: i + 1, pieces: { id: i + 1, title: `Tune ${i + 1}` } }))
 function load(path: string): Record<string, (props: unknown) => Element | Promise<Element>> {
   const compiled = ts.transpileModule(readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
@@ -26,7 +27,7 @@ function load(path: string): Record<string, (props: unknown) => Element | Promis
     if (id === '@/lib/list-view-state' || id === '@/lib/list-return') return load(`${id.slice(2)}.ts`)
     if (id === '@/lib/loaders/list-detail') return { loadLearningListDetailData: async () => ({
       typedList: { id: 67, name: 'Earth Tones - Adam Hurt', description: 'A personal fixture description', visibility: 'private' },
-      typedItems: Array.from({ length: 25 }, (_, i) => ({ id: i + 1, pieces: { id: i + 1, title: `Tune ${i + 1}` } })),
+      typedItems: detailItems,
       tunes: [], activePieceStates: new Map(), knownPieceIds: new Set(), ownerProfile: { label: 'Owner' },
       shareRecipients: [], accessMode: 'owner', redirectTo: '/learning-lists/67',
     }) }
@@ -45,12 +46,14 @@ function elements(tree: unknown): Element[] {
 }
 const origin = '/learning-lists?q=Adam&style=Old-time&style=Irish&size=11-25&source=manual&visibility=private&page=2#list-67'
 
-test('owned card title and Read link carry the filtered overview origin', async () => {
+test('owned card title and Open link carry the filtered overview origin', async () => {
   const tree = await load('components/lists/ListOverviewCard.tsx').default({
     list: { id: 67, name: 'Earth Tones - Adam Hurt', visibility: 'private', tuneCount: 25, stylesPresent: [] }, redirectTo: origin,
   })
   const links = elements(tree).filter(e => e.type === 'EditorialListCard' || e.type === 'PendingLinkButton')
   assert.equal(links.length, 2)
+  assert.equal(links[1].props.label, 'Open')
+  assert.equal((elements(tree).find(e => e.type === 'ListOverviewActions')?.props.list as { id: number }).id, 67)
   for (const link of links) {
     const url = new URL(String(link.props.href), 'https://fixture.invalid')
     assert.equal(url.pathname, '/learning-lists/67')
@@ -73,7 +76,10 @@ test('detail Back, modes, and pager retain the overview origin', async () => {
     assert.equal(new URL(String(pager.props.href), 'https://fixture.invalid').searchParams.get('return_to'), origin)
     if (mode === 'reader') {
       assert.ok(all.some(e => e.type === 'ol'))
-      assert.ok(all.filter(e => e.type === 'TuneRow').every(e => e.props.supportingContent === undefined))
+      const rows = all.filter(e => e.type === 'TuneRow')
+      assert.equal(rows.length, 5)
+      assert.deepEqual(rows.map(e => (e.props.supportingContent as Element).props.children),
+        [['Position ', 21], ['Position ', 22], ['Position ', 23], ['Position ', 24], ['Position ', 25]])
     } else {
       assert.equal(all.find(e => e.type === 'ListOrderManager')?.props.positionOffset, 20)
     }
@@ -84,6 +90,21 @@ test('detail rejects external, unrelated and malformed return destinations', asy
   for (const return_to of ['https://evil.invalid/learning-lists', '//evil.invalid/learning-lists', '/library', '/learning-lists/67', '/\\evil.invalid/learning-lists', '/learning-lists\n', ['/learning-lists?q=Adam', '/library'], undefined]) {
     const tree = await load('app/learning-lists/[id]/page.tsx').default({ params: Promise.resolve({ id: '67' }), searchParams: Promise.resolve({ return_to }) })
     assert.equal(elements(tree).find(e => e.props.children === 'Back to Lists')?.props.href, '/learning-lists')
+  }
+})
+
+test('empty owned list keeps Reader and Manage access with a clear empty state', async () => {
+  const previous = detailItems
+  detailItems = []
+  try {
+    for (const mode of ['reader', 'manage']) {
+      const all = elements(await load('app/learning-lists/[id]/page.tsx').default({ params: Promise.resolve({ id: '67' }), searchParams: Promise.resolve({ mode }) }))
+      assert.ok(all.some(e => e.props.children === 'This list has no tunes yet.'))
+      assert.ok(all.some(e => e.props.children === 'Reader'))
+      assert.ok(all.some(e => e.props.children === 'Manage'))
+    }
+  } finally {
+    detailItems = previous
   }
 })
 
@@ -111,6 +132,7 @@ test('public detail Back and pager retain a safe Lists origin', async () => {
   assert.equal(new URL(String(pager.props.href), 'https://fixture.invalid').searchParams.get('return_to'), origin)
   assert.ok(all.some(e => e.type === 'ol'))
   assert.ok(all.some(e => e.type === 'li'))
+  assert.ok(!all.some(e => e.type === 'EditListModal'))
 })
 
 test('public detail keeps its default and rejects unsafe return destinations', async () => {

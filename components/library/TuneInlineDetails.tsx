@@ -187,7 +187,7 @@ export default function TuneInlineDetails({
   const isModerator = currentUserRole === "moderator" || currentUserRole === "admin"
 
   return (
-    <div className="border-t border-hairline py-4">
+    <div className="py-4">
       <h3 className="font-semibold text-text-primary">Tune details</h3>
       <p className="mt-1 text-sm leading-6 text-text-muted">
         Missing shared details can be filled once. Saving never replaces an existing value.

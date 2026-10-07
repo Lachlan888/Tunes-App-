@@ -45,6 +45,7 @@ export default async function SetlistsPage({ searchParams }: SetlistsPageProps) 
     <main className="mx-auto max-w-[1500px] px-6 py-8 text-foreground">
       <PageHeader
         title="Setlists"
+        className="md:pt-12"
         actions={
           showSection("create_setlist") ? (
             <CreateSetlistModal createSetlist={createSetlist} />

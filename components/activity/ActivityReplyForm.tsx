@@ -26,7 +26,7 @@ export default function ActivityReplyForm({
             ? "Comment on this tune comment"
             : "Comment on this activity"
         }
-        className="w-full rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
+        className="w-full rounded-object border border-hairline bg-surface-paper px-3 py-2 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-[var(--focus-ring)]"
         required
       />
 

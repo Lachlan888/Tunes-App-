@@ -49,13 +49,18 @@ export async function startLearning(formData: FormData) {
   const pieceId = Number(formData.get("piece_id"))
   const redirectTo = String(formData.get("redirect_to") || "/")
 
-  if (!pieceId || Number.isNaN(pieceId)) {
-    redirect(redirectTo)
+  if (!Number.isInteger(pieceId) || pieceId <= 0) {
+    redirect(appendQueryParam(redirectTo, "practice_enrolment", "error"))
   }
 
-  await startPracticeForUser(supabase, pieceId)
+  let result: "started" | "already_in_practice"
+  try {
+    result = await startPracticeForUser(supabase, pieceId)
+  } catch {
+    redirect(appendQueryParam(redirectTo, "practice_enrolment", "error"))
+  }
 
-  redirect(redirectTo)
+  redirect(appendQueryParam(redirectTo, "practice_enrolment", result === "started" ? "added" : "already"))
 }
 
 export async function removeFromPractice(formData: FormData) {

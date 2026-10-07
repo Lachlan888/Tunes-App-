@@ -55,7 +55,7 @@ export default function FilterShell({
       className={joinClasses(
         "relative mb-5 transition-opacity md:mb-8",
         sticky &&
-          "sticky top-14 z-20 -mx-4 border-y border-hairline bg-surface-canvas/95 px-4 py-3 backdrop-blur md:top-0 md:mx-0 md:px-0 md:py-4",
+          "sticky top-14 z-20 -mx-4 border-b border-hairline bg-surface-canvas/95 px-4 py-3 backdrop-blur md:top-0 md:mx-0 md:px-0 md:py-4",
         isPending ? "opacity-80" : "opacity-100",
         className
       )}
@@ -66,7 +66,7 @@ export default function FilterShell({
           !sticky && "border-y border-hairline py-4"
         )}
       >
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 md:flex md:gap-3">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 lg:flex lg:gap-3">
           <div className="min-w-0 flex-1">
             <label
               htmlFor={`${panelId}-search`}
@@ -104,7 +104,7 @@ export default function FilterShell({
             )}
           </button>
 
-          <div className="col-span-2 grid grid-cols-3 gap-2 md:flex md:flex-wrap md:items-center">
+          <div className="col-span-2 grid grid-cols-3 gap-2 md:flex md:flex-wrap md:items-center lg:col-span-1">
             <button
               type="button"
               onClick={onTogglePanel}

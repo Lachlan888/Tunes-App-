@@ -1,0 +1,27 @@
+✔ filter drafts count prospective matches without mutating applied URL state (0.982291ms)
+✔ catalogue selection is reversible, private, deduplicated, and bounded (0.900958ms)
+✔ duplicate suggestions explain exact titles, aliases, and likely matches (4.10475ms)
+✔ catalogue UI wires staged filters, selection dock, and progressive creation (8.203542ms)
+✔ mobile catalogue wraps long titles and keeps metadata and state readable (0.5815ms)
+✔ mobile catalogue uses a wrapped action row with touch targets (0.110083ms)
+✔ new, practising, and known tunes expose only applicable state actions (0.208125ms)
+✔ selection mode hides row actions without weakening tune selection (0.305542ms)
+✔ compact styling is mobile-only and restores desktop row presentation (0.226333ms)
+✔ reference playback dock is removed at every viewport size (0.599917ms)
+✔ desktop reference strip exposes tune-focused practice actions (0.122666ms)
+✔ reference route supplies existing user state and server actions (0.087ms)
+✔ reference pages reserve no duplicate dock space on mobile (0.161667ms)
+✔ tune detail has Info and Reference with legacy views redirected to Info (0.620583ms)
+✔ the tune identity, two views and Session Dock keep one action hierarchy (9.310292ms)
+✔ Manage and route recovery expose permission-safe tune actions (10.820333ms)
+✔ About exposes fill-once tune details inline with explicit save and cancel (1.476334ms)
+✔ About keeps creator and contributor credits quiet, distinct, and privacy-safe (2.109542ms)
+✔ view-scoped loading keeps shared identity data stable (21.087042ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 960.51875
