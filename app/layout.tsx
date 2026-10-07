@@ -44,6 +44,7 @@ export default async function RootLayout({
           pendingModerationCount={navContext.pendingModerationCount}
           canModerate={navContext.canModerate}
           canAccessDev={navContext.canAccessDev}
+          canManageFestivals={navContext.canManageFestivals}
         >
           {children}
         </AppShell>

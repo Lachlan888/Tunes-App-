@@ -20,6 +20,7 @@ type DesktopNavProps = {
   pendingModerationCount: number
   canModerate: boolean
   canAccessDev: boolean
+  canManageFestivals: boolean
 }
 
 function RailBadge({ count }: { count: number }) {
@@ -46,11 +47,12 @@ export default function DesktopNav({
   pendingModerationCount,
   canModerate,
   canAccessDev,
+  canManageFestivals,
 }: DesktopNavProps) {
   if (shellKind === "signed-out") return null
 
   const selectedDestination = getPrimaryDestination(pathname)
-  const isFestivalPreviewSelected = pathname === "/dev/festivals"
+  const isFestivalManagementSelected = pathname === "/dev/festivals"
 
   return (
     <aside data-desktop-nav className="fixed inset-y-0 left-0 z-[300] hidden w-[4.75rem] border-r border-hairline bg-surface-canvas md:flex md:flex-col xl:w-48">
@@ -89,21 +91,21 @@ export default function DesktopNav({
                 </Link>
               )
             })}
-            {canAccessDev ? (
+            {canManageFestivals ? (
               <div className="mt-2 border-t border-hairline pt-2">
                 <Link
                   href="/dev/festivals"
-                  aria-label="Festival hub preview"
-                  aria-current={isFestivalPreviewSelected ? "page" : undefined}
+                  aria-label="Festival management"
+                  aria-current={isFestivalManagementSelected ? "page" : undefined}
                   className={joinClasses(
                     "group/rail-item relative flex min-h-12 items-center justify-center gap-3 border-l-2 px-3 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] xl:justify-start",
-                    isFestivalPreviewSelected
+                    isFestivalManagementSelected
                       ? "border-action-primary text-text-primary"
                       : "border-transparent text-text-muted hover:bg-surface-note/50 hover:text-text-primary"
                   )}
                 >
                   <Icon name="stage" size={21} />
-                  <RailLabel>Festival hub</RailLabel>
+                  <RailLabel>Festival management</RailLabel>
                 </Link>
               </div>
             ) : null}

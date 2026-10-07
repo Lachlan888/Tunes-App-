@@ -3,19 +3,21 @@ import FestivalManager from "@/components/dev/FestivalManager"
 import PageHeader from "@/components/ui/PageHeader"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { loadFestivalOwnerFoundation } from "@/lib/loaders/festivals"
+import { resolveFestivalWorkspace } from "@/lib/festivals/workspace"
 
 export const dynamic = "force-dynamic"
 
-export default async function FestivalFoundationPage() {
-  const { settings, festivals, collections, sessions, sessionCollections, publicLists } = await loadFestivalOwnerFoundation()
-  const selectedFestival = festivals.find(
-    (festival) => festival.id === settings.selected_festival_id
-  )
+type FestivalPageProps = {
+  searchParams?: Promise<{ festival?: string | string[]; tab?: string | string[] }>
+}
 
+export default async function FestivalFoundationPage({ searchParams }: FestivalPageProps) {
+  const { settings, festivals, collections, sessions, sessionCollections, publicLists } = await loadFestivalOwnerFoundation()
+  const workspace = resolveFestivalWorkspace(searchParams ? await searchParams : {}, settings.selected_festival_id, festivals)
   return (
     <main className="mx-auto max-w-5xl px-4 py-6 text-foreground md:px-6 md:py-8">
       <PageHeader
-        title="Festival hub"
+        title="Festival management"
         actions={
           <Link href="/dev" className={buttonStyles.secondary}>
             Back to operations
@@ -23,25 +25,9 @@ export default async function FestivalFoundationPage() {
         }
       />
       <p className="-mt-2 mb-6 max-w-2xl text-sm leading-6 text-muted-foreground">
-        Owner-only editing and preview.
+        Owner-only editing and preview. Festival mode is {settings.mode_enabled ? "On" : "Off"} on Home.
       </p>
-
-      <section className="grid gap-5 border-t border-hairline sm:grid-cols-3" aria-label="Festival foundation status">
-        <div className="border-b border-hairline py-4">
-          <p className="text-sm font-semibold text-muted-foreground">Festival mode</p>
-          <p className="mt-2 font-sans text-3xl font-bold">{settings.mode_enabled ? "On" : "Off"}</p>
-        </div>
-        <div className="border-b border-hairline py-4">
-          <p className="text-sm font-semibold text-muted-foreground">Selected hub</p>
-          <p className="mt-2 font-sans text-2xl font-bold">{selectedFestival?.name ?? "None"}</p>
-        </div>
-        <div className="border-b border-hairline py-4">
-          <p className="text-sm font-semibold text-muted-foreground">Festival records</p>
-          <p className="mt-2 font-sans text-3xl font-bold">{festivals.length}</p>
-        </div>
-      </section>
-
-      <section className="mt-8">
+      <section>
         <FestivalManager
           settings={settings}
           festivals={festivals}
@@ -49,6 +35,8 @@ export default async function FestivalFoundationPage() {
           sessions={sessions}
           sessionCollections={sessionCollections}
           publicLists={publicLists}
+          activeFestivalId={workspace.festivalId}
+          activeTab={workspace.tab}
         />
       </section>
     </main>

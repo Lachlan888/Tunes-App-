@@ -1,4 +1,4 @@
-import { canModerate, isAppAdmin } from "@/lib/auth/roles"
+import { canModerate, getAppAdminRole } from "@/lib/auth/roles"
 import { getToday } from "@/lib/review"
 import type { SupabaseServerClient } from "@/lib/auth/session"
 import { withServerTiming } from "@/lib/server-timing"
@@ -8,6 +8,7 @@ export type NavContext = {
   role: UserRole
   canModerate: boolean
   canAccessDev: boolean
+  canManageFestivals: boolean
   unreadNotificationCount: number
   unreadMessageCount: number
   unreadTotalCount: number
@@ -21,6 +22,7 @@ export const emptyNavContext: NavContext = {
   role: "user",
   canModerate: false,
   canAccessDev: false,
+  canManageFestivals: false,
   unreadNotificationCount: 0,
   unreadMessageCount: 0,
   unreadTotalCount: 0,
@@ -97,14 +99,14 @@ export async function loadNavContext(
   const userCanModerate = canModerate(role)
 
   const [
-    userCanAccessDev,
+    appAdminRole,
     { count: unreadNotificationCount, error: notificationError },
     { count: unreadMessageCount, error: messageError },
     { count: pendingFriendRequestCount, error: friendRequestError },
     { count: overduePracticeRowCount, error: practiceError },
     pendingModerationCount,
   ] = await withServerTiming("layout.nav-context", () => Promise.all([
-    isAppAdmin(supabase, userId),
+    getAppAdminRole(supabase, userId),
     supabase
       .from("user_notifications")
       .select("id", { count: "exact", head: true })
@@ -179,7 +181,8 @@ export async function loadNavContext(
   return {
     role,
     canModerate: userCanModerate,
-    canAccessDev: userCanAccessDev,
+    canAccessDev: appAdminRole !== null,
+    canManageFestivals: appAdminRole === "owner",
     unreadNotificationCount: safeUnreadNotificationCount,
     unreadMessageCount: safeUnreadMessageCount,
     unreadTotalCount,

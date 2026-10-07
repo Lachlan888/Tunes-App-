@@ -26,6 +26,7 @@ type AppShellProps = {
   canModerate: boolean
   environment: string
   canAccessDev: boolean
+  canManageFestivals: boolean
 }
 
 export default function AppShell({
@@ -38,6 +39,7 @@ export default function AppShell({
   pendingModerationCount,
   canModerate,
   canAccessDev,
+  canManageFestivals,
   environment,
 }: AppShellProps) {
   const pathname = usePathname()
@@ -75,7 +77,7 @@ export default function AppShell({
         shellKind === "consumer" || pathname === "/dev/design-system"
       }
     >
-      {shellKind === "internal" ? <InternalShell canModerate={canModerate} canAccessDev={canAccessDev} environment={environment}>{children}</InternalShell> : <>
+      {shellKind === "internal" ? <InternalShell canModerate={canModerate} canAccessDev={canAccessDev} canManageFestivals={canManageFestivals} environment={environment}>{children}</InternalShell> : <>
       <a href="#main-content" className="fixed left-3 top-3 z-[1000] -translate-y-24 rounded-control bg-action-primary px-4 py-2 text-sm font-semibold text-action-primary-foreground shadow-material-floating focus:translate-y-0">
         Skip to content
       </a>
@@ -99,6 +101,7 @@ export default function AppShell({
         pendingModerationCount={pendingModerationCount}
         canModerate={canModerate}
         canAccessDev={canAccessDev}
+        canManageFestivals={canManageFestivals}
       />
       <div
         id="main-content"

@@ -31,6 +31,7 @@ export type FestivalActionState = {
   status: "idle" | "success" | "error"
   message: string | null
   field: string | null
+  festivalId?: number
 }
 
 function actionError(error: unknown): FestivalActionState {
@@ -67,7 +68,8 @@ export async function createFestivalHub(formData: FormData) {
 export async function updateFestivalHub(festivalId: number, values: Record<string, unknown>) {
   const { supabase } = await requireFestivalOwner()
   if (!Number.isInteger(festivalId) || festivalId <= 0) throw new Error("invalid_festival_id")
-  const input = validateFestivalHubInput(values)
+  const { lifecycle, ...input } = validateFestivalHubInput(values)
+  void lifecycle
   const { data, error } = await supabase.from("festival_hubs").update(input).eq("id", festivalId).select("id,slug").single()
   if (error || !data) throw new Error(error?.message ?? "festival_update_failed")
   revalidateFestival(data.slug)
@@ -159,13 +161,41 @@ export async function updateFestivalSettings(values: Record<string, unknown>) {
   return data
 }
 
+export async function setFestivalMode(enabled: boolean) {
+  const { supabase } = await requireFestivalOwner()
+  const { data, error } = await supabase
+    .from("festival_settings")
+    .update({ mode_enabled: enabled })
+    .eq("singleton", true)
+    .select("mode_enabled")
+    .single()
+  if (error || !data) throw new Error(error?.message ?? "festival_settings_write_failed")
+  revalidateFestival()
+  return data
+}
+
+export async function setFestivalLifecycle(festivalId: number, lifecycle: string) {
+  const { supabase } = await requireFestivalOwner()
+  if (!Number.isInteger(festivalId) || festivalId <= 0) throw new Error("invalid_festival_id")
+  if (!["draft", "published", "archived"].includes(lifecycle)) throw new Error("invalid_lifecycle")
+  const { data, error } = await supabase
+    .from("festival_hubs")
+    .update({ lifecycle })
+    .eq("id", festivalId)
+    .select("id,slug")
+    .single()
+  if (error || !data) throw new Error(error?.message ?? "festival_update_failed")
+  revalidateFestival(data.slug)
+  return data
+}
+
 export async function createFestivalHubFromForm(
   _previous: FestivalActionState,
   formData: FormData
 ): Promise<FestivalActionState> {
   try {
-    await createFestivalHub(formData)
-    return { status: "success", message: "Draft festival created.", field: null }
+    const festival = await createFestivalHub(formData)
+    return { status: "success", message: "Draft festival created.", field: null, festivalId: festival.id }
   } catch (error) {
     return actionError(error)
   }
@@ -191,6 +221,46 @@ export async function updateFestivalSettingsFromForm(
   try {
     await updateFestivalSettings(formRecord(formData))
     return { status: "success", message: "Festival settings saved.", field: null }
+  } catch (error) {
+    return actionError(error)
+  }
+}
+
+export async function setFestivalModeFromForm(
+  _previous: FestivalActionState,
+  formData: FormData
+): Promise<FestivalActionState> {
+  try {
+    await setFestivalMode(formData.get("mode_enabled") === "true")
+    return { status: "success", message: "Festival mode updated.", field: null }
+  } catch (error) {
+    return actionError(error)
+  }
+}
+
+export async function selectFestivalForHomeFromForm(
+  _previous: FestivalActionState,
+  formData: FormData
+): Promise<FestivalActionState> {
+  try {
+    await updateFestivalSettings({
+      mode_enabled: false,
+      selected_festival_id: formData.get("festival_id"),
+    })
+    return { status: "success", message: "Festival selected for Home. Festival mode remains off.", field: null }
+  } catch (error) {
+    return actionError(error)
+  }
+}
+
+export async function setFestivalLifecycleFromForm(
+  _previous: FestivalActionState,
+  formData: FormData
+): Promise<FestivalActionState> {
+  try {
+    const lifecycle = String(formData.get("lifecycle") ?? "")
+    await setFestivalLifecycle(Number(formData.get("festival_id")), lifecycle)
+    return { status: "success", message: `Festival ${lifecycle}.`, field: null }
   } catch (error) {
     return actionError(error)
   }

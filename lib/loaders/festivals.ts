@@ -35,6 +35,23 @@ export type PublicFestivalSession = Omit<
   "leader_profile_id" | "source_note" | "needs_review"
 > & { collections: PublicFestivalSessionCollection[] }
 
+export async function loadFestivalOwnerLaunch() {
+  const { supabase, adminRole } = await requireAppAdmin()
+  if (adminRole !== "owner") return null
+  const [settingsResult, festivalsResult] = await Promise.all([
+    supabase.from("festival_settings").select("mode_enabled,selected_festival_id").eq("singleton", true).single(),
+    supabase.from("festival_hubs").select("id,name,lifecycle").order("name").limit(100),
+  ])
+  if (settingsResult.error || festivalsResult.error || !settingsResult.data) {
+    return { status: "unavailable" as const }
+  }
+  return {
+    status: "ready" as const,
+    settings: settingsResult.data as FestivalSettings,
+    festivals: (festivalsResult.data ?? []) as Array<Pick<FestivalHub, "id" | "name" | "lifecycle">>,
+  }
+}
+
 export async function loadFestivalPromotion(): Promise<{
   settings: FestivalSettings
   festival: PublicFestivalHub | null

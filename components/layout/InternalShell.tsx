@@ -4,17 +4,20 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import FloatingFeedbackButton from "@/components/feedback/FloatingFeedbackButton"
 
-export default function InternalShell({ children, canModerate, canAccessDev, environment }: {
+export default function InternalShell({ children, canModerate, canAccessDev, canManageFestivals, environment }: {
   children: React.ReactNode
   canModerate: boolean
   canAccessDev: boolean
+  canManageFestivals: boolean
   environment: string
 }) {
   const pathname = usePathname()
   const links = [
     { href: "/badges/new", label: "Create badge" },
     ...(canModerate ? [{ href: "/moderator", label: "Moderation" }] : []),
-    ...(canAccessDev ? [{ href: "/dev", label: "Operations" }, { href: "/dev/festivals", label: "Festival hub" }, { href: "/dev/design-system", label: "Design system" }] : []),
+    ...(canAccessDev ? [{ href: "/dev", label: "Operations" }] : []),
+    ...(canManageFestivals ? [{ href: "/dev/festivals", label: "Festival management" }] : []),
+    ...(canAccessDev ? [{ href: "/dev/design-system", label: "Design system" }] : []),
   ]
   return <div className="internal-workspace min-h-screen bg-surface-paper text-foreground">
     <a href="#main-content" className="sr-only focus:not-sr-only focus:block focus:p-3">Skip to workspace</a>

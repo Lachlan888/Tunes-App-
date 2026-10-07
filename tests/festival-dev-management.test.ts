@@ -60,10 +60,14 @@ const validation = {
   validateFestivalSettingsInput,
 }
 
-test("Dev manager exposes owner preview, launch controls and existing-list association editing", () => {
+test("Dev workflow separates the global mode switch from festival editing", () => {
   const source = readFileSync(new URL("../components/dev/FestivalManager.tsx", import.meta.url), "utf8")
+  const devMode = readFileSync(new URL("../components/dev/FestivalModeControl.tsx", import.meta.url), "utf8")
   assert.match(source, /Private owner preview/)
-  assert.match(source, /Mode controls only the Home promotion/)
+  assert.match(devMode, /setFestivalModeFromForm/)
+  assert.match(devMode, /Home feature:/)
+  assert.match(source, /App-wide Home selection/)
+  assert.doesNotMatch(source, /updateFestivalSettingsFromForm/)
   assert.match(source, /Create private draft/)
   assert.match(source, /branding_image_url/)
   assert.match(source, /programme_snapshot_date/)
@@ -77,6 +81,19 @@ test("owner loader requests bounded public list options and festival association
   assert.match(source, /from\("learning_lists"\)/)
   assert.match(source, /eq\("visibility", "public"\)/)
   assert.match(source, /\.limit\(500\)/)
+})
+
+test("the Dev launch summary does not read festival records for a non-owner admin", async () => {
+  let reads = 0
+  const loader = moduleFrom("../lib/loaders/festivals.ts", {
+    "@/lib/supabase/server": { createClient: async () => { throw Error("unexpected public client") } },
+    "@/lib/auth/roles": {
+      requireAppAdmin: async () => ({ adminRole: "admin", supabase: { from() { reads += 1 } } }),
+    },
+    "@/lib/festivals/validation": { validateFestivalSlug: (slug: string) => slug },
+  })
+  assert.equal(await loader.loadFestivalOwnerLaunch(), null)
+  assert.equal(reads, 0)
 })
 
 test("detach is owner-gated before any database mutation", async () => {
@@ -188,7 +205,83 @@ test("owner can enable or deactivate only the selected hub through settings", as
   }
 })
 
-test("metadata edit writes the validated hub only", async () => {
+test("Dev mode switch updates only the mode flag and preserves the selected festival", async () => {
+  const fixture = database({ festival_settings: { data: { mode_enabled: true }, error: null } })
+  const actions = moduleFrom("../lib/actions/festivals.ts", {
+    "next/cache": { revalidatePath() {} },
+    "@/lib/auth/roles": {
+      requireAppAdmin: async () => ({ adminRole: "owner", user: { id: "owner" }, supabase: fixture.db }),
+    },
+    "@/lib/festivals/validation": validation,
+  })
+  const form = new FormData()
+  form.set("mode_enabled", "true")
+  const result = await actions.setFestivalModeFromForm(
+    { status: "idle", message: null, field: null }, form
+  ) as { status: string }
+  assert.equal(result.status, "success")
+  assert.deepEqual(fixture.writes[0].calls.find((call) => call[0] === "update")?.[1], {
+    mode_enabled: true,
+  })
+})
+
+test("selecting a festival for Home leaves mode off", async () => {
+  const fixture = database({ festival_settings: { data: { mode_enabled: false, selected_festival_id: 9 }, error: null } })
+  const actions = moduleFrom("../lib/actions/festivals.ts", {
+    "next/cache": { revalidatePath() {} },
+    "@/lib/auth/roles": { requireAppAdmin: async () => ({ adminRole: "owner", user: { id: "owner" }, supabase: fixture.db }) },
+    "@/lib/festivals/validation": validation,
+  })
+  const form = new FormData()
+  form.set("festival_id", "9")
+  const result = await actions.selectFestivalForHomeFromForm(
+    { status: "idle", message: null, field: null }, form
+  ) as { status: string }
+  assert.equal(result.status, "success")
+  assert.deepEqual(fixture.writes[0].calls.find((call) => call[0] === "update")?.[1], {
+    mode_enabled: false,
+    selected_festival_id: 9,
+  })
+})
+
+test("lifecycle action changes only lifecycle, preserving saved festival details", async () => {
+  const fixture = database({ festival_hubs: { data: { id: 3, slug: "partner-festival" }, error: null } })
+  const actions = moduleFrom("../lib/actions/festivals.ts", {
+    "next/cache": { revalidatePath() {} },
+    "@/lib/auth/roles": { requireAppAdmin: async () => ({ adminRole: "owner", user: { id: "owner" }, supabase: fixture.db }) },
+    "@/lib/festivals/validation": validation,
+  })
+  const form = new FormData()
+  form.set("festival_id", "3")
+  form.set("lifecycle", "published")
+  const result = await actions.setFestivalLifecycleFromForm(
+    { status: "idle", message: null, field: null }, form
+  ) as { status: string }
+  assert.equal(result.status, "success")
+  assert.deepEqual(fixture.writes[0].calls.find((call) => call[0] === "update")?.[1], { lifecycle: "published" })
+})
+
+test("lifecycle action rejects non-owners and invalid states before writing", async () => {
+  let writes = 0
+  const denied = moduleFrom("../lib/actions/festivals.ts", {
+    "next/cache": { revalidatePath() {} },
+    "@/lib/auth/roles": { requireAppAdmin: async () => ({ adminRole: "admin", user: { id: "admin" }, supabase: { from() { writes += 1 } } }) },
+    "@/lib/festivals/validation": validation,
+  })
+  await assert.rejects(denied.setFestivalLifecycle(3, "published"), /festival_owner_required/)
+  assert.equal(writes, 0)
+
+  const fixture = database({})
+  const owner = moduleFrom("../lib/actions/festivals.ts", {
+    "next/cache": { revalidatePath() {} },
+    "@/lib/auth/roles": { requireAppAdmin: async () => ({ adminRole: "owner", user: { id: "owner" }, supabase: fixture.db }) },
+    "@/lib/festivals/validation": validation,
+  })
+  await assert.rejects(owner.setFestivalLifecycle(3, "live"), /invalid_lifecycle/)
+  assert.equal(fixture.writes.length, 0)
+})
+
+test("metadata edit writes the validated hub without changing publication state", async () => {
   const fixture = database({ festival_hubs: { data: { id: 3, slug: "fixture-festival" }, error: null } })
   const actions = moduleFrom("../lib/actions/festivals.ts", {
     "next/cache": { revalidatePath() {} },
@@ -214,7 +307,7 @@ test("metadata edit writes the validated hub only", async () => {
   assert.deepEqual(fixture.writes.map((write) => write.table), ["festival_hubs"])
   const update = fixture.writes[0].calls.find((call) => call[0] === "update")
   assert.equal((update?.[1] as Record<string, unknown>).branding_alt, "Fixture festival mark")
-  assert.equal((update?.[1] as Record<string, unknown>).lifecycle, "draft")
+  assert.equal((update?.[1] as Record<string, unknown>).lifecycle, undefined)
 })
 
 test("metadata validation reports paired branding and field-specific errors", () => {
@@ -235,4 +328,22 @@ test("metadata validation reports paired branding and field-specific errors", ()
     }),
     /invalid_timezone/
   )
+})
+
+test("creating a draft returns its id so the workspace can open it", async () => {
+  const fixture = database({ festival_hubs: { data: { id: 12, slug: "new-festival" }, error: null } })
+  const actions = moduleFrom("../lib/actions/festivals.ts", {
+    "next/cache": { revalidatePath() {} },
+    "@/lib/auth/roles": { requireAppAdmin: async () => ({ adminRole: "owner", user: { id: "owner" }, supabase: fixture.db }) },
+    "@/lib/festivals/validation": validation,
+  })
+  const form = new FormData()
+  form.set("name", "New Festival")
+  form.set("slug", "new-festival")
+  form.set("timezone", "Australia/Melbourne")
+  const result = await actions.createFestivalHubFromForm(
+    { status: "idle", message: null, field: null }, form
+  ) as { status: string; festivalId?: number }
+  assert.equal(result.status, "success")
+  assert.equal(result.festivalId, 12)
 })

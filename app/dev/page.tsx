@@ -6,10 +6,12 @@ import EmailUsersPanel from "@/components/dev/EmailUsersPanel"
 import MetricVisualiser from "@/components/dev/MetricVisualiser"
 import UserActivityTable from "@/components/dev/UserActivityTable"
 import TestDigestPanel from "@/components/dev/TestDigestPanel"
+import FestivalModeControl from "@/components/dev/FestivalModeControl"
 import PageHeader from "@/components/ui/PageHeader"
 import { buttonStyles } from "@/components/ui/buttonStyles"
 import { loadDevDashboardData } from "@/lib/loaders/dev"
 import { loadAdminEmailToolData } from "@/lib/services/admin-email-broadcasts"
+import { loadFestivalOwnerLaunch } from "@/lib/loaders/festivals"
 
 type DevPageProps = {
   searchParams?: Promise<{
@@ -50,9 +52,10 @@ export default async function DevPage({ searchParams }: DevPageProps) {
     getSingleValue(resolvedSearchParams?.dev_feedback)
   )
 
-  const [data, adminEmailData] = await Promise.all([
+  const [data, adminEmailData, festivalLaunch] = await Promise.all([
     loadDevDashboardData(),
     loadAdminEmailToolData(),
+    loadFestivalOwnerLaunch(),
   ])
 
   return (
@@ -67,15 +70,22 @@ export default async function DevPage({ searchParams }: DevPageProps) {
         title="Developer tools"
         actions={
           <div className="flex flex-wrap gap-2">
-            <Link href="/dev/festivals" className={buttonStyles.secondary}>
-              Festival hubs
-            </Link>
             <Link href="/dev/design-system" className={buttonStyles.secondary}>
               Design system
             </Link>
           </div>
         }
       />
+
+      {festivalLaunch?.status === "ready" ? (
+        <div className="mb-8">
+          <FestivalModeControl settings={festivalLaunch.settings} festivals={festivalLaunch.festivals} />
+        </div>
+      ) : festivalLaunch?.status === "unavailable" ? (
+        <p className="mb-8 border-y border-hairline py-4 text-sm text-muted-foreground" role="status">
+          Festival controls are unavailable. Try reloading this page.
+        </p>
+      ) : null}
 
       <section className="mb-8">
         <DevSummaryCards summary={data.summary} />
