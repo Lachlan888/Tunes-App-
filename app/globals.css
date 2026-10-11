@@ -463,7 +463,7 @@ textarea::placeholder {
   outline: 2px solid var(--focus-ring);
   outline-offset: 4px;
 }
-.practice-session-content { max-width: 42rem; margin: 0 auto; padding: 2.5rem 0 11rem; }
+.practice-session-content { max-width: 42rem; margin: 0 auto; padding: 2.5rem 0 14rem; }
 .practice-tune-heading { margin-bottom: 1.75rem; text-align: left; overflow-wrap: anywhere; }
 .practice-reference { min-width: 0; }
 .practice-reference-workbench .aspect-video { min-height: 200px; }

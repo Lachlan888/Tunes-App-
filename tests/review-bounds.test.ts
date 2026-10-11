@@ -54,6 +54,14 @@ test('ready practice includes overdue and due today in one bounded owner-scoped 
   assert.ok(!f.calls.some(c => ['eq', 'lt'].includes(c[0]) && c[1] === 'next_review_due'))
 })
 
+test('ready refill excludes tunes skipped in this session before applying its page limit', async () => {
+  const f = fixture()
+  await loaded.exports.loadReviewPieceRows(f.db, 'owner', {today: '2026-10-03', lane: 'ready', excludeIds: [8, 12], limit: 50})
+  const exclude = f.calls.find(c => c[0] === 'not' && c[1] === 'id')
+  assert.deepEqual(exclude, ['not', 'id', 'in', '(8,12)'])
+  assert.ok(f.calls.findIndex(c => c === exclude) < f.calls.findIndex(c => c[0] === 'limit'), 'exclusion must happen before pagination')
+})
+
 test('scoped refill uses a stable owner-scoped cursor instead of rescheduled due dates', async () => {
   const f = fixture()
   await loaded.exports.loadReviewPieceRows(f.db, 'owner', {today: '2026-10-03', lane: 'list', scope: {kind: 'list', id: 7}, afterId: 500, limit: 50})

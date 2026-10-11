@@ -44,6 +44,7 @@ export default function FocusedPracticeSession({ lane, initialQueue, queueTotal,
   const [controlsOpen, setControlsOpen] = useState(false)
   const [unloadedCount, setUnloadedCount] = useState(Math.max(0, queueTotal - initialQueue.length))
   const batchCursor = useRef(Math.max(0, ...initialQueue.map(item => item.id)))
+  const skippedIds = useRef(new Set<number>())
   const timer = useRef<number | null>(null)
   const submission = useRef<PendingRating | null>(null)
   const submitting = useRef(false)
@@ -79,7 +80,9 @@ export default function FocusedPracticeSession({ lane, initialQueue, queueTotal,
     setLoading(true)
     setError(null)
     try {
-      const next = await loadNextPracticeBatch((lane === "list" || lane === "focus") && scopeId ? { lane, scopeId, afterId: batchCursor.current } : undefined)
+      const next = await loadNextPracticeBatch((lane === "list" || lane === "focus") && scopeId
+        ? { lane, scopeId, afterId: batchCursor.current }
+        : { excludeIds: [...skippedIds.current] })
       if (!next.ok) { setError(next.error); return }
       batchCursor.current = Math.max(batchCursor.current, ...next.items.map(item => item.id))
       setQueue(next.items)
@@ -155,6 +158,14 @@ export default function FocusedPracticeSession({ lane, initialQueue, queueTotal,
     setPendingRating(null)
   }
 
+  function skip() {
+    if (!currentItem || busy || controlsOpen || submission.current) return
+    skippedIds.current.add(currentItem.id)
+    const nextQueue = queue.slice(1)
+    setQueue(nextQueue)
+    if (nextQueue.length === 0 && unloadedCount > 0) void loadMore()
+  }
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey || document.querySelector('[role="dialog"]')) return
@@ -169,7 +180,7 @@ export default function FocusedPracticeSession({ lane, initialQueue, queueTotal,
   function finish() { setEnded(true); storage.removeItem(ACTIVE_PRACTICE_SESSION_KEY) }
   function done() { storage.removeItem(`${storagePrefix}.results`); storage.removeItem(ACTIVE_PRACTICE_SESSION_KEY) }
 
-  if (ended || (!currentItem && !loading && !error)) return <PracticeSessionSummary count={results.length} remainingCount={queue.length + unloadedCount} sessionDate={sessionDate} practiceDiaryEnabled={practiceDiaryEnabled} onDone={done} />
+  if (ended || (!currentItem && !loading && !error)) return <PracticeSessionSummary count={results.length} remainingCount={queue.length + unloadedCount + skippedIds.current.size} sessionDate={sessionDate} practiceDiaryEnabled={practiceDiaryEnabled} onDone={done} />
 
   const title = currentItem?.piece?.title ?? "Preparing your next tune"
   return (
@@ -193,7 +204,7 @@ export default function FocusedPracticeSession({ lane, initialQueue, queueTotal,
           {!online ? <p role="status" className="mb-3 text-center text-sm text-text-muted">Reconnect to save your rating. Your tune is still here.</p> : null}
           {error ? <div role="alert" className="mb-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm"><p>{error}</p><button type="button" className="min-h-11 font-semibold underline underline-offset-4" disabled={!online || saving || loading} onClick={() => submission.current ? void commitRating(submission.current) : void loadMore()}>{submission.current ? "Retry saving" : "Retry loading"}</button></div> : null}
           {pendingRating || saving ? <div role="status" className="flex min-h-16 items-center justify-center gap-5"><p className="font-semibold">{saving ? "Saving…" : `${outcomes.find(item => item.id === pendingRating?.outcome)?.label} · next tune shortly`}</p>{!saving ? <button type="button" onClick={undo} className="min-h-11 px-3 font-semibold underline underline-offset-4">Undo</button> : null}</div> : (
-            <><p className="mb-3 text-center text-xs font-medium text-text-muted">How did that feel?</p><div className="grid grid-cols-3 gap-2 sm:gap-3">{outcomes.map((outcome, index) => <button key={outcome.id} type="button" data-outcome={outcome.id} disabled={!currentItem || !online || busy || controlsOpen} onClick={() => rate(outcome.id)} className={`practice-rating practice-rating-${outcome.id} px-1 sm:px-3`}><Icon name={outcome.icon} size={19} className="hidden sm:block" /><span className="flex min-w-0 flex-col items-center leading-tight sm:items-start"><span>{outcome.label}</span>{currentItem ? <span className="mt-1 text-[0.65rem] font-medium leading-3 sm:text-xs">{getReviewOutcomePreview(currentItem.stage, outcome.id)}</span> : null}</span><kbd className="ml-auto hidden text-xs opacity-45 sm:inline">{index + 1}</kbd></button>)}</div></>
+            <><p className="mb-3 text-center text-xs font-medium text-text-muted">How did that feel?</p><div className="grid grid-cols-3 gap-2 sm:gap-3">{outcomes.map((outcome, index) => <button key={outcome.id} type="button" data-outcome={outcome.id} disabled={!currentItem || !online || busy || controlsOpen} onClick={() => rate(outcome.id)} className={`practice-rating practice-rating-${outcome.id} px-1 sm:px-3`}><Icon name={outcome.icon} size={19} className="hidden sm:block" /><span className="flex min-w-0 flex-col items-center leading-tight sm:items-start"><span>{outcome.label}</span>{currentItem ? <span className="mt-1 text-[0.65rem] font-medium leading-3 sm:text-xs">{getReviewOutcomePreview(currentItem.stage, outcome.id)}</span> : null}</span><kbd className="ml-auto hidden text-xs opacity-45 sm:inline">{index + 1}</kbd></button>)}</div><button type="button" onClick={skip} disabled={!currentItem || busy || controlsOpen} className="mx-auto mt-3 block min-h-11 px-3 text-sm font-medium text-text-muted underline underline-offset-4 disabled:opacity-50">Skip for now</button></>
           )}
         </div>
       </footer>

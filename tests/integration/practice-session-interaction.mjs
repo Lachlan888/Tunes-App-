@@ -30,6 +30,7 @@ const storage = {
   removeItem: (key) => storageValues.delete(key),
 }
 let saveReview = async () => ({ ok: true, applied: true, movedToKnown: false })
+let nextBatch = async () => ({ ok: true, items: [], total: 0 })
 
 const file = readFileSync(fileURLToPath(new URL("../../components/practice/FocusedPracticeSession.tsx", import.meta.url)), "utf8")
 const compiled = ts.transpileModule(file, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX } }).outputText
@@ -45,7 +46,7 @@ const replacements = {
   "@/components/reference-media/PracticeReferencePlayer": { default: () => React.createElement("div", { "data-reference-player": true }, "Reference") },
   "@/components/ui/Icon": { default: () => null },
   "@/lib/actions/reviews": { completeFormalReviewInPlace: (form) => saveReview(form) },
-  "@/lib/actions/practice-session": { loadNextPracticeBatch: async () => ({ ok: true, items: [], total: 0 }) },
+  "@/lib/actions/practice-session": { loadNextPracticeBatch: (context) => nextBatch(context) },
   "@/lib/practice-session": practiceSession,
   "@/lib/review": review,
 }
@@ -147,6 +148,54 @@ await click("Shaky")
 assert.match(document.body.textContent, /2 tunes practised/)
 await act(async () => resumedRoot.unmount())
 
+storageValues.clear()
+const skipRoot = createRoot(document.getElementById("root"))
+const skippedReviewIds = []
+saveReview = async (form) => {
+  skippedReviewIds.push(Number(form.get("userPieceId")))
+  return { ok: true, applied: true, movedToKnown: false }
+}
+await act(async () => skipRoot.render(React.createElement(FocusedPracticeSession, {
+  lane: "ready", initialQueue: [item(6, "Skipped tune"), item(7, "Reviewed tune")], queueTotal: 2,
+  sessionDate: "2026-10-06", practiceDiaryEnabled: false,
+})))
+await click("Skip")
+assert.match(document.body.textContent, /Reviewed tune/)
+assert.doesNotMatch(document.body.textContent, /Skipped tune/)
+assert.deepEqual(skippedReviewIds, [], "skipping must not save a review")
+await click("Solid")
+assert.match(document.body.textContent, /1 tune practised/)
+assert.deepEqual(skippedReviewIds, [7], "only the rated tune is reviewed")
+await act(async () => skipRoot.unmount())
+
+storageValues.clear()
+const skipOnlyRoot = createRoot(document.getElementById("root"))
+await act(async () => skipOnlyRoot.render(React.createElement(FocusedPracticeSession, {
+  lane: "ready", initialQueue: [item(8, "Only tune")], queueTotal: 1,
+  sessionDate: "2026-10-06", practiceDiaryEnabled: false,
+})))
+await click("Skip")
+assert.match(document.body.textContent, /Ready when you are/)
+assert.deepEqual(skippedReviewIds, [7], "skipping the final tune must not save a review")
+await act(async () => skipOnlyRoot.unmount())
+
+storageValues.clear()
+const skipBatchRoot = createRoot(document.getElementById("root"))
+const excludedBatches = []
+nextBatch = async (context) => {
+  excludedBatches.push(context?.excludeIds)
+  return { ok: true, items: [item(9, "Later tune")], total: 1 }
+}
+await act(async () => skipBatchRoot.render(React.createElement(FocusedPracticeSession, {
+  lane: "ready", initialQueue: [item(8, "First batch tune")], queueTotal: 2,
+  sessionDate: "2026-10-06", practiceDiaryEnabled: false,
+})))
+await click("Skip")
+assert.match(document.body.textContent, /Later tune/)
+assert.deepEqual(excludedBatches, [[8]], "the next batch must exclude tunes skipped in this session")
+assert.deepEqual(skippedReviewIds, [7])
+await act(async () => skipBatchRoot.unmount())
+
 window.matchMedia = () => ({ addEventListener() {}, removeEventListener() {} })
 let queryStatus = "added"
 const shellFile = readFileSync(fileURLToPath(new URL("../../components/layout/AppShell.tsx", import.meta.url)), "utf8")
@@ -179,4 +228,4 @@ await act(async () => shellRoot.render(React.createElement(AppShell, shellProps,
 assert.equal(document.querySelector('[role="status"], [role="alert"]'), null)
 await act(async () => shellRoot.unmount())
 dom.window.close()
-console.log("PASS: Practice session saves, advances, completes, resumes, keeps Diary optional, retries one key, and announces enrolment outcomes")
+console.log("PASS: Practice session saves, skips without review, advances across batches, completes, resumes, keeps Diary optional, retries one key, and announces enrolment outcomes")

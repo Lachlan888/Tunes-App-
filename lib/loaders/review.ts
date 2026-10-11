@@ -24,7 +24,7 @@ export type {
   ReviewQueueItem,
 } from "@/lib/loaders/review/types"
 
-export async function loadReviewPageData(options: { lane?: string | null; listId?: number; focusId?: number; afterId?: number } = {}) {
+export async function loadReviewPageData(options: { lane?: string | null; listId?: number; focusId?: number; afterId?: number; excludeIds?: number[] } = {}) {
   const supabase = await createClient()
 
   const {
@@ -71,7 +71,7 @@ export async function loadReviewPageData(options: { lane?: string | null; listId
   }
   const countQuery = () => supabase.from("user_pieces").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "learning").not("next_review_due", "is", null)
   const [page, dueCount, catchUpCount, activeCount] = await Promise.all([
-    options.lane ? loadReviewPieceRows(supabase, user.id, { today, lane: options.lane, scope, afterId: options.afterId, limit: 50 }) : Promise.resolve({ rows: [], total: 0 }),
+    options.lane ? loadReviewPieceRows(supabase, user.id, { today, lane: options.lane, scope, afterId: options.afterId, excludeIds: options.excludeIds, limit: 50 }) : Promise.resolve({ rows: [], total: 0 }),
     countQuery().eq("next_review_due", today),
     countQuery().lt("next_review_due", today),
     countQuery(),
