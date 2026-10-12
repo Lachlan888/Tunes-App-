@@ -1,19 +1,18 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
 import EditListModal from "@/components/lists/EditListModal"
-import TuneStateIndicator from "@/components/tunes/TuneStateIndicator"
-import TuneRow from "@/components/tunes/TuneRow"
 import ListPager from "@/components/lists/ListPager"
-import ListOrderManager from "@/components/lists/ListOrderManager"
+import ListTuneRows from "@/components/lists/ListTuneRows"
 import {
+  addToLearningList,
   deleteList,
-  reorderListItems,
   removeTuneFromList,
   revokeLearningListPrivateShare,
   searchLearningListShareRecipients,
   shareLearningListPrivately,
   updateList,
 } from "@/lib/actions/lists"
+import { startLearning } from "@/lib/actions/user-pieces"
 import { loadLearningListDetailData } from "@/lib/loaders/list-detail"
 import { LIST_PAGE_SIZE, paginateListItems, parseListPage, withListPage } from "@/lib/list-view-state"
 import { learningListHref, safeListReturn } from "@/lib/list-return"
@@ -25,9 +24,10 @@ type LearningListDetailPageProps = {
     remove_tune?: string
     edit_list?: string
     share_list?: string
+    list_add?: string
     return_to?: string | string[]
-    mode?: string
     page?: string | string[]
+    scroll_piece?: string
   }>
 }
 
@@ -76,7 +76,7 @@ export default async function LearningListDetailPage({
   const removeTuneStatus = resolvedSearchParams?.remove_tune ?? ""
   const editListStatus = resolvedSearchParams?.edit_list ?? ""
   const shareListStatus = resolvedSearchParams?.share_list ?? ""
-  const requestedMode = resolvedSearchParams?.mode === "manage" ? "manage" : "reader"
+  const listAddStatus = resolvedSearchParams?.list_add ?? ""
   const requestedPage = parseListPage(resolvedSearchParams?.page)
 
   const {
@@ -85,13 +85,15 @@ export default async function LearningListDetailPage({
     tunes,
     activePieceStates,
     knownPieceIds,
+    mediaBundles,
+    ownedLists,
+    existingListIdsByPiece,
     ownerProfile,
     shareRecipients,
     accessMode,
     redirectTo,
   } = await loadLearningListDetailData(id)
   const isOwner = accessMode === "owner"
-  const mode = isOwner ? requestedMode : "reader"
 
   const visibleItems = typedItems
     .map((item) => ({
@@ -108,8 +110,7 @@ export default async function LearningListDetailPage({
   ).length
   const backHref = safeListReturn(resolvedSearchParams?.return_to)
   const viewHref = withListPage(learningListHref(typedList.id, backHref), pagination.page)
-  const manageHref = withListPage(learningListHref(typedList.id, backHref, "manage"), pagination.page)
-  const pageHref = mode === "manage" ? manageHref : viewHref
+  const pageHref = viewHref
 
   return (
     <main className="mx-auto max-w-[1500px] px-4 py-5 text-foreground md:px-6 md:py-8">
@@ -145,6 +146,27 @@ export default async function LearningListDetailPage({
         <StatusMessage tone="success">
           Tune removed from this list.
         </StatusMessage>
+      )}
+
+      {editListStatus === "reordered" && (
+        <StatusMessage tone="success">Playing order updated.</StatusMessage>
+      )}
+
+      {["reorder_error", "invalid_reorder"].includes(editListStatus) && (
+        <StatusMessage tone="error">Couldn’t change the playing order.</StatusMessage>
+      )}
+
+      {listAddStatus === "success" && (
+        <StatusMessage tone="success">Tune added to the selected list.</StatusMessage>
+      )}
+      {listAddStatus === "partial" && (
+        <StatusMessage tone="success">Tune added where it wasn’t already listed.</StatusMessage>
+      )}
+      {listAddStatus === "duplicate" && (
+        <StatusMessage tone="warning">That tune is already in the selected list.</StatusMessage>
+      )}
+      {["missing_piece", "missing_list", "error"].includes(listAddStatus) && (
+        <StatusMessage tone="error">Couldn’t add that tune to a list.</StatusMessage>
       )}
 
       {editListStatus === "deleted" && (
@@ -269,7 +291,7 @@ export default async function LearningListDetailPage({
             ) : null}
           </div>
 
-          {isOwner && mode === "manage" ? (
+          {isOwner ? (
             <EditListModal
               listId={typedList.id}
               name={typedList.name}
@@ -284,25 +306,17 @@ export default async function LearningListDetailPage({
               searchLearningListShareRecipients={searchLearningListShareRecipients}
               revokeLearningListPrivateShare={revokeLearningListPrivateShare}
               shareRecipients={shareRecipients}
-              triggerLabel="Manage List"
+              showTunes={false}
+              triggerLabel="Edit List"
             />
           ) : null}
         </div>
       </header>
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {isOwner ? (
-          <nav aria-label="List detail mode" className="inline-flex border-b border-hairline">
-            <Link href={viewHref} aria-current={mode === "reader" ? "page" : undefined} className={`min-h-11 border-b-2 px-4 py-2 text-sm font-semibold ${mode === "reader" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
-              Reader
-            </Link>
-            <Link href={manageHref} aria-current={mode === "manage" ? "page" : undefined} className={`min-h-11 border-b-2 px-4 py-2 text-sm font-semibold ${mode === "manage" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
-              Manage
-            </Link>
-          </nav>
-        ) : (
+        {!isOwner ? (
           <p className="text-sm text-muted-foreground">Read-only shared list</p>
-        )}
+        ) : null}
 
         {activeTuneCount > 0 ? (
           <Link href={`/review?session=list&list_id=${typedList.id}`} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
@@ -315,47 +329,37 @@ export default async function LearningListDetailPage({
 
       <section className="mt-7 md:mt-8">
         <h2 className="text-xl font-semibold text-foreground">
-          {mode === "manage" ? "Manage order and membership" : "Tunes in playing order"}
+          Tunes in playing order
         </h2>
 
         {pagination.items.length === 0 ? (
           <p className="mt-4 border-y border-hairline py-4 text-sm text-muted-foreground">
             This list has no tunes yet.
           </p>
-        ) : mode === "manage" ? (
-          <ListOrderManager
-            listId={typedList.id}
-            initialItems={pagination.items.map(({ item, piece }) => {
-              const activePieceState = activePieceStates.get(piece.id) ?? null
+        ) : (
+          <ListTuneRows
+            items={pagination.items.map(({ item, piece }) => {
+              const activeState = activePieceStates.get(piece.id)
               return {
                 id: item.id,
                 piece,
-                isAlreadyInPractice: Boolean(activePieceState),
+                activeUserPieceId: activeState?.id,
+                stage: activeState?.stage ?? null,
                 isKnown: knownPieceIds.has(piece.id),
-                stage: activePieceState?.stage ?? null,
+                existingListIds: existingListIdsByPiece.get(piece.id) ?? [],
+                mediaBundle: mediaBundles.get(piece.id) ?? null,
               }
             })}
             positionOffset={(pagination.page - 1) * LIST_PAGE_SIZE}
+            totalItems={visibleItems.length}
             redirectTo={pageHref}
-            reorderListItems={reorderListItems}
+            learningLists={ownedLists}
+            isSignedIn
+            scrollPieceId={resolvedSearchParams?.scroll_piece}
+            ownerListId={isOwner ? typedList.id : undefined}
+            startLearning={startLearning}
+            addToLearningList={addToLearningList}
           />
-        ) : (
-          <ol className="mt-3 divide-y divide-border/70 border-y border-border/70">
-            {pagination.items.map(({ item, piece }, index) => {
-              const activePieceState = activePieceStates.get(piece.id) ?? null
-              const isAlreadyInPractice = Boolean(activePieceState)
-              const isKnown = knownPieceIds.has(piece.id)
-              return (
-                <li key={item.id}>
-                  <TuneRow
-                    piece={piece}
-                    supportingContent={<span>Position {(pagination.page - 1) * LIST_PAGE_SIZE + index + 1}</span>}
-                    personalState={<TuneStateIndicator isAlreadyInPractice={isAlreadyInPractice} isKnown={isKnown} stage={activePieceState?.stage ?? null} />}
-                  />
-                </li>
-              )
-            })}
-          </ol>
         )}
         <ListPager href={pageHref} page={pagination.page} totalPages={pagination.totalPages} label={`${typedList.name} tunes`} />
       </section>

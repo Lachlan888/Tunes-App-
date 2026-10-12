@@ -26,6 +26,7 @@ export type PublicListItemWithPiece = {
 export type OwnedLearningListRow = {
   id: number
   name: string
+  description: string | null
 }
 
 type PieceIdRow = {
@@ -89,11 +90,21 @@ export async function loadPublicListDetailData(rawListId: string) {
       pieces (
         id,
         title,
+        alternate_titles,
+        type,
         key,
         style,
         time_signature,
         composer,
-        reference_url
+        reference_url,
+        piece_styles (
+          style_id,
+          styles (
+            id,
+            slug,
+            label
+          )
+        )
       )
     `)
     .eq("learning_list_id", typedList.id)
@@ -117,9 +128,10 @@ export async function loadPublicListDetailData(rawListId: string) {
     userId: null,
   })
 
-  let activePieceIds = new Set<number>()
+  let activePieceStates = new Map<number, { id: number; stage: number | null }>()
   let knownPieceIds = new Set<number>()
   let ownedLists: OwnedLearningListRow[] = []
+  let existingListIdsByPiece = new Map<number, number[]>()
   let isBookmarkedByCurrentUser = false
   let bookmarksTableIsAvailable = true
 
@@ -130,7 +142,7 @@ export async function loadPublicListDetailData(rawListId: string) {
     ] = await Promise.all([
       supabase
         .from("learning_lists")
-        .select("id, name")
+        .select("id, name, description")
         .eq("user_id", user.id)
         .order("name", { ascending: true }),
       supabase
@@ -158,26 +170,23 @@ export async function loadPublicListDetailData(rawListId: string) {
   }
 
   if (user && pieceIds.length > 0) {
-    const { data: userPieces, error: userPiecesError } = await supabase
-      .from("user_pieces")
-      .select("piece_id")
-      .eq("user_id", user.id)
-      .in("piece_id", pieceIds)
+    const [
+      { data: userPieces, error: userPiecesError },
+      { data: userKnownPieces, error: userKnownPiecesError },
+      { data: ownMemberships, error: ownMembershipsError },
+    ] = await Promise.all([
+      supabase.from("user_pieces").select("id, piece_id, stage").eq("user_id", user.id).in("piece_id", pieceIds),
+      supabase.from("user_known_pieces").select("piece_id").eq("user_id", user.id).in("piece_id", pieceIds),
+      supabase.from("learning_list_items").select("piece_id, learning_list_id, learning_lists!inner(user_id)").eq("learning_lists.user_id", user.id).in("piece_id", pieceIds),
+    ])
 
     if (userPiecesError) {
       throw new Error(userPiecesError.message)
     }
 
-    activePieceIds = new Set(
-      ((userPieces ?? []) as PieceIdRow[]).map((row) => row.piece_id)
+    activePieceStates = new Map(
+      ((userPieces ?? []) as Array<PieceIdRow & { id: number; stage: number | null }>).map((row) => [row.piece_id, { id: row.id, stage: row.stage }])
     )
-
-    const { data: userKnownPieces, error: userKnownPiecesError } =
-      await supabase
-        .from("user_known_pieces")
-        .select("piece_id")
-        .eq("user_id", user.id)
-        .in("piece_id", pieceIds)
 
     if (userKnownPiecesError) {
       throw new Error(userKnownPiecesError.message)
@@ -186,6 +195,13 @@ export async function loadPublicListDetailData(rawListId: string) {
     knownPieceIds = new Set(
       ((userKnownPieces ?? []) as PieceIdRow[]).map((row) => row.piece_id)
     )
+    if (ownMembershipsError) throw new Error(ownMembershipsError.message)
+    existingListIdsByPiece = new Map()
+    for (const row of (ownMemberships ?? []) as Array<{ piece_id: number; learning_list_id: number }>) {
+      const ids = existingListIdsByPiece.get(row.piece_id) ?? []
+      ids.push(row.learning_list_id)
+      existingListIdsByPiece.set(row.piece_id, ids)
+    }
   }
 
   return {
@@ -195,8 +211,9 @@ export async function loadPublicListDetailData(rawListId: string) {
     typedItems,
     mediaBundles,
     ownedLists,
-    activePieceIds,
+    activePieceStates,
     knownPieceIds,
+    existingListIdsByPiece,
     redirectTo,
     isViewingOwnPublicList,
     isBookmarkedByCurrentUser,

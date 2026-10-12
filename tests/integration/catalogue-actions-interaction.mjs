@@ -82,6 +82,21 @@ const knownActions = await render({ isAlreadyInPractice: false, isKnown: true })
 assert.deepEqual(knownActions, ["Open tune", "Add to List", "Move to Practice"])
 await act(async () => [...document.querySelectorAll('[role="menu"] button')].find((item) => item.textContent === "Add to List").click())
 assert.equal(listOpens, 1)
+const listOwnerActions = await render({
+  isAlreadyInPractice: false,
+  isKnown: false,
+  extraActions: [{ id: "move-up", label: "Move up", onSelect: () => {}, completionMessage: null }],
+})
+assert.deepEqual(listOwnerActions, ["Open tune", "Add to List", "Add to Practice", "Mark Known", "Move up"])
+await act(async () => document.querySelector('button[aria-label="Actions for The Reel"]').click())
+const signedOutActions = await render({
+  isAlreadyInPractice: false,
+  isKnown: false,
+  showPersonalActions: false,
+  extraActions: [],
+})
+assert.deepEqual(signedOutActions, ["Open tune"], "public signed-out readers see only safe navigation")
+await act(async () => document.querySelector('button[aria-label="Actions for The Reel"]').click())
 let previewTrigger
 const beforePreviewUrl = window.location.href
 const previewActions = await render({ isAlreadyInPractice: false, isKnown: false, onPreview: trigger => { previewTrigger = trigger } })

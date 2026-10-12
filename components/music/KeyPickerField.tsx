@@ -61,7 +61,7 @@ export default function KeyPickerField({
       />
 
       <div className="border-y border-hairline py-3">
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <div className="grid gap-4">
           <label className="grid gap-1.5">
             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Root
@@ -85,7 +85,7 @@ export default function KeyPickerField({
             <legend className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Tonality
             </legend>
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-3 gap-2">
               {tonalityOptions.map((option) => {
                 const isSelected = tonality === option.value
 
@@ -95,7 +95,7 @@ export default function KeyPickerField({
                     type="button"
                     disabled={disabled || !root}
                     onClick={() => setTonality(option.value)}
-                    className={`min-h-11 rounded-control border px-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50 ${
+                    className={`min-h-11 min-w-0 rounded-control border px-1 text-xs font-semibold whitespace-nowrap transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50 sm:px-3 sm:text-sm ${
                       isSelected && root
                         ? "border-primary bg-primary text-primary-foreground"
                         : "border-hairline bg-surface-paper text-muted-foreground hover:bg-surface-note hover:text-foreground"

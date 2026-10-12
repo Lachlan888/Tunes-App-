@@ -959,7 +959,7 @@ export async function moveTuneInList(formData: FormData) {
   const listId = Number(formData.get("learning_list_id"))
   const itemId = Number(formData.get("item_id"))
   const direction = String(formData.get("direction"))
-  const redirectTo = String(formData.get("redirect_to") ?? `/learning-lists/${listId}?mode=manage`)
+  const redirectTo = String(formData.get("redirect_to") ?? `/learning-lists/${listId}`)
 
   if (!listId || !itemId || !["up", "down"].includes(direction)) {
     redirect(appendQueryParam(redirectTo, "edit_list", "invalid_reorder"))

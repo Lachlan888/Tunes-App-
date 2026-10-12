@@ -229,7 +229,7 @@ export default function CreateTuneForm({
                 </p>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4">
                 <KeyPickerField name="key" label="Tune key" placeholder="Select key" />
                 <div>
                   <label htmlFor="style_id" className={formStyles.label}>Style</label>
@@ -243,46 +243,29 @@ export default function CreateTuneForm({
               </div>
 
               <div>
-                <label htmlFor="composer" className={formStyles.label}>Composer or source</label>
+                <label htmlFor="time_signature" className={formStyles.label}>Time signature</label>
                 <input
-                  id="composer"
-                  name="composer"
-                  placeholder="e.g. Bill Monroe, trad., unknown"
+                  id="time_signature"
+                  name="time_signature"
+                  placeholder="e.g. 4/4 or 6/8"
                   className={formStyles.input}
+                  pattern={TIME_SIGNATURE_PATTERN}
+                  title={TIME_SIGNATURE_HELPER_TEXT}
                 />
               </div>
-
-              <details className="rounded-object border border-hairline bg-surface-note p-4">
-                <summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
-                  Advanced metadata
-                </summary>
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <label htmlFor="time_signature" className={formStyles.label}>Time signature</label>
-                    <input
-                      id="time_signature"
-                      name="time_signature"
-                      placeholder="e.g. 4/4 or 6/8"
-                      className={formStyles.input}
-                      pattern={TIME_SIGNATURE_PATTERN}
-                      title={TIME_SIGNATURE_HELPER_TEXT}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="reference_url" className={formStyles.label}>Initial reference</label>
-                    <input
-                      id="reference_url"
-                      name="reference_url"
-                      type="url"
-                      placeholder="YouTube, archive or recording link"
-                      className={formStyles.input}
-                    />
-                    <p className={formStyles.helpText}>
-                      Add one useful shared reference now; more can be added from Tune Detail.
-                    </p>
-                  </div>
-                </div>
-              </details>
+              <div>
+                <label htmlFor="reference_url" className={formStyles.label}>Initial reference</label>
+                <input
+                  id="reference_url"
+                  name="reference_url"
+                  type="url"
+                  placeholder="YouTube, archive or recording link"
+                  className={formStyles.input}
+                />
+                <p className={formStyles.helpText}>
+                  Add one useful shared reference now; more can be added from the tune page.
+                </p>
+              </div>
             </section>
           ) : null}
         </div>

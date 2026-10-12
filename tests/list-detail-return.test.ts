@@ -18,7 +18,7 @@ function load(path: string): Record<string, (props: unknown) => Element | Promis
     if (id === 'react') return require(id)
     if (id === '@/lib/loaders/public-list-detail') return { loadPublicListDetailData: async () => ({
       user: null, typedList: { id: 67, name: 'Public fixture', description: 'A public fixture description', visibility: 'public' }, owner: null,
-      typedItems: [{ id: 1, pieces: { id: 1, title: 'Public tune' } }], mediaBundles: new Map(), ownedLists: [], activePieceIds: new Set(), knownPieceIds: new Set(),
+      typedItems: [{ id: 1, pieces: { id: 1, title: 'Public tune' } }], mediaBundles: new Map(), ownedLists: [], activePieceStates: new Map(), knownPieceIds: new Set(), existingListIdsByPiece: new Map(),
       redirectTo: '/public-lists/67', isViewingOwnPublicList: false, isBookmarkedByCurrentUser: false,
     }) }
     if (id === 'react/jsx-runtime') return require(id)
@@ -29,7 +29,7 @@ function load(path: string): Record<string, (props: unknown) => Element | Promis
     if (id === '@/lib/loaders/list-detail') return { loadLearningListDetailData: async () => ({
       typedList: { id: 67, name: 'Earth Tones - Adam Hurt', description: 'A personal fixture description', visibility: 'private' },
       typedItems: detailItems,
-      tunes: [], activePieceStates: new Map(), knownPieceIds: new Set(), ownerProfile: { label: 'Owner' },
+      tunes: [], activePieceStates: new Map(), knownPieceIds: new Set(), mediaBundles: new Map(), ownedLists: [], existingListIdsByPiece: new Map(), ownerProfile: { label: 'Owner' },
       shareRecipients: [], accessMode: 'owner', redirectTo: '/learning-lists/67',
     }) }
     if (id.startsWith('@/lib/actions/')) return new Proxy({}, { get: () => () => { throw Error('Unexpected mutation') } })
@@ -63,28 +63,19 @@ test('owned card title and Open link carry the filtered overview origin', async 
   }
 })
 
-test('detail Back, modes, and pager retain the overview origin', async () => {
+test('detail uses one tune view while Back and pager retain the overview origin', async () => {
   for (const mode of ['reader', 'manage']) {
     const tree = await load('app/learning-lists/[id]/page.tsx').default({ params: Promise.resolve({ id: '67' }), searchParams: Promise.resolve({ return_to: origin, mode, page: '2' }) })
     const all = elements(tree)
     assert.equal(all.find(e => e.props.children === 'Back to Lists')?.props.href, origin)
-    for (const label of ['Reader', 'Manage']) {
-      const url = new URL(String(all.find(e => e.props.children === label)?.props.href), 'https://fixture.invalid')
-      assert.equal(url.searchParams.get('return_to'), origin)
-      assert.equal(url.searchParams.get('page'), '2')
-      assert.equal(url.searchParams.get('mode'), label === 'Manage' ? 'manage' : null)
-    }
+    assert.ok(!all.some(e => e.props.children === 'Reader' || e.props.children === 'Manage'))
     const pager = all.find(e => e.type === 'ListPager')!
     assert.equal(new URL(String(pager.props.href), 'https://fixture.invalid').searchParams.get('return_to'), origin)
-    if (mode === 'reader') {
-      assert.ok(all.some(e => e.type === 'ol'))
-      const rows = all.filter(e => e.type === 'TuneRow')
-      assert.equal(rows.length, 5)
-      assert.deepEqual(rows.map(e => (e.props.supportingContent as Element).props.children),
-        [['Position ', 21], ['Position ', 22], ['Position ', 23], ['Position ', 24], ['Position ', 25]])
-    } else {
-      assert.equal(all.find(e => e.type === 'ListOrderManager')?.props.positionOffset, 20)
-    }
+    assert.equal(new URL(String(pager.props.href), 'https://fixture.invalid').searchParams.get('mode'), null)
+    const rows = all.find(e => e.type === 'ListTuneRows')!
+    assert.equal((rows.props.items as unknown[]).length, 5)
+    assert.equal(rows.props.positionOffset, 20)
+    assert.equal(rows.props.ownerListId, 67)
   }
 })
 
@@ -95,15 +86,15 @@ test('detail rejects external, unrelated and malformed return destinations', asy
   }
 })
 
-test('empty owned list keeps Reader and Manage access with a clear empty state', async () => {
+test('empty owned list keeps list editing with a clear empty state', async () => {
   const previous = detailItems
   detailItems = []
   try {
     for (const mode of ['reader', 'manage']) {
       const all = elements(await load('app/learning-lists/[id]/page.tsx').default({ params: Promise.resolve({ id: '67' }), searchParams: Promise.resolve({ mode }) }))
       assert.ok(all.some(e => e.props.children === 'This list has no tunes yet.'))
-      assert.ok(all.some(e => e.props.children === 'Reader'))
-      assert.ok(all.some(e => e.props.children === 'Manage'))
+      assert.ok(all.some(e => e.type === 'EditListModal'))
+      assert.ok(!all.some(e => e.props.children === 'Reader' || e.props.children === 'Manage'))
     }
   } finally {
     detailItems = previous
@@ -132,8 +123,9 @@ test('public detail Back and pager retain a safe Lists origin', async () => {
   assert.equal(all.find(e => e.props.children === 'Back to Lists')?.props.href, origin)
   const pager = all.find(e => e.type === 'ListPager')!
   assert.equal(new URL(String(pager.props.href), 'https://fixture.invalid').searchParams.get('return_to'), origin)
-  assert.ok(all.some(e => e.type === 'ol'))
-  assert.ok(all.some(e => e.type === 'li'))
+  const rows = all.find(e => e.type === 'ListTuneRows')!
+  assert.equal(rows.props.isSignedIn, false)
+  assert.equal(rows.props.ownerListId, undefined)
   assert.ok(!all.some(e => e.type === 'EditListModal'))
 })
 

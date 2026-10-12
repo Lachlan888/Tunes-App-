@@ -2,22 +2,22 @@ import Link from "next/link"
 import { publicListHref, safePublicListReturn } from "@/lib/list-return"
 import type { ReactNode } from "react"
 import { buttonStyles } from "@/components/ui/buttonStyles"
-import TuneMediaLauncher from "@/components/reference-media/TuneMediaLauncher"
 import SubmitButton from "@/components/SubmitButton"
 import ListPager from "@/components/lists/ListPager"
+import ListTuneRows from "@/components/lists/ListTuneRows"
 import {
+  addToLearningList,
   bookmarkPublicList,
   importPublicList,
   importSelectedPublicListItems,
   unbookmarkPublicList,
 } from "@/lib/actions/lists"
+import { startLearning } from "@/lib/actions/user-pieces"
 import {
   loadPublicListDetailData,
   type PublicListOwnerProfile,
 } from "@/lib/loaders/public-list-detail"
-import type { TuneMediaBundle } from "@/lib/tune-media"
-import type { Piece } from "@/lib/types"
-import { LIST_PAGE_SIZE, paginateListItems, parseListPage } from "@/lib/list-view-state"
+import { LIST_PAGE_SIZE, paginateListItems, parseListPage, withListPage } from "@/lib/list-view-state"
 
 type PublicListDetailPageProps = {
   params: Promise<{ id: string }>
@@ -27,8 +27,11 @@ type PublicListDetailPageProps = {
     duplicate_count?: string
     imported_list_id?: string
     bookmark_public?: string
+    list_add?: string
+    edit_list?: string
     page?: string | string[]
     return_to?: string | string[]
+    scroll_piece?: string
   }>
 }
 
@@ -100,97 +103,6 @@ function BookmarkIcon({ filled = false }: { filled?: boolean }) {
   )
 }
 
-function getTuneMetadata(piece: Piece) {
-  return [
-    piece.style,
-    piece.key,
-    piece.time_signature,
-  ].filter(Boolean)
-}
-
-function PublicListTuneRow({
-  piece,
-  position,
-  isAlreadyInPractice,
-  isKnown,
-  canSelectForCopy,
-  redirectTo,
-  mediaBundle,
-}: {
-  piece: Piece
-  position: number
-  isAlreadyInPractice: boolean
-  isKnown: boolean
-  canSelectForCopy: boolean
-  redirectTo: string
-  mediaBundle: TuneMediaBundle | null
-}) {
-  const metadataParts = getTuneMetadata(piece)
-  const checkboxId = `select-piece-${piece.id}`
-
-  return (
-    <article className="grid gap-3 py-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-      <div className="min-w-0">
-        <h3 className="flex items-baseline gap-3 text-lg font-semibold leading-snug text-foreground">
-          <span className="shrink-0 text-xs font-semibold tabular-nums text-muted-foreground">{String(position).padStart(2, "0")}</span>
-          <Link
-            href={`/library/${piece.id}`}
-            className="min-w-0 break-words decoration-primary decoration-2 underline-offset-4 hover:underline"
-          >
-            {piece.title}
-          </Link>
-        </h3>
-
-        {metadataParts.length > 0 ? (
-          <p className="mt-1 text-sm leading-5 text-muted-foreground">
-            {metadataParts.join(" · ")}
-          </p>
-        ) : null}
-
-        {mediaBundle?.effectiveReference || canSelectForCopy ? (
-          <div className="mt-2 flex min-h-10 items-center justify-between gap-3">
-            {mediaBundle?.effectiveReference ? (
-              <TuneMediaLauncher
-                pieceId={piece.id}
-                title={piece.title}
-                mediaBundle={mediaBundle}
-                redirectTo={redirectTo}
-                label="Open Reference Media"
-                className="text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground"
-              />
-            ) : (
-              <span aria-hidden="true" />
-            )}
-
-            {canSelectForCopy ? (
-              <input
-                id={checkboxId}
-                type="checkbox"
-                name="piece_ids"
-                value={piece.id}
-                form="selected-import-form"
-                aria-label={`Select ${piece.title} to copy`}
-                className="h-6 w-6 shrink-0 accent-primary"
-              />
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-
-      {isAlreadyInPractice || isKnown ? (
-        <div className="mt-1 flex items-center md:mt-0">
-          <span className={isAlreadyInPractice
-            ? "border-l-2 border-state-practice pl-2 text-xs font-semibold text-state-practice"
-            : "border-l-2 border-state-known pl-2 text-xs font-semibold text-state-known"}>
-            {isAlreadyInPractice ? "Already in practice" : "Known"}
-          </span>
-        </div>
-      ) : null}
-
-    </article>
-  )
-}
-
 export default async function PublicListDetailPage({
   params,
   searchParams,
@@ -200,6 +112,8 @@ export default async function PublicListDetailPage({
 
   const importStatus = resolvedSearchParams?.import_public ?? ""
   const bookmarkStatus = resolvedSearchParams?.bookmark_public ?? ""
+  const listAddStatus = resolvedSearchParams?.list_add ?? ""
+  const editListStatus = resolvedSearchParams?.edit_list ?? ""
   const addedCount = Number(resolvedSearchParams?.added_count ?? "0")
   const duplicateCount = Number(resolvedSearchParams?.duplicate_count ?? "0")
   const importedListId = Number(resolvedSearchParams?.imported_list_id ?? "0")
@@ -212,8 +126,9 @@ export default async function PublicListDetailPage({
     typedItems,
     mediaBundles,
     ownedLists,
-    activePieceIds,
+    activePieceStates,
     knownPieceIds,
+    existingListIdsByPiece,
     redirectTo,
     isViewingOwnPublicList,
     isBookmarkedByCurrentUser,
@@ -222,6 +137,7 @@ export default async function PublicListDetailPage({
   const hasListOrigin = resolvedSearchParams?.return_to !== undefined
   const backHref = hasListOrigin ? safePublicListReturn(resolvedSearchParams.return_to) : "/public-lists"
   const pageHref = hasListOrigin ? publicListHref(typedList.id, backHref) : `/public-lists/${typedList.id}`
+  const tunePageHref = withListPage(pageHref, pagination.page)
 
   const importedList =
     importedListId > 0
@@ -339,6 +255,29 @@ export default async function PublicListDetailPage({
         <StatusMessage tone="success">
           Bookmarked this shared list as a saved reference.
         </StatusMessage>
+      )}
+
+      {listAddStatus === "success" && (
+        <StatusMessage tone="success">Tune added to the selected list.</StatusMessage>
+      )}
+      {listAddStatus === "partial" && (
+        <StatusMessage tone="success">Tune added where it wasn’t already listed.</StatusMessage>
+      )}
+      {listAddStatus === "duplicate" && (
+        <StatusMessage tone="warning">That tune is already in the selected list.</StatusMessage>
+      )}
+      {["missing_piece", "missing_list", "error"].includes(listAddStatus) && (
+        <StatusMessage tone="error">Couldn’t add that tune to a list.</StatusMessage>
+      )}
+
+      {editListStatus === "reordered" && (
+        <StatusMessage tone="success">Playing order updated.</StatusMessage>
+      )}
+      {editListStatus === "removed_tune" && (
+        <StatusMessage tone="success">Tune removed from this list.</StatusMessage>
+      )}
+      {["reorder_error", "invalid_reorder", "error", "not_found"].includes(editListStatus) && (
+        <StatusMessage tone="error">Couldn’t update this list.</StatusMessage>
       )}
 
       {bookmarkStatus === "already" && (
@@ -483,41 +422,34 @@ export default async function PublicListDetailPage({
             This list has no tunes yet.
           </p>
         ) : (
-          <ol className="mt-3 divide-y divide-border/70 border-y border-border/70 md:mt-5">
-            {pagination.items.map((item, index) => {
+          <ListTuneRows
+            items={pagination.items.flatMap(item => {
               const piece = Array.isArray(item.pieces)
                 ? item.pieces[0]
                 : item.pieces
-
-              if (!piece) return null
-
-              const isAlreadyInPractice = user
-                ? activePieceIds.has(piece.id)
-                : false
-              const isKnown = user ? knownPieceIds.has(piece.id) : false
-              const canSelectForCopy =
-                Boolean(user) &&
-                !isViewingOwnPublicList &&
-                ownedLists.length > 0
-
-              return (
-                <li key={item.id}>
-                  <div>
-                    <PublicListTuneRow
-                      piece={piece}
-                      position={(pagination.page - 1) * LIST_PAGE_SIZE + index + 1}
-                      isAlreadyInPractice={isAlreadyInPractice}
-                      isKnown={isKnown}
-                      canSelectForCopy={canSelectForCopy}
-                      redirectTo={redirectTo}
-                      mediaBundle={mediaBundles.get(piece.id) ?? null}
-                    />
-                  </div>
-
-                </li>
-              )
+              if (!piece) return []
+              const activeState = activePieceStates.get(piece.id)
+              return [{
+                id: item.id,
+                piece,
+                activeUserPieceId: activeState?.id,
+                stage: activeState?.stage ?? null,
+                isKnown: knownPieceIds.has(piece.id),
+                existingListIds: existingListIdsByPiece.get(piece.id) ?? [],
+                mediaBundle: mediaBundles.get(piece.id) ?? null,
+              }]
             })}
-          </ol>
+            positionOffset={(pagination.page - 1) * LIST_PAGE_SIZE}
+            totalItems={typedItems.length}
+            redirectTo={tunePageHref}
+            learningLists={ownedLists}
+            isSignedIn={Boolean(user)}
+            scrollPieceId={resolvedSearchParams?.scroll_piece}
+            ownerListId={isViewingOwnPublicList ? typedList.id : undefined}
+            canSelectForCopy={Boolean(user) && !isViewingOwnPublicList && ownedLists.length > 0}
+            startLearning={startLearning}
+            addToLearningList={addToLearningList}
+          />
         )}
         <ListPager href={pageHref} page={pagination.page} totalPages={pagination.totalPages} label={`${typedList.name} tunes`} />
       </section>

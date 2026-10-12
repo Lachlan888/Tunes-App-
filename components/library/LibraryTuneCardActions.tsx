@@ -15,6 +15,8 @@ type LibraryTuneCardActionsProps = {
   startLearning: (formData: FormData) => Promise<void>
   onPreview?: (trigger: HTMLButtonElement) => void
   referenceHref?: string
+  showPersonalActions?: boolean
+  extraActions?: ContextAction[]
 }
 
 function tuneActionData(pieceId: number, redirectTo: string) {
@@ -34,23 +36,25 @@ export default function LibraryTuneCardActions({
   startLearning,
   onPreview,
   referenceHref,
+  showPersonalActions = true,
+  extraActions = [],
 }: LibraryTuneCardActionsProps) {
   const actions: ContextAction[] = [
     { id: "open", label: "Open tune", href: `/library/${piece.id}` },
     ...(onPreview ? [{ id: "preview", label: "Preview recording", onSelect: onPreview, completionMessage: null }] : []),
     ...(referenceHref ? [{ id: "reference", label: "Open Reference", href: referenceHref }] : []),
-    { id: "list", label: "Add to List", onSelect: onOpenAddToList, completionMessage: null },
-    ...(!isAlreadyInPractice ? [{
+    ...(showPersonalActions ? [{ id: "list", label: "Add to List", onSelect: onOpenAddToList, completionMessage: null }] : []),
+    ...(showPersonalActions && !isAlreadyInPractice ? [{
       id: "practice", label: isKnown ? "Move to Practice" : "Add to Practice",
       onSelect: () => startLearning(tuneActionData(piece.id, redirectTo)),
       ...(isKnown ? { confirmMessage: "Move this tune from Known to Practice? Review scheduling will begin." } : {}),
     }] : []),
-    ...(!isKnown ? [{
+    ...(showPersonalActions && !isKnown ? [{
       id: "known", label: isAlreadyInPractice ? "Move to Known" : "Mark Known",
       onSelect: () => markAsKnown(tuneActionData(piece.id, redirectTo)),
       ...(isAlreadyInPractice ? { confirmMessage: "Move this tune to Known? Practice scheduling will stop." } : {}),
     }] : []),
-    ...(activeUserPieceId ? [{
+    ...(showPersonalActions && activeUserPieceId ? [{
       id: "stop-practice", label: "Stop Practice",
       onSelect: () => {
         const data = new FormData()
@@ -60,6 +64,7 @@ export default function LibraryTuneCardActions({
       },
       confirmMessage: "Stop Practice for this tune? Review scheduling will stop. The tune remains in your lists and is not automatically marked Known.",
     }] : []),
+    ...extraActions,
   ]
 
   return <ContextActionMenu

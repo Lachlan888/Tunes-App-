@@ -27,6 +27,7 @@ type EditListModalProps = {
   }) => Promise<ListShareRecipientSearchResponse>
   revokeLearningListPrivateShare?: (formData: FormData) => Promise<void>
   shareRecipients?: LearningListShareRecipient[]
+  showTunes?: boolean
   triggerLabel?: string
   triggerAriaLabel?: string
   triggerClassName?: string
@@ -51,6 +52,7 @@ export default function EditListModal({
   searchLearningListShareRecipients,
   revokeLearningListPrivateShare,
   shareRecipients = [],
+  showTunes = true,
   triggerLabel = "Manage List",
   triggerAriaLabel,
   triggerClassName = buttonStyles.secondary,
@@ -274,7 +276,7 @@ export default function EditListModal({
             </section>
           ) : null}
 
-          <section>
+          {showTunes ? <section>
             <h3 className="text-lg font-semibold tracking-tight text-foreground">
               Tunes in this list
             </h3>
@@ -337,7 +339,7 @@ export default function EditListModal({
                 ))}
               </div>
             )}
-          </section>
+          </section> : null}
 
           <section className="border-t border-action-destructive/55 pt-5 text-action-destructive">
             <h3 className="text-lg font-semibold tracking-tight">

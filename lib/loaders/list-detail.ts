@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { loadTuneMediaBundles } from "@/lib/tune-media"
 import type {
   LearningListDetail,
+  LearningList,
   LearningListItemWithPiece,
   Piece,
 } from "@/lib/types"
@@ -14,6 +15,7 @@ type PieceIdRow = {
 
 export type ActiveListPieceState = {
   pieceId: number
+  id: number
   stage: number | null
 }
 
@@ -128,6 +130,8 @@ export async function loadLearningListDetailData(rawListId: string) {
       pieces (
         id,
         title,
+        alternate_titles,
+        type,
         key,
         style,
         time_signature,
@@ -165,15 +169,24 @@ export async function loadLearningListDetailData(rawListId: string) {
 
   let activePieceStates = new Map<number, ActiveListPieceState>()
   let knownPieceIds = new Set<number>()
+  let existingListIdsByPiece = new Map<number, number[]>()
+
+  const { data: ownedLists, error: ownedListsError } = await supabase
+    .from("learning_lists")
+    .select("id, name, description")
+    .eq("user_id", user.id)
+    .order("name", { ascending: true })
+  if (ownedListsError) throw new Error(ownedListsError.message)
 
   if (pieceIds.length > 0) {
     const [
       { data: userPieces, error: userPiecesError },
       { data: userKnownPieces, error: userKnownPiecesError },
+      { data: ownMemberships, error: ownMembershipsError },
     ] = await Promise.all([
       supabase
         .from("user_pieces")
-        .select("piece_id, stage")
+        .select("id, piece_id, stage")
         .eq("user_id", user.id)
         .in("piece_id", pieceIds),
 
@@ -182,6 +195,11 @@ export async function loadLearningListDetailData(rawListId: string) {
         .select("piece_id")
         .eq("user_id", user.id)
         .in("piece_id", pieceIds),
+      supabase
+        .from("learning_list_items")
+        .select("piece_id, learning_list_id, learning_lists!inner(user_id)")
+        .eq("learning_lists.user_id", user.id)
+        .in("piece_id", pieceIds),
     ])
 
     if (userPiecesError) {
@@ -189,11 +207,12 @@ export async function loadLearningListDetailData(rawListId: string) {
     }
 
     activePieceStates = new Map(
-      ((userPieces ?? []) as Array<PieceIdRow & { stage: number | null }>).map(
+      ((userPieces ?? []) as Array<PieceIdRow & { id: number; stage: number | null }>).map(
         (row) => [
           row.piece_id,
           {
             pieceId: row.piece_id,
+            id: row.id,
             stage: row.stage,
           },
         ]
@@ -207,6 +226,13 @@ export async function loadLearningListDetailData(rawListId: string) {
     knownPieceIds = new Set(
       ((userKnownPieces ?? []) as PieceIdRow[]).map((row) => row.piece_id)
     )
+    if (ownMembershipsError) throw new Error(ownMembershipsError.message)
+    existingListIdsByPiece = new Map()
+    for (const row of (ownMemberships ?? []) as Array<{ piece_id: number; learning_list_id: number }>) {
+      const ids = existingListIdsByPiece.get(row.piece_id) ?? []
+      ids.push(row.learning_list_id)
+      existingListIdsByPiece.set(row.piece_id, ids)
+    }
   }
 
   const [{ data: ownerProfileRows, error: ownerProfileError }, shareResult] =
@@ -278,6 +304,8 @@ export async function loadLearningListDetailData(rawListId: string) {
     tunes,
     activePieceStates,
     knownPieceIds,
+    ownedLists: (ownedLists ?? []) as LearningList[],
+    existingListIdsByPiece,
     mediaBundles,
     ownerProfile,
     shareRecipients,
