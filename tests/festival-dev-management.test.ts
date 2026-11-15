@@ -83,6 +83,54 @@ test("owner loader requests bounded public list options and festival association
   assert.match(source, /\.limit\(500\)/)
 })
 
+test("a private list can be tagged to a Draft festival without being made public", async () => {
+  const fixture = database({
+    festival_hubs: { data: { lifecycle: "draft" }, error: null },
+    learning_lists: { data: { id: 17, visibility: "private" }, error: null },
+    festival_collections: { data: { id: 33 }, error: null },
+  })
+  const actions = moduleFrom("../lib/actions/festivals.ts", {
+    "next/cache": { revalidatePath() {} },
+    "@/lib/auth/roles": {
+      requireAppAdmin: async () => ({ adminRole: "owner", user: { id: "owner" }, supabase: fixture.db }),
+    },
+    "@/lib/festivals/validation": validation,
+  })
+
+  await actions.upsertFestivalCollection({ festival_id: 9, learning_list_id: 17, collection_kind: "general" })
+
+  assert.deepEqual(fixture.writes.map((write) => write.table), ["festival_hubs", "learning_lists", "festival_collections"])
+  const listRead = fixture.writes[1]
+  assert.ok(listRead.calls.some((call) => call[0] === "select" && call[1] === "id,visibility"))
+  assert.ok(!listRead.calls.some((call) => call[0] === "eq" && call[1] === "visibility" && call[2] === "public"))
+})
+
+test("a private list cannot be tagged to a published festival", async () => {
+  const fixture = database({
+    festival_hubs: { data: { lifecycle: "published" }, error: null },
+    learning_lists: { data: { id: 17, visibility: "private" }, error: null },
+  })
+  const actions = moduleFrom("../lib/actions/festivals.ts", {
+    "next/cache": { revalidatePath() {} },
+    "@/lib/auth/roles": {
+      requireAppAdmin: async () => ({ adminRole: "owner", user: { id: "owner" }, supabase: fixture.db }),
+    },
+    "@/lib/festivals/validation": validation,
+  })
+  const form = new FormData()
+  form.set("festival_id", "9")
+  form.set("learning_list_id", "17")
+
+  const state = await actions.upsertFestivalCollectionFromForm(
+    { status: "idle", message: null, field: null },
+    form
+  ) as { status: string; message: string }
+
+  assert.equal(state.status, "error")
+  assert.match(state.message, /Draft/i)
+  assert.deepEqual(fixture.writes.map((write) => write.table), ["festival_hubs", "learning_lists"])
+})
+
 test("the Dev launch summary does not read festival records for a non-owner admin", async () => {
   let reads = 0
   const loader = moduleFrom("../lib/loaders/festivals.ts", {

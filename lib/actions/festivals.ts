@@ -45,6 +45,7 @@ function actionError(error: unknown): FestivalActionState {
     incomplete_branding: "Add both a branding image URL and descriptive alt text, or leave both blank.",
     mode_requires_selection: "Choose a published festival before turning festival mode on.",
     festival_collection_requires_public_list: "Only an existing public list can be attached.",
+    festival_collection_private_list_requires_draft: "Private lists can be attached only while the festival is a Draft.",
     festival_collection_not_found: "That festival list association no longer exists.",
     festival_session_collection_mismatch: "Choose repertoire collections attached to this festival.",
     "festival mode requires a selected published festival": "Festival mode can only be turned on for a selected published festival.",
@@ -79,8 +80,13 @@ export async function updateFestivalHub(festivalId: number, values: Record<strin
 export async function upsertFestivalCollection(values: Record<string, unknown>) {
   const { supabase } = await requireFestivalOwner()
   const input = validateFestivalCollectionInput(values)
-  const { data: list } = await supabase.from("learning_lists").select("id").eq("id", input.learning_list_id).eq("visibility", "public").maybeSingle()
+  const { data: festival } = await supabase.from("festival_hubs").select("lifecycle").eq("id", input.festival_id).maybeSingle()
+  if (!festival) throw new Error("festival_not_found")
+  const { data: list } = await supabase.from("learning_lists").select("id,visibility").eq("id", input.learning_list_id).maybeSingle()
   if (!list) throw new Error("festival_collection_requires_public_list")
+  if (list.visibility !== "public" && festival.lifecycle !== "draft") {
+    throw new Error("festival_collection_private_list_requires_draft")
+  }
   const { data, error } = await supabase.from("festival_collections").upsert(input, { onConflict: "festival_id,learning_list_id" }).select("id").single()
   if (error || !data) throw new Error(error?.message ?? "festival_collection_write_failed")
   revalidateFestival()
