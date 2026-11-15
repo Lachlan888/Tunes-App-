@@ -508,3 +508,21 @@ textarea::placeholder {
   .app-shell-content main { padding-top: 2.5rem; }
   .workbench-split { gap: clamp(2rem, 5vw, 5rem); }
 }
+
+
+/* Compact desktop rail: expand in place above content on hover, focus or when pinned. */
+@media (min-width: 768px) {
+  .desktop-app-nav { width: 4.75rem; transition: width var(--motion-standard) var(--ease-folk); }
+  .desktop-app-nav:hover, .desktop-app-nav:focus-within, .desktop-app-nav[data-pinned="true"] { width: min(19rem, calc(100vw - 2rem)); box-shadow: var(--elevation-floating); }
+  .desktop-app-nav:is(:hover, :focus-within, [data-pinned="true"]) .desktop-rail-label { display: block; }
+  .desktop-app-nav:is(:hover, :focus-within, [data-pinned="true"]) .desktop-rail-item { justify-content: flex-start; }
+  .desktop-app-nav:is(:hover, :focus-within, [data-pinned="true"]) .desktop-rail-badge { position: static; margin-left: auto; font-size: .7rem; }
+  .desktop-app-nav:is(:hover, :focus-within, [data-pinned="true"]) .desktop-nav-brand { justify-content: flex-start; padding-inline: 1.25rem; }
+  .desktop-app-nav:is(:hover, :focus-within, [data-pinned="true"]) .desktop-brand-short { display: none; }
+  .desktop-app-nav:is(:hover, :focus-within, [data-pinned="true"]) .desktop-brand-full { display: inline; }
+  .desktop-app-nav:is(:hover, :focus-within, [data-pinned="true"]) .desktop-nav-pin { justify-content: flex-start; padding-inline: .75rem; }
+  .desktop-rail-item { min-width: 0; }
+  .desktop-rail-item > svg { flex-shrink: 0; }
+  :root { --app-rail-width: 4.75rem; }
+}
+@media (min-width: 1280px) { :root { --app-rail-width: 4.75rem; } }
