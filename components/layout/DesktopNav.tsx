@@ -68,7 +68,7 @@ export default function DesktopNav({
       </Link>
 
       <button type="button" aria-label={pinned ? "Unpin navigation" : "Pin navigation open"} aria-pressed={pinned} onClick={() => setPinned(value => !value)} className="desktop-nav-pin mx-2 mt-2 flex min-h-10 items-center justify-center gap-2 rounded-control border border-transparent text-xs font-semibold text-text-muted hover:border-hairline hover:bg-surface-note focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]">
-        <Icon name="menu" size={19} />
+        <Icon name="list" size={19} />
         <span className="desktop-rail-label hidden"> {pinned ? "Unpin menu" : "Pin menu"} </span>
       </button>
       <nav aria-label={shellKind === "internal" ? "Internal navigation" : "Primary navigation"} className="grid gap-0 p-2">
