@@ -364,7 +364,7 @@ export default async function LearningListsPage({
               />
             ) : (
               <section>
-                <div className="border-t border-hairline">
+                <div className="grid grid-cols-1 gap-x-8 border-t border-hairline md:grid-cols-2 xl:grid-cols-3">
                   {visibleListOverviews.map((list) => (
                     <ListOverviewCard
                       key={list.id}

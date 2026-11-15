@@ -195,7 +195,7 @@ export default async function PublicListsPage({
               <SharedListsMobileList lists={pagination.items} redirectTo={redirectTo} />
 
               <section aria-label="Public lists" className="hidden md:block">
-                <div className="border-t border-hairline">
+                <div className="grid grid-cols-1 gap-x-8 border-t border-hairline md:grid-cols-2 xl:grid-cols-3">
                   {pagination.items.map((list) => (
                     <SharedListCard key={list.id} list={list} redirectTo={redirectTo} />
                   ))}

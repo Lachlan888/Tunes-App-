@@ -410,7 +410,7 @@ export function SavedSharedView({
     )
   }
 
-  return <div className="border-t border-hairline">
+  return <div className="grid grid-cols-1 gap-x-8 border-t border-hairline md:grid-cols-2 xl:grid-cols-3">
     {bookmarkedSharedLists.map(list => <EditorialListCard key={`saved-${list.id}`} id={list.id} title={list.name} href={publicListHref(list.id, redirectTo)}>
       <p className="text-sm font-semibold">Saved public list</p>
       <p className="text-sm text-text-muted">By {list.ownerLabel} · {tuneCountLabel(list.tuneCount)}</p>
