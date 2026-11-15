@@ -26,8 +26,10 @@ import { getFestivalSetupSummary } from "@/lib/festivals/setup"
 import { festivalWorkspaceHref, type FestivalWorkspaceTab } from "@/lib/festivals/workspace"
 
 type OwnerCollection = FestivalCollection & {
-  learning_lists: { id: number; name: string; visibility: "public" }
+  learning_lists: { id: number; name: string; visibility: "public" | "private" }
 }
+
+type OwnerList = { id: number; name: string; visibility: "public" | "private" }
 
 type FestivalManagerProps = {
   settings: FestivalSettings
@@ -35,7 +37,7 @@ type FestivalManagerProps = {
   collections: OwnerCollection[]
   sessions: FestivalSession[]
   sessionCollections: FestivalSessionCollection[]
-  publicLists: Array<{ id: number; name: string }>
+  availableLists: OwnerList[]
   activeFestivalId: number | null
   activeTab: FestivalWorkspaceTab
 }
@@ -174,7 +176,9 @@ function CollectionForm({ collection, festivalId }: { collection: OwnerCollectio
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="font-semibold">{collection.learning_lists.name}</p>
-          <p className="mt-1 text-sm text-muted-foreground">Source list #{collection.learning_list_id}; tune membership stays in Lists.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {collection.learning_lists.visibility === "private" ? "Private draft list · not public" : "Public list"} · Source list #{collection.learning_list_id}; tune membership stays in Lists.
+          </p>
         </div>
         <Link className={buttonStyles.text} href={`/learning-lists/${collection.learning_list_id}`}>Open list editor</Link>
       </div>
@@ -213,7 +217,18 @@ function CollectionForm({ collection, festivalId }: { collection: OwnerCollectio
   )
 }
 
-function OwnerPreview({ festival, collections, sessions }: { festival: FestivalHub; collections: OwnerCollection[]; sessions: FestivalSession[] }) {
+function OwnerPreview({
+  festival,
+  collections,
+  sessions,
+  sessionCollections,
+}: {
+  festival: FestivalHub
+  collections: OwnerCollection[]
+  sessions: FestivalSession[]
+  sessionCollections: FestivalSessionCollection[]
+}) {
+  const collectionsById = new Map(collections.map((collection) => [collection.id, collection]))
   return (
     <section className="overflow-hidden border-y border-hairline" aria-label="Owner-only festival preview">
       {festival.branding_image_url && festival.branding_alt ? (
@@ -243,6 +258,7 @@ function OwnerPreview({ festival, collections, sessions }: { festival: FestivalH
                 <li key={collection.id} className="border-b border-hairline px-1 py-2 text-sm">
                   {collection.display_title ?? collection.learning_lists.name}
                   {collection.tradition_label ? ` · ${collection.tradition_label}` : ""}
+                  {collection.learning_lists.visibility === "private" ? " · Private draft list" : ""}
                 </li>
               ))}
             </ul>
@@ -252,12 +268,27 @@ function OwnerPreview({ festival, collections, sessions }: { festival: FestivalH
           <p className="text-sm font-semibold">Sessions</p>
           {sessions.length > 0 ? (
             <ul className="mt-2 divide-y divide-hairline">
-              {sessions.map((session) => (
-                <li key={session.id} className="py-2 text-sm">
-                  {session.local_date ?? "Date not supplied"} · {session.title}
-                  {session.needs_review ? <span className="ml-2 text-muted-foreground">Held for review · hidden from public hub</span> : null}
-                </li>
-              ))}
+              {sessions.map((session) => {
+                const linkedCollections = sessionCollections
+                  .filter((association) => association.session_id === session.id)
+                  .flatMap((association) => {
+                    const collection = collectionsById.get(association.festival_collection_id)
+                    return collection ? [collection] : []
+                  })
+                return (
+                  <li key={session.id} className="py-2 text-sm">
+                    <p>{session.local_date ?? "Date not supplied"} · {session.title}</p>
+                    <p className="mt-1 text-muted-foreground">
+                      {session.needs_review ? "Held for review · hidden from public hub" : "Ready to release"}
+                    </p>
+                    <p className="mt-1 text-muted-foreground">
+                      {linkedCollections.length > 0
+                        ? `Repertoire: ${linkedCollections.map((collection) => collection.display_title ?? collection.learning_lists.name).join(", ")}`
+                        : "No linked repertoire list yet"}
+                    </p>
+                  </li>
+                )
+              })}
             </ul>
           ) : <p className="mt-2 text-sm text-muted-foreground">No sessions added.</p>}
         </div>
@@ -269,32 +300,38 @@ function OwnerPreview({ festival, collections, sessions }: { festival: FestivalH
 function CollectionsPanel({
   festival,
   collections,
-  publicLists,
+  availableLists,
 }: {
   festival: FestivalHub
   collections: OwnerCollection[]
-  publicLists: Array<{ id: number; name: string }>
+  availableLists: OwnerList[]
 }) {
   const [state, action, pending] = useActionState(upsertFestivalCollectionFromForm, initialState)
   useRefreshAfterSuccess(state)
   const attachedIds = new Set(collections.map((collection) => collection.learning_list_id))
-  const available = publicLists.filter((list) => !attachedIds.has(list.id))
+  const available = availableLists.filter((list) => (
+    !attachedIds.has(list.id) && (festival.lifecycle === "draft" || list.visibility === "public")
+  ))
   return (
     <section className="border-t border-hairline py-6">
       <div>
-        <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">Existing public Lists</p>
+        <p className="text-xs font-semibold  tracking-[0.14em] text-muted-foreground">Existing Lists</p>
         <h2 className="mt-1 font-sans text-2xl font-bold">Curated collections</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Associations control festival labels and order only. Detaching never removes tunes or changes the source list.
+          Associations control festival labels and order only. Draft hubs can use private lists; published and archived hubs use public lists only. Detaching never removes tunes or changes the source list.
         </p>
       </div>
       <form action={action} className="mt-5 grid gap-3 sm:grid-cols-4">
         <input name="festival_id" type="hidden" value={festival.id} />
         <label className="sm:col-span-2">
-          <span className={formStyles.label}>Public list</span>
+          <span className={formStyles.label}>Repertoire list</span>
           <select className={formStyles.select} name="learning_list_id" required defaultValue="">
-            <option disabled value="">Choose a public list</option>
-            {available.map((list) => <option key={list.id} value={list.id}>{list.name}</option>)}
+            <option disabled value="">Choose a repertoire list</option>
+            {available.map((list) => (
+              <option key={list.id} value={list.id}>
+                {list.name}{list.visibility === "private" ? " · Private draft" : ""}
+              </option>
+            ))}
           </select>
         </label>
         <label>
@@ -308,7 +345,7 @@ function CollectionsPanel({
         <Field label="Order" name="editorial_order" type="number" defaultValue={collections.length} required />
         <div className="sm:col-span-4">
           <button className={buttonStyles.primary} disabled={pending || available.length === 0} type="submit">
-            {pending ? "Attaching…" : available.length === 0 ? "No unattached public lists" : "Attach list"}
+            {pending ? "Attaching…" : available.length === 0 ? "No eligible unattached lists" : "Attach list"}
           </button>
           <ActionFeedback state={state} />
         </div>
@@ -320,7 +357,7 @@ function CollectionsPanel({
           ))}
         </ul>
       ) : (
-        <p className="mt-6 border-t border-hairline py-5 text-sm text-muted-foreground">No public lists attached yet.</p>
+        <p className="mt-6 border-t border-hairline py-5 text-sm text-muted-foreground">No repertoire lists attached yet.</p>
       )}
     </section>
   )
@@ -386,13 +423,15 @@ function SessionForm({
                 />
                 <span>
                   <span className="block font-semibold">{collection.display_title ?? collection.learning_lists.name}</span>
-                  <span className="mt-1 block text-muted-foreground">Links to public List #{collection.learning_list_id}</span>
+                  <span className="mt-1 block text-muted-foreground">
+                    Links to {collection.learning_lists.visibility === "private" ? "private draft" : "public"} List #{collection.learning_list_id}
+                  </span>
                 </span>
               </label>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">Attach public collections before matching session repertoire.</p>
+          <p className="text-sm text-muted-foreground">Attach repertoire lists before matching session repertoire.</p>
         )}
       </fieldset>
       <label className="sm:col-span-2 flex items-start gap-3 border-l-4 border-state-due py-2 pl-3">
@@ -471,11 +510,13 @@ function ReviewPanel({
   settings,
   collections,
   sessions,
+  sessionCollections,
 }: {
   festival: FestivalHub
   settings: FestivalSettings
   collections: OwnerCollection[]
   sessions: FestivalSession[]
+  sessionCollections: FestivalSessionCollection[]
 }) {
   const [confirmLifecycle, setConfirmLifecycle] = useState<"draft" | "published" | "archived" | null>(null)
   const [lifecycleState, lifecycleAction, lifecyclePending] = useActionState(setFestivalLifecycleFromForm, initialState)
@@ -513,7 +554,7 @@ function ReviewPanel({
             <Link className={buttonStyles.secondary} href={`/events/${festival.slug}`}>Open public hub</Link>
           ) : null}
         </div>
-        <OwnerPreview festival={festival} collections={collections} sessions={sessions} />
+        <OwnerPreview festival={festival} collections={collections} sessions={sessions} sessionCollections={sessionCollections} />
       </section>
 
       <section className="border-t border-hairline pt-6" aria-labelledby="festival-publication-title">
@@ -602,7 +643,7 @@ const tabs: Array<{ id: FestivalWorkspaceTab; label: string }> = [
   { id: "review", label: "Review & publish" },
 ]
 
-export default function FestivalManager({ settings, festivals, collections, sessions, sessionCollections, publicLists, activeFestivalId, activeTab }: FestivalManagerProps) {
+export default function FestivalManager({ settings, festivals, collections, sessions, sessionCollections, availableLists, activeFestivalId, activeTab }: FestivalManagerProps) {
   const router = useRouter()
   const festival = festivals.find((candidate) => candidate.id === activeFestivalId) ?? null
   const selectedFestival = festivals.find((candidate) => candidate.id === settings.selected_festival_id)
@@ -661,11 +702,11 @@ export default function FestivalManager({ settings, festivals, collections, sess
             ))}
           </nav>
           {activeTab === "details" ? <FestivalDetailsForm key={festival.id} festival={festival} /> : null}
-          {activeTab === "repertoire" ? <CollectionsPanel key={festival.id} festival={festival} collections={festivalCollections} publicLists={publicLists} /> : null}
+          {activeTab === "repertoire" ? <CollectionsPanel key={festival.id} festival={festival} collections={festivalCollections} availableLists={availableLists} /> : null}
           {activeTab === "sessions" ? (
             <SessionsPanel key={festival.id} festival={festival} sessions={festivalSessions} collections={festivalCollections} sessionCollections={festivalSessionCollections} />
           ) : null}
-          {activeTab === "review" ? <ReviewPanel key={`${festival.id}:${festival.lifecycle}`} festival={festival} settings={settings} collections={festivalCollections} sessions={festivalSessions} /> : null}
+          {activeTab === "review" ? <ReviewPanel key={`${festival.id}:${festival.lifecycle}`} festival={festival} settings={settings} collections={festivalCollections} sessions={festivalSessions} sessionCollections={festivalSessionCollections} /> : null}
         </>
       ) : (
         <p className="border-y border-hairline py-8 text-center text-sm text-muted-foreground">

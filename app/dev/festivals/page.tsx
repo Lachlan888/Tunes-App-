@@ -12,7 +12,7 @@ type FestivalPageProps = {
 }
 
 export default async function FestivalFoundationPage({ searchParams }: FestivalPageProps) {
-  const { settings, festivals, collections, sessions, sessionCollections, publicLists } = await loadFestivalOwnerFoundation()
+  const { settings, festivals, collections, sessions, sessionCollections, availableLists } = await loadFestivalOwnerFoundation()
   const workspace = resolveFestivalWorkspace(searchParams ? await searchParams : {}, settings.selected_festival_id, festivals)
   return (
     <main className="mx-auto max-w-5xl px-4 py-6 text-foreground md:px-6 md:py-8">
@@ -34,7 +34,7 @@ export default async function FestivalFoundationPage({ searchParams }: FestivalP
           collections={collections}
           sessions={sessions}
           sessionCollections={sessionCollections}
-          publicLists={publicLists}
+          availableLists={availableLists}
           activeFestivalId={workspace.festivalId}
           activeTab={workspace.tab}
         />

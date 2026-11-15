@@ -75,12 +75,55 @@ test("Dev workflow separates the global mode switch from festival editing", () =
   assert.match(source, /\/learning-lists\/\$\{collection\.learning_list_id\}/)
 })
 
-test("owner loader requests bounded public list options and festival associations", () => {
+test("public festival loaders continue to require public repertoire", () => {
   const source = readFileSync(new URL("../lib/loaders/festivals.ts", import.meta.url), "utf8")
   assert.match(source, /from\("festival_collections"\)/)
   assert.match(source, /from\("learning_lists"\)/)
-  assert.match(source, /eq\("visibility", "public"\)/)
+  assert.match(source, /eq\("learning_lists\.visibility", "public"\)/)
   assert.match(source, /\.limit\(500\)/)
+})
+
+test("owner loader retains private draft collection tags while public loaders remain separate", async () => {
+  const fixture = database({
+    festival_settings: { data: { mode_enabled: false, selected_festival_id: null }, error: null },
+    festival_hubs: { data: [], error: null },
+    festival_collections: {
+      data: [{ id: 19, festival_id: 7, learning_list_id: 13, learning_lists: { id: 13, name: "NFF27 — Session: Irish Tunes", visibility: "private" } }],
+      error: null,
+    },
+    festival_sessions: { data: [], error: null },
+    festival_session_collections: { data: [], error: null },
+    learning_lists: { data: [{ id: 13, name: "NFF27 — Session: Irish Tunes", visibility: "private" }], error: null },
+  })
+  const loader = moduleFrom("../lib/loaders/festivals.ts", {
+    "@/lib/supabase/server": { createClient: async () => fixture.db },
+    "@/lib/auth/roles": { requireAppAdmin: async () => ({ adminRole: "owner", supabase: fixture.db }) },
+    "@/lib/festivals/validation": { validateFestivalSlug: (slug: string) => slug },
+  })
+
+  const foundation = await loader.loadFestivalOwnerFoundation() as {
+    collections: Array<{ learning_lists: { visibility: string } }>
+    availableLists: Array<{ visibility: string }>
+  }
+
+  const collectionRead = fixture.writes.find((write) => write.table === "festival_collections")
+  const listRead = fixture.writes.find((write) => write.table === "learning_lists")
+  assert.ok(collectionRead)
+  assert.ok(listRead)
+  assert.ok(collectionRead.calls.some((call) => call[0] === "select" && String(call[1]).includes("visibility")))
+  assert.ok(!collectionRead.calls.some((call) => call[0] === "eq" && call[1] === "learning_lists.visibility"))
+  assert.ok(listRead.calls.some((call) => call[0] === "select" && call[1] === "id,name,visibility"))
+  assert.ok(!listRead.calls.some((call) => call[0] === "eq" && call[1] === "visibility"))
+  assert.equal(foundation.collections[0]?.learning_lists.visibility, "private")
+  assert.equal(foundation.availableLists[0]?.visibility, "private")
+})
+
+test("owner preview labels private draft repertoire and names the list held with each session", () => {
+  const source = readFileSync(new URL("../components/dev/FestivalManager.tsx", import.meta.url), "utf8")
+  assert.match(source, /Private draft list/)
+  assert.match(source, /Ready to release/)
+  assert.match(source, /sessionCollections/)
+  assert.match(source, /festival_collection_id/)
 })
 
 test("a private list can be tagged to a Draft festival without being made public", async () => {

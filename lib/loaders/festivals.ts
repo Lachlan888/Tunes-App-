@@ -175,14 +175,13 @@ export async function loadFestivalOwnerFoundation() {
     { data: collections, error: collectionsError },
     { data: sessions, error: sessionsError },
     { data: sessionCollections, error: sessionCollectionsError },
-    { data: publicLists, error: publicListsError },
+    { data: availableLists, error: availableListsError },
   ] = await Promise.all([
     supabase.from("festival_settings").select("mode_enabled,selected_festival_id").eq("singleton", true).single(),
     supabase.from("festival_hubs").select(HUB_FIELDS).order("editorial_order").order("id").limit(100),
     supabase
       .from("festival_collections")
       .select("id,festival_id,learning_list_id,collection_kind,display_title,display_credit,profile_id,tradition_label,editorial_order,learning_lists!inner(id,name,visibility)")
-      .eq("learning_lists.visibility", "public")
       .order("festival_id")
       .order("editorial_order")
       .order("id")
@@ -205,20 +204,19 @@ export async function loadFestivalOwnerFoundation() {
       .limit(1000),
     supabase
       .from("learning_lists")
-      .select("id,name")
-      .eq("visibility", "public")
+      .select("id,name,visibility")
       .order("name")
       .order("id")
       .limit(500),
   ])
-  if (settingsError || festivalsError || collectionsError || sessionsError || sessionCollectionsError || publicListsError) {
+  if (settingsError || festivalsError || collectionsError || sessionsError || sessionCollectionsError || availableListsError) {
     throw new Error("festival_owner_load_failed")
   }
   const ownerCollections = ((collections ?? []) as unknown as Array<
     FestivalCollection & {
       learning_lists:
-        | { id: number; name: string; visibility: "public" }
-        | Array<{ id: number; name: string; visibility: "public" }>
+        | { id: number; name: string; visibility: "public" | "private" }
+        | Array<{ id: number; name: string; visibility: "public" | "private" }>
     }
   >).flatMap((collection) => {
     const list = Array.isArray(collection.learning_lists)
@@ -232,6 +230,6 @@ export async function loadFestivalOwnerFoundation() {
     collections: ownerCollections,
     sessions: (sessions ?? []) as FestivalSession[],
     sessionCollections: (sessionCollections ?? []) as FestivalSessionCollection[],
-    publicLists: (publicLists ?? []) as Array<{ id: number; name: string }>,
+    availableLists: (availableLists ?? []) as Array<{ id: number; name: string; visibility: "public" | "private" }>,
   }
 }
