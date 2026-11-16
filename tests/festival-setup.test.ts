@@ -12,7 +12,7 @@ test("setup summary distinguishes missing optional sections from review holds", 
     details: "Saved",
     branding: "Not added",
     programme: "Not added",
-    repertoire: "No public lists attached",
+    repertoire: "No lists attached",
     sessions: "No sessions added",
     heldSessions: 0,
     publicContentCount: 0,
@@ -28,4 +28,15 @@ test("setup summary distinguishes missing optional sections from review holds", 
   assert.equal(withContent.sessions, "2 sessions · 1 held for review")
   assert.equal(withContent.heldSessions, 1)
   assert.equal(withContent.publicContentCount, 3)
+
+  const privateDraftContent = getFestivalSetupSummary(
+    { name: "Partner Festival", slug: "partner-festival", timezone: "Australia/Melbourne", branding_image_url: null, programme_url: null, programme_snapshot_date: null },
+    [
+      { id: 1, learning_lists: { visibility: "private" as const } },
+      { id: 2, learning_lists: { visibility: "private" as const } },
+    ],
+    [{ id: 3, needs_review: true }]
+  )
+  assert.equal(privateDraftContent.repertoire, "2 private draft lists attached")
+  assert.equal(privateDraftContent.publicContentCount, 0)
 })
