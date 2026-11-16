@@ -1,7 +1,5 @@
 "use client"
 
-import { getReviewIntervalLabel } from "@/lib/review"
-import Link from "next/link"
 import { useEffect, useState } from "react"
 import AddToListAction from "@/components/AddToListAction"
 import StartPracticeButton from "@/components/StartPracticeButton"
@@ -50,12 +48,6 @@ const outcomes = [
   },
 ] as const
 
-function pieceDetail(piece: Piece) {
-  return [piece.style, piece.key ? `Key ${piece.key}` : null, piece.time_signature]
-    .filter(Boolean)
-    .join(" · ")
-}
-
 export default function ReferencePracticeStrip({
   piece,
   userPiece,
@@ -69,12 +61,6 @@ export default function ReferencePracticeStrip({
 }: ReferencePracticeStripProps) {
   const [isPracticeOpen, setIsPracticeOpen] = useState(false)
   const canMarkPractised = Boolean(userPiece) || practiceDiaryEnabled
-  const detail = pieceDetail(piece)
-  const status = userPiece
-    ? `Learning · ${getReviewIntervalLabel(userPiece.stage)}`
-    : userKnownPiece
-      ? "Known"
-      : null
 
   useEffect(() => {
     const root = document.documentElement
@@ -89,21 +75,9 @@ export default function ReferencePracticeStrip({
     <>
       <aside
         aria-label={`${piece.title} practice actions`}
-        className="floating-material fixed bottom-4 left-[calc(var(--app-rail-width)+1rem)] right-4 z-[320] mx-auto hidden max-w-4xl items-center gap-4 rounded-sheet border border-hairline p-3 shadow-material-floating lg:flex"
+        className="mb-5 flex flex-wrap items-center justify-end gap-3 border-b border-hairline pb-4"
       >
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-serif text-lg font-semibold text-text-primary">
-            {piece.title}
-          </p>
-          <div className="mt-0.5 flex min-w-0 items-center gap-2 text-xs text-text-muted">
-            {status ? <span className="shrink-0 rounded-pill border border-hairline bg-surface-note px-2 py-1 font-semibold text-text-primary">
-              {status}
-            </span> : null}
-            {detail ? <span className="truncate">{detail}</span> : null}
-          </div>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           {canMarkPractised ? (
             <button
               type="button"
@@ -132,12 +106,6 @@ export default function ReferencePracticeStrip({
             buttonLabel="Add to list"
           />
 
-          <Link
-            href={`/library/${piece.id}`}
-            className={buttonStyles.secondaryStrong}
-          >
-            Back to tune
-          </Link>
         </div>
       </aside>
 
