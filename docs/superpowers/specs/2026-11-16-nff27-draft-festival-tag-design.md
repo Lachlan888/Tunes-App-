@@ -16,7 +16,7 @@ The supplied programme is a 2026 source, not confirmation of a 2027 programme. N
 
 - The owner creates a Draft hub named **National Folk Festival 2027** with the stable slug `national-folk-festival-2027` and Festival mode remains Off.
 - Draft hubs may associate owner-visible private or public lists. The management UI makes private status clear.
-- Published and Archived hubs can associate only public lists, and public festival loaders continue to expose only public lists.
+- Published and Archived hubs can associate only public lists. A lifecycle or source-list visibility change that would violate this is blocked, and public festival loaders continue to expose only public lists.
 - The NFF27 lists remain empty and private. Each carries a description identifying it as draft planning material derived from the supplied 2026 programme, pending 2027 confirmation.
 - Create one held `festival_sessions` draft for each list and link it to that list. Preserve the programme wording in the session title but omit the 2026 dates, times and venues from the 2027 draft.
 - Owner preview shows every associated private list and every held session together, including the linked list name and a clear release-eligibility state. Public festival routes remain unchanged: held sessions and private lists cannot appear after publication until the owner explicitly reviews them.
@@ -50,7 +50,7 @@ The supplied programme is a 2026 source, not confirmation of a 2027 programme. N
 
 ## Acceptance
 
-- A schema constraint or trigger blocks private-list attachments to any non-Draft hub.
+- Database triggers block private-list attachments to any non-Draft hub and prevent lifecycle or source-list visibility changes that would break that rule.
 - Owner controls show private draft lists for Draft hubs and only public lists for Published/Archived hubs.
 - Public festival routes remain unchanged: private lists do not appear.
 - Tests cover the new lifecycle/visibility rule and retain the existing public-loader constraint.

@@ -77,6 +77,12 @@ export default function ListsStatusMessages({
         <StatusBanner tone="warning">Invalid list visibility.</StatusBanner>
       )}
 
+      {editListStatus === "festival_public_list" && (
+        <StatusBanner tone="warning">
+          Keep this list public while a published or archived festival hub uses it.
+        </StatusBanner>
+      )}
+
       {editListStatus === "not_found" && (
         <StatusBanner tone="error">
           List not found or you do not own it.

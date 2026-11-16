@@ -46,6 +46,7 @@ function actionError(error: unknown): FestivalActionState {
     mode_requires_selection: "Choose a published festival before turning festival mode on.",
     festival_collection_requires_public_list: "Only an existing public list can be attached.",
     festival_collection_private_list_requires_draft: "Private lists can be attached only while the festival is a Draft.",
+    festival_lifecycle_requires_public_lists: "Make every attached list public before publishing or archiving this hub.",
     festival_collection_not_found: "That festival list association no longer exists.",
     festival_session_collection_mismatch: "Choose repertoire collections attached to this festival.",
     "festival mode requires a selected published festival": "Festival mode can only be turned on for a selected published festival.",
@@ -184,6 +185,16 @@ export async function setFestivalLifecycle(festivalId: number, lifecycle: string
   const { supabase } = await requireFestivalOwner()
   if (!Number.isInteger(festivalId) || festivalId <= 0) throw new Error("invalid_festival_id")
   if (!["draft", "published", "archived"].includes(lifecycle)) throw new Error("invalid_lifecycle")
+  if (lifecycle !== "draft") {
+    const { data: privateCollections, error: privateCollectionsError } = await supabase
+      .from("festival_collections")
+      .select("id,learning_lists!inner(visibility)")
+      .eq("festival_id", festivalId)
+      .neq("learning_lists.visibility", "public")
+      .limit(1)
+    if (privateCollectionsError) throw new Error(privateCollectionsError.message)
+    if (privateCollections?.length) throw new Error("festival_lifecycle_requires_public_lists")
+  }
   const { data, error } = await supabase
     .from("festival_hubs")
     .update({ lifecycle })

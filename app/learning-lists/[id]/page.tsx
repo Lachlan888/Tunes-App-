@@ -193,6 +193,12 @@ export default async function LearningListDetailPage({
         <StatusMessage tone="warning">Invalid list visibility.</StatusMessage>
       )}
 
+      {editListStatus === "festival_public_list" && (
+        <StatusMessage tone="warning">
+          Keep this list public while a published or archived festival hub uses it.
+        </StatusMessage>
+      )}
+
       {editListStatus === "not_found" && (
         <StatusMessage tone="error">
           List not found or you do not own it.

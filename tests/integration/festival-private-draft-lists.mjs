@@ -22,9 +22,24 @@ try {
   `)
 
   const migrations = new URL("../../supabase/migrations/", import.meta.url)
-  const migration = (await readdir(migrations)).find((name) => name.endsWith("_allow_private_draft_festival_lists.sql"))
-  assert.ok(migration, "the lifecycle guard migration must exist")
-  await db.exec(await readFile(new URL(migration, migrations), "utf8"))
+  const guardMigrations = (await readdir(migrations))
+    .filter((name) => (
+      name.endsWith("_allow_private_draft_festival_lists.sql") ||
+      name.endsWith("_prevent_private_festival_lists_on_released_hubs.sql") ||
+      name.endsWith("_serialize_private_festival_list_transitions.sql")
+    ))
+    .sort()
+  assert.equal(guardMigrations.length, 3, "all private-list lifecycle guard migrations must exist")
+  const serializedMigration = guardMigrations.find((name) => name.endsWith("_serialize_private_festival_list_transitions.sql"))
+  assert.ok(serializedMigration, "the concurrency guard migration must exist")
+  const serializedSource = await readFile(new URL(serializedMigration, migrations), "utf8")
+  assert.match(serializedSource, /validate_festival_collection_list_visibility/)
+  assert.match(serializedSource, /validate_festival_hub_lifecycle_for_list_visibility/)
+  assert.match(serializedSource, /validate_learning_list_visibility_for_festival_hubs/)
+  assert.equal((serializedSource.match(/pg_advisory_xact_lock/g) ?? []).length, 3)
+  for (const migration of guardMigrations) {
+    await db.exec(await readFile(new URL(migration, migrations), "utf8"))
+  }
 
   await db.query("insert into public.festival_collections(festival_id, learning_list_id) values (1, 10)")
   await db.query("insert into public.festival_collections(festival_id, learning_list_id) values (1, 11), (2, 11), (3, 11)")
@@ -36,11 +51,28 @@ try {
     db.query("insert into public.festival_collections(festival_id, learning_list_id) values (3, 10)"),
     /private festival lists require a Draft hub/i
   )
+  await assert.rejects(
+    db.query("update public.festival_hubs set lifecycle = 'published' where id = 1"),
+    /private festival lists require public repertoire/i
+  )
+  await assert.rejects(
+    db.query("update public.festival_hubs set lifecycle = 'archived' where id = 1"),
+    /private festival lists require public repertoire/i
+  )
+  await db.query("update public.festival_hubs set lifecycle = 'published' where id = 2")
+  await assert.rejects(
+    db.query("update public.learning_lists set visibility = 'private' where id = 11"),
+    /private festival lists require a Draft hub/i
+  )
+  await db.query("insert into public.learning_lists values (12, 'public')")
+  await db.query("insert into public.festival_collections(festival_id, learning_list_id) values (1, 12)")
+  await db.query("update public.learning_lists set visibility = 'private' where id = 12")
   assert.deepEqual(
     (await db.query("select festival_id, learning_list_id from public.festival_collections order by festival_id, learning_list_id")).rows,
     [
       { festival_id: 1, learning_list_id: 10 },
       { festival_id: 1, learning_list_id: 11 },
+      { festival_id: 1, learning_list_id: 12 },
       { festival_id: 2, learning_list_id: 11 },
       { festival_id: 3, learning_list_id: 11 },
     ]

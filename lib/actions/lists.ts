@@ -874,6 +874,18 @@ export async function updateList(formData: FormData) {
     redirect(appendQueryParam(redirectTo, "edit_list", "not_found"))
   }
 
+  if (ownedList.visibility === "public" && visibility === "private") {
+    const { data: releasedFestivalCollections, error: releasedFestivalCollectionsError } = await supabase
+      .from("festival_collections")
+      .select("id,festival_hubs!inner(lifecycle)")
+      .eq("learning_list_id", listId)
+      .neq("festival_hubs.lifecycle", "draft")
+      .limit(1)
+    if (releasedFestivalCollectionsError || releasedFestivalCollections?.length) {
+      redirect(appendQueryParam(redirectTo, "edit_list", "festival_public_list"))
+    }
+  }
+
   const wasPublic = ownedList.visibility === "public"
   const isMeaningfulChange =
     ownedList.name !== name ||
@@ -1600,6 +1612,18 @@ export async function toggleLearningListVisibility(formData: FormData) {
 
   if (nextVisibility === "public" && existingList.is_imported) {
     throw new Error("Copied lists cannot be made public")
+  }
+
+  if (existingList.visibility === "public" && nextVisibility === "private") {
+    const { data: releasedFestivalCollections, error: releasedFestivalCollectionsError } = await supabase
+      .from("festival_collections")
+      .select("id,festival_hubs!inner(lifecycle)")
+      .eq("learning_list_id", listId)
+      .neq("festival_hubs.lifecycle", "draft")
+      .limit(1)
+    if (releasedFestivalCollectionsError || releasedFestivalCollections?.length) {
+      throw new Error("Keep this list public while a published or archived festival hub uses it")
+    }
   }
 
   const { error: updateError } = await supabase

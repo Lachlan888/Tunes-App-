@@ -174,6 +174,62 @@ test("a private list cannot be tagged to a published festival", async () => {
   assert.deepEqual(fixture.writes.map((write) => write.table), ["festival_hubs", "learning_lists"])
 })
 
+test("publishing stops before write when private festival repertoire is still attached", async () => {
+  const fixture = database({
+    festival_collections: { data: [{ id: 33 }], error: null },
+  })
+  const actions = moduleFrom("../lib/actions/festivals.ts", {
+    "next/cache": { revalidatePath() {} },
+    "@/lib/auth/roles": {
+      requireAppAdmin: async () => ({ adminRole: "owner", user: { id: "owner" }, supabase: fixture.db }),
+    },
+    "@/lib/festivals/validation": validation,
+  })
+  const form = new FormData()
+  form.set("festival_id", "9")
+  form.set("lifecycle", "published")
+
+  const state = await actions.setFestivalLifecycleFromForm(
+    { status: "idle", message: null, field: null },
+    form
+  ) as { status: string; message: string }
+
+  assert.equal(state.status, "error")
+  assert.match(state.message, /public/i)
+  assert.deepEqual(fixture.writes.map((write) => write.table), ["festival_collections"])
+})
+
+test("making a list private stops before write when a released festival uses it", async () => {
+  const fixture = database({
+    learning_lists: { data: { id: 17, visibility: "public", name: "NFF27 — Session: Irish Tunes", description: null }, error: null },
+    festival_collections: { data: [{ id: 33 }], error: null },
+  })
+  const lists = moduleFrom("../lib/actions/lists.ts", {
+    "next/cache": { revalidatePath() {} },
+    "next/navigation": { redirect(path: string) { throw new Error(`REDIRECT:${path}`) } },
+    "@/lib/supabase/server": {
+      createClient: async () => ({
+        ...fixture.db,
+        auth: { getUser: async () => ({ data: { user: { id: "owner" } } }) },
+      }),
+    },
+    "@/lib/auth/redirects": { getAuthReturnPath: (path: string) => path },
+    "@/lib/actions/user-pieces": { startPracticeForUser() {} },
+    "@/lib/services/activity-events": {
+      recordPublicListCreatedEvent() {},
+      recordPublicListUpdatedEvent() {},
+    },
+  })
+  const form = new FormData()
+  form.set("learning_list_id", "17")
+  form.set("name", "NFF27 — Session: Irish Tunes")
+  form.set("visibility", "private")
+  form.set("redirect_to", "/learning-lists")
+
+  await assert.rejects(lists.updateList(form), /REDIRECT:\/learning-lists\?edit_list=festival_public_list/)
+  assert.deepEqual(fixture.writes.map((write) => write.table), ["learning_lists", "festival_collections"])
+})
+
 test("the Dev launch summary does not read festival records for a non-owner admin", async () => {
   let reads = 0
   const loader = moduleFrom("../lib/loaders/festivals.ts", {
@@ -349,7 +405,9 @@ test("lifecycle action changes only lifecycle, preserving saved festival details
     { status: "idle", message: null, field: null }, form
   ) as { status: string }
   assert.equal(result.status, "success")
-  assert.deepEqual(fixture.writes[0].calls.find((call) => call[0] === "update")?.[1], { lifecycle: "published" })
+  assert.deepEqual(fixture.writes.map((write) => write.table), ["festival_collections", "festival_hubs"])
+  const festivalWrite = fixture.writes.find((write) => write.table === "festival_hubs")
+  assert.deepEqual(festivalWrite?.calls.find((call) => call[0] === "update")?.[1], { lifecycle: "published" })
 })
 
 test("lifecycle action rejects non-owners and invalid states before writing", async () => {
