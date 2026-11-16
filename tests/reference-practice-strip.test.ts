@@ -22,31 +22,29 @@ const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8")
 test("reference playback dock is removed at every viewport size", () => {
   assert.match(dock, /model\.context === "reference-media" && "hidden"/)
   assert.doesNotMatch(strip, /md:flex/)
-  assert.match(strip, /hidden max-w-4xl[\s\S]*lg:flex/)
+  assert.match(strip, /mb-5 flex flex-wrap items-center justify-end/)
+  assert.doesNotMatch(strip, /floating-material|fixed bottom-4/)
 })
 
-test("desktop reference strip exposes tune-focused practice actions", () => {
+test("inline reference actions retain focused practice controls", () => {
   for (const label of [
     "Mark practised",
     "Add to Practice",
     "Add to list",
-    "Back to tune",
     "Rough",
     "Shaky",
     "Solid",
-    "Known",
   ]) {
     assert.match(strip, new RegExp(label))
   }
 
-  assert.match(strip, /Learning · \$\{getReviewIntervalLabel\(userPiece\.stage\)\}/)
+  assert.doesNotMatch(strip, /Back to tune|Learning · \$\{getReviewIntervalLabel\(userPiece\.stage\)\}|floating-material/)
   assert.doesNotMatch(strip, /"New to me"/)
   assert.match(strip, /action=\{userPiece \? outcome\.formalAction : logTunePracticeCheck\}/)
 })
 
 test("reference route supplies existing user state and server actions", () => {
   assert.match(page, /userPiece=\{tuneDetail\.typedUserPiece\}/)
-  assert.match(page, /userKnownPiece=\{tuneDetail\.typedUserKnownPiece\}/)
   assert.match(page, /learningLists=\{tuneDetail\.typedLearningLists\}/)
   assert.match(page, /practiceDiaryEnabled=\{tuneDetail\.practiceDiaryEnabled\}/)
   assert.match(page, /startLearning=\{startLearning\}/)

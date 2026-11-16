@@ -11,14 +11,12 @@ import { markFailed, markShaky, markSolid } from "@/lib/actions/reviews"
 import type {
   LearningList,
   Piece,
-  UserKnownPiece,
   UserPiece,
 } from "@/lib/types"
 
 type ReferencePracticeStripProps = {
   piece: Piece
   userPiece: UserPiece | null
-  userKnownPiece: UserKnownPiece | null
   learningLists: LearningList[] | null
   learningListItems: Array<{ learning_list_id: number; piece_id: number }> | null
   practiceDiaryEnabled: boolean
@@ -51,7 +49,6 @@ const outcomes = [
 export default function ReferencePracticeStrip({
   piece,
   userPiece,
-  userKnownPiece,
   learningLists,
   learningListItems,
   practiceDiaryEnabled,

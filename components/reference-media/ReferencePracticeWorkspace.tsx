@@ -23,7 +23,6 @@ import {
 import type {
   LearningList,
   Piece,
-  UserKnownPiece,
   UserPiece,
 } from "@/lib/types"
 
@@ -33,7 +32,6 @@ type ReferencePracticeWorkspaceProps = {
   initialSourceId: string | null
   requestedSourceId?: string | null
   userPiece: UserPiece | null
-  userKnownPiece: UserKnownPiece | null
   learningLists: LearningList[] | null
   learningListItems: Array<{ learning_list_id: number; piece_id: number }> | null
   practiceDiaryEnabled: boolean
@@ -300,7 +298,6 @@ export default function ReferencePracticeWorkspace({
   initialSourceId,
   requestedSourceId,
   userPiece,
-  userKnownPiece,
   learningLists,
   learningListItems,
   practiceDiaryEnabled,
@@ -351,7 +348,6 @@ export default function ReferencePracticeWorkspace({
     <ReferencePracticeStrip
       piece={piece}
       userPiece={userPiece}
-      userKnownPiece={userKnownPiece}
       learningLists={learningLists}
       learningListItems={learningListItems}
       practiceDiaryEnabled={practiceDiaryEnabled}

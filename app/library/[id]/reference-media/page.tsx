@@ -84,7 +84,6 @@ export default async function ReferenceMediaPage({
         initialSourceId={selectedSource?.id ?? null}
         requestedSourceId={requestedSourceId}
         userPiece={tuneDetail.typedUserPiece}
-        userKnownPiece={tuneDetail.typedUserKnownPiece}
         learningLists={tuneDetail.typedLearningLists}
         learningListItems={tuneDetail.typedLearningListItems}
         practiceDiaryEnabled={tuneDetail.practiceDiaryEnabled}
